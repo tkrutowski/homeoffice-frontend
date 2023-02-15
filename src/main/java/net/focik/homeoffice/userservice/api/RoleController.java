@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.focik.homeoffice.userservice.api.dto.PrivilegeDto;
 import net.focik.homeoffice.userservice.api.dto.RoleDto;
-import net.focik.homeoffice.userservice.domain.HttpResponse;
 import net.focik.homeoffice.userservice.domain.Privilege;
 import net.focik.homeoffice.userservice.domain.Role;
 import net.focik.homeoffice.userservice.domain.port.primary.IAddRoleToUserUseCase;
@@ -12,6 +11,7 @@ import net.focik.homeoffice.userservice.domain.port.primary.IChangePrivilegeInUs
 import net.focik.homeoffice.userservice.domain.port.primary.IDeleteUsersRoleUseCase;
 import net.focik.homeoffice.userservice.domain.port.primary.IGetUserRolesUseCase;
 import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
+import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

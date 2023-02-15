@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.focik.homeoffice.userservice.api.dto.UserDto;
 import net.focik.homeoffice.userservice.domain.AppUser;
-import net.focik.homeoffice.userservice.domain.HttpResponse;
 import net.focik.homeoffice.userservice.domain.exceptions.EmailAlreadyExistsException;
 import net.focik.homeoffice.userservice.domain.exceptions.UserAlreadyExistsException;
 import net.focik.homeoffice.userservice.domain.exceptions.UserNotFoundException;
 import net.focik.homeoffice.userservice.domain.port.primary.*;
 import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
+import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.*;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -26,7 +27,8 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = {"/", "/api/user"})
+//@RequestMapping(path = {"/", "/api/user"})
+@RequestMapping(path = {"/api/user"})
 //najpierw sprawdza czy jest jakiś exception handler w exceptionHandling
 public class UserController extends ExceptionHandling {
 
@@ -49,8 +51,14 @@ public class UserController extends ExceptionHandling {
     }
 
     @GetMapping
-//    @PreAuthorize("hasAnyAuthority('ADMIN_READ_ALL','USER_READ_ALL')")
-    ResponseEntity<List<UserDto>> getUsers() {
+    ResponseEntity<List<UserDto>> getUsers( @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+
+        log.info("Try find all users");
+            final List<String> accessRole = List.of(ROLE_ADMIN);
+
+//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
+//            throw new AccessDeniedException();
+//        }
         int i = 0;
 //        log.info("USER-SERVICE: Try find user by id: = " + id);
         List<AppUser> allUsers = getUserUseCase.getAllUsers();

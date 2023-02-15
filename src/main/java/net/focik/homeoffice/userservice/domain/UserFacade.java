@@ -1,6 +1,7 @@
 package net.focik.homeoffice.userservice.domain;
 
 import lombok.RequiredArgsConstructor;
+import net.focik.homeoffice.userservice.domain.port.primary.IUserService;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
