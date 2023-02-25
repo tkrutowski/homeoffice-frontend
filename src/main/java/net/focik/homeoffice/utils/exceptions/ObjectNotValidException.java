@@ -1,0 +1,11 @@
+package net.focik.homeoffice.utils.exceptions;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(value= HttpStatus.BAD_REQUEST)
+public class ObjectNotValidException extends RuntimeException {
+    public ObjectNotValidException(String message) {
+        super(message);
+    }
+}
