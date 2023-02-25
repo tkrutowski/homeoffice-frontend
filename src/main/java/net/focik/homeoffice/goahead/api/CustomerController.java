@@ -13,24 +13,25 @@ import net.focik.homeoffice.goahead.domain.customer.port.primary.AddCustomerUseC
 import net.focik.homeoffice.goahead.domain.customer.port.primary.DeleteCustomerUseCase;
 import net.focik.homeoffice.goahead.domain.customer.port.primary.GetCustomerUseCase;
 import net.focik.homeoffice.goahead.domain.customer.port.primary.UpdateCustomerUseCase;
+import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.*;
 import static org.springframework.http.HttpStatus.OK;
 
 @Log4j2
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/goahead/customer")
-@CrossOrigin
-public class CustomerController {
+//@CrossOrigin
+public class CustomerController extends ExceptionHandling {
 
     private final ApiCustomerMapper mapper;
     private final AddCustomerUseCase addCustomerUseCase;
@@ -38,17 +39,18 @@ public class CustomerController {
     private final GetCustomerUseCase getCustomerUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
 
+    @GetMapping("/test")
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    String test() {
+        return "test";
+    }
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     ResponseEntity<CustomerDto> getById(@PathVariable int id,
-                                                  @RequestParam Boolean isAddress,
-                                                  @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+                                        @RequestParam Boolean isAddress) {
 
         log.info("Try find customer by id: " + id);
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_READ_ALL, GO_CUSTOMER_READ);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
 
         Customer customer = getCustomerUseCase.findById(id, isAddress);
 
@@ -60,18 +62,12 @@ public class CustomerController {
         return new ResponseEntity<>(mapper.toDto(customer), OK);
     }
 
-
     @GetMapping()
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     ResponseEntity<List<CustomerDto>> getAllCustomers(@RequestParam(required = false) CustomerStatus status,
                                                       @RequestParam(required = false) CustomerType type,
-                                                      @RequestParam(required = false) Boolean address,
-                                                                        @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+                                                      @RequestParam(required = false) Boolean address) {
         log.info("Try find all employee by EmploymentStatus = " + status);
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_READ_ALL);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
 
         List<Customer> customerList = getCustomerUseCase.findByAll(status, address, type);
 
@@ -83,14 +79,9 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<Integer> addCustomer(@RequestBody CustomerDto customerDto,
-                                               @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    public ResponseEntity<Integer> addCustomer(@RequestBody CustomerDto customerDto) {
         log.info("Try add new customer.");
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_WRITE_ALL);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
 
         Customer customer = mapper.toDomain(customerDto);
         Integer result = addCustomerUseCase.addCustomer(customer);
@@ -104,28 +95,18 @@ public class CustomerController {
     }
 
     @PutMapping
-    public ResponseEntity<CustomerDto> updateEmployee(@RequestBody CustomerDto customerDto,
-                                                      @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
-        log.info("Try update customer with id: {}",customerDto.getId());
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_WRITE_ALL);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    public ResponseEntity<CustomerDto> updateEmployee(@RequestBody CustomerDto customerDto) {
+        log.info("Try update customer with id: {}", customerDto.getId());
 
         Customer customer = updateCustomerUseCase.updateCustomer(mapper.toDomain(customerDto));
         return new ResponseEntity<>(mapper.toDto(customer), OK);
     }
 
     @DeleteMapping("/{idCustomer}")
-    public ResponseEntity<HttpResponse> deleteCustomer(@PathVariable int idCustomer,
-                                                       @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_DELETE_ALL')")
+    public ResponseEntity<HttpResponse> deleteCustomer(@PathVariable int idCustomer) {
         log.info("Try delete customer with id: " + idCustomer);
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_DELETE_ALL);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
 
         deleteCustomerUseCase.deleteCustomer(idCustomer);
 
@@ -146,15 +127,9 @@ public class CustomerController {
     }
 
     @PutMapping("/customerstatus/{id}")
-    public ResponseEntity<HttpResponse> updateEmploymentStatus(@PathVariable int id, @RequestBody BasicDto basicDto,
-                                                               @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
+    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    public ResponseEntity<HttpResponse> updateEmploymentStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update customer status.");
-
-        final List<String> accessRole = List.of(ROLE_ADMIN, GO_CUSTOMER_WRITE_ALL);
-
-//        if (PrivilegeHelper.dontHaveAccess(List.of(roles), accessRole)) {
-//            throw new AccessDeniedException();
-//        }
 
         updateCustomerUseCase.updateCustomerStatus(id, CustomerStatus.valueOf(basicDto.getValue()));
         return response(HttpStatus.OK, "Zaaktualizowano status pracownika.");

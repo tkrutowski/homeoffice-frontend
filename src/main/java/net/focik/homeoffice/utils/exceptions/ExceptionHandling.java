@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 //import org.springframework.security.authentication.DisabledException;
 //import org.springframework.security.authentication.LockedException;
 //import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +40,11 @@ public class ExceptionHandling implements ErrorController {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<HttpResponse> accessDeniedException() {
         return createHttpResponse(FORBIDDEN, NOT_ENOUGH_PERMISSION);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<HttpResponse> badCredentials() {
+        return createHttpResponse(UNAUTHORIZED, INCORRECT_CREDENTIALS);
     }
 
     @ExceptionHandler(ObjectAlreadyExistException.class)

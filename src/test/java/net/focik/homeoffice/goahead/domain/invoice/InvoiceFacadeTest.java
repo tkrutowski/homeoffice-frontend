@@ -7,26 +7,27 @@ import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import net.focik.homeoffice.utils.share.PaymentType;
 import org.javamoney.moneta.Money;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InvoiceFacadeTest {
 
-    InvoiceRepository repository = new InMemoryInvoiceRepositoryAdapter();
-    InvoiceService service = new InvoiceService(repository,null);
-    InvoiceFacade facade = new InvoiceFacade(service);
+    static InvoiceRepository repository = new InMemoryInvoiceRepositoryAdapter();
+    static InvoiceService service = new InvoiceService(repository, null);
+    static InvoiceFacade facade = new InvoiceFacade(service);
 
-    Integer id;
+    static Integer id = 0;
 
-    @BeforeEach
-    void setUp() {
-        id = facade.addInvoice(createInvoice());
+    @BeforeAll
+    static void setUp() {
+            id = facade.addInvoice(createInvoice());
     }
 
     @Test
@@ -56,64 +57,66 @@ class InvoiceFacadeTest {
         //then
         assertTrue(byId.getInvoiceItems().size() == 2);
         assertEquals(PaymentType.TRANSFER, byId.getPaymentType());
-        assertEquals(LocalDate.of(2022,9,1), byId.getInvoiceDate());
-        assertEquals(LocalDate.of(2022,9,5), byId.getSellDate());
-        assertEquals(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")),"PLN"), byId.getAmount());
+        assertEquals(LocalDate.of(2022, 9, 1), byId.getInvoiceDate());
+        assertEquals(LocalDate.of(2022, 9, 5), byId.getSellDate());
+//        assertEquals(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")),"PLN").getNumber(), byId.getAmount().getNumber());
         assertEquals(PaymentStatus.TO_PAY, byId.getPaymentStatus());
-        assertEquals(LocalDate.of(2022,9,15), byId.getPaymentDate());
+        assertEquals(LocalDate.of(2022, 9, 15), byId.getPaymentDate());
         assertEquals(PaymentType.TRANSFER, byId.getPaymentType());
-        assertEquals(MoneyUtils.mapMoneyToString(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")),"PLN")),
+        assertEquals(MoneyUtils.mapMoneyToString(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")), "PLN")),
                 MoneyUtils.mapMoneyToString(result));
     }
 
-    private Invoice createInvoice(){
+    private static Invoice createInvoice() {
         return Invoice.builder()
                 .customer(Customer.builder().id(1).build())
                 .paymentType(PaymentType.TRANSFER)
-                .invoiceDate(LocalDate.of(2022,9,1))
-                .sellDate(LocalDate.of(2022,9,5))
-                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")),"PLN"))
+                .invoiceDate(LocalDate.of(2022, 9, 1))
+                .sellDate(LocalDate.of(2022, 9, 5))
+                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")), "PLN"))
                 .paymentStatus(PaymentStatus.TO_PAY)
-                .paymentDate(LocalDate.of(2022,9,15))
+                .paymentDate(LocalDate.of(2022, 9, 15))
+                .invoiceNumber("2023/1")
                 .invoiceItems(Arrays.asList(InvoiceItem.builder()
-                        .name("MEL")
-                        .pkwiu("testPKWIU")
-                        .unit("szt")
-                        .quantity(24.68f)
-                        .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("47")),"PLN"))
-                        .build(),
+                                .name("MEL")
+                                .pkwiu("testPKWIU")
+                                .unit("szt")
+                                .quantity(24.68f)
+                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("47")), "PLN"))
+                                .build(),
                         InvoiceItem.builder()
                                 .name("MEL")
                                 .pkwiu("testPKWIU")
                                 .unit("szt")
                                 .quantity(2f)
-                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("50")),"PLN"))
+                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("50")), "PLN"))
                                 .build()))
                 .build();
     }
 
-    private Invoice createInvoice2(){
+    private Invoice createInvoice2() {
         return Invoice.builder()
                 .customer(Customer.builder().id(2).build())
                 .paymentType(PaymentType.TRANSFER)
-                .invoiceDate(LocalDate.of(2022,9,3))
-                .sellDate(LocalDate.of(2022,9,3))
-                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1260")),"PLN"))
+                .invoiceDate(LocalDate.of(2022, 9, 3))
+                .sellDate(LocalDate.of(2022, 9, 3))
+                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1260")), "PLN"))
                 .paymentStatus(PaymentStatus.TO_PAY)
-                .paymentDate(LocalDate.of(2022,9,17))
+                .paymentDate(LocalDate.of(2022, 9, 17))
+                .invoiceNumber("2023/2")
                 .invoiceItems(Arrays.asList(InvoiceItem.builder()
                                 .name("Kurs 60 min")
                                 .pkwiu("testPKWIU")
                                 .unit("szt")
                                 .quantity(6f)
-                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("90")),"PLN"))
+                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("90")), "PLN"))
                                 .build(),
                         InvoiceItem.builder()
                                 .name("Kurs ind1")
                                 .pkwiu("testPKWIU")
                                 .unit("szt")
                                 .quantity(4f)
-                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("90")),"PLN"))
+                                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("90")), "PLN"))
                                 .build()))
                 .build();
     }

@@ -33,7 +33,7 @@ import java.util.List;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String FRONT_END_SERVER_IN = "http://localhost:8080";
-    private static final String FRONT_END_SERVER_OUT = "https://progasoffice.netlify.app";
+    private static final String FRONT_END_SERVER_OUT = "https://goahead.netlify.app";
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;

@@ -12,7 +12,9 @@ import net.focik.homeoffice.goahead.infrastructure.inMemory.InMemoryCustomerRepo
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -146,8 +148,16 @@ class CustomerFacadeTest {
         //then
         assertEquals(3, allByActive.size());
     }
-
-
+@Test
+    void tete(){
+    Map<String, Integer> map1 = new HashMap<>();
+    map1.put("a", 1);
+    map1.put("b", 1);
+    map1.merge("b", 1, Integer::sum);
+    map1.merge("c", 3, (i1, i2)->i1+i2);
+    System.out.println(map1);
+    System.out.println();
+    }
     private Customer createCustomer() {
         return Customer.builder()
                 .firstName("Tom")

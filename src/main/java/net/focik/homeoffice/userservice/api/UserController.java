@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,11 @@ public class UserController extends ExceptionHandling {
     private final IDeleteUserUseCase deleteUserUseCase;
     private final IChangePasswordUseCase changePasswordUseCase;
 
+    @GetMapping("/test")
+    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
+    String test(){
+        return "test";
+    }
     @GetMapping("/{id}")
     ResponseEntity<AppUser> getUser(@PathVariable Long id) {
         int i = 0;
@@ -72,7 +78,7 @@ public class UserController extends ExceptionHandling {
     public ResponseEntity<AppUser> register(@RequestBody AppUser user) throws UserNotFoundException, UserAlreadyExistsException, EmailAlreadyExistsException {
         int i = 0;
         AppUser newUser = addNewUserUseCase.addNewUser(user.getFirstName(), user.getLastName(), user.getUsername(), user.getPassword(),
-                user.getEmail(), user.isEnabled(), user.isNotLocked(), user.getIdEmployee());
+                user.getEmail(), user.isEnabled(), user.isNotLocked());
         return new ResponseEntity<>(newUser, CREATED);
     }
 

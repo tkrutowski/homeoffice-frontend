@@ -50,7 +50,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 
     @Override
     public AppUser addNewUser(String firstName, String lastName, String username, String password, String email, boolean enabled,
-                              boolean isNotLocked, int idEmployee) throws UserNotFoundException, UserAlreadyExistsException, EmailAlreadyExistsException {
+                              boolean isNotLocked) throws UserNotFoundException, UserAlreadyExistsException, EmailAlreadyExistsException {
         validateNewUsernameAndEmail(0L, username, email);
         AppUser user = new AppUser();
         String encodedPassword = encodePassword(password);
@@ -62,7 +62,6 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
         user.setPassword(encodedPassword);
         user.setEnabled(enabled);
         user.setNotLocked(isNotLocked);
-        user.setIdEmployee(idEmployee);
 //        user.setRole(ROLE_USER.name());
 //        user.setAuthorities(ROLE_USER.getAuthorities());
         userRepository.save(user);

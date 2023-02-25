@@ -12,12 +12,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserFacade {
 
-    private final IUserService userService = null;
+    private final IUserService userService;
     private final RoleService roleService;
 
     public AppUser registerUser(String firstName, String lastName, String username, String password,
-                                String email, boolean enabled, boolean isNotLocked, int idEmployee) {
-        return userService.addNewUser(firstName, lastName, username, password, email, enabled, isNotLocked, idEmployee);
+                                String email, boolean enabled, boolean isNotLocked) {
+        return userService.addNewUser(firstName, lastName, username, password, email, enabled, isNotLocked);
     }
 
     public AppUser findUserByUsername(String username) {

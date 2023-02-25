@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.Reader;
 
 @Entity
 @NoArgsConstructor
@@ -40,4 +43,5 @@ public class Role {
 //            inverseJoinColumns = @JoinColumn(
 //                    name = "privilege_id", referencedColumnName = "id"))
 //    private Collection<Privilege> privileges;
+
 }

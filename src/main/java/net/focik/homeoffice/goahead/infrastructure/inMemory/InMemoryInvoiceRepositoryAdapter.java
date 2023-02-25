@@ -94,12 +94,22 @@ public class InMemoryInvoiceRepositoryAdapter implements InvoiceRepository {
 
     @Override
     public Optional<Invoice> findByNumber(String number) {
-        return null;
+        return DataBaseInvoice.getInvoiceDbDtoHashMap()
+                .values()
+                .stream()
+                .filter(dto -> dto.getNumber().equals(number))
+                .map(mapper::toDomain)
+                .findFirst();
     }
 
     @Override
     public List<InvoiceItem> findByInvoiceId(Integer idInvoice) {
-        return null;
+        return DataBaseInvoiceItem.getInvoiceItemDbDtoHashMap()
+                .values()
+                .stream()
+                .filter(dto -> dto.getIdInvoice() == idInvoice)
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
