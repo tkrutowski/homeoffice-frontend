@@ -3,44 +3,72 @@ package net.focik.homeoffice.library.infrastructure.upolujebooka;
 import net.focik.homeoffice.library.domain.model.BookDto;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class UpolujebookaScrapper {
-    private UpolujebookaScrapper() { }
+
+    public static final String DIV_PUBLISHER = "div.publisher";
+
+    private UpolujebookaScrapper() {
+    }
 
     private static final String PAGE_URL = "https://upolujebooka.pl";
 
-    public static BookDto findBookFromUrl(String url) {
-        BookScraperDto book = new BookScraperDto();
+    public static List<String> findBooksFromUrl(String url) {
+        List<String> booksUrl = new ArrayList<>();
         try {
             if (!url.isEmpty()) {
-                StringBuilder pageContent = new ReadPageContent(url).invoke();
-                Document documentURL = Jsoup.parse(pageContent.toString());
+                Document documentURL = Jsoup.connect(url).get();
+                Element content = documentURL.getElementById("content");
+                Elements links = content.getElementsByTag("a");
+                return links.stream()
+                        .map(element -> element.attr("href"))
+                        .filter(s -> s.startsWith("/oferta"))
+                        .distinct()
+                        .map(PAGE_URL::concat)
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
 
-                if (documentURL.select("div.publisher").text().startsWith("Cykl: ")) {
+        return booksUrl;
+    }
+
+    public static BookDto findBookFromUrl(String url) {
+        BookScraperDto book = new BookScraperDto();
+        book.setId(0);
+        try {
+            if (!url.isEmpty()) {
+                Document documentURL = Jsoup.connect(url).get();
+                if (documentURL.select(DIV_PUBLISHER).text().startsWith("Cykl: ")) {
                     book.setSeries(documentURL
-                            .select("div.publisher")
+                            .select(DIV_PUBLISHER)
                             .text()
                             .substring(documentURL
-                                            .select("div.publisher")
+                                            .select(DIV_PUBLISHER)
                                             .text()
                                             .indexOf(": ") + 2,
                                     documentURL
-                                            .select("div.publisher")
+                                            .select(DIV_PUBLISHER)
                                             .text()
                                             .indexOf(" (")
                             )
                     );
-                    book.setBookInSeriesNo(Integer.parseInt(documentURL.select("div.publisher > span > a > b").text()));
+                    book.setSeriesURL(PAGE_URL + documentURL.select("div.publisher > span > a")
+                            .attr("href"));
+                    book.setBookInSeriesNo(Optional.of(Integer.parseInt(documentURL.select("div.publisher > span > a > b").text())).orElse(-1));
+                } else {
+                    book.setSeries("");
                 }
                 book.setAuthors((documentURL.select("div.authors > h2 >a").textNodes().stream()
                         .map(TextNode::toString)
@@ -60,31 +88,4 @@ public class UpolujebookaScrapper {
         return book;
     }
 
-    private static class ReadPageContent {
-        private final String url;
-
-        public ReadPageContent(String url) {
-            this.url = url;
-        }
-
-        public StringBuilder invoke() throws IOException {
-            InputStream inputStream;
-            StringBuilder pageContent = new StringBuilder();
-            String line;
-            URL inputUrl = new URL(url);
-
-            try {
-                inputStream = inputUrl.openStream();
-
-            } catch (Exception exception) {
-                throw new IOException();
-            }
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                while ((line = bufferedReader.readLine()) != null) {
-                    pageContent.append(line);
-                }
-            }
-            return pageContent;
-        }
-    }
 }

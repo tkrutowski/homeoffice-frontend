@@ -13,6 +13,7 @@ import net.focik.homeoffice.library.domain.model.BookDto;
 public class BookScraperDto implements BookDto {
     private Integer id;
     private String series;
+    private String seriesURL;
     private String authors;
     private String categories;
     private String title;
