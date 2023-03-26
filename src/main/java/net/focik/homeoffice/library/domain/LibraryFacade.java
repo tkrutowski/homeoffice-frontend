@@ -11,8 +11,9 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBookUseCase,
-        FindSeriesUseCase, FindUserBookUseCase,FindBookstoreUseCase, SaveBookstoreUseCase, DeleteBookstoreUseCase {
+public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBookUseCase, SaveUserBookUseCase,
+        FindSeriesUseCase, FindUserBookUseCase,FindBookstoreUseCase, SaveBookstoreUseCase, DeleteBookstoreUseCase,
+DeleteUserBookUseCase {
 
     private final UserFacade userFacade;
     private final BookService bookService;
@@ -74,9 +75,9 @@ public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBo
     }
 
     @Override
-    public Boolean checkIfUserBookFofBookId(Integer idBook, String userName) {
+    public List<UserBook> findUserBooksForBookId(Integer idBook, String userName) {
         AppUser user = userFacade.findUserByUsername(userName);
-        return userBookService.checkIfUserBookFofBookId(idBook, Math.toIntExact(user.getId()));
+        return userBookService.findUserBooksForBookId(idBook, Math.toIntExact(user.getId()));
     }
 
     @Override
@@ -88,6 +89,12 @@ public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBo
     public List<UserBook> findBookByUserAndReadStatus(String userName, ReadingStatus readingStatus) {
         AppUser user = userFacade.findUserByUsername(userName);
         return userBookService.findBookByUserAndReadStatus(user.getId(), readingStatus);
+    }
+
+    @Override
+    public List<UserBook> findBookByUserAndReadStatusAndYear(String userName, ReadingStatus readingStatus, int year) {
+        AppUser user = userFacade.findUserByUsername(userName);
+        return userBookService.findBookByUserAndReadStatusAndYear(user.getId(), readingStatus, year);
     }
 
     @Override
@@ -113,5 +120,23 @@ public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBo
     @Override
     public void deleteBookstore(Integer idBook) {
         bookstoreService.deleteBookstore(idBook);
+    }
+
+    @Override
+    public UserBook addUserBook(UserBook userBook, String userName) {
+        AppUser user = userFacade.findUserByUsername(userName);
+        userBook.setUser(user);
+        return userBookService.addUserBook(userBook);
+    }
+
+    @Override
+    public UserBook updateUserBook(UserBook userBook) {
+        return userBookService.updateUserBook(userBook);
+    }
+
+    @Override
+    public boolean deleteUserBook(Integer idUseBook) {
+        userBookService.deleteUserBook(idUseBook);
+        return true;
     }
 }

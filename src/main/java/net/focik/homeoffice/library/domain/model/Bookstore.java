@@ -11,4 +11,8 @@ public class Bookstore {
     private Integer id;
     private String name;
     private String url;
+
+    public Bookstore(Integer id) {
+        this.id = id;
+    }
 }
