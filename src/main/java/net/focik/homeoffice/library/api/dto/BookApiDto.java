@@ -8,11 +8,11 @@ import net.focik.homeoffice.library.domain.model.BookDto;
 @Getter
 @Setter
 @Builder
-public
-class BookApiDto implements BookDto {
+public class BookApiDto implements BookDto {
 
     private Integer id;
     private String series;
+    private String seriesURL;
     private String authors;
     private String categories;
     private String title;

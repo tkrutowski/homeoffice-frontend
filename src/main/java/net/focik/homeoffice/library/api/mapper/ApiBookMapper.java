@@ -15,7 +15,7 @@ public class ApiBookMapper {
 
     public BookApiDto toDto(Book book) {
         return BookApiDto.builder()
-                .id(book.getId())
+                .id(book.getId() != null ? book.getId() : 0)
                 .series(book.getSeries() == null ? "" : book.getSeries().getTitle())
                 .authors(getAuthorsAsString(book.getAuthors()))
                 .categories(getCategoriesAsString(book.getCategories()))
@@ -62,7 +62,7 @@ public class ApiBookMapper {
     public Book toDomain(BookApiDto dto) {
         return Book.builder()
                 .id(dto.getId())
-                .series(getSeriesFromString(dto.getSeries()))
+                .series(getSeriesFromString(dto.getSeries(), dto.getSeriesURL()))
                 .authors(getAuthorsFromString(dto.getAuthors()))
                 .categories(getCategoriesFromString(dto.getCategories()))
                 .title(dto.getTitle())
@@ -72,9 +72,10 @@ public class ApiBookMapper {
                 .build();
     }
 
-    private Series getSeriesFromString(String series) {
+    private Series getSeriesFromString(String series, String seriesURL) {
             Series s = new Series();
             s.setTitle(series);
+            s.setUrl(seriesURL);
             return s;
     }
 
