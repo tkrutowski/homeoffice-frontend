@@ -13,6 +13,7 @@ public class Series {
     private Integer id;
     private String title;
     private String description;
+    private String url;
 
     @Override
     public String toString() {
