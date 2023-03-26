@@ -63,6 +63,7 @@ public class JpaBookMapper {
             SeriesDbDto seriesDto = new SeriesDbDto();
             seriesDto.setTitle(series.getTitle());
             seriesDto.setDescription(series.getDescription());
+            seriesDto.setUrl(series.getUrl());
             return seriesDtoRepository.save(seriesDto);
         }
     }
