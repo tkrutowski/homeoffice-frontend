@@ -41,6 +41,10 @@ public class AppUser {
 //                    name = "privilege_id", referencedColumnName = "id"))
     private List<Privilege> privileges;
 
+    public AppUser(Long id) {
+        this.id = id;
+    }
+
 
     public void addPrivilege(Privilege privilege){
         this.privileges.add(privilege);
