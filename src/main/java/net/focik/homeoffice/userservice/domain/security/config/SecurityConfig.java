@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.focik.homeoffice.userservice.domain.security.constant.SecurityConstant;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAccessDeniedHandler;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthenticationEntryPoint;
+import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthenticationFailureHandler;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
+//    private final JwtAuthenticationFailureHandler jwtAuthenticationFailureHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Qualifier("userDetailsService")
     private final UserDetailsService userDetailsService;
@@ -65,23 +67,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().cors(); //Invalid CORS request error when Gateway
 
-                http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//        http.anonymous().disable();
+        http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeRequests().antMatchers(SecurityConstant.PUBLIC_URLS).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+//                .authenticationEntryPoint(jwtAuthenticationFailureHandler)
+
                 .and()
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 //        http.addFilter(new CustomAuthenticationFilter(authenticationManagerBean()));
 //        http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
-//
+
+    //
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
 
@@ -90,11 +98,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.setAllowedOrigins(Arrays.asList(FRONT_END_SERVER_IN, FRONT_END_SERVER_OUT));
 //        configuration.addAllowedOrigin("*");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("X-Requested-With","Origin","Content-Type","Accept","Authorization",
-                "Access-Control-Allow-Origin","Jwt-Token"));
+        configuration.setAllowedHeaders(List.of("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization",
+                "Access-Control-Allow-Origin", "Jwt-Token"));
 
         // This allow us to expose the headers
-        configuration.setExposedHeaders(List.of("Jwt-Token","Authorization","Access-Control-Allow-Origin"));//"Authorization",  "Access-Control-Allow-Origin",
+        configuration.setExposedHeaders(List.of("Jwt-Token", "Authorization", "Access-Control-Allow-Origin"));//"Authorization",  "Access-Control-Allow-Origin",
 //                "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Jwt-Token",
 //                "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
 

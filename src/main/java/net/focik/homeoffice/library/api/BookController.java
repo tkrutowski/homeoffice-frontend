@@ -72,7 +72,7 @@ public class BookController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    @PreAuthorize("hasAnyAuthority('LIBRARY_WRITE_ALL','LIBRARY_WRITE')")
     public ResponseEntity<BookApiDto> addBook(@RequestBody BookApiDto bookDto) {
         Book bookToAdd = bookMapper.toDomain(bookDto);
         Book bookAdded = saveBookUseCase.addBook(bookToAdd);
@@ -80,7 +80,7 @@ public class BookController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    @PreAuthorize("hasAnyAuthority('LIBRARY_WRITE_ALL','LIBRARY_WRITE')")
     public ResponseEntity<BookApiDto> editBook(@RequestBody BookApiDto bookDto) {
         Book bookToUpdate = bookMapper.toDomain(bookDto);
         Book updateBook = saveBookUseCase.updateBook(bookToUpdate);
@@ -88,7 +88,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    @PreAuthorize("hasAnyAuthority('LIBRARY_DELETE_ALL','LIBRARY_DELETE')")
     public void deleteBook(@PathVariable Integer id) {
         deleteBookUseCase.deleteBook(id);
     }

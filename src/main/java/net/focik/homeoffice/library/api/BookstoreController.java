@@ -9,6 +9,7 @@ import net.focik.homeoffice.library.domain.port.primary.SaveBookstoreUseCase;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class BookstoreController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('LIBRARY_WRITE_ALL','LIBRARY_WRITE')")
     public ResponseEntity<BookstoreDto> addBookstore(@RequestBody BookstoreDto bookstoreDto) {
         Bookstore bookstore = mapper.map(bookstoreDto, Bookstore.class);
         Bookstore saved = saveBookstoreUseCase.addBookstore(bookstore);
@@ -46,6 +48,7 @@ public class BookstoreController {
     }
 
     @PutMapping("/id")
+    @PreAuthorize("hasAnyAuthority('LIBRARY_WRITE_ALL','LIBRARY_WRITE')")
     public ResponseEntity<BookstoreDto> editBookstore(@RequestBody BookstoreDto bookstoreDto) {
         Bookstore bookstore = mapper.map(bookstoreDto, Bookstore.class);
         Bookstore saved = saveBookstoreUseCase.updateBookstore(bookstore);
@@ -53,6 +56,7 @@ public class BookstoreController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('LIBRARY_DELETE_ALL','LIBRARY_DELETE')")
     public void deleteBookstore(@PathVariable Integer id) {
         deleteBookstoreUseCase.deleteBookstore(id);
     }

@@ -46,21 +46,20 @@ public class SeriesController {
 //        return seriesService.findSeries(id);
 //    }
 //
-    @GetMapping("/check")
-    ResponseEntity<List<String>> checkNewBooksInSeries() {//@RequestParam List<Integer> idSeriesList) {
-//    List<Book> allBooks = findBookUseCase.checkNewBooksInSeries(idSeriesList);
-//    return new ResponseEntity<>(allBooks.stream()
-//            .map(bookMapper::toDto)
-//            .collect(Collectors.toList()), HttpStatus.OK);
-        List<String> booksFromUrl = UpolujebookaScrapper.findBooksFromUrl("https://upolujebooka.pl/cykl,3523,gerard_edling.html");
-
-        return new ResponseEntity<>(booksFromUrl, HttpStatus.OK);
-    }
+//    @GetMapping("/check")
+//    ResponseEntity<List<String>> checkNewBooksInSeries() {//@RequestParam List<Integer> idSeriesList) {
+////    List<Book> allBooks = findBookUseCase.checkNewBooksInSeries(idSeriesList);
+////    return new ResponseEntity<>(allBooks.stream()
+////            .map(bookMapper::toDto)
+////            .collect(Collectors.toList()), HttpStatus.OK);
+//        List<String> booksFromUrl = UpolujebookaScrapper.findBooksFromUrl("https://upolujebooka.pl/cykl,3523,gerard_edling.html");
+//
+//        return new ResponseEntity<>(booksFromUrl, HttpStatus.OK);
+//    }
 
     @GetMapping
 //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     public ResponseEntity<List<SeriesDto>> findAllSeries() {
-//        return seriesService.findAllSeries();
         List<Series> allSeries = facade.getAllSeries();
         return new ResponseEntity<>(allSeries.stream()
                 .map(series -> mapper.map(series, SeriesDto.class))
