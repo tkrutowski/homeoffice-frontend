@@ -25,4 +25,9 @@ public class AddressFacade {
     public Address getAddress(Integer id) {
         return addressService.getAddress(id);
     }
+
+    public void deleteAddress(Integer id){
+        addressService.deleteAddress(id);
+    }
+
 }

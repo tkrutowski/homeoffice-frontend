@@ -21,7 +21,6 @@ class AddressRepositoryAdapter implements AddressRepository {
         return mapper.toDomain(save);
     }
 
-
     @Override
     public Optional<Address> findById(Integer id) {
         if (id == null)
@@ -33,5 +32,10 @@ class AddressRepositoryAdapter implements AddressRepository {
             return Optional.of(mapper.toDomain(byId.get()));
 
         return Optional.empty();
+    }
+
+    @Override
+    public void deleteAddress(Integer id) {
+        addressDtoRepository.deleteById(id);
     }
 }

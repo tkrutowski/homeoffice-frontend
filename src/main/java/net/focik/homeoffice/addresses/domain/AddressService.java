@@ -43,4 +43,8 @@ class AddressService {
 
         return byId.get();
     }
+
+    public void deleteAddress(Integer id) {
+        addressRepository.deleteAddress(id);
+    }
 }

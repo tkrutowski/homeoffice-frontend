@@ -40,6 +40,11 @@ public class InMemoryAddressRepositoryAdapter implements AddressRepository {
                 .map(dbDto -> mapper.map(dbDto, Address.class));
     }
 
+    @Override
+    public void deleteAddress(Integer id) {
+        DataBaseAddress.getAddressHashMap().remove(id);
+    }
+
     private Address add(Address address) {
         AddressDbDto addressDbDto = mapper.map(address, AddressDbDto.class);
         log.info("Try add into inMemoryDb address: " + addressDbDto.toString());

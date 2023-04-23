@@ -43,4 +43,10 @@ public class AddressEndpoint {
         log.info(saved != null ? "ADDRESS-INTERNAL-SERVICE: updated address id = " + saved.getId() : "ADDRESS-INTERNAL-SERVICE: Not added address: " + address);
         return saved;
     }
+
+    public void deleteAddress(Integer id) {
+        log.info("ADDRESS-INTERNAL-SERVICE: Try delete address ID: " + id);
+        addressFacade.deleteAddress(id);
+        log.info("ADDRESS-INTERNAL-SERVICE: deleted address by id = " + id);
+    }
 }
