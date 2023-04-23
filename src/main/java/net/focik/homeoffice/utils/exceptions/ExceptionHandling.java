@@ -57,6 +57,11 @@ public class ExceptionHandling implements ErrorController {
         return createHttpResponse(NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(ObjectCanNotBeDeletedException.class)
+    public ResponseEntity<HttpResponse> canNotBeDeletedException(ObjectCanNotBeDeletedException exception) {
+        return createHttpResponse(LOCKED, exception.getMessage());
+    }
+
     @ExceptionHandler(ObjectNotValidException.class)
     public ResponseEntity<HttpResponse> notValidException(ObjectNotValidException exception) {
         return createHttpResponse(NOT_FOUND, exception.getMessage());
