@@ -21,7 +21,7 @@ public class ApiLoanMapper {
         valid(dto);
         return Loan.builder()
                 .id(dto.getId())
-                .idBank(dto.getId())
+                .idBank(dto.getIdBank())
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .amount(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())))
