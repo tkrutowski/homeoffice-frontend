@@ -1,4 +1,4 @@
-package net.focik.homeoffice.finance.domain.bank;
+package net.focik.homeoffice.finance.domain.firm;
 
 import lombok.*;
 import net.focik.homeoffice.addresses.domain.Address;
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @Setter
 @ToString
-public class Bank {
+public class Firm {
 
     private int id;
     private String name;
