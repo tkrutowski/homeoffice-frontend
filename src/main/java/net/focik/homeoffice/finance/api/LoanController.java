@@ -8,12 +8,12 @@ import net.focik.homeoffice.finance.api.dto.LoanInstallmentDto;
 import net.focik.homeoffice.finance.api.mapper.ApiLoanMapper;
 import net.focik.homeoffice.finance.domain.loan.Loan;
 import net.focik.homeoffice.finance.domain.loan.LoanInstallment;
-import net.focik.homeoffice.finance.domain.loan.LoanStatus;
 import net.focik.homeoffice.finance.domain.loan.port.primary.AddLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.DeleteLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.GetLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.UpdateLoanUseCase;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,7 @@ class LoanController {
     //
     @GetMapping("/status")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    ResponseEntity<List<LoanDto>> getLoansByStatus(@RequestParam(value = "status") LoanStatus loanStatus,
+    ResponseEntity<List<LoanDto>> getLoansByStatus(@RequestParam(value = "status") PaymentStatus loanStatus,
                                                    @RequestParam(value = "installment") boolean installment) {
 
         log.info("Get loans with status: " + loanStatus);
@@ -70,7 +70,7 @@ class LoanController {
     @GetMapping("/{idUser}/status")
         //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     ResponseEntity<List<LoanDto>> getLoansByEmployeeAndStatus(@PathVariable int idUser,
-                                                              @RequestParam(value = "status") LoanStatus loanStatus,
+                                                              @RequestParam(value = "status") PaymentStatus loanStatus,
                                                               @RequestParam(value = "installment") boolean installment) {
 
         log.info("Get loans for user id: " + idUser);
@@ -114,7 +114,7 @@ class LoanController {
     public ResponseEntity<HttpResponse> updateLoanStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update employment status.");
 
-        updateLoanUseCase.updateLoanStatus(id, LoanStatus.valueOf(basicDto.getValue()));
+        updateLoanUseCase.updateLoanStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
         return response(HttpStatus.OK, "Zaaktualizowano status kredytu.");
     }
 

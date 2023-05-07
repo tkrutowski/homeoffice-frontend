@@ -1,7 +1,7 @@
 package net.focik.homeoffice.finance.infrastructure.dto;
 
 import lombok.*;
-import net.focik.homeoffice.finance.domain.loan.LoanStatus;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -43,7 +43,7 @@ public class LoanDbDto {
     private String otherInfo;
     @Enumerated(EnumType.STRING)
     @Column(name = "czy_splacony")
-    private LoanStatus loanStatus;
+    private PaymentStatus loanStatus;
     @Column(name = "koszt_uzyskania_kredytu")
     private BigDecimal loanCost;
 }

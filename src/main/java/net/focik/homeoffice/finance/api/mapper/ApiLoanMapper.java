@@ -5,7 +5,6 @@ import net.focik.homeoffice.finance.api.dto.LoanInstallmentDto;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.loan.Loan;
 import net.focik.homeoffice.finance.domain.loan.LoanInstallment;
-import net.focik.homeoffice.finance.domain.loan.LoanStatus;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +30,7 @@ public class ApiLoanMapper {
                 .firstPaymentDate(LocalDate.parse(dto.getFirstPaymentDate()))
                 .numberOfInstallments(dto.getNumberOfInstallments())
                 .installmentAmount(BigDecimal.valueOf(Double.parseDouble(dto.getInstallmentAmount())))
-                .loanStatus(LoanStatus.valueOf(dto.getLoanStatus()))
+                .loanStatus(PaymentStatus.valueOf(dto.getLoanStatus()))
                 .otherInfo(dto.getOtherInfo())
                 .loanCost(BigDecimal.valueOf(Double.parseDouble(dto.getLoanCost())))
                 .build();

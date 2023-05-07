@@ -1,8 +1,7 @@
 package net.focik.homeoffice.finance.domain.loan;
 
 import lombok.*;
-import net.focik.homeoffice.addresses.domain.Address;
-import org.apache.commons.lang3.StringUtils;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,7 +26,7 @@ public class Loan {
     private LocalDate firstPaymentDate;
     private Integer numberOfInstallments;
     private BigDecimal installmentAmount;
-    private LoanStatus loanStatus;
+    private PaymentStatus loanStatus;
     private BigDecimal loanCost;//prowizja itp
     private String otherInfo;
     private List<LoanInstallment> loanInstallments;
@@ -36,7 +35,7 @@ public class Loan {
         this.loanInstallments = loanInstallments;
     }
 
-    public void changeLoanStatus(LoanStatus loanStatus) {
+    public void changeLoanStatus(PaymentStatus loanStatus) {
         this.loanStatus = loanStatus;
     }
 

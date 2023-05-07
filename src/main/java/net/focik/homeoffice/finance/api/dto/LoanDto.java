@@ -3,10 +3,7 @@ package net.focik.homeoffice.finance.api.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import net.focik.homeoffice.finance.domain.loan.LoanStatus;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 @Builder

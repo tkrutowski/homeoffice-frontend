@@ -5,6 +5,7 @@ import net.focik.homeoffice.finance.domain.exception.LoanInstallmentNotFoundExce
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.loan.port.secondary.LoanRepository;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,7 @@ class LoanService {
         return sum;
     }
 
-    List<Loan> findLoansByUser(int idUser, LoanStatus loanStatus, boolean withLoanInstallment) {
+    List<Loan> findLoansByUser(int idUser, PaymentStatus loanStatus, boolean withLoanInstallment) {
         List<Loan> loanByUserId = loanRepository.findLoanByUserId(idUser);
 
         if (withLoanInstallment) {
@@ -98,7 +99,7 @@ class LoanService {
         return loanById.get();
     }
 
-    List<Loan> findLoansByStatus(LoanStatus loanStatus, boolean withInstallment) {
+    List<Loan> findLoansByStatus(PaymentStatus loanStatus, boolean withInstallment) {
         List<Loan> loans = loanRepository.findAll();
 
         if (withInstallment) {
@@ -108,7 +109,7 @@ class LoanService {
             }
         }
 
-        if (loanStatus == null || LoanStatus.ALL.equals(loanStatus))
+        if (loanStatus == null || PaymentStatus.ALL.equals(loanStatus))
             return loans;
 
         loans = loans.stream()
@@ -155,7 +156,7 @@ class LoanService {
     }
 
     public Money getLoansToPaySum(Integer idUser) {
-        List<Loan> loans = findLoansByUser(idUser, LoanStatus.TO_PAY, true);
+        List<Loan> loans = findLoansByUser(idUser, PaymentStatus.TO_PAY, true);
         Money result = Money.of(BigDecimal.ZERO, "PLN");
 
         for (Loan loan : loans) {

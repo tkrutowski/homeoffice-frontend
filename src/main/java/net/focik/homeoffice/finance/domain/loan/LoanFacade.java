@@ -5,6 +5,7 @@ import net.focik.homeoffice.finance.domain.loan.port.primary.AddLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.DeleteLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.GetLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.UpdateLoanUseCase;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,7 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public List<Loan> getLoansByUser(int idEmployee, LoanStatus loanStatus, boolean withInstallment) {
+    public List<Loan> getLoansByUser(int idEmployee, PaymentStatus loanStatus, boolean withInstallment) {
         return loanService.findLoansByUser(idEmployee, loanStatus, withInstallment);
     }
 
@@ -48,7 +49,7 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public List<Loan> getLoansByStatus(LoanStatus loanStatus, boolean withInstallment) {
+    public List<Loan> getLoansByStatus(PaymentStatus loanStatus, boolean withInstallment) {
         return loanService.findLoansByStatus(loanStatus, withInstallment);
     }
 
@@ -73,7 +74,7 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public void updateLoanStatus(int idLoan, LoanStatus loanStatus) {
+    public void updateLoanStatus(int idLoan, PaymentStatus loanStatus) {
         Loan loan = loanService.findLoanById(idLoan, false);
         loan.changeLoanStatus(loanStatus);
 
