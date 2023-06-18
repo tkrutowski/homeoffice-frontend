@@ -1,5 +1,6 @@
 package net.focik.homeoffice.finance.api.mapper;
 
+import lombok.RequiredArgsConstructor;
 import net.focik.homeoffice.finance.api.dto.FeeDto;
 import net.focik.homeoffice.finance.api.dto.FeeInstallmentDto;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
@@ -15,13 +16,17 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class ApiFeeMapper {
+
+    private final ApiFirmMapper firmMapper;
+
 
     public Fee toDomain(FeeDto dto) {
         valid(dto);
         return Fee.builder()
                 .id(dto.getId())
-                .idFirm(dto.getIdFirm())
+                .firm(firmMapper.toDomain(dto.getFirm()))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .feeNumber(dto.getFeeNumber())
@@ -31,7 +36,7 @@ public class ApiFeeMapper {
                 .amount(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())))
                 .firstPaymentDate(LocalDate.parse(dto.getFirstPaymentDate()))
                 .accountNumber(dto.getAccountNumber())
-                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
+                .feeStatus(PaymentStatus.valueOf(dto.getFeeStatus()))
                 .otherInfo(dto.getOtherInfo())
                 .build();
     }
@@ -39,17 +44,17 @@ public class ApiFeeMapper {
     public FeeDto toDto(Fee fee) {
         return FeeDto.builder()
                 .id(fee.getId())
-                .idFirm(fee.getIdFirm())
+                .firm(firmMapper.toDto(fee.getFirm()))
                 .idUser(fee.getIdUser())
                 .name(fee.getName())
                 .feeNumber(fee.getFeeNumber())
                 .date(fee.getDate().toString())
-                .feeFrequency(fee.getFeeFrequency().getViewValue())
+                .feeFrequency(fee.getFeeFrequency().toString())
                 .numberOfPayments(fee.getNumberOfPayments())
                 .amount(String.format("%.2f", fee.getAmount()).replace(",", "."))
                 .firstPaymentDate(fee.getFirstPaymentDate().toString())
                 .accountNumber(fee.getAccountNumber())
-                .paymentStatus(fee.getPaymentStatus().name())
+                .feeStatus(fee.getFeeStatus().name())
                 .otherInfo(fee.getOtherInfo() == null ? "" : fee.getOtherInfo())
                 .installmentDtoList(fee.getFeeInstallments() != null ? fee.getFeeInstallments()
                         .stream().map(this::toDto).collect(Collectors.toList()) : new ArrayList<>())
@@ -63,7 +68,7 @@ public class ApiFeeMapper {
                 .installmentAmountToPay(String.format("%.2f", fee.getInstallmentAmountToPay()).replace(",", "."))
                 .installmentAmountPaid(String.format("%.2f", fee.getInstallmentAmountPaid()).replace(",", "."))
                 .paymentDeadline(fee.getPaymentDeadline().toString())
-                .paymentDate(fee.getPaymentDate().toString())
+                .paymentDate(fee.getPaymentDate() != null ? fee.getPaymentDate().toString() : "")
                 .paymentStatus(fee.getPaymentStatus().name())
                 .build();
     }

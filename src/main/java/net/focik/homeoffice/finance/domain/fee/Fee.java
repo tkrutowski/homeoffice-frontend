@@ -1,6 +1,7 @@
 package net.focik.homeoffice.finance.domain.fee;
 
 import lombok.*;
+import net.focik.homeoffice.finance.domain.firm.Firm;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ import java.util.List;
 public class Fee {
 
     private int id;
-    private int idFirm;
+    private Firm firm;
     private int idUser;
     private String name;
     private String feeNumber;
@@ -26,7 +27,7 @@ public class Fee {
     private BigDecimal amount;
     private LocalDate firstPaymentDate;
     private String accountNumber;
-    private PaymentStatus paymentStatus;
+    private PaymentStatus feeStatus;
     private String otherInfo;
     private List<FeeInstallment> feeInstallments;
 
@@ -34,8 +35,8 @@ public class Fee {
         this.feeInstallments = feeInstallments;
     }
 
-    public void changeFeeStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
+    public void changeFeeStatus(PaymentStatus feeStatus) {
+        this.feeStatus = feeStatus;
     }
 
 }

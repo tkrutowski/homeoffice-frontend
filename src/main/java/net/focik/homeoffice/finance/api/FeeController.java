@@ -5,13 +5,17 @@ import lombok.extern.log4j.Log4j2;
 import net.focik.homeoffice.finance.api.dto.BasicDto;
 import net.focik.homeoffice.finance.api.dto.FeeDto;
 import net.focik.homeoffice.finance.api.dto.FeeInstallmentDto;
+import net.focik.homeoffice.finance.api.dto.FrequencyDto;
 import net.focik.homeoffice.finance.api.mapper.ApiFeeMapper;
 import net.focik.homeoffice.finance.domain.fee.Fee;
+import net.focik.homeoffice.finance.domain.fee.FeeFrequencyEnum;
 import net.focik.homeoffice.finance.domain.fee.FeeInstallment;
 import net.focik.homeoffice.finance.domain.fee.port.primary.AddFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.DeleteFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.GetFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.UpdateFeeUseCase;
+import net.focik.homeoffice.library.api.dto.ReadingStatusDto;
+import net.focik.homeoffice.library.domain.model.ReadingStatus;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,8 +25,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.OK;
 
 @Log4j2
 @RestController
@@ -43,8 +50,8 @@ class FeeController {
     //
     @GetMapping("/status")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    ResponseEntity<List<FeeDto>> getFeeByStatus(@RequestParam(value = "paymentStatus") PaymentStatus paymentStatus,
-                                                  @RequestParam(value = "installment") boolean installment) {
+    ResponseEntity<List<FeeDto>> getFeeByStatus(@RequestParam(value = "status") PaymentStatus paymentStatus,
+                                                  @RequestParam(value = "installment", defaultValue = "false") boolean installment) {
 
         log.info("Get fee with status: " + paymentStatus);
 
@@ -83,6 +90,15 @@ class FeeController {
                 , HttpStatus.OK);
     }
 
+    @GetMapping("/frequency")
+    ResponseEntity<List<FrequencyDto>> getReadingStatus() {
+        FeeFrequencyEnum[] collect = (FeeFrequencyEnum.values());
+        List<FrequencyDto> statusDtos = Arrays.stream(collect)
+                .map(type -> new FrequencyDto(type.name(), type.getViewValue()))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(statusDtos, OK);
+    }
+
     @PostMapping
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     public ResponseEntity<FeeDto> addFee(@RequestBody FeeDto feeDto) {
@@ -111,11 +127,11 @@ class FeeController {
 
     @PutMapping("/status/{id}")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    public ResponseEntity<HttpResponse> updateLFeeStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
+    public ResponseEntity<FeeDto> updateLFeeStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update fee status.");
 
-        updateFeeUseCase.updateFeeStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
-        return response(HttpStatus.OK, "Zaaktualizowano status opłaty.");
+        Fee result = updateFeeUseCase.updateFeeStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
+        return new ResponseEntity<>(apiFeeMapper.toDto(result), HttpStatus.OK);
     }
 
     @DeleteMapping("/{idFee}")
@@ -131,7 +147,7 @@ class FeeController {
     }
 
     //-----------------------------------------------------------------------------------------------------------
-    //LOAN INSTALLMENT
+    //FEE INSTALLMENT
     //
     @GetMapping("/installment/{idUser}/all")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")

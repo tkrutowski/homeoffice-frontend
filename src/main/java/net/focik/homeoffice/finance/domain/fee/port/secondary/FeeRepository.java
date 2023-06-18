@@ -13,6 +13,7 @@ public interface FeeRepository {
     Fee saveFee(Fee loan);
 
     FeeInstallment saveFeeInstallment(FeeInstallment feeInstallment);
+    List<FeeInstallment> saveFeeInstallment(List<FeeInstallment> feeInstallment);
 
     Optional<Fee> findFeeById(Integer id);
 

@@ -11,7 +11,7 @@ import java.util.List;
 @ToString
 public class FeeDto {
     private int id;
-    private int idFirm;
+    private FirmDto firm;
     private int idUser;
     private String name;
     private String feeNumber;
@@ -21,7 +21,7 @@ public class FeeDto {
     private String amount;
     private String firstPaymentDate;
     private String accountNumber;
-    private String paymentStatus;
+    private String feeStatus;
     private String otherInfo;
     private List<FeeInstallmentDto> installmentDtoList;
 }

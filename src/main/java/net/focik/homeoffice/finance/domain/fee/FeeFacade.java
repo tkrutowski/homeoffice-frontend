@@ -5,7 +5,10 @@ import net.focik.homeoffice.finance.domain.fee.port.primary.AddFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.DeleteFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.GetFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.UpdateFeeUseCase;
+import net.focik.homeoffice.userservice.domain.AppUser;
+import net.focik.homeoffice.userservice.domain.UserFacade;
 import net.focik.homeoffice.utils.share.PaymentStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -15,7 +18,8 @@ import java.util.List;
 @Component
 public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase, DeleteFeeUseCase {
 
-    FeeService feeService;
+    private final FeeService feeService;
+    private final UserFacade userFacade;
 
     @Override
     public Fee addFee(Fee fee) {
@@ -49,7 +53,17 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
 
     @Override
     public List<Fee> getFeesByStatus(PaymentStatus paymentStatus, boolean withInstallment) {
-        return feeService.findFeesByStatus(paymentStatus, withInstallment);
+
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN") || grantedAuthority.getAuthority().equals("HR_FINANCE_FEE_READ_ALL"));
+
+        if (isAdmin) {
+            return feeService.findFeesByStatus(paymentStatus, withInstallment);
+        } else {
+            String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+            AppUser user = userFacade.findUserByUsername(userName);
+            return feeService.findFeesByUser(Math.toIntExact(user.getId()), paymentStatus, withInstallment);
+        }
     }
 
     @Override
@@ -64,7 +78,8 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
 
     @Override
     public Fee updateFee(Fee fee) {
-        return feeService.saveFee(fee);
+        feeService.updateFee(fee);
+        return feeService.findFeeById(fee.getId(), true);
     }
 
     @Override
@@ -73,11 +88,12 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
     }
 
     @Override
-    public void updateFeeStatus(int idFee, PaymentStatus paymentStatus) {
+    public Fee updateFeeStatus(int idFee, PaymentStatus paymentStatus) {
         Fee fee = feeService.findFeeById(idFee, false);
         fee.changeFeeStatus(paymentStatus);
 
         feeService.updateFee(fee);
+        return feeService.findFeeById(idFee, true);
     }
 
     @Override
@@ -90,12 +106,4 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
         feeService.deleteFeeInstallment(id);
     }
 
-//
-//    public Money getInstallmentLoansSumByIdUserAndDate(int idUser, LocalDate date) {
-//        return loanService.getInstallmentLoansSumByIdEmployeeAndDate(idUser, date);
-//    }
-//
-//    public Money getLoansToPaySum(Integer employeeId) {
-//        return loanService.getLoansToPaySum(employeeId);
-//    }
 }

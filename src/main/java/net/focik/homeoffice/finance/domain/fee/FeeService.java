@@ -5,6 +5,7 @@ import net.focik.homeoffice.finance.domain.exception.LoanInstallmentNotFoundExce
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.fee.port.secondary.FeeRepository;
+import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,16 +22,33 @@ class FeeService {
 
     private final FeeRepository feeRepository;
 
-    //-----------------------------LOAN---------------------------
+    //-----------------------------FEE---------------------------
 
 
     Fee saveFee(Fee fee) {
         if (isNotValid(fee))
             throw new LoanNotValidException();
-        return feeRepository.saveFee(fee);
+        Fee saved = feeRepository.saveFee(fee);
+        List<FeeInstallment> feeInstallments = new ArrayList<>();
+        for (long i = 1; i <= saved.getNumberOfPayments(); i++) {
+            feeInstallments.add(FeeInstallment.builder()
+                    .idFee(saved.getId())
+                    .installmentAmountToPay(fee.getAmount())
+                    .installmentAmountPaid(BigDecimal.ZERO)
+                    .paymentDeadline(fee.getFirstPaymentDate().plusMonths(fee.getFeeFrequency().getFrequencyNumber() * i))
+                    .paymentStatus(PaymentStatus.TO_PAY)
+                    .build());
+        }
+        List<FeeInstallment> savedFeeInstallments = addFeeInstallment(feeInstallments);
+        saved.setFeeInstallments(savedFeeInstallments);
+        return saved;
     }
 
     public FeeInstallment addFeeInstallment(FeeInstallment feeInstallment) {
+        return feeRepository.saveFeeInstallment(feeInstallment);
+    }
+
+    public List<FeeInstallment> addFeeInstallment(List<FeeInstallment> feeInstallment) {
         return feeRepository.saveFeeInstallment(feeInstallment);
     }
 
@@ -63,7 +78,7 @@ class FeeService {
             return feeByUserId;
 
         feeByUserId = feeByUserId.stream()
-                .filter(fee -> fee.getPaymentStatus().equals(paymentStatus))
+                .filter(fee -> fee.getFeeStatus().equals(paymentStatus))
                 .collect(Collectors.toList());
 
         return feeByUserId;
@@ -112,7 +127,7 @@ class FeeService {
             return feeList;
 
         feeList = feeList.stream()
-                .filter(loan -> loan.getPaymentStatus().equals(paymentStatus))
+                .filter(loan -> loan.getFeeStatus().equals(paymentStatus))
                 .collect(Collectors.toList());
 
         return feeList;
@@ -157,7 +172,7 @@ class FeeService {
         Money result = Money.of(BigDecimal.ZERO, "PLN");
 
         for (Fee fee : feeList) {
-            Money feeAmount = mapToMoney(fee.getAmount());
+            Money feeAmount = MoneyUtils.mapToMoney(fee.getAmount());
             BigDecimal reduce = fee.getFeeInstallments().stream()
                     .map(FeeInstallment::getInstallmentAmountToPay)
                     .reduce(BigDecimal::add)
@@ -169,14 +184,10 @@ class FeeService {
         return result;
     }
 
-    private Money mapToMoney(Number amount) {
-        return Money.of(amount, "PLN");
-    }
-
     public FeeInstallment getFeeInstallment(int idFeeInstallment) {
         Optional<FeeInstallment> installmentById = feeRepository.findFeeInstallmentById(idFeeInstallment);
 
-        if (installmentById.isEmpty()){
+        if (installmentById.isEmpty()) {
             throw new LoanInstallmentNotFoundException(idFeeInstallment);
         }
         return installmentById.get();

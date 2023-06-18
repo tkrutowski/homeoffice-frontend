@@ -1,21 +1,28 @@
 package net.focik.homeoffice.finance.infrastructure.mapper;
 
+import lombok.RequiredArgsConstructor;
+import net.focik.homeoffice.finance.domain.bank.Bank;
 import net.focik.homeoffice.finance.domain.fee.Fee;
 import net.focik.homeoffice.finance.domain.fee.FeeInstallment;
+import net.focik.homeoffice.finance.domain.firm.Firm;
+import net.focik.homeoffice.finance.infrastructure.dto.BankDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeInstallmentDbDto;
+import net.focik.homeoffice.finance.infrastructure.dto.FirmDbDto;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JpaFeeMapper {
-
+    private final ModelMapper mapper;
     public FeeDbDto toDto(Fee fee) {
         return FeeDbDto.builder()
                 .id(fee.getId())
-                .idFirm(fee.getIdFirm())
+                .firm(mapper.map(fee.getFirm(), FirmDbDto.class))
                 .idUser(fee.getIdUser())
                 .name(fee.getName())
                 .feeNumber(fee.getFeeNumber())
@@ -26,14 +33,14 @@ public class JpaFeeMapper {
                 .firstPaymentDate(fee.getFirstPaymentDate())
                 .accountNumber(fee.getAccountNumber())
                 .otherInfo(fee.getOtherInfo())
-                .paymentStatus(fee.getPaymentStatus())
+                .feeStatus(fee.getFeeStatus())
                 .build();
     }
 
     public Fee toDomain(FeeDbDto dto, List<FeeInstallmentDbDto> feeInstallments) {
         return Fee.builder()
                 .id(dto.getId())
-                .idFirm(dto.getIdFirm())
+                .firm(mapper.map(dto.getFirm(), Firm.class))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .feeNumber(dto.getFeeNumber())
@@ -43,7 +50,7 @@ public class JpaFeeMapper {
                 .amount(dto.getAmount())
                 .firstPaymentDate(dto.getFirstPaymentDate())
                 .accountNumber(dto.getAccountNumber())
-                .paymentStatus(dto.getPaymentStatus())
+                .feeStatus(dto.getFeeStatus())
                 .otherInfo(dto.getOtherInfo())
                 .feeInstallments(mapListFeeInstallmentToSet(feeInstallments))
                 .build();
@@ -52,7 +59,7 @@ public class JpaFeeMapper {
     public Fee toDomain(FeeDbDto dto) {
         return Fee.builder()
                 .id(dto.getId())
-                .idFirm(dto.getIdFirm())
+                .firm(mapper.map(dto.getFirm(), Firm.class))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .feeNumber(dto.getFeeNumber())
@@ -62,7 +69,7 @@ public class JpaFeeMapper {
                 .amount(dto.getAmount())
                 .firstPaymentDate(dto.getFirstPaymentDate())
                 .accountNumber(dto.getAccountNumber())
-                .paymentStatus(dto.getPaymentStatus())
+                .feeStatus(dto.getFeeStatus())
                 .otherInfo(dto.getOtherInfo())
                 .build();
     }

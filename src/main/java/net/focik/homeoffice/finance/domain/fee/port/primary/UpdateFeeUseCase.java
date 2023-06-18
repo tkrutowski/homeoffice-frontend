@@ -5,7 +5,7 @@ import net.focik.homeoffice.finance.domain.fee.FeeInstallment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 
 public interface UpdateFeeUseCase {
-    void updateFeeStatus(int idFee, PaymentStatus paymentStatus);
+    Fee updateFeeStatus(int idFee, PaymentStatus paymentStatus);
 
     Fee updateFee(Fee fee);
 

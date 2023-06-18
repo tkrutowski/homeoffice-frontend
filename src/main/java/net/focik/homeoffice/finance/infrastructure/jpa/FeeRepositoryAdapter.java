@@ -39,6 +39,13 @@ class FeeRepositoryAdapter implements FeeRepository {
     }
 
     @Override
+    public List<FeeInstallment> saveFeeInstallment(List<FeeInstallment> feeInstallments) {
+        List<FeeInstallmentDbDto> dbDtoList = feeInstallments.stream().map(mapper::toDto).collect(Collectors.toList());
+        List<FeeInstallmentDbDto> feeInstallmentDbDtos = feeInstallmentDtoRepository.saveAll(dbDtoList);
+        return feeInstallmentDbDtos.stream().map(mapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Fee> findFeeById(Integer id) {
         Optional<FeeDbDto> byId = feeDtoRepository.findById(id);
         if (byId.isEmpty())

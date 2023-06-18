@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/bank")
+@RequestMapping("/api/finance/firm")
 //@CrossOrigin
 public class FirmController extends ExceptionHandling {
 

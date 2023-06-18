@@ -1,9 +1,6 @@
 package net.focik.homeoffice.finance.infrastructure.dto;
 
 import lombok.*;
-import net.focik.homeoffice.addresses.domain.Address;
-import net.focik.homeoffice.goahead.domain.customer.CustomerStatus;
-import net.focik.homeoffice.goahead.domain.customer.CustomerType;
 
 import javax.persistence.*;
 
@@ -17,7 +14,6 @@ import javax.persistence.*;
 public class BankDbDto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
     private Integer idAddress;
     private String name;
