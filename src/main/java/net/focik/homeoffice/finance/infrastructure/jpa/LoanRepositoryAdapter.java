@@ -39,6 +39,13 @@ class LoanRepositoryAdapter implements LoanRepository {
     }
 
     @Override
+    public List<LoanInstallment> saveLoanInstallment(List<LoanInstallment> loanInstallments) {
+        List<LoanInstallmentDbDto> dbDtoList = loanInstallments.stream().map(mapper::toDto).collect(Collectors.toList());
+        List<LoanInstallmentDbDto> loanInstallmentDbDtos = loanInstallmentDtoRepository.saveAll(dbDtoList);
+        return loanInstallmentDbDtos.stream().map(mapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Loan> findLoanById(Integer id) {
         Optional<LoanDbDto> loanById = loanDtoRepository.findById(id);
         if (loanById.isEmpty())
@@ -68,20 +75,6 @@ class LoanRepositoryAdapter implements LoanRepository {
     public List<Loan> findAll() {
         return loanDtoRepository.findAll().stream()
                 .map(loanDto -> mapper.toDomain(loanDto))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<LoanInstallment> findLoanInstallmentByUserIdAndDate(Integer idUser, LocalDate date) {
-        List<LoanDbDto> loansByIdEmployee = loanDtoRepository.findAllByIdUser(idUser);
-        List<LoanInstallmentDbDto> loanInstallmentDbDtos = new ArrayList<>();
-        String dateFormat = date.getYear() + String.format("-%02d", date.getMonthValue());
-        for (LoanDbDto dto : loansByIdEmployee) {
-            loanInstallmentDbDtos.addAll(loanInstallmentDtoRepository.findAllByIdLoanAndDate(dto.getId(), dateFormat));
-        }
-
-        return loanInstallmentDbDtos.stream()
-                .map(l -> mapper.toDomain(l))
                 .collect(Collectors.toList());
     }
 

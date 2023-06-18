@@ -14,15 +14,15 @@ public interface LoanRepository {
 
     LoanInstallment saveLoanInstallment(LoanInstallment loanInstallment);
 
+    List<LoanInstallment> saveLoanInstallment(List<LoanInstallment> loanInstallments);
+
     Optional<Loan> findLoanById(Integer id);
 
     Optional<LoanInstallment> findLoanInstallmentById(Integer id);
 
-    List<Loan> findLoanByUserId(Integer idEmployee);
+    List<Loan> findLoanByUserId(Integer idUser);
 
     List<Loan> findAll();
-
-    List<LoanInstallment> findLoanInstallmentByUserIdAndDate(Integer employeeId, LocalDate date);
 
     List<LoanInstallment> findLoanInstallmentByLoanId(Integer loanId);
 

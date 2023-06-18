@@ -44,7 +44,7 @@ class LoanController {
     @GetMapping("/status")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     ResponseEntity<List<LoanDto>> getLoansByStatus(@RequestParam(value = "status") PaymentStatus loanStatus,
-                                                   @RequestParam(value = "installment") boolean installment) {
+                                                   @RequestParam(value = "installment", defaultValue = "false") boolean installment) {
 
         log.info("Get loans with status: " + loanStatus);
 
@@ -67,21 +67,6 @@ class LoanController {
         return new ResponseEntity<>(apiLoanMapper.toDto(loan), HttpStatus.OK);
     }
 
-    @GetMapping("/{idUser}/status")
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    ResponseEntity<List<LoanDto>> getLoansByEmployeeAndStatus(@PathVariable int idUser,
-                                                              @RequestParam(value = "status") PaymentStatus loanStatus,
-                                                              @RequestParam(value = "installment") boolean installment) {
-
-        log.info("Get loans for user id: " + idUser);
-
-        List<Loan> loans = getLoanUseCase.getLoansByUser(idUser, loanStatus, installment);
-
-        return new ResponseEntity<>(loans.stream()
-                .map(apiLoanMapper::toDto)
-                .collect(Collectors.toList())
-                , HttpStatus.OK);
-    }
 
     @PostMapping
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
@@ -106,16 +91,16 @@ class LoanController {
 
         log.info("Loan updated with id = " + result.getId());
 
-        return new ResponseEntity<>(apiLoanMapper.toDto(result), HttpStatus.CREATED);
+        return new ResponseEntity<>(apiLoanMapper.toDto(result), HttpStatus.OK);
     }
 
     @PutMapping("/status/{id}")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    public ResponseEntity<HttpResponse> updateLoanStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
+    public ResponseEntity<LoanDto> updateLoanStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update employment status.");
 
-        updateLoanUseCase.updateLoanStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
-        return response(HttpStatus.OK, "Zaaktualizowano status kredytu.");
+        Loan result = updateLoanUseCase.updateLoanStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
+        return new ResponseEntity<>(apiLoanMapper.toDto(result), HttpStatus.OK);
     }
 
     @DeleteMapping("/{idLoan}")

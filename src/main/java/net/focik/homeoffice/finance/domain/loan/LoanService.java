@@ -5,17 +5,16 @@ import net.focik.homeoffice.finance.domain.exception.LoanInstallmentNotFoundExce
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.loan.port.secondary.LoanRepository;
+import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
 
+import javax.money.CurrencyUnit;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,22 +26,47 @@ class LoanService {
     //-----------------------------LOAN---------------------------
 
 
+    @Transactional
     Loan saveLoan(Loan loan) {
         if (isNotValid(loan))
             throw new LoanNotValidException();
-        return loanRepository.saveLoan(loan);
+        Loan saved = loanRepository.saveLoan(loan);
+        List<LoanInstallment> loanInstallments = new ArrayList<>();
+        for (int i = 0; i < saved.getNumberOfInstallments(); i++) {
+            loanInstallments.add(LoanInstallment.builder()
+                    .idLoan(saved.getId())
+                    .installmentNumber(i + 1)
+                    .installmentAmountToPay(loan.getInstallmentAmount())
+                    .installmentAmountPaid(BigDecimal.ZERO)
+                    .paymentDeadline(loan.getFirstPaymentDate().plusMonths(i))
+                    .paymentStatus(PaymentStatus.TO_PAY)
+                    .build());
+        }
+        List<LoanInstallment> savedLoanInstallments = addLoanInstallment(loanInstallments);
+        saved.setLoanInstallments(savedLoanInstallments);
+        return saved;
     }
 
     public LoanInstallment addLoanInstallment(LoanInstallment loanInstallment) {
         return loanRepository.saveLoanInstallment(loanInstallment);
     }
 
-    Money getInstallmentLoansSumByIdEmployeeAndDate(int idEmployee, LocalDate date) {
-        Money sum = Money.of(0, "PLN");
-        List<LoanInstallment> byIdEmployeeAndDate = loanRepository.findLoanInstallmentByUserIdAndDate(idEmployee, date);
+    public List<LoanInstallment> addLoanInstallment(List<LoanInstallment> loanInstallment) {
+        return loanRepository.saveLoanInstallment(loanInstallment);
+    }
 
-        if (byIdEmployeeAndDate != null && !byIdEmployeeAndDate.isEmpty()) {
-            for (LoanInstallment installment : byIdEmployeeAndDate) {
+    Money getInstallmentLoansSumByStatus(int idLoan, PaymentStatus status) {
+        Money sum = Money.of(0, "PLN");
+        List<LoanInstallment> installments = loanRepository.findLoanInstallmentByLoanId(idLoan);
+
+        if(status != null && status != PaymentStatus.ALL){
+            installments = installments.stream()
+                .filter(loanInstallment -> status.equals(loanInstallment.getPaymentStatus()))
+                    .collect(Collectors.toList());
+        }
+
+        if (installments != null && !installments.isEmpty()) {
+            for (LoanInstallment installment : installments) {
                 sum = sum.add(Money.of(installment.getInstallmentAmountToPay(), "PLN"));
             }
         }
@@ -125,10 +149,10 @@ class LoanService {
         loanRepository.deleteLoanById(idLoan);
     }
 
-    public void updateLoan(Loan loan) {
+    public Loan updateLoan(Loan loan) {
         if (isNotValid(loan))
             throw new LoanNotValidException();
-        loanRepository.saveLoan(loan);
+        return loanRepository.saveLoan(loan);
     }
 
     public LoanInstallment updateLoanInstallment(LoanInstallment loanInstallment) {
@@ -160,7 +184,7 @@ class LoanService {
         Money result = Money.of(BigDecimal.ZERO, "PLN");
 
         for (Loan loan : loans) {
-            Money loanAmount = mapToMoney(loan.getAmount());
+            Money loanAmount = MoneyUtils.mapToMoney(loan.getAmount());
             BigDecimal reduce = loan.getLoanInstallments().stream()
                     .map(LoanInstallment::getInstallmentAmountToPay)
                     .reduce(BigDecimal::add)
@@ -170,10 +194,6 @@ class LoanService {
         }
 
         return result;
-    }
-
-    private Money mapToMoney(Number amount) {
-        return Money.of(amount, "PLN");
     }
 
     public LoanInstallment getLoanInstallment(int idLoanInstallment) {

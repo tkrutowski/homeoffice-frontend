@@ -7,12 +7,16 @@ import net.focik.homeoffice.finance.domain.bank.port.secondary.BankRepository;
 import net.focik.homeoffice.finance.domain.exception.BankAlreadyExistException;
 import net.focik.homeoffice.finance.domain.exception.BankCanNotBeDeletedException;
 import net.focik.homeoffice.finance.domain.exception.BankNotFoundException;
+import net.focik.homeoffice.finance.domain.loan.Loan;
+import net.focik.homeoffice.finance.domain.loan.LoanFacade;
+import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ class BankService {
 
     private final BankRepository bankRepository;
     private final AddressEndpoint addressEndpoint;
+    LoanFacade loanFacade;
 
     @Transactional
     public Bank addBank(Bank bank) {
@@ -77,18 +82,20 @@ class BankService {
     @Transactional
     public void deleteBank(Integer id) {
         Bank byId = findById(id, false);
-        if (canBeDeleted(id)) {
-            addressEndpoint.deleteAddress(byId.getAddress().getId());
-            bankRepository.delete(id);
-        }
+        canBeDeleted(id);
+        addressEndpoint.deleteAddress(byId.getAddress().getId());
+        bankRepository.delete(id);
+
     }
 
-    private boolean canBeDeleted(Integer id) {
-        //TODO check kredyt
-        if(id<0){
+    private void canBeDeleted(Integer id) {
+        List<Loan> loansByBank = loanFacade.getLoansByStatus(PaymentStatus.ALL, false)
+                .stream().filter(loan -> loan.getBank().getId()==id)
+                .collect(Collectors.toList());
+        if(!loansByBank.isEmpty()){
              throw new BankCanNotBeDeletedException("kredyty");
         }
-        return true;
+//        return true;
     }
 
     public Bank findById(Integer id, Boolean isAddress) {

@@ -238,4 +238,8 @@ public class MoneyUtils {
 
         return slownie;
     }
+
+    public static Money mapToMoney(Number amount) {
+        return Money.of(amount, "PLN");
+    }
 }

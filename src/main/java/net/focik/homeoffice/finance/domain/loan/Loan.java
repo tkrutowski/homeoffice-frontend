@@ -1,6 +1,7 @@
 package net.focik.homeoffice.finance.domain.loan;
 
 import lombok.*;
+import net.focik.homeoffice.finance.domain.bank.Bank;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ import java.util.List;
 public class Loan {
 
     private int id;
-    private int idBank;
+    private Bank bank;
     private int idUser;
     private String name;
     private BigDecimal amount;

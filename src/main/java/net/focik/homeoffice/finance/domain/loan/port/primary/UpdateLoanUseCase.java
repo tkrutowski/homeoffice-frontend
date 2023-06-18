@@ -5,7 +5,7 @@ import net.focik.homeoffice.finance.domain.loan.LoanInstallment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 
 public interface UpdateLoanUseCase {
-    void updateLoanStatus(int idLoan, PaymentStatus loanStatus);
+    Loan updateLoanStatus(int idLoan, PaymentStatus loanStatus);
 
     Loan updateLoan(Loan loan);
 

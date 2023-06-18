@@ -13,7 +13,6 @@ public interface GetLoanUseCase {
 
     List<Loan> getLoansByStatus(PaymentStatus loanStatus, boolean withInstallment);
 
-    List<Loan> getLoansByUser(int idUser, boolean withInstallment);
 
     List<Loan> getLoansByUser(int idUser, PaymentStatus loanStatus, boolean withInstallment);
 

@@ -11,7 +11,7 @@ import java.util.List;
 @ToString
 public class LoanDto {
     private int id;
-    private int idBank;
+    private BankDto bank;
     private int idUser;
     private String name;
     private String amount;
@@ -24,5 +24,6 @@ public class LoanDto {
     private String loanStatus;
     private String loanCost;//prowizja itp
     private String otherInfo;
+    private String amountToPay;
     private List<LoanInstallmentDto> installmentDtoList;
 }

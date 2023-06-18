@@ -5,8 +5,10 @@ import net.focik.homeoffice.finance.domain.loan.port.primary.AddLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.DeleteLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.GetLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.UpdateLoanUseCase;
+import net.focik.homeoffice.userservice.domain.AppUser;
+import net.focik.homeoffice.userservice.domain.UserFacade;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import org.javamoney.moneta.Money;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -16,7 +18,8 @@ import java.util.List;
 @Component
 public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUseCase, DeleteLoanUseCase {
 
-    LoanService loanService;
+    private final LoanService loanService;
+    private final UserFacade userFacade;
 
     @Override
     public Loan addLoan(Loan loan) {
@@ -44,13 +47,17 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public List<Loan> getLoansByUser(int idUser, boolean withInstallment) {
-        return loanService.findLoansByUser(idUser, null, withInstallment);
-    }
-
-    @Override
     public List<Loan> getLoansByStatus(PaymentStatus loanStatus, boolean withInstallment) {
-        return loanService.findLoansByStatus(loanStatus, withInstallment);
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN") || grantedAuthority.getAuthority().equals("HR_FINANCE_LOAN_READ_ALL"));
+
+        if (isAdmin) {
+            return loanService.findLoansByStatus(loanStatus, withInstallment);
+        } else {
+            String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+            AppUser user = userFacade.findUserByUsername(userName);
+            return loanService.findLoansByUser(Math.toIntExact(user.getId()), loanStatus, withInstallment);
+        }
     }
 
     @Override
@@ -65,7 +72,8 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
 
     @Override
     public Loan updateLoan(Loan loan) {
-        return loanService.saveLoan(loan);
+        loanService.updateLoan(loan);
+        return loanService.findLoanById(loan.getId(), true);
     }
 
     @Override
@@ -74,11 +82,12 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public void updateLoanStatus(int idLoan, PaymentStatus loanStatus) {
+    public Loan updateLoanStatus(int idLoan, PaymentStatus loanStatus) {
         Loan loan = loanService.findLoanById(idLoan, false);
         loan.changeLoanStatus(loanStatus);
 
         loanService.updateLoan(loan);
+        return loanService.findLoanById(idLoan, true);
     }
 
     @Override
@@ -91,12 +100,4 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
         loanService.deleteLoanInstallment(id);
     }
 
-//
-//    public Money getInstallmentLoansSumByIdUserAndDate(int idUser, LocalDate date) {
-//        return loanService.getInstallmentLoansSumByIdEmployeeAndDate(idUser, date);
-//    }
-//
-//    public Money getLoansToPaySum(Integer employeeId) {
-//        return loanService.getLoansToPaySum(employeeId);
-//    }
 }

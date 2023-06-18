@@ -1,21 +1,27 @@
 package net.focik.homeoffice.finance.infrastructure.mapper;
 
+import lombok.RequiredArgsConstructor;
+import net.focik.homeoffice.finance.domain.bank.Bank;
 import net.focik.homeoffice.finance.domain.loan.Loan;
 import net.focik.homeoffice.finance.domain.loan.LoanInstallment;
+import net.focik.homeoffice.finance.infrastructure.dto.BankDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.LoanDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.LoanInstallmentDbDto;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JpaLoanMapper {
+    private final ModelMapper mapper;
 
     public LoanDbDto toDto(Loan loan) {
         return LoanDbDto.builder()
                 .id(loan.getId())
-                .idBank(loan.getIdBank())
+                .bank(mapper.map(loan.getBank(), BankDbDto.class))
                 .idUser(loan.getIdUser())
                 .amount(loan.getAmount())
                 .date(loan.getDate())
@@ -34,7 +40,7 @@ public class JpaLoanMapper {
     public Loan toDomain(LoanDbDto dto, List<LoanInstallmentDbDto> loanInstallments) {
         return Loan.builder()
                 .id(dto.getId())
-                .idBank(dto.getIdBank())
+                .bank(mapper.map(dto.getBank(), Bank.class))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .amount(dto.getAmount())
@@ -54,7 +60,7 @@ public class JpaLoanMapper {
     public Loan toDomain(LoanDbDto dto) {
         return Loan.builder()
                 .id(dto.getId())
-                .idBank(dto.getIdBank())
+                .bank(mapper.map(dto.getBank(), Bank.class))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .amount(dto.getAmount())
