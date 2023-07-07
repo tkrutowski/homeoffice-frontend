@@ -1,15 +1,12 @@
 package net.focik.homeoffice.goahead.infrastructure.dto;
 
 import lombok.*;
-import net.focik.homeoffice.goahead.domain.invoice.InvoiceItem;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import net.focik.homeoffice.utils.share.PaymentType;
-import org.javamoney.moneta.Money;
+import net.focik.homeoffice.utils.share.PaymentMethod;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @NoArgsConstructor
@@ -32,6 +29,6 @@ public class InvoiceDbDto {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
+    private PaymentMethod paymentMethod;
     private String otherInfo;
 }

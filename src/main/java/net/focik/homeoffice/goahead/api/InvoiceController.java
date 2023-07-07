@@ -15,7 +15,7 @@ import net.focik.homeoffice.goahead.domain.invoice.port.primary.UpdateInvoiceUse
 import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import net.focik.homeoffice.utils.share.PaymentType;
+import net.focik.homeoffice.utils.share.PaymentMethod;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -150,7 +150,7 @@ public class InvoiceController extends ExceptionHandling {
 
     @GetMapping("/paymenttype")
     ResponseEntity<List<PaymentTypeDto>> getPaymentTypes() {
-        PaymentType[] collect = (PaymentType.values());
+        PaymentMethod[] collect = (PaymentMethod.values());
         List<PaymentTypeDto> paymentTypeDtos = Arrays.stream(collect)
                 .map(type -> new PaymentTypeDto(type.name(), type.getViewValue()))
                 .collect(Collectors.toList());

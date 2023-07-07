@@ -8,7 +8,7 @@ import net.focik.homeoffice.goahead.domain.invoice.Invoice;
 import net.focik.homeoffice.goahead.domain.invoice.InvoiceItem;
 import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import net.focik.homeoffice.utils.share.PaymentType;
+import net.focik.homeoffice.utils.share.PaymentMethod;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +32,7 @@ public class ApiInvoiceMapper {
 //                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())),"PLN"))
                 .paymentDate(dto.getInvoiceDate().plusDays(dto.getPaymentDeadline()))
                 .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
-                .paymentType(PaymentType.valueOf(dto.getPaymentType()))
+                .paymentMethod(PaymentMethod.valueOf(dto.getPaymentType()))
                 .otherInfo(dto.getOtherInfo())
                 .invoiceItems(mapToList(dto.getInvoiceItems()))
                 .build();
@@ -49,8 +49,8 @@ public class ApiInvoiceMapper {
                 .paymentDeadline(Period.between(invoice.getInvoiceDate(),invoice.getPaymentDate()).getDays())
                 .paymentDate(invoice.getPaymentDate())
                 .paymentStatus(invoice.getPaymentStatus().toString())
-                .paymentType(invoice.getPaymentType().toString())
-                .paymentTypeView(invoice.getPaymentType().getViewValue())
+                .paymentType(invoice.getPaymentMethod().toString())
+                .paymentTypeView(invoice.getPaymentMethod().getViewValue())
                 .otherInfo(invoice.getOtherInfo())
                 .invoiceItems(mapToDtoList(invoice.getInvoiceItems()))
                 .customerName(invoice.getCustomer().getName())

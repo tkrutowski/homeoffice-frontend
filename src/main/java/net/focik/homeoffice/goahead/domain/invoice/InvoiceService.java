@@ -112,7 +112,7 @@ class InvoiceService {
         byId.setSellDate(invoice.getSellDate());
         byId.setOtherInfo(invoice.getOtherInfo());
         byId.setPaymentDate(invoice.getPaymentDate());
-        byId.setPaymentType(invoice.getPaymentType());
+        byId.setPaymentMethod(invoice.getPaymentMethod());
         byId.setInvoiceItems(invoice.getInvoiceItems());
 
         updateAmount(invoice);
