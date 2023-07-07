@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
+import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.FINANCE_FEE_READ_ALL;
+import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.ROLE_ADMIN;
+
 @AllArgsConstructor
 @Component
 public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase, DeleteFeeUseCase {
@@ -55,7 +58,7 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
     public List<Fee> getFeesByStatus(PaymentStatus paymentStatus, boolean withInstallment) {
 
         boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN") || grantedAuthority.getAuthority().equals("HR_FINANCE_FEE_READ_ALL"));
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(ROLE_ADMIN) || grantedAuthority.getAuthority().equals(FINANCE_FEE_READ_ALL));
 
         if (isAdmin) {
             return feeService.findFeesByStatus(paymentStatus, withInstallment);
@@ -73,7 +76,7 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
 
     @Override
     public List<FeeInstallment> getFeeInstallments(int idFee) {
-        return feeService.findFeeById(idFee, true).getFeeInstallments();
+        return feeService.findFeeById(idFee, true).getInstallments();
     }
 
     @Override

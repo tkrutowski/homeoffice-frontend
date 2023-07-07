@@ -21,6 +21,7 @@ import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -49,7 +50,7 @@ class FeeController {
     //LOAN
     //
     @GetMapping("/status")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_READ', 'FINANCE_FEE_READ_ALL', 'ROLE_ADMIN')")
     ResponseEntity<List<FeeDto>> getFeeByStatus(@RequestParam(value = "status") PaymentStatus paymentStatus,
                                                   @RequestParam(value = "installment", defaultValue = "false") boolean installment) {
 
@@ -64,7 +65,7 @@ class FeeController {
     }
 
     @GetMapping("/{idFee}")
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_READ', 'FINANCE_FEE_READ_ALL', 'ROLE_ADMIN')")
     ResponseEntity<FeeDto> getFeeById(@PathVariable int idFee) {
 
         log.info("Get fee by id: " + idFee);
@@ -75,7 +76,7 @@ class FeeController {
     }
 
     @GetMapping("/{idUser}/status")
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_READ', 'FINANCE_FEE_READ_ALL', 'ROLE_ADMIN')")
     ResponseEntity<List<FeeDto>> getLoansByEmployeeAndStatus(@PathVariable int idUser,
                                                               @RequestParam(value = "paymentStatus") PaymentStatus paymentStatus,
                                                               @RequestParam(value = "installment") boolean installment) {
@@ -100,7 +101,7 @@ class FeeController {
     }
 
     @PostMapping
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_WRITE', 'FINANCE_FEE_WRITE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<FeeDto> addFee(@RequestBody FeeDto feeDto) {
         log.info("Try add new fee.");
 
@@ -113,7 +114,7 @@ class FeeController {
     }
 
     @PutMapping
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_WRITE', 'FINANCE_FEE_WRITE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<FeeDto> updateFee(@RequestBody FeeDto feeDto) {
         log.info("Try update fee.");
 
@@ -126,7 +127,7 @@ class FeeController {
     }
 
     @PutMapping("/status/{id}")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_WRITE', 'FINANCE_FEE_WRITE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<FeeDto> updateLFeeStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update fee status.");
 
@@ -135,7 +136,7 @@ class FeeController {
     }
 
     @DeleteMapping("/{idFee}")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_DELETE', 'FINANCE_FEE_DELETE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteFee(@PathVariable int idFee) {
         log.info("Try to delete fee with id: " + idFee);
 
@@ -150,7 +151,7 @@ class FeeController {
     //FEE INSTALLMENT
     //
     @GetMapping("/installment/{idUser}/all")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_READ', 'FINANCE_FEE_READ_ALL', 'ROLE_ADMIN')")
     ResponseEntity<List<FeeInstallmentDto>> getFeeInstallmentByUserAndDate(@PathVariable int idUser,
                                                                             @RequestParam(value = "date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
@@ -165,7 +166,7 @@ class FeeController {
     }
 
     @GetMapping("/installment/{idFee}")
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_READ', 'FINANCE_FEE_READ_ALL', 'ROLE_ADMIN')")
     ResponseEntity<List<FeeInstallmentDto>> getFeeInstallmentsByLoan(@PathVariable int idFee) {
 
         log.info("Get all fee installment by loan id: " + idFee);
@@ -179,7 +180,7 @@ class FeeController {
     }
 
     @PostMapping("/installment")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_WRITE', 'FINANCE_FEE_WRITE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<FeeInstallmentDto> addFeeInstallment(@RequestBody FeeInstallmentDto feeInstallmentDto) {
         log.info("Try add new fee installment.");
 
@@ -192,7 +193,7 @@ class FeeController {
     }
 
     @PutMapping("/installment")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_WRITE', 'FINANCE_FEE_WRITE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<FeeInstallmentDto> updateFeeInstallment(@RequestBody FeeInstallmentDto feeInstallmentDto) {
         log.info("Try update fee installment.");
 
@@ -205,7 +206,7 @@ class FeeController {
     }
 
     @DeleteMapping("/installment/{idFeeInstallment}")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANCE_FEE_DELETE', 'FINANCE_FEE_DELETE_ALL', 'ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteFeeInstallment(@PathVariable int idFeeInstallment) {
         log.info("Try to delete fee installment with id: " + idFeeInstallment);
 

@@ -2,7 +2,10 @@ package net.focik.homeoffice.finance.domain.fee;
 
 import lombok.*;
 import net.focik.homeoffice.finance.domain.firm.Firm;
+import net.focik.homeoffice.finance.domain.payment.FinancialTransaction;
+import net.focik.homeoffice.finance.domain.payment.Payment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
+import net.focik.homeoffice.utils.share.PaymentType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class Fee {
+public class Fee implements FinancialTransaction {
 
     private int id;
     private Firm firm;
@@ -29,14 +32,25 @@ public class Fee {
     private String accountNumber;
     private PaymentStatus feeStatus;
     private String otherInfo;
-    private List<FeeInstallment> feeInstallments;
+    private List<FeeInstallment> installments;
 
     public void addFeeInstallment(List<FeeInstallment> feeInstallments) {
-        this.feeInstallments = feeInstallments;
+        this.installments = feeInstallments;
     }
 
     public void changeFeeStatus(PaymentStatus feeStatus) {
         this.feeStatus = feeStatus;
     }
 
+    @Override
+    public Payment getPayment() {
+        return Payment.builder()
+                .id(id)
+                .idUser(idUser)
+                .name(name)
+                .paymentDay(firstPaymentDate.getDayOfMonth())
+                .paymentType(PaymentType.FEE)
+                .installments(installments)
+                .build();
+    }
 }

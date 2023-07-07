@@ -56,7 +56,7 @@ public class ApiFeeMapper {
                 .accountNumber(fee.getAccountNumber())
                 .feeStatus(fee.getFeeStatus().name())
                 .otherInfo(fee.getOtherInfo() == null ? "" : fee.getOtherInfo())
-                .installmentDtoList(fee.getFeeInstallments() != null ? fee.getFeeInstallments()
+                .installmentDtoList(fee.getInstallments() != null ? fee.getInstallments()
                         .stream().map(this::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .build();
     }

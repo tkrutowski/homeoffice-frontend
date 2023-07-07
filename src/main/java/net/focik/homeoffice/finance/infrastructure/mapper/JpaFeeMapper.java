@@ -1,11 +1,9 @@
 package net.focik.homeoffice.finance.infrastructure.mapper;
 
 import lombok.RequiredArgsConstructor;
-import net.focik.homeoffice.finance.domain.bank.Bank;
 import net.focik.homeoffice.finance.domain.fee.Fee;
 import net.focik.homeoffice.finance.domain.fee.FeeInstallment;
 import net.focik.homeoffice.finance.domain.firm.Firm;
-import net.focik.homeoffice.finance.infrastructure.dto.BankDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeInstallmentDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FirmDbDto;
@@ -52,7 +50,7 @@ public class JpaFeeMapper {
                 .accountNumber(dto.getAccountNumber())
                 .feeStatus(dto.getFeeStatus())
                 .otherInfo(dto.getOtherInfo())
-                .feeInstallments(mapListFeeInstallmentToSet(feeInstallments))
+                .installments(mapListFeeInstallmentToSet(feeInstallments))
                 .build();
     }
 

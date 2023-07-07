@@ -40,7 +40,7 @@ class FeeService {
                     .build());
         }
         List<FeeInstallment> savedFeeInstallments = addFeeInstallment(feeInstallments);
-        saved.setFeeInstallments(savedFeeInstallments);
+        saved.setInstallments(savedFeeInstallments);
         return saved;
     }
 
@@ -50,18 +50,6 @@ class FeeService {
 
     public List<FeeInstallment> addFeeInstallment(List<FeeInstallment> feeInstallment) {
         return feeRepository.saveFeeInstallment(feeInstallment);
-    }
-
-    Money getInstallmentFeesSumByIdEmployeeAndDate(int idUser, LocalDate date) {
-        Money sum = Money.of(0, "PLN");
-        List<FeeInstallment> byUserIdAndDate = feeRepository.findFeeInstallmentByUserIdAndDate(idUser, date);
-
-        if (byUserIdAndDate != null && !byUserIdAndDate.isEmpty()) {
-            for (FeeInstallment installment : byUserIdAndDate) {
-                sum = sum.add(Money.of(installment.getInstallmentAmountToPay(), "PLN"));
-            }
-        }
-        return sum;
     }
 
     List<Fee> findFeesByUser(int idUser, PaymentStatus paymentStatus, boolean withFeeInstallment) {
@@ -74,7 +62,7 @@ class FeeService {
             }
         }
 
-        if (paymentStatus == null)
+        if (paymentStatus == null || paymentStatus.equals(PaymentStatus.ALL))
             return feeByUserId;
 
         feeByUserId = feeByUserId.stream()
@@ -91,7 +79,7 @@ class FeeService {
     List<FeeInstallment> getFeeInstallments(Integer idUser, LocalDate date) {
         List<Fee> feesByUser = findFeesByUser(idUser, null, true);
         return feesByUser.stream()
-                .map(Fee::getFeeInstallments)
+                .map(Fee::getInstallments)
                 .flatMap(Collection::stream)
                 .filter(loanInstallment -> loanInstallment.getPaymentDeadline().getYear() == (date.getYear()))
                 .filter(loanInstallment -> loanInstallment.getPaymentDeadline().getMonth().equals(date.getMonth()))
@@ -173,7 +161,7 @@ class FeeService {
 
         for (Fee fee : feeList) {
             Money feeAmount = MoneyUtils.mapToMoney(fee.getAmount());
-            BigDecimal reduce = fee.getFeeInstallments().stream()
+            BigDecimal reduce = fee.getInstallments().stream()
                     .map(FeeInstallment::getInstallmentAmountToPay)
                     .reduce(BigDecimal::add)
                     .orElse(BigDecimal.ZERO);

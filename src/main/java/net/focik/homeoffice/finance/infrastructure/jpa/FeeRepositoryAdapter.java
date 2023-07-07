@@ -79,15 +79,13 @@ class FeeRepositoryAdapter implements FeeRepository {
     }
 
     @Override
-    public List<FeeInstallment> findFeeInstallmentByUserIdAndDate(Integer idUser, LocalDate date) {
-        List<FeeDbDto> feeByIdEmployee = feeDtoRepository.findAllByIdUser(idUser);
-        List<FeeInstallmentDbDto> feeInstallmentDbDtos = new ArrayList<>();
-        String dateFormat = date.getYear() + String.format("-%02d", date.getMonthValue());
-        for (FeeDbDto dto : feeByIdEmployee) {
-            feeInstallmentDbDtos.addAll(feeInstallmentDtoRepository.findAllByIdFeeAndDate(dto.getId(), dateFormat));
-        }
+    public List<FeeInstallment> findFeeInstallmentByDate(LocalDate date) {
+        List<FeeInstallmentDbDto> installmentDbDtos = feeInstallmentDtoRepository
+                .findAllByPaymentDeadlineContaining(String.valueOf(date.getYear()));
 
-        return feeInstallmentDbDtos.stream()
+
+
+        return installmentDbDtos.stream()
                 .map(l -> mapper.toDomain(l))
                 .collect(Collectors.toList());
     }
