@@ -53,7 +53,7 @@ public class JpaLoanMapper {
                 .loanStatus(dto.getLoanStatus())
                 .loanCost(dto.getLoanCost())
                 .otherInfo(dto.getOtherInfo())
-                .loanInstallments(mapListLoanInstallmentToSet(loanInstallments))
+                .installments(mapListLoanInstallmentToSet(loanInstallments))
                 .build();
     }
 

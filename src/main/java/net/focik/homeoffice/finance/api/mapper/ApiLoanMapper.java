@@ -57,9 +57,9 @@ public class ApiLoanMapper {
                 .loanStatus(l.getLoanStatus().name())
                 .loanCost(String.format("%.2f", l.getLoanCost()).replace(",", "."))
                 .otherInfo(l.getOtherInfo() == null ? "" : l.getOtherInfo())
-                .installmentDtoList(l.getLoanInstallments() != null ? l.getLoanInstallments()
+                .installmentDtoList(l.getInstallments() != null ? l.getInstallments()
                         .stream().map(this::toDto).collect(Collectors.toList()) : new ArrayList<>())
-                .amountToPay(getAmountToPay(l.getLoanInstallments()))
+                .amountToPay(getAmountToPay(l.getInstallments()))
                 .build();
     }
 
@@ -99,6 +99,8 @@ public class ApiLoanMapper {
                 .installmentNumber(dto.getInstallmentNumber())
                 .installmentAmountToPay(BigDecimal.valueOf(Double.parseDouble(dto.getInstallmentAmountToPay())))
                 .installmentAmountPaid(BigDecimal.valueOf(Double.parseDouble(dto.getInstallmentAmountPaid())))
+                .paymentDeadline(LocalDate.parse(dto.getPaymentDeadline()))
+                .paymentDate(LocalDate.parse(dto.getPaymentDate()))
                 .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
                 .build();
     }

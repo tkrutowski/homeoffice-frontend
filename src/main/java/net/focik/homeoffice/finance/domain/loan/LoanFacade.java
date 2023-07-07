@@ -11,7 +11,6 @@ import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -42,8 +41,8 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public List<Loan> getLoansByUser(int idEmployee, PaymentStatus loanStatus, boolean withInstallment) {
-        return loanService.findLoansByUser(idEmployee, loanStatus, withInstallment);
+    public List<Loan> getLoansByUser(int idUser, PaymentStatus loanStatus, boolean withInstallment) {
+        return loanService.findLoansByUser(idUser, loanStatus, withInstallment);
     }
 
     @Override
@@ -61,13 +60,8 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
     }
 
     @Override
-    public List<LoanInstallment> getLoanInstallments(int idEmployee, LocalDate date) {
-        return loanService.getLoanInstallments(idEmployee, date);
-    }
-
-    @Override
     public List<LoanInstallment> getLoanInstallments(int idLoan) {
-        return loanService.findLoanById(idLoan, true).getLoanInstallments();
+        return loanService.findLoanById(idLoan, true).getInstallments();
     }
 
     @Override

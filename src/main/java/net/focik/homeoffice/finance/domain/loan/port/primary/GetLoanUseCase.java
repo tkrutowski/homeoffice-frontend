@@ -18,7 +18,5 @@ public interface GetLoanUseCase {
 
     LoanInstallment getLoanInstallment(int idLoanInstallment);
 
-    List<LoanInstallment> getLoanInstallments(int idUser, LocalDate date);
-
     List<LoanInstallment> getLoanInstallments(int idLoan);
 }

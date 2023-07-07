@@ -5,16 +5,16 @@ import net.focik.homeoffice.finance.domain.exception.LoanInstallmentNotFoundExce
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.loan.port.secondary.LoanRepository;
-import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
 
-import javax.money.CurrencyUnit;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +43,7 @@ class LoanService {
                     .build());
         }
         List<LoanInstallment> savedLoanInstallments = addLoanInstallment(loanInstallments);
-        saved.setLoanInstallments(savedLoanInstallments);
+        saved.setInstallments(savedLoanInstallments);
         return saved;
     }
 
@@ -59,9 +59,9 @@ class LoanService {
         Money sum = Money.of(0, "PLN");
         List<LoanInstallment> installments = loanRepository.findLoanInstallmentByLoanId(idLoan);
 
-        if(status != null && status != PaymentStatus.ALL){
+        if (status != null && status != PaymentStatus.ALL) {
             installments = installments.stream()
-                .filter(loanInstallment -> status.equals(loanInstallment.getPaymentStatus()))
+                    .filter(loanInstallment -> status.equals(loanInstallment.getPaymentStatus()))
                     .collect(Collectors.toList());
         }
 
@@ -83,7 +83,7 @@ class LoanService {
             }
         }
 
-        if (loanStatus == null)
+        if (loanStatus == null || loanStatus.equals(PaymentStatus.ALL))
             return loanByUserId;
 
         loanByUserId = loanByUserId.stream()
@@ -96,16 +96,6 @@ class LoanService {
 
     List<LoanInstallment> findLoanInstallmentByLoanId(int idLoan) {
         return loanRepository.findLoanInstallmentByLoanId(idLoan);
-    }
-
-    List<LoanInstallment> getLoanInstallments(Integer idEmployee, LocalDate date) {
-        List<Loan> loansByEmployee = findLoansByUser(idEmployee, null, true);
-        return loansByEmployee.stream()
-                .map(Loan::getLoanInstallments)
-                .flatMap(Collection::stream)
-                .filter(loanInstallment -> loanInstallment.getPaymentDeadline().getYear() == (date.getYear()))
-                .filter(loanInstallment -> loanInstallment.getPaymentDeadline().getMonth().equals(date.getMonth()))
-                .collect(Collectors.toList());
     }
 
     Loan findLoanById(int idLoan, boolean withLoanInstallment) {
@@ -179,27 +169,11 @@ class LoanService {
         return loanInstallment.getPaymentDate() == null;
     }
 
-    public Money getLoansToPaySum(Integer idUser) {
-        List<Loan> loans = findLoansByUser(idUser, PaymentStatus.TO_PAY, true);
-        Money result = Money.of(BigDecimal.ZERO, "PLN");
-
-        for (Loan loan : loans) {
-            Money loanAmount = MoneyUtils.mapToMoney(loan.getAmount());
-            BigDecimal reduce = loan.getLoanInstallments().stream()
-                    .map(LoanInstallment::getInstallmentAmountToPay)
-                    .reduce(BigDecimal::add)
-                    .orElse(BigDecimal.ZERO);
-            Money loanInstallmentPayedOff = Money.of(reduce, "PLN");
-            result = result.add(loanAmount.subtract(loanInstallmentPayedOff));
-        }
-
-        return result;
-    }
 
     public LoanInstallment getLoanInstallment(int idLoanInstallment) {
         Optional<LoanInstallment> loanInstallmentById = loanRepository.findLoanInstallmentById(idLoanInstallment);
 
-        if (loanInstallmentById.isEmpty()){
+        if (loanInstallmentById.isEmpty()) {
             throw new LoanInstallmentNotFoundException(idLoanInstallment);
         }
         return loanInstallmentById.get();
