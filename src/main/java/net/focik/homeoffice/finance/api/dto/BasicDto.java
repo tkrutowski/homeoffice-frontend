@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BasicDto {
     private String value;
+    private String value2;
 }
