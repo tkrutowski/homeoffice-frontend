@@ -1,7 +1,6 @@
 package net.focik.homeoffice.goahead.api.dto;
 
 import lombok.*;
-import org.javamoney.moneta.Money;
 
 @Builder
 @AllArgsConstructor
@@ -14,7 +13,7 @@ public class InvoiceItemDto {
     private int idInvoice;
     private String name;
     private String jm;
-    private String quantity;
-    private String amount;//brutto
-    private String amountSum;//brutto
+    private Number quantity;
+    private Number amount;//brutto
+    private Number amountSum;//brutto
 }

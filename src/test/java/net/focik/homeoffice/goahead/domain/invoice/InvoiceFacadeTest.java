@@ -23,11 +23,11 @@ class InvoiceFacadeTest {
     static InvoiceService service = new InvoiceService(repository, null);
     static InvoiceFacade facade = new InvoiceFacade(service);
 
-    static Integer id = 0;
+    static Invoice invoice;
 
     @BeforeAll
     static void setUp() {
-            id = facade.addInvoice(createInvoice());
+            invoice = facade.addInvoice(createInvoice());
     }
 
     @Test
@@ -35,19 +35,19 @@ class InvoiceFacadeTest {
         //given
 
         //when
-        Integer result = facade.addInvoice(createInvoice2());
-        Invoice byId = facade.findById(result);
+        Invoice result = facade.addInvoice(createInvoice2());
+        Invoice byId = facade.findById(result.getIdInvoice());
 
         //then
-        assertTrue(result > 0);
-        assertTrue(byId.getInvoiceItems().size() == 2);
+        assertTrue(result.getIdInvoice() > 0);
+        assertEquals(2, byId.getInvoiceItems().size());
 
     }
 
     @Test
     void should_return_correct_invoice_ById() {
         //given
-        Invoice byId = facade.findById(id);
+        Invoice byId = facade.findById(invoice.getIdInvoice());
 
         //when
         Money result = byId.getInvoiceItems().stream()
@@ -55,7 +55,7 @@ class InvoiceFacadeTest {
                 .reduce(Money.of(BigDecimal.ZERO, "PLN"), Money::add);
 
         //then
-        assertTrue(byId.getInvoiceItems().size() == 2);
+        assertEquals(2, byId.getInvoiceItems().size());
         assertEquals(PaymentMethod.TRANSFER, byId.getPaymentMethod());
         assertEquals(LocalDate.of(2022, 9, 1), byId.getInvoiceDate());
         assertEquals(LocalDate.of(2022, 9, 5), byId.getSellDate());

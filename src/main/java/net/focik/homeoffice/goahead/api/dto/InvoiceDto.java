@@ -15,15 +15,16 @@ public class InvoiceDto {
     private int idInvoice;
     private int idCustomer;
     private String invoiceNumber;
-    private String amount;
+    private Number amount;
     private LocalDate sellDate;//data sprzedaży
     private LocalDate invoiceDate;//data faktury
     private LocalDate paymentDate;//termin zapłaty
     private int paymentDeadline;
-    private String paymentStatus;
-    private String paymentType;
+    private PaymentStatusDto paymentStatus;
+    private PaymentMethodDto paymentMethod;
     private String paymentTypeView;
     private String otherInfo;
     private String customerName;
     private List<InvoiceItemDto> invoiceItems;
+
 }

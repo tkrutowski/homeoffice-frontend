@@ -2,11 +2,12 @@ package net.focik.homeoffice.goahead.api.mapper;
 
 import net.focik.homeoffice.goahead.api.dto.InvoiceDto;
 import net.focik.homeoffice.goahead.api.dto.InvoiceItemDto;
+import net.focik.homeoffice.goahead.api.dto.PaymentMethodDto;
+import net.focik.homeoffice.goahead.api.dto.PaymentStatusDto;
 import net.focik.homeoffice.goahead.domain.customer.Customer;
 import net.focik.homeoffice.goahead.domain.exception.CustomerNotValidException;
 import net.focik.homeoffice.goahead.domain.invoice.Invoice;
 import net.focik.homeoffice.goahead.domain.invoice.InvoiceItem;
-import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import net.focik.homeoffice.utils.share.PaymentMethod;
 import org.javamoney.moneta.Money;
@@ -31,8 +32,8 @@ public class ApiInvoiceMapper {
                 .invoiceDate(dto.getInvoiceDate())
 //                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())),"PLN"))
                 .paymentDate(dto.getInvoiceDate().plusDays(dto.getPaymentDeadline()))
-                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
-                .paymentMethod(PaymentMethod.valueOf(dto.getPaymentType()))
+                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus().getName()))
+                .paymentMethod(PaymentMethod.valueOf(dto.getPaymentMethod().getName()))
                 .otherInfo(dto.getOtherInfo())
                 .invoiceItems(mapToList(dto.getInvoiceItems()))
                 .build();
@@ -43,14 +44,14 @@ public class ApiInvoiceMapper {
                 .idInvoice(invoice.getIdInvoice())
                 .idCustomer(invoice.getCustomer().getId())
                 .invoiceNumber(invoice.getInvoiceNumber())
-                .amount(MoneyUtils.mapMoneyToString(invoice.getAmount()))
+//                .amount(MoneyUtils.mapMoneyToString(invoice.getAmount()))
+                .amount(invoice.getAmount().getNumber().doubleValue())
                 .sellDate(invoice.getSellDate())
                 .invoiceDate(invoice.getInvoiceDate())
                 .paymentDeadline(Period.between(invoice.getInvoiceDate(),invoice.getPaymentDate()).getDays())
                 .paymentDate(invoice.getPaymentDate())
-                .paymentStatus(invoice.getPaymentStatus().toString())
-                .paymentType(invoice.getPaymentMethod().toString())
-                .paymentTypeView(invoice.getPaymentMethod().getViewValue())
+                .paymentStatus(new PaymentStatusDto(invoice.getPaymentStatus().toString(), invoice.getPaymentStatus().getViewValue()))
+                .paymentMethod(new PaymentMethodDto(invoice.getPaymentMethod().toString(), invoice.getPaymentMethod().getViewValue()))
                 .otherInfo(invoice.getOtherInfo())
                 .invoiceItems(mapToDtoList(invoice.getInvoiceItems()))
                 .customerName(invoice.getCustomer().getName())
@@ -63,9 +64,11 @@ public class ApiInvoiceMapper {
                 .idInvoice(item.getIdInvoice())
                 .name(item.getName())
                 .jm(item.getUnit())
-                .quantity(String.format("%.2f", item.getQuantity()))
-                .amount(MoneyUtils.mapMoneyToString(item.getAmount()))
-                .amountSum(MoneyUtils.mapMoneyToString(item.getAmount().multiply(item.getQuantity())))
+                .quantity(item.getQuantity())
+//                .amount(MoneyUtils.mapMoneyToString(item.getAmount()))
+                .amount(item.getAmount().getNumber().doubleValue())
+//                .amountSum(MoneyUtils.mapMoneyToString(item.getAmount().multiply(item.getQuantity())))
+                .amountSum(item.getAmount().multiply(item.getQuantity()).getNumber().doubleValue())
                 .build();
     }
 
@@ -75,8 +78,8 @@ public class ApiInvoiceMapper {
                 .idInvoice(dto.getIdInvoice())
                 .name(dto.getName())
                 .unit(dto.getJm())
-                .quantity(Float.parseFloat(dto.getQuantity()))
-                .amount(Money.of(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())),"PLN"))
+                .quantity(dto.getQuantity().floatValue())
+                .amount(Money.of(BigDecimal.valueOf(dto.getAmount().doubleValue()), "PLN"))
                 .build();
     }
 

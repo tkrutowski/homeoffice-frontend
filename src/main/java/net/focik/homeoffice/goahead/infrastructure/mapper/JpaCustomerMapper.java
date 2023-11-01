@@ -2,13 +2,7 @@ package net.focik.homeoffice.goahead.infrastructure.mapper;
 
 import net.focik.homeoffice.addresses.domain.Address;
 import net.focik.homeoffice.goahead.domain.customer.Customer;
-import net.focik.homeoffice.goahead.domain.invoice.Invoice;
-import net.focik.homeoffice.goahead.domain.invoice.InvoiceItem;
 import net.focik.homeoffice.goahead.infrastructure.dto.CustomerDbDto;
-import net.focik.homeoffice.goahead.infrastructure.dto.InvoiceDbDto;
-import net.focik.homeoffice.goahead.infrastructure.dto.InvoiceItemDbDto;
-import org.javamoney.moneta.Money;
-import org.javamoney.moneta.spi.MoneyUtils;
 import org.springframework.stereotype.Component;
 
 @Component

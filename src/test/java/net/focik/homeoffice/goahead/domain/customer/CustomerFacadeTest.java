@@ -1,8 +1,6 @@
 package net.focik.homeoffice.goahead.domain.customer;
 
-import net.focik.homeoffice.addresses.api.internal.AddressEndpoint;
 import net.focik.homeoffice.addresses.domain.Address;
-import net.focik.homeoffice.addresses.domain.AddressFacade;
 import net.focik.homeoffice.addresses.domain.port.AddressRepository;
 import net.focik.homeoffice.addresses.infrastructure.inMemory.InMemoryAddressRepositoryAdapter;
 import net.focik.homeoffice.goahead.domain.customer.port.secondary.CustomerRepository;
@@ -154,7 +152,7 @@ class CustomerFacadeTest {
     map1.put("a", 1);
     map1.put("b", 1);
     map1.merge("b", 1, Integer::sum);
-    map1.merge("c", 3, (i1, i2)->i1+i2);
+    map1.merge("c", 3, Integer::sum);
     System.out.println(map1);
     System.out.println();
     }

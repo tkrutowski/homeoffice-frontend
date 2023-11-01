@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.focik.homeoffice.goahead.api.dto.BasicDto;
 import net.focik.homeoffice.goahead.api.dto.InvoiceDto;
-import net.focik.homeoffice.goahead.api.dto.PaymentTypeDto;
+import net.focik.homeoffice.goahead.api.dto.PaymentMethodDto;
 import net.focik.homeoffice.goahead.api.mapper.ApiInvoiceMapper;
 import net.focik.homeoffice.goahead.domain.invoice.Invoice;
 import net.focik.homeoffice.goahead.domain.invoice.InvoicePdf;
@@ -68,6 +68,7 @@ public class InvoiceController extends ExceptionHandling {
         String fileName = InvoicePdf.createPdf(invoice);
         Resource resource;
         try {
+            assert fileName != null;
             Path path = Path.of(fileName);
             resource = new UrlResource(path.toUri());
         } catch (IOException e) {
@@ -110,17 +111,14 @@ public class InvoiceController extends ExceptionHandling {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
-    public ResponseEntity<Integer> addInvoice(@RequestBody InvoiceDto invoiceDto) {
+    public ResponseEntity<InvoiceDto> addInvoice(@RequestBody InvoiceDto invoiceDto) {
         log.info("Try add new invoice.");
         Invoice invoice = mapper.toDomain(invoiceDto);
-        Integer result = addInvoiceUseCase.addInvoice(invoice);
+        Invoice result = addInvoiceUseCase.addInvoice(invoice);
 
-        log.info(result > 0 ? "Invoice added with id = " + result : "No invoice added!");
+        log.info(result.getIdInvoice() > 0 ? "Invoice added with id = " + result.getIdInvoice() : "No invoice added!");
 
-        if (result <= 0)
-            return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(result, HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.toDto(result), HttpStatus.CREATED);
     }
 
     @PutMapping
@@ -133,7 +131,7 @@ public class InvoiceController extends ExceptionHandling {
 
     @DeleteMapping("/{idInvoice}")
     @PreAuthorize("hasAnyAuthority('GOAHEAD_DELETE_ALL')")
-    public ResponseEntity<HttpResponse> deleteEmployee(@PathVariable int idInvoice) {
+    public ResponseEntity<HttpResponse> deleteInvoice(@PathVariable int idInvoice) {
         log.info("Try delete invoice with id: " + idInvoice);
         deleteInvoiceUseCase.deleteInvoice(idInvoice);
         log.info("Deleted invoice with id = " + idInvoice);
@@ -142,17 +140,17 @@ public class InvoiceController extends ExceptionHandling {
 
     @PutMapping("/paymentstatus/{id}")
     @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
-    public ResponseEntity<HttpResponse> updateEmploymentStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
+    public ResponseEntity<HttpResponse> updatePaymentStatus(@PathVariable int id,  @RequestBody BasicDto basicDto) {
         log.info("Try update payment status.");
         updateInvoiceUseCase.updatePaymentStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
         return response(HttpStatus.OK, "Zaaktualizowano status pracownika.");
     }
 
     @GetMapping("/paymenttype")
-    ResponseEntity<List<PaymentTypeDto>> getPaymentTypes() {
+    ResponseEntity<List<PaymentMethodDto>> getPaymentTypes() {
         PaymentMethod[] collect = (PaymentMethod.values());
-        List<PaymentTypeDto> paymentTypeDtos = Arrays.stream(collect)
-                .map(type -> new PaymentTypeDto(type.name(), type.getViewValue()))
+        List<PaymentMethodDto> paymentTypeDtos = Arrays.stream(collect)
+                .map(type -> new PaymentMethodDto(type.name(), type.getViewValue()))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(paymentTypeDtos, OK);
     }
