@@ -4,17 +4,11 @@ import lombok.extern.java.Log;
 import net.focik.homeoffice.addresses.domain.Address;
 import net.focik.homeoffice.addresses.domain.port.AddressRepository;
 import net.focik.homeoffice.addresses.infrastructure.dto.AddressDbDto;
-import net.focik.homeoffice.goahead.domain.customer.Customer;
-import net.focik.homeoffice.goahead.infrastructure.dto.CustomerDbDto;
-import net.focik.homeoffice.goahead.infrastructure.inMemory.DataBaseCustomer;
-import net.focik.homeoffice.goahead.infrastructure.mapper.JpaCustomerMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Profile({"test"})
