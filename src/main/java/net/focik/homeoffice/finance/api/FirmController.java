@@ -54,11 +54,11 @@ public class FirmController extends ExceptionHandling {
     @GetMapping()
 //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
     ResponseEntity<List<FirmDto>> getAll(@RequestParam(required = false) Boolean address) {
-        log.info("Try get all banks - Address = " + address);
+        log.info("Try get all firms - Address = " + address);
 
         List<Firm> firmList = getFirmUseCase.findByAll(address);
 
-        log.info("Found " + firmList.size() + " banks.");
+        log.info("Found " + firmList.size() + " firms.");
 
         return new ResponseEntity<>(firmList.stream()
                 .map(mapper::toDto)

@@ -52,12 +52,26 @@ public class CardController extends ExceptionHandling {
         return new ResponseEntity<>(mapper.toDto(card), OK);
     }
 
-    @GetMapping("/{idUser}/status")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    ResponseEntity<List<CardDto>> getAll(@PathVariable int idUser, @RequestParam(required = false) ActiveStatus status) {
-        log.info("Try get all card for idUser: " + idUser + " and status " + status);
+    @GetMapping
+        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    ResponseEntity<List<CardDto>> getAll(@RequestParam(required = false) ActiveStatus status) {
+        log.info("Try get all card for status " + status);
 
-        List<Card> cardsByUser = getCardUseCase.findByUser(idUser, status);
+        List<Card> cardsByStatus = getCardUseCase.findByStatus(status);
+
+        log.info("Found " + cardsByStatus.size() + " cards.");
+
+        return new ResponseEntity<>(cardsByStatus.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList()), OK);
+    }
+
+    @GetMapping("/user/{userId}")
+        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    ResponseEntity<List<CardDto>> getByUser(@PathVariable int userId, @RequestParam(required = false) ActiveStatus status) {
+        log.info("Try get all card for status " + status);
+
+        List<Card> cardsByUser = getCardUseCase.findByUserAndStatus(userId, status);
 
         log.info("Found " + cardsByUser.size() + " cards.");
 

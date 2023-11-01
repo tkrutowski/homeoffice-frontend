@@ -7,6 +7,7 @@ import net.focik.homeoffice.finance.domain.fee.port.primary.GetFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.UpdateFeeUseCase;
 import net.focik.homeoffice.userservice.domain.AppUser;
 import net.focik.homeoffice.userservice.domain.UserFacade;
+import net.focik.homeoffice.utils.UserHelper;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
-import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.FINANCE_FEE_READ_ALL;
-import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.ROLE_ADMIN;
+import static net.focik.homeoffice.utils.PrivilegeHelper.FINANCE_FEE_READ_ALL;
+import static net.focik.homeoffice.utils.PrivilegeHelper.ROLE_ADMIN;
 
 @AllArgsConstructor
 @Component
@@ -63,8 +64,7 @@ public class FeeFacade implements AddFeeUseCase, GetFeeUseCase, UpdateFeeUseCase
         if (isAdmin) {
             return feeService.findFeesByStatus(paymentStatus, withInstallment);
         } else {
-            String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-            AppUser user = userFacade.findUserByUsername(userName);
+            AppUser user = userFacade.findUserByUsername(UserHelper.getUserName());
             return feeService.findFeesByUser(Math.toIntExact(user.getId()), paymentStatus, withInstallment);
         }
     }

@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Component
 public class ApiPurchaseMapper {
@@ -19,7 +23,7 @@ public class ApiPurchaseMapper {
                 .idCard(dto.getIdCard())
                 .idFirm(dto.getIdFirm())
                 .idUser(dto.getIdUser())
-                .whatBought(dto.getWhatBought())
+                .name(dto.getName())
                 .purchaseDate(LocalDate.parse(dto.getPurchaseDate()))
                 .amount(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())))
                 .paymentDeadline(LocalDate.parse(dto.getPaymentDeadline()))
@@ -30,21 +34,33 @@ public class ApiPurchaseMapper {
                 .build();
     }
 
-    public PurchaseDto toDto(Purchase card) {
+    public PurchaseDto toDto(Purchase purchase) {
         return PurchaseDto.builder()
-                .id(card.getId())
-                .idCard(card.getIdCard())
-                .idFirm(card.getIdFirm())
-                .idUser(card.getIdUser())
-                .whatBought(card.getWhatBought())
-                .purchaseDate(card.getPurchaseDate().toString())
-                .amount(String.format("%.2f", card.getAmount()).replace(",", "."))
-                .paymentDeadline(card.getPaymentDeadline().toString())
-                .paymentDate(card.getPaymentDate().toString())
-                .otherInfo(card.getOtherInfo() == null ? "" : card.getOtherInfo())
-                .paymentStatus(card.getPaymentStatus().toString())
-                .isInstallment(card.isInstallment())
+                .id(purchase.getId())
+                .idCard(purchase.getIdCard())
+                .idFirm(purchase.getIdFirm())
+                .idUser(purchase.getIdUser())
+                .name(purchase.getName())
+                .purchaseDate(purchase.getPurchaseDate().toString())
+                .amount(String.format("%.2f", purchase.getAmount()).replace(",", "."))
+                .paymentDeadline(purchase.getPaymentDeadline().toString())
+                .paymentDate(purchase.getPaymentDate().toString())
+                .otherInfo(purchase.getOtherInfo() == null ? "" : purchase.getOtherInfo())
+                .paymentStatus(purchase.getPaymentStatus().toString())
+                .isInstallment(purchase.isInstallment())
                 .build();
+    }
+
+    public Map<String, List<PurchaseDto>> toDto(Map<LocalDate, List<Purchase>> inputMap){
+        Map<String, List<PurchaseDto>> outputMap = new TreeMap<>();
+
+        for (Map.Entry<LocalDate, List<Purchase>> entry : inputMap.entrySet()) {
+            outputMap.put(entry.getKey().toString(), entry.getValue().stream()
+                    .map(purchase -> toDto(purchase))
+                    .collect(Collectors.toList()));
+
+        }
+        return outputMap;
     }
 
     private void valid(PurchaseDto dto) {

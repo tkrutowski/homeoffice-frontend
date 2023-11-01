@@ -18,7 +18,7 @@ public class Purchase {
     private int idCard;
     private int idFirm;
     private int idUser;
-    private String whatBought;
+    private String name;
     private LocalDate purchaseDate;
     private BigDecimal amount;
     private LocalDate paymentDeadline;

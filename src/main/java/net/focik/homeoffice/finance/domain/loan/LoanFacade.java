@@ -7,6 +7,7 @@ import net.focik.homeoffice.finance.domain.loan.port.primary.GetLoanUseCase;
 import net.focik.homeoffice.finance.domain.loan.port.primary.UpdateLoanUseCase;
 import net.focik.homeoffice.userservice.domain.AppUser;
 import net.focik.homeoffice.userservice.domain.UserFacade;
+import net.focik.homeoffice.utils.UserHelper;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -53,8 +54,7 @@ public class LoanFacade implements AddLoanUseCase, GetLoanUseCase, UpdateLoanUse
         if (isAdmin) {
             return loanService.findLoansByStatus(loanStatus, withInstallment);
         } else {
-            String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-            AppUser user = userFacade.findUserByUsername(userName);
+            AppUser user = userFacade.findUserByUsername(UserHelper.getUserName());
             return loanService.findLoansByUser(Math.toIntExact(user.getId()), loanStatus, withInstallment);
         }
     }

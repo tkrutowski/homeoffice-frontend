@@ -9,5 +9,7 @@ public interface GetCardUseCase {
 
     Card findById(int idCard);
 
-    List<Card> findByUser(int idUser, ActiveStatus activeStatus);
+    List<Card> findByStatus(ActiveStatus activeStatus);
+
+    List<Card> findByUserAndStatus(Integer userId, ActiveStatus status);
 }

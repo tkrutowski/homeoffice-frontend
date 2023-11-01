@@ -86,6 +86,7 @@ class FirmService {
 
     private boolean canBeDeleted(Integer id) {
         //TODO check opłaty
+        //TODO sprawdzić czy nie ma ZAKUPÓW
         if (id < 0) {
             throw new FirmCanNotBeDeletedException("opłaty");
         }

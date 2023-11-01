@@ -12,7 +12,7 @@ public class PurchaseDto {
     private int idCard;
     private int idFirm;
     private int idUser;
-    private String whatBought;
+    private String name;
     private String purchaseDate;
     private String amount;
     private String paymentDeadline;

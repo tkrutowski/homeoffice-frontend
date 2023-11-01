@@ -3,21 +3,28 @@ package net.focik.homeoffice.finance.api;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.focik.homeoffice.finance.api.dto.BasicDto;
+import net.focik.homeoffice.finance.api.dto.CardDto;
 import net.focik.homeoffice.finance.api.dto.PurchaseDto;
 import net.focik.homeoffice.finance.api.mapper.ApiPurchaseMapper;
+import net.focik.homeoffice.finance.domain.card.Card;
 import net.focik.homeoffice.finance.domain.purchase.Purchase;
 import net.focik.homeoffice.finance.domain.purchase.port.primary.AddPurchaseUseCase;
 import net.focik.homeoffice.finance.domain.purchase.port.primary.DeletePurchaseUseCase;
 import net.focik.homeoffice.finance.domain.purchase.port.primary.GetPurchaseUseCase;
 import net.focik.homeoffice.finance.domain.purchase.port.primary.UpdatePurchaseUseCase;
+import net.focik.homeoffice.utils.UserHelper;
 import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
+import net.focik.homeoffice.utils.share.ActiveStatus;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.OK;
@@ -52,18 +59,43 @@ public class PurchaseController extends ExceptionHandling {
         return new ResponseEntity<>(mapper.toDto(purchase), OK);
     }
 
-    @GetMapping("/{idUser}/status")
+    @GetMapping
 //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    ResponseEntity<List<PurchaseDto>> getAll(@PathVariable int idUser, @RequestParam(required = false) PaymentStatus status) {
-        log.info("Try get all purchase for idUser: " + idUser + " and status " + status);
+    ResponseEntity<Map<String, List<PurchaseDto>>> getAll(@RequestParam PaymentStatus status,
+                                             @RequestParam(required = false) LocalDate date) {
 
-        List<Purchase> cardsByUser = getPurchaseUseCase.findByUser(idUser, status);
+        log.info(String.format("Try get all purchase for user: '%s', status = '%s' and date = '%s",UserHelper.getUserName(), status, date));
 
-        log.info("Found " + cardsByUser.size() + " purchases.");
+        Map<LocalDate, List<Purchase>> purchaseMap = getPurchaseUseCase.findByUserMap(UserHelper.getUserName(), status, date);
 
-        return new ResponseEntity<>(cardsByUser.stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toList()), OK);
+        log.info("Found " + purchaseMap.size() + " purchases.");
+
+        return new ResponseEntity<>(mapper.toDto(purchaseMap), OK);
+    }
+
+    @GetMapping("/user/{userId}")
+        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    ResponseEntity<Map<String, List<PurchaseDto>>>  getByUser(@PathVariable int userId, @RequestParam(required = false) PaymentStatus status,
+                                            @RequestParam(required = false) LocalDate date) {
+        log.info(String.format("Try get all purchase for userID: '%s', status = '%s' and date = '%s", userId, status, date));
+
+        Map<LocalDate, List<Purchase>> purchaseMap = getPurchaseUseCase.findByUserMap(userId, status, date);
+
+        log.info("Found " + purchaseMap.size() + " purchases.");
+
+        return new ResponseEntity<>(mapper.toDto(purchaseMap), OK);
+    }
+
+    @GetMapping("/current")
+        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    ResponseEntity<Map<String, List<PurchaseDto>>>  getCurrent() {
+        log.info(String.format("Try get current purchases"));
+
+        Map<LocalDate, List<Purchase>> purchaseMap = getPurchaseUseCase.findCurrent();
+
+        log.info("Found " + purchaseMap.size() + " purchases.");
+
+        return new ResponseEntity<>(mapper.toDto(purchaseMap), OK);
     }
 
     @PostMapping
@@ -93,11 +125,11 @@ public class PurchaseController extends ExceptionHandling {
 
     @PutMapping("/status/{id}")
     //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    public ResponseEntity<HttpResponse> updatePurchaseStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
+    public ResponseEntity<PurchaseDto> updatePurchaseStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update perchase status.");
 
-        updatePurchaseUseCase.updatePurchaseStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
-        return response(HttpStatus.OK, "Zaaktualizowano status zakupu.");
+        Purchase purchase = updatePurchaseUseCase.updatePurchaseStatus(id, PaymentStatus.valueOf(basicDto.getValue()));
+        return new ResponseEntity<>(mapper.toDto(purchase), OK);
     }
 
     @DeleteMapping("/{idPurchase}")

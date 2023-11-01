@@ -17,7 +17,7 @@ public class Card {
     private int id;
     private int idBank;
     private int idUser;
-    private String name;
+    private String cardName;
     private LocalDate activationDate;
     private BigDecimal limit;
     private int repaymentDay;

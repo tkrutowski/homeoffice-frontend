@@ -1,12 +1,9 @@
 package net.focik.homeoffice.finance.domain.card;
 
 import lombok.AllArgsConstructor;
-import net.focik.homeoffice.addresses.domain.Address;
-import net.focik.homeoffice.finance.domain.bank.Bank;
 import net.focik.homeoffice.finance.domain.card.port.secondary.CardRepository;
 import net.focik.homeoffice.finance.domain.exception.CardNotValidException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
-import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.utils.share.ActiveStatus;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +26,10 @@ class CardService {
         return cardRepository.saveCard(card);
     }
 
-    List<Card> findCardsByUser(int idUser, ActiveStatus activeStatus) {
+    List<Card> findCardsByUserAndStatus(Integer idUser, ActiveStatus activeStatus) {
         List<Card> cardByUserId = cardRepository.findCardByUserId(idUser);
 
-        if (activeStatus == null)
+        if (activeStatus == null || activeStatus == ActiveStatus.ALL)
             return cardByUserId;
 
         cardByUserId = cardByUserId.stream()
@@ -42,7 +39,20 @@ class CardService {
         return cardByUserId;
     }
 
-    Card findCardById(int idCard) {
+    List<Card> findCardsByStatus(ActiveStatus activeStatus) {
+        List<Card> cardList = cardRepository.findAll();
+
+        if (activeStatus == null || activeStatus == ActiveStatus.ALL)
+            return cardList;
+
+        cardList = cardList.stream()
+                .filter(card -> card.getActiveStatus().equals(activeStatus))
+                .collect(Collectors.toList());
+
+        return cardList;
+    }
+
+    Card findCardById(Integer idCard) {
         Optional<Card> cardById = cardRepository.findCardById(idCard);
 
         if (cardById.isEmpty()) {
@@ -53,7 +63,7 @@ class CardService {
     }
 
     @Transactional
-    public void deleteCard(int idCard) {
+    public void deleteCard(Integer idCard) {
         //TODO sprawdzić czy nie ma ZAKUPÓW
         cardRepository.deleteCardById(idCard);
     }

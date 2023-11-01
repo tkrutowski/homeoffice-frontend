@@ -1,20 +1,17 @@
 package net.focik.homeoffice.finance.domain.purchase;
 
 import lombok.AllArgsConstructor;
-import net.focik.homeoffice.finance.domain.card.Card;
 import net.focik.homeoffice.finance.domain.exception.CardNotValidException;
 import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.PurchaseNotValidException;
 import net.focik.homeoffice.finance.domain.purchase.port.secondary.PurchaseRepository;
-import net.focik.homeoffice.utils.share.ActiveStatus;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +26,9 @@ class PurchaseService {
         return purchaseRepository.savePurchase(purchase);
     }
 
-    List<Purchase> findPurchasesByUser(int idUser, PaymentStatus paymentStatus) {
-        List<Purchase> purchaseByUserId = purchaseRepository.findPurchaseByUserId(idUser);
+    List<Purchase> findPurchasesByUser(int idUser, PaymentStatus paymentStatus, LocalDate date) {
+        //TODO zmienić ID_USER!!!!!!!!!
+        List<Purchase> purchaseByUserId = purchaseRepository.findPurchaseByUserId(3);
 
         if (paymentStatus == null)
             return purchaseByUserId;
@@ -40,6 +38,25 @@ class PurchaseService {
                 .collect(Collectors.toList());
 
         return purchaseByUserId;
+    }
+
+    public List<Purchase> findCurrent(int idUser) {
+        //TODO zmienić ID_USER!!!!!!!!!
+        Set<LocalDate> deadlines = purchaseRepository.findPurchaseByUserAndStatus(3, PaymentStatus.TO_PAY).stream()
+//                .filter(purchase -> purchase.getPaymentStatus().equals(PaymentStatus.TO_PAY))
+                .map(Purchase::getPaymentDeadline)
+                .collect(Collectors.toSet());
+
+        List<Purchase> list = new ArrayList<>();
+        //TODO zmienić ID_USER!!!!!!!!!
+        deadlines.forEach(date -> list.addAll(purchaseRepository.findPurchaseByUserIdAndDeadline(3,date)));
+        return list;
+    }
+
+    Map<LocalDate, List<Purchase>> convertToMapByDeadline(List<Purchase> purchaseList){
+        return purchaseList.stream()
+                .sorted(Comparator.comparing(Purchase::getPurchaseDate))
+                .collect(Collectors.groupingBy(Purchase::getPaymentDeadline));
     }
 
     Purchase findPurchaseById(int idPurchase) {
@@ -54,7 +71,6 @@ class PurchaseService {
 
     @Transactional
     public void deletePurchase(int idPurchase) {
-        //TODO sprawdzić czy nie ma ZAKUPÓW
         purchaseRepository.deletePurchaseById(idPurchase);
     }
 
@@ -69,5 +85,6 @@ class PurchaseService {
             return true;
         return purchase.getPurchaseDate() == null && purchase.getPaymentDeadline() == null && purchase.getPaymentDate() == null;
     }
+
 
 }

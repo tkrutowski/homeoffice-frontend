@@ -7,6 +7,7 @@ import net.focik.homeoffice.finance.domain.loan.Loan;
 import net.focik.homeoffice.finance.domain.loan.LoanFacade;
 import net.focik.homeoffice.userservice.domain.AppUser;
 import net.focik.homeoffice.userservice.domain.UserFacade;
+import net.focik.homeoffice.utils.UserHelper;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -42,8 +43,7 @@ public class PaymentFacade {
             resultMap = paymentService.getFinancialTransactionMap(date, fees, loans);
 
         } else {
-            String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-            AppUser user = userFacade.findUserByUsername(userName);
+            AppUser user = userFacade.findUserByUsername(UserHelper.getUserName());
             List<Fee> feesByUser = feeFacade.getFeesByUser(Math.toIntExact(user.getId()), paymentStatus, true);
             List<Loan> loansByUser = loanFacade.getLoansByUser(Math.toIntExact(user.getId()), paymentStatus, true);
 
