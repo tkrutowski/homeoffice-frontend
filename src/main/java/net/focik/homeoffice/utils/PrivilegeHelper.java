@@ -1,4 +1,4 @@
-package net.focik.homeoffice.utils.privileges;
+package net.focik.homeoffice.utils;
 
 import java.util.List;
 

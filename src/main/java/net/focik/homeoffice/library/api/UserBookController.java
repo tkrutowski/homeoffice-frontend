@@ -13,6 +13,7 @@ import net.focik.homeoffice.library.domain.model.UserBook;
 import net.focik.homeoffice.library.domain.port.primary.DeleteUserBookUseCase;
 import net.focik.homeoffice.library.domain.port.primary.FindUserBookUseCase;
 import net.focik.homeoffice.library.domain.port.primary.SaveUserBookUseCase;
+import net.focik.homeoffice.utils.UserHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +41,7 @@ public class UserBookController {
     @GetMapping("/check")
     @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
     ResponseEntity<List<UserBookApiDto>> checkIfUserbook(@RequestParam(name = "id") int id) {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        List<UserBook> userBooksForBookId = findUserBookUseCase.findUserBooksForBookId(id, userName);
+        List<UserBook> userBooksForBookId = findUserBookUseCase.findUserBooksForBookId(id, UserHelper.getUserName());
         return new ResponseEntity<>(userBooksForBookId.stream()
                 .map(userBookMapper::toDto)
                 .collect(Collectors.toList()), HttpStatus.OK);
@@ -58,7 +58,7 @@ public class UserBookController {
     @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
     ResponseEntity<List<UserBookApiDto>> getAllUserBooks(@RequestParam(name = "status") ReadingStatus readingStatus,
                                                          @RequestParam(name = "year", required = false) Integer year) {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        String userName = UserHelper.getUserName();
         List<UserBook> allBooks;
         if (readingStatus.equals(ReadingStatus.READ)) {
             allBooks = findUserBookUseCase.findBookByUserAndReadStatusAndYear(userName, readingStatus, year == null ? LocalDate.now().getYear() : year);
@@ -74,8 +74,7 @@ public class UserBookController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
     public ResponseEntity<UserBookApiDto> addUserBook(@RequestBody UserBookApiDto userBookDto) {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        UserBook saved = saveUserBookUseCase.addUserBook(userBookMapper.toDomain(userBookDto), userName);
+        UserBook saved = saveUserBookUseCase.addUserBook(userBookMapper.toDomain(userBookDto), UserHelper.getUserName());
         return new ResponseEntity<>(userBookMapper.toDto(saved), HttpStatus.OK);
     }
 
