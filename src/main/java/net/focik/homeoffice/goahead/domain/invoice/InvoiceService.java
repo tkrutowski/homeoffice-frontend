@@ -24,11 +24,11 @@ class InvoiceService {
     ICustomerService customerService;
 
     @Transactional
-    public Integer saveInvoice(Invoice invoice) {
+    public Invoice saveInvoice(Invoice invoice) {
         validate(invoice);
         updateAmount(invoice);
 
-        return invoiceRepository.save(invoice).getIdInvoice();
+        return invoiceRepository.save(invoice);
     }
 
     private void validate(Invoice invoice) {
@@ -76,7 +76,7 @@ class InvoiceService {
 
     public int getNewInvoiceNumber(int year) {
         int latestNumber = findByAll(null, null, null).stream()
-                .map(invoice -> invoice.getInvoiceNumber())
+                .map(Invoice::getInvoiceNumber)
                 .map(s -> s.split("/"))
                 .filter(strings -> Integer.parseInt(strings[0]) == year)
                 .mapToInt(value -> Integer.parseInt(value[1]))
@@ -112,7 +112,7 @@ class InvoiceService {
         byId.setSellDate(invoice.getSellDate());
         byId.setOtherInfo(invoice.getOtherInfo());
         byId.setPaymentDate(invoice.getPaymentDate());
-        byId.setPaymentType(invoice.getPaymentType());
+        byId.setPaymentMethod(invoice.getPaymentMethod());
         byId.setInvoiceItems(invoice.getInvoiceItems());
 
         updateAmount(invoice);

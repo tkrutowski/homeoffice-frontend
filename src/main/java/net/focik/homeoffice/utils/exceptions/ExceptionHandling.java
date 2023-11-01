@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 //import org.springframework.security.authentication.BadCredentialsException;
 //import org.springframework.security.authentication.DisabledException;
 //import org.springframework.security.authentication.LockedException;
-//import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -55,6 +55,11 @@ public class ExceptionHandling implements ErrorController {
     @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<HttpResponse> notFoundException(ObjectNotFoundException exception) {
         return createHttpResponse(NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ObjectCanNotBeDeletedException.class)
+    public ResponseEntity<HttpResponse> canNotBeDeletedException(ObjectCanNotBeDeletedException exception) {
+        return createHttpResponse(LOCKED, exception.getMessage());
     }
 
     @ExceptionHandler(ObjectNotValidException.class)
@@ -159,11 +164,11 @@ public class ExceptionHandling implements ErrorController {
 
 
 
-//    @ExceptionHandler(AuthenticationException.class)
-//    public ResponseEntity<HttpResponse> authenticationException(AuthenticationException exception) {
-//        log.error(exception.getMessage());
-//        return createHttpResponse(UNAUTHORIZED, exception.getMessage());
-//    }
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<HttpResponse> authenticationException(AuthenticationException exception) {
+        log.error(exception.getMessage());
+        return createHttpResponse(UNAUTHORIZED, exception.getMessage());
+    }
 
 
 

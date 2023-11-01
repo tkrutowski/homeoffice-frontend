@@ -5,7 +5,7 @@ import net.focik.homeoffice.goahead.domain.invoice.port.secondary.InvoiceReposit
 import net.focik.homeoffice.goahead.infrastructure.inMemory.InMemoryInvoiceRepositoryAdapter;
 import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import net.focik.homeoffice.utils.share.PaymentType;
+import net.focik.homeoffice.utils.share.PaymentMethod;
 import org.javamoney.moneta.Money;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,11 +23,11 @@ class InvoiceFacadeTest {
     static InvoiceService service = new InvoiceService(repository, null);
     static InvoiceFacade facade = new InvoiceFacade(service);
 
-    static Integer id = 0;
+    static Invoice invoice;
 
     @BeforeAll
     static void setUp() {
-            id = facade.addInvoice(createInvoice());
+            invoice = facade.addInvoice(createInvoice());
     }
 
     @Test
@@ -35,19 +35,19 @@ class InvoiceFacadeTest {
         //given
 
         //when
-        Integer result = facade.addInvoice(createInvoice2());
-        Invoice byId = facade.findById(result);
+        Invoice result = facade.addInvoice(createInvoice2());
+        Invoice byId = facade.findById(result.getIdInvoice());
 
         //then
-        assertTrue(result > 0);
-        assertTrue(byId.getInvoiceItems().size() == 2);
+        assertTrue(result.getIdInvoice() > 0);
+        assertEquals(2, byId.getInvoiceItems().size());
 
     }
 
     @Test
     void should_return_correct_invoice_ById() {
         //given
-        Invoice byId = facade.findById(id);
+        Invoice byId = facade.findById(invoice.getIdInvoice());
 
         //when
         Money result = byId.getInvoiceItems().stream()
@@ -55,14 +55,14 @@ class InvoiceFacadeTest {
                 .reduce(Money.of(BigDecimal.ZERO, "PLN"), Money::add);
 
         //then
-        assertTrue(byId.getInvoiceItems().size() == 2);
-        assertEquals(PaymentType.TRANSFER, byId.getPaymentType());
+        assertEquals(2, byId.getInvoiceItems().size());
+        assertEquals(PaymentMethod.TRANSFER, byId.getPaymentMethod());
         assertEquals(LocalDate.of(2022, 9, 1), byId.getInvoiceDate());
         assertEquals(LocalDate.of(2022, 9, 5), byId.getSellDate());
 //        assertEquals(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")),"PLN").getNumber(), byId.getAmount().getNumber());
         assertEquals(PaymentStatus.TO_PAY, byId.getPaymentStatus());
         assertEquals(LocalDate.of(2022, 9, 15), byId.getPaymentDate());
-        assertEquals(PaymentType.TRANSFER, byId.getPaymentType());
+        assertEquals(PaymentMethod.TRANSFER, byId.getPaymentMethod());
         assertEquals(MoneyUtils.mapMoneyToString(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")), "PLN")),
                 MoneyUtils.mapMoneyToString(result));
     }
@@ -70,7 +70,7 @@ class InvoiceFacadeTest {
     private static Invoice createInvoice() {
         return Invoice.builder()
                 .customer(Customer.builder().id(1).build())
-                .paymentType(PaymentType.TRANSFER)
+                .paymentMethod(PaymentMethod.TRANSFER)
                 .invoiceDate(LocalDate.of(2022, 9, 1))
                 .sellDate(LocalDate.of(2022, 9, 5))
                 .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1259.96")), "PLN"))
@@ -97,7 +97,7 @@ class InvoiceFacadeTest {
     private Invoice createInvoice2() {
         return Invoice.builder()
                 .customer(Customer.builder().id(2).build())
-                .paymentType(PaymentType.TRANSFER)
+                .paymentMethod(PaymentMethod.TRANSFER)
                 .invoiceDate(LocalDate.of(2022, 9, 3))
                 .sellDate(LocalDate.of(2022, 9, 3))
                 .amount(Money.of(BigDecimal.valueOf(Double.parseDouble("1260")), "PLN"))

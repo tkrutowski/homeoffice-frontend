@@ -11,4 +11,6 @@ public interface AddressRepository {
     Address save(Address address);
 
     Optional<Address> findById(Integer id);
+
+    void deleteAddress(Integer id);
 }

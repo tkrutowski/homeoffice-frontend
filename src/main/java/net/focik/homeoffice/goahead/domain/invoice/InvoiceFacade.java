@@ -16,8 +16,9 @@ public class InvoiceFacade implements UpdateInvoiceUseCase, DeleteInvoiceUseCase
 
     private final InvoiceService invoiceService;
 
-    public Integer addInvoice(Invoice invoice) {
-        return invoiceService.saveInvoice(invoice);
+    public Invoice addInvoice(Invoice invoice) {
+        int idInvoice = invoiceService.saveInvoice(invoice).getIdInvoice();
+        return  findFullById(idInvoice);
     }
 
     public Invoice findById(Integer id) {
@@ -38,7 +39,8 @@ public class InvoiceFacade implements UpdateInvoiceUseCase, DeleteInvoiceUseCase
 
     @Override
     public Invoice updateInvoice(Invoice invoice) {
-        return invoiceService.updateInvoice(invoice);
+        int idInvoice = invoiceService.updateInvoice(invoice).getIdInvoice();
+        return findFullById(idInvoice);
     }
 
     @Override

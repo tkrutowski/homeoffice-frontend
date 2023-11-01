@@ -2,9 +2,8 @@ package net.focik.homeoffice.goahead.domain.invoice;
 
 import lombok.*;
 import net.focik.homeoffice.goahead.domain.customer.Customer;
-import net.focik.homeoffice.goahead.domain.customer.CustomerStatus;
 import net.focik.homeoffice.utils.share.PaymentStatus;
-import net.focik.homeoffice.utils.share.PaymentType;
+import net.focik.homeoffice.utils.share.PaymentMethod;
 import org.javamoney.moneta.Money;
 
 import java.time.LocalDate;
@@ -19,7 +18,7 @@ import java.util.List;
 public class Invoice {
     private int idInvoice;
     private String invoiceNumber;
-    private PaymentType paymentType;
+    private PaymentMethod paymentMethod;
     private LocalDate sellDate;//data sprzedaży
     private LocalDate invoiceDate;//data faktury
     private Money amount;//brutto

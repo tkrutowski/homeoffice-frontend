@@ -100,7 +100,7 @@ public class InvoicePdf {
         //payment
         Phrase pay = new Phrase();
         Chunk pay1 = new Chunk("Forma płatności: ", FONT_10);
-        Chunk pay2 = new Chunk(String.format(" %s %d dni", invoice.getPaymentType().getViewValue(),
+        Chunk pay2 = new Chunk(String.format(" %s %d dni", invoice.getPaymentMethod().getViewValue(),
                 Period.between(invoice.getInvoiceDate(), invoice.getPaymentDate()).getDays()), FONT_10_BOLD);
         Chunk pay3 = new Chunk("    Termin płatności: ", FONT_10);
         Chunk pay4 = new Chunk(invoice.getPaymentDate().toString(), FONT_10_BOLD);

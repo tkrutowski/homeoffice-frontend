@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class PaymentTypeDto {
+public class PaymentStatusDto {
     private String name;
     private String viewName;
 }

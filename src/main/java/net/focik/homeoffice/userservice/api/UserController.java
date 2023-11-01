@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.focik.homeoffice.utils.privileges.PrivilegeHelper.*;
+import static net.focik.homeoffice.utils.PrivilegeHelper.*;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 

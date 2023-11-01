@@ -40,6 +40,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         } else {
             String authorizationHeader = request.getHeader(AUTHORIZATION);
             if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_PREFIX)) {
+                // Ustaw kod odpowiedzi na 401 Unauthorized
+//                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+//                return;
                 filterChain.doFilter(request, response);
                 return;
             }
