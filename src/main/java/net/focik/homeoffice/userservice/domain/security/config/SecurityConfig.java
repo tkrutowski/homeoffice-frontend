@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import net.focik.homeoffice.userservice.domain.security.constant.SecurityConstant;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAccessDeniedHandler;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthenticationEntryPoint;
-import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthenticationFailureHandler;
 import net.focik.homeoffice.userservice.domain.security.filter.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +33,8 @@ import java.util.List;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String FRONT_END_SERVER_IN = "http://localhost:8080";
-    private static final String FRONT_END_SERVER_OUT = "https://goahead.netlify.app";
+    private static final String FRONT_END_SERVER_GOAHEAD = "https://goahead.netlify.app";
+    private static final String FRONT_END_SERVER_FOCIKHOME = "https://focikhome.netlify.app";
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
@@ -95,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList(FRONT_END_SERVER_IN, FRONT_END_SERVER_OUT));
+        configuration.setAllowedOrigins(Arrays.asList(FRONT_END_SERVER_IN, FRONT_END_SERVER_GOAHEAD, FRONT_END_SERVER_FOCIKHOME));
 //        configuration.addAllowedOrigin("*");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization",
