@@ -31,7 +31,7 @@ class CustomerFacadeTest {
 //        idCustomer = facade.addCustomer(customer);
 
         facade.addCustomer(createCustomer1());
-        idCustomerToUpdate = facade.addCustomer(createCustomer2());
+        idCustomerToUpdate = facade.addCustomer(createCustomer2()).getId();
         facade.addCustomer(createCustomer3());
         facade.addCustomer(createCustomer4());
 
@@ -44,13 +44,13 @@ class CustomerFacadeTest {
     void should_add_customer() {
         //given
         Customer customer = createCustomer();
-        Integer idCustomer = facade.addCustomer(createCustomer());
+        Customer result = facade.addCustomer(createCustomer());
 
         //when
-        Customer byId = facade.findById(idCustomer, true);
+        Customer byId = facade.findById(result.getId(), true);
 
         //then
-        assertEquals(byId.getId(), idCustomer);
+        assertEquals(byId.getId(), result.getId());
         assertEquals(customer.getFirstName(), byId.getFirstName());
         assertEquals(customer.getName(), byId.getName());
         assertEquals(customer.getNip(), byId.getNip());

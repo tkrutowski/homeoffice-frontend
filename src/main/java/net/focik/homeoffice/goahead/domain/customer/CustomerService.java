@@ -21,11 +21,12 @@ class CustomerService implements ICustomerService {
     private final AddressEndpoint addressEndpoint;
 
     @Transactional
-    public Integer addCustomer(Customer customer) {
+    public Customer addCustomer(Customer customer) {
         validate(customer);
         Address savedAddress = addressEndpoint.addAddress(customer.getAddress());
         customer.setAddress(savedAddress);
-        return customerRepository.save(customer).getId();
+        int id = customerRepository.save(customer).getId();
+        return findById(id, true);
     }
 
     @Transactional
@@ -48,8 +49,10 @@ class CustomerService implements ICustomerService {
         }
     }
 
-
+    @Transactional
     public void deleteCustomer(Integer id) {
+        Customer byId = findById(id, true);
+        addressEndpoint.deleteAddress(byId.getAddress().getId());
         customerRepository.delete(id);
     }
 

@@ -23,6 +23,7 @@ public class CustomerDbDto {
     private String name;
     private String firstName;
     private String nip;
+    private String regon;
     private String phone;
     private String mail;
     private String otherInfo;

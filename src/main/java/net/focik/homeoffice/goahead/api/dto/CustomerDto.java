@@ -16,13 +16,11 @@ public class CustomerDto {
     private String nip;
     private String phone;
     private String mail;
-    private String customerType;
-    private String customerStatus;
-    private String otherInfo;
-    private String city;
-    private String street;
-    private String zip;
+    private CustomerTypeDto customerType;
+    private CustomerStatusDto customerStatus;
     private String regon;
+    private String otherInfo;
+    private AddressDto address;
 
 
 }

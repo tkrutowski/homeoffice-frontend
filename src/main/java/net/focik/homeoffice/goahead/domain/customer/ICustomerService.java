@@ -7,7 +7,7 @@ import java.util.List;
 @Service
 public interface ICustomerService {
 
-    Integer addCustomer(Customer customer);
+    Customer addCustomer(Customer customer);
 
     Customer updateCustomer(Customer customer);
 

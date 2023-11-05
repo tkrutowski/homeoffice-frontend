@@ -80,18 +80,18 @@ public class CustomerController extends ExceptionHandling {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
-    public ResponseEntity<Integer> addCustomer(@RequestBody CustomerDto customerDto) {
+    public ResponseEntity<CustomerDto> addCustomer(@RequestBody CustomerDto customerDto) {
         log.info("Try add new customer.");
 
         Customer customer = mapper.toDomain(customerDto);
-        Integer result = addCustomerUseCase.addCustomer(customer);
+        Customer result = addCustomerUseCase.addCustomer(customer);
 
-        log.info(result > 0 ? "Customer added with id = " + result : "No customer added!");
+        log.info(result.getId() > 0 ? "Customer added with id = " + result.getId() : "No customer added!");
 
-        if (result <= 0)
-            return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST);
+        if (result.getId() <= 0)
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 
-        return new ResponseEntity<>(result, HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.toDto(result), HttpStatus.CREATED);
     }
 
     @PutMapping

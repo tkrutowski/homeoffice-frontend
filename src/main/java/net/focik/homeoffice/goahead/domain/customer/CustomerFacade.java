@@ -15,8 +15,8 @@ public class CustomerFacade implements AddCustomerUseCase, UpdateCustomerUseCase
 
     private final ICustomerService customerService;
 
-    public Integer addCustomer(Customer customer) {
-        return customerService.addCustomer(customer);
+    public Customer addCustomer(Customer customer) {
+         return customerService.addCustomer(customer);
     }
 
     public Customer updateCustomer(Customer customer) {
