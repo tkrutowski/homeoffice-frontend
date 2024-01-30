@@ -8,7 +8,6 @@ import cardMillennium from "@/assets/images/millenium_card.png";
 import cardAllegro from "@/assets/images/allegro_card.png";
 import cardSaturn from "@/assets/images/saturn_card.png";
 import cardPkoBp from "@/assets/images/pkoBp_card.png";
-import User from "@/assets/types/User";
 export const useCardsStore = defineStore("card", {
   state: () => ({
     loginError: false,
