@@ -225,10 +225,6 @@ onMounted(() => {
         </h4>
       </template>
 
-      <template #loading>
-        <h4 class="color-green">Ładowanie danych. Proszę czekać...</h4>
-      </template>
-
       <!--  NAME    -->
       <Column
         field="name"
@@ -238,7 +234,7 @@ onMounted(() => {
         style="min-width: 180px"
       >
         <template #body="{ data, field }">
-          <div class="name">
+          <div class="name color-orange">
             {{ data[field] }}
           </div>
         </template>
@@ -253,7 +249,7 @@ onMounted(() => {
         style="width: 45px"
       >
         <template #body="{ data, field }">
-          <div class="day">
+          <div class="day color-orange">
             {{ data[field] }}
           </div>
         </template>
@@ -267,14 +263,20 @@ onMounted(() => {
           style="min-width: 100px"
         >
           <template #body="slotProps">
-            <div :class="getClassAmount(slotProps.data.installments, number)">
+            <div
+              class="color-orange"
+              :class="getClassAmount(slotProps.data.installments, number)"
+            >
               {{ getAmount(slotProps.data.installments, number) }}
             </div>
           </template>
         </Column>
         <Column header="Data zapł." style="min-width: 110px">
           <template #body="slotProps">
-            <div :class="getClassDate(slotProps.data.installments, number)">
+            <div
+              class="color-orange"
+              :class="getClassDate(slotProps.data.installments, number)"
+            >
               <!--                  slotProps.data.paymentDay-->
               {{ getDate(slotProps.data.installments, number) }}
             </div>
@@ -345,7 +347,7 @@ onMounted(() => {
   padding: 0.3rem 0 0.3rem 0;
 }
 .name {
-  padding: 0.3rem 0 0.3rem 0;
+  padding: 0.3rem 0 0.3rem 1rem;
   text-align: left;
 }
 .day {

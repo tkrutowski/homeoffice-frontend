@@ -296,7 +296,7 @@ const showErrorFirstDate = () => {
           <div class="flex flex-column col-12 col-xl-6 m-auto">
             <!-- ROW-1   NAME -->
             <div class="flex flex-column col-12">
-              <label for="name">Nazwa</label>
+              <label class="color-orange" for="name">Nazwa</label>
               <InputText
                 id="name"
                 v-model="fee.name"
@@ -311,7 +311,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-2   USER -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz użytkownika:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz użytkownika:</label
+                >
                 <Dropdown
                   id="input-customer"
                   v-model="selectedUser"
@@ -337,7 +339,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-3   FIRM -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz firmę:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz firmę:</label
+                >
                 <AutoComplete
                   id="input-customer"
                   v-model="selectedFirm"
@@ -364,7 +368,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-4  NUMBER / DATE  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="number">Numer umowy:</label>
+                <label class="color-orange" for="number">Numer umowy:</label>
                 <InputText
                   id="number"
                   v-model="fee.feeNumber"
@@ -376,7 +380,7 @@ const showErrorFirstDate = () => {
                 }}</small>
               </div>
               <div class="flex flex-column col-12 col-md-6">
-                <label for="date">Z data:</label>
+                <label class="color-orange" for="date">Z data:</label>
                 <Calendar
                   id="date"
                   v-model="feeDateTemp"
@@ -393,7 +397,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-5   FEE_FREQUENCY -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Częstotliwość opłat:</label>
+                <label class="color-orange" for="input-customer"
+                  >Częstotliwość opłat:</label
+                >
                 <Dropdown
                   id="input-customer"
                   v-model="selectedFeeFrequency"
@@ -423,7 +429,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-6  NUMBER OF FEES /  AMOUNT  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="noOfPayment">Ilość opłat:</label>
+                <label class="color-orange" for="noOfPayment"
+                  >Ilość opłat:</label
+                >
                 <InputNumber
                   id="noOfPayment"
                   v-model="fee.numberOfPayments"
@@ -435,7 +443,7 @@ const showErrorFirstDate = () => {
                 />
               </div>
               <div class="flex flex-column col-12 col-md-6">
-                <label for="amount">Kwota opłaty:</label>
+                <label class="color-orange" for="amount">Kwota opłaty:</label>
                 <InputNumber
                   id="amount"
                   v-model="fee.amount"
@@ -453,7 +461,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-6  ACCOUNT NR / FIRST PAYMENT DATE  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="accountNo">Nr konta:</label>
+                <label class="color-orange" for="accountNo">Nr konta:</label>
                 <InputMask
                   id="accountNo"
                   v-model="fee.accountNumber"
@@ -465,7 +473,9 @@ const showErrorFirstDate = () => {
                 }}</small>
               </div>
               <div class="flex flex-column col-12 col-md-6">
-                <label for="first">Data pierwszej raty:</label>
+                <label class="color-orange" for="first"
+                  >Data pierwszej raty:</label
+                >
                 <Calendar
                   id="first"
                   v-model="firstPaymentDateTemp"
@@ -483,7 +493,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-7  OTHER INFO  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12">
-                <label for="input">Dodatkowe informacje:</label>
+                <label class="color-orange" for="input"
+                  >Dodatkowe informacje:</label
+                >
                 <Textarea v-model="fee.otherInfo" rows="5" cols="30" />
               </div>
             </div>

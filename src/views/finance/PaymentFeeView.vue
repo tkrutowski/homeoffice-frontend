@@ -199,49 +199,59 @@ onMounted(async () => {
     <div class="flex flex-row">
       <!--   LEFT   -->
       <div class="flex flex-column col-12 col-xl-5 m-auto">
-        <p class="mb-1 mt-3"><small>Nazwa opłaty:</small> {{ fee?.name }}</p>
-        <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm.name }}</p>
-        <p class="mb-1"><small>Nr umowy:</small> {{ fee?.feeNumber }}</p>
-        <p class="mb-1"><small>Z dnia:</small> {{ fee?.date }}</p>
-        <p class="mb-1">
+        <p class="mb-1 mt-3 color-orange">
+          <small>Nazwa opłaty:</small> {{ fee?.name }}
+        </p>
+        <p class="mb-1 color-orange">
+          <small>Nazwa firmy:</small> {{ fee?.firm.name }}
+        </p>
+        <p class="mb-1 color-orange">
+          <small>Nr umowy:</small> {{ fee?.feeNumber }}
+        </p>
+        <p class="mb-1 color-orange"><small>Z dnia:</small> {{ fee?.date }}</p>
+        <p class="mb-1 color-orange">
           <small>Data pierwszej opłaty:</small> {{ fee?.firstPaymentDate }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Termin całkowitej spłaty:</small> {{ countDeadLine }}
         </p>
-        <p class="mb-5"><small>Nr konta:</small> {{ fee?.accountNumber }}</p>
+        <p class="mb-5 color-orange">
+          <small>Nr konta:</small> {{ fee?.accountNumber }}
+        </p>
 
-        <p class="mb-1"><small>Kwota opłaty:</small> {{ fee?.amount }} zł</p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
+          <small>Kwota opłaty:</small> {{ fee?.amount }} zł
+        </p>
+        <p class="mb-1 color-orange">
           <small>Częstotliwość opłat:</small>
           {{ fee?.feeFrequency.viewName }}
         </p>
 
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Ilość opłat:</small> {{ fee?.numberOfPayments }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Koszt planowany:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(plannedInterest) }}</span
           >
         </p>
 
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Obecna różnica:</small>
           <span class="color-red ml-1"
             >{{ UtilsService.formatCurrency(currentInterest) }}
           </span>
         </p>
 
-        <p class="mb-3">
+        <p class="mb-3 color-orange">
           <small>Koszt rzeczywisty:</small>
           <span class="color-red ml-1"
             >{{ UtilsService.formatCurrency(realInterest) }}
           </span>
         </p>
 
-        <label>Opis:</label>
+        <label class="color-orange">Opis:</label>
         <Textarea :v-model="fee?.otherInfo" rows="5" readonly />
       </div>
 
@@ -250,28 +260,34 @@ onMounted(async () => {
         <DataTable :value="installments">
           <Column field="paymentDeadline" header="Termin płatności">
             <template #body="{ data, field }">
-              <div style="text-align: center">{{ data[field] }}</div>
+              <div class="color-orange" style="text-align: center">
+                {{ data[field] }}
+              </div>
             </template>
           </Column>
           <Column field="installmentAmountToPay" header="Kwota">
             <template #body="{ data, field }">
-              {{ UtilsService.formatCurrency(data[field]) }}
+              <div class="color-orange">
+                {{ UtilsService.formatCurrency(data[field]) }}
+              </div>
             </template>
           </Column>
           <Column field="paymentDate" header="Data płatności">
             <template #body="{ data, field }">
-              <div style="text-align: center">
+              <div class="color-orange" style="text-align: center">
                 {{ data[field] !== "-999999999-01-01" ? data[field] : "" }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountPaid" header="Kwota">
             <template #body="{ data, field }">
-              {{
-                data[field] !== 0
-                  ? UtilsService.formatCurrency(data[field])
-                  : ""
-              }}
+              <div class="color-orange">
+                {{
+                  data[field] !== 0
+                    ? UtilsService.formatCurrency(data[field])
+                    : ""
+                }}
+              </div>
             </template>
           </Column>
           <!--                EDIT, DELETE-->

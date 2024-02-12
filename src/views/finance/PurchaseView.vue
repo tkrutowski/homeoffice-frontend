@@ -394,7 +394,9 @@ const showErrorDeadline = () => {
             <!-- ROW-3   CARD -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz kartę:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz kartę:</label
+                >
                 <Dropdown
                   id="input-customer"
                   v-model="selectedCard"
@@ -422,7 +424,9 @@ const showErrorDeadline = () => {
             <!-- ROW-4   FIRM -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz firmę:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz firmę:</label
+                >
                 <AutoComplete
                   id="input-customer"
                   v-model="selectedFirm"
@@ -450,7 +454,7 @@ const showErrorDeadline = () => {
             <!-- ROW-4  DATE  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12">
-                <label for="date">Data zakupu:</label>
+                <label class="color-orange" for="date">Data zakupu:</label>
                 <Calendar
                   id="date"
                   v-model="purchaseDateTemp"
@@ -467,7 +471,7 @@ const showErrorDeadline = () => {
             <!-- ROW-6  AMOUNT  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12">
-                <label for="amount">Kwota:</label>
+                <label class="color-orange" for="amount">Kwota:</label>
                 <InputNumber
                   id="amount"
                   v-model="purchase.amount"
@@ -485,7 +489,7 @@ const showErrorDeadline = () => {
             <!-- ROW-4  DEADLINE  -->
             <div class="flex-row flex">
               <div class="flex flex-column col-12">
-                <label for="date">Termin spłaty:</label>
+                <label class="color-orange" for="date">Termin spłaty:</label>
                 <Calendar
                   id="date"
                   v-model="deadlineDateTemp"
@@ -502,7 +506,9 @@ const showErrorDeadline = () => {
             <!-- ROW-7  OTHER INFO  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12">
-                <label for="input">Dodatkowe informacje:</label>
+                <label class="color-orange" for="input"
+                  >Dodatkowe informacje:</label
+                >
                 <Textarea v-model="purchase.otherInfo" rows="5" cols="30" />
               </div>
             </div>

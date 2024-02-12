@@ -169,7 +169,7 @@ onMounted(() => {
   if (bankStore.banks.length === 0) bankStore.getBanksFromDb();
   btnSaveDisabled.value = false;
   console.log("loanStore.loans.length", loanStore.loans.length);
-  if (loanStore.loans.length === 0) loanStore.getLoansFromDb("ALL", true);
+  loanStore.getLoans("ALL");
 });
 
 onMounted(async () => {
@@ -284,7 +284,7 @@ const showErrorFirstDate = () => {
           <div class="flex flex-column col-12 col-xl-6 m-auto">
             <!-- ROW-1   NAME -->
             <div class="flex flex-column col-12">
-              <label for="name">Nazwa</label>
+              <label class="color-orange" for="name">Nazwa</label>
               <InputText
                 id="name"
                 v-model="loan.name"
@@ -299,7 +299,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-2   USER -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz użytkownika:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz użytkownika:</label
+                >
                 <Dropdown
                   id="input-customer"
                   v-model="selectedUser"
@@ -325,7 +327,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-3   BANK -->
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
-                <label for="input-customer">Wybierz bank:</label>
+                <label class="color-orange" for="input-customer"
+                  >Wybierz bank:</label
+                >
                 <Dropdown
                   id="input-customer"
                   v-model="selectedBank"
@@ -352,7 +356,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-4  NUMBER / DATE  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="number">Numer kredytu</label>
+                <label class="color-orange" for="number">Numer kredytu</label>
                 <InputText
                   id="number"
                   v-model="loan.loanNumber"
@@ -381,7 +385,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-5  AMOUNT / COST  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="amount">Kwota kredytu</label>
+                <label class="color-orange" for="amount">Kwota kredytu</label>
                 <InputNumber
                   id="amount"
                   v-model="loan.amount"
@@ -407,7 +411,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-5  INSTALLMENT NR / INSTALLMENT AMOUNT  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="amount">Ilość rat:</label>
+                <label class="color-orange" for="amount">Ilość rat:</label>
                 <InputNumber
                   id="amount"
                   v-model="loan.numberOfInstallments"
@@ -439,7 +443,7 @@ const showErrorFirstDate = () => {
             <!-- ROW-6  ACCOUNT NR / FIRST PAYMENT DATE  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12 col-md-6">
-                <label for="accountNo">Nr konta:</label>
+                <label class="color-orange" for="accountNo">Nr konta:</label>
                 <InputMask
                   id="accountNo"
                   :class="{ 'p-invalid': showErrorAccountNumber() }"
@@ -451,7 +455,9 @@ const showErrorFirstDate = () => {
                 }}</small>
               </div>
               <div class="flex flex-column col-12 col-md-6">
-                <label for="first">Data pierwszej raty:</label>
+                <label class="color-orange" for="first"
+                  >Data pierwszej raty:</label
+                >
                 <Calendar
                   id="first"
                   v-model="firstPaymentDateTemp"
@@ -469,7 +475,9 @@ const showErrorFirstDate = () => {
             <!-- ROW-7  OTHER INFO  -->
             <div class="flex-row flex grid">
               <div class="flex flex-column col-12">
-                <label for="input">Dodatkowe informacje:</label>
+                <label class="color-orange" for="input"
+                  >Dodatkowe informacje:</label
+                >
                 <Textarea v-model="loan.otherInfo" rows="5" cols="30" />
               </div>
             </div>

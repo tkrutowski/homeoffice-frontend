@@ -136,40 +136,31 @@ const items = ref([
 </script>
 
 <template>
-  <div class="card relative z-2">
-    <Menubar :model="items">
-      <template #start>
-        <img
-          alt="logo"
-          src="@/assets/HomeOffice.png"
-          height="30"
-          class="mr-2"
-        />
-      </template>
-      <template #end>
-        <div v-if="!authorizationStore.isAuthenticated">
-          <router-link :to="{ name: 'login' }" style="text-decoration: none">
-            <OfficeButton
-              size="sm"
-              class="my-2 ml-2 my-sm-0"
-              btn-type="office"
-              text="zaloguj się"
-            />
-          </router-link>
-        </div>
-        <div v-else>
+  <Menubar :model="items" class="main-menu">
+    <template #start>
+      <img alt="logo" src="@/assets/HomeOffice.png" height="30" class="mr-2" />
+    </template>
+    <template #end>
+      <div v-if="!authorizationStore.isAuthenticated">
+        <router-link :to="{ name: 'login' }" style="text-decoration: none">
           <OfficeButton
             size="sm"
             class="my-2 ml-2 my-sm-0"
             btn-type="office"
-            text="wyloguj"
-            :onclick="authorizationStore.logout"
+            text="zaloguj się"
           />
-        </div>
-      </template>
-    </Menubar>
-  </div>
+        </router-link>
+      </div>
+      <div v-else>
+        <OfficeButton
+          size="sm"
+          class="my-2 ml-2 my-sm-0"
+          btn-type="office"
+          text="wyloguj"
+          :onclick="authorizationStore.logout"
+        />
+      </div>
+    </template>
+  </Menubar>
 </template>
-<style scoped>
-/* Możesz również stylować inne elementy, takie jak aktywne elementy menu, podmenu itp. */
-</style>
+<style scoped></style>

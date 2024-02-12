@@ -5,6 +5,7 @@ import { useAuthorizationStore } from "@/stores/authorization";
 import { PaymentStatus } from "@/assets/types/PaymentStatus";
 import { PaymentMethod } from "@/assets/types/PaymentMethod";
 import { ErrorService } from "@/service/ErrorService";
+import StatusType from "@/assets/types/StatusType";
 
 export const useLoansStore = defineStore("loan", {
   state: () => ({
@@ -23,12 +24,59 @@ export const useLoansStore = defineStore("loan", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getLoansPaid: (state) => {
+      return state.loans.filter((item) => item.loanStatus.name === "PAID");
+    },
+    getLoansToPay: (state) => {
+      return state.loans.filter((item) => item.loanStatus.name === "TO_PAY");
+    },
+    loansSumToPay: (state) => {
+      const loans: Loan[] = state.loans.filter(
+        (item) => item.loanStatus.name === "TO_PAY"
+      );
+      let sum = 0;
+      loans.forEach((loan) => {
+        const installmentSum = loan.installmentList
+          .filter((value) => value.paymentStatus.name === "TO_PAY")
+          .map((value) => value.installmentAmountToPay)
+          .reduce((acc, currentValue) => acc + currentValue, 0);
+
+        sum += installmentSum;
+      });
+
+      return sum;
+    },
   },
 
   //actions = metody w komponentach
   actions: {
+    //
+    //REFRESH LOANS
+    //
+    async refreshLoans() {
+      await this.getLoansFromDb("ALL", true);
+    },
+    //
+    //GET LOANS
+    //
+    async getLoans(status: StatusType) {
+      console.log("START - getLoans(" + status + ")");
+      if (this.loans.length === 0) {
+        await this.getLoansFromDb("ALL", true);
+      }
+      console.log("END - getLoans(" + status + ")");
+
+      switch (status) {
+        case "TO_PAY":
+          return this.loans.filter((item) => item.loanStatus.name === "TO_PAY");
+        case "PAID":
+          return this.loans.filter((item) => item.loanStatus.name === "PAID");
+        case "ALL":
+        default:
+          return this.loans;
+      }
+    },
+
     //
     //GET LOANS FROM DB BY PAYMENT_STATUS
     //
@@ -46,21 +94,17 @@ export const useLoansStore = defineStore("loan", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        if (this.loans.length === 0) {
-          const response = await httpCommon.get(
-            `/finance/loan/status?status=` +
-              paymentStatus +
-              "&installment=" +
-              installment,
-            {
-              headers: authorization.token !== "null" ? headers : {},
-            }
-          );
-          console.log("getLoansFromDb() - Ilosc[]: " + response.data.length);
-          this.loans = response.data;
-        } else {
-          console.log("getLoansFromDb() - BEZ GET");
-        }
+        const response = await httpCommon.get(
+          `/finance/loan/status?status=` +
+            paymentStatus +
+            "&installment=" +
+            installment,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
+        console.log("getLoansFromDb() - Ilosc[]: " + response.data.length);
+        this.loans = response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getLoansFromDb(): ", e);

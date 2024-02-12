@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import StatusType from "@/assets/types/StatusType";
-defineProps({
+const props = defineProps({
   btnType: {
-    //dodanie typu
     type: String as () => StatusType,
     required: true,
   },
@@ -23,8 +22,8 @@ defineProps({
   >
     <i
       :class="{
-        'pi pi-check-square': btnType === 'PAID' || 'ACTIVE',
-        'pi pi-stop': btnType === 'TO_PAY' || 'INACTIVE',
+        'pi pi-stop': btnType === 'TO_PAY' || btnType === 'INACTIVE',
+        'pi pi-check-square': btnType === 'PAID' || btnType === 'ACTIVE',
       }"
     ></i>
   </Button>

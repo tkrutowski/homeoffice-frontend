@@ -22,7 +22,7 @@ function runFinance() {
   <TheMenu />
   <h1
     v-if="!authorizationStore.isAuthenticated"
-    class="color-green flex justify-content-center mt-8"
+    class="color-orange flex justify-content-center mt-8"
   >
     Musisz się najpierw zalogować... ;)
   </h1>

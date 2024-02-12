@@ -87,7 +87,7 @@ const getDate = computed(() => {
 const showPaymentModal = ref(false);
 const installment = ref<LoanInstallment>();
 function openPaymentModal(i: LoanInstallment) {
-  installment.value = { ...i };
+  installment.value = i;
   showPaymentModal.value = true;
 }
 
@@ -118,12 +118,13 @@ async function savePayment(date: string, amount: number) {
     }
   }
   isBusy.value = false;
+  refresh();
 }
 //----------------------------------------------DELETE PAYMENT----------------------------
 const showDeleteConfirmationDialog = ref<boolean>(false);
 
 const confirmDeletePayment = (i: LoanInstallment) => {
-  installment.value = { ...i };
+  installment.value = i;
   showDeleteConfirmationDialog.value = true;
 };
 
@@ -160,16 +161,20 @@ const submitDelete = async () => {
       });
     }
   }
+  refresh();
   isBusy.value = false;
 };
 
 //------------------------------------MOUNTED------------------------------
 onMounted(async () => {
   console.log("onMounted GET");
+  loansStore.getLoans("ALL");
+  refresh();
+});
+const refresh = async () => {
   loan.value = await loansStore.getLoanFromDb(+props.id);
   installments.value = loan.value?.installmentList;
-  await loansStore.getLoansFromDb("ALL", true);
-});
+};
 </script>
 
 <template>
@@ -216,56 +221,64 @@ onMounted(async () => {
     <div class="flex flex-row grid">
       <!--      LEFT-->
       <div class="flex flex-column col-12 col-xl-5">
-        <p class="mb-1 mt-3"><small>Nazwa kredytu:</small> {{ loan?.name }}</p>
-        <p class="mb-1"><small>Nazwa banku:</small> {{ loan?.bank.name }}</p>
-        <p class="mb-1"><small>Nr kredytu:</small> {{ loan?.loanNumber }}</p>
-        <p class="mb-1"><small>Z dnia:</small> {{ loan?.date }}</p>
-        <p class="mb-1">
+        <p class="mb-1 mt-3 color-orange">
+          <small>Nazwa kredytu:</small> {{ loan?.name }}
+        </p>
+        <p class="mb-1 color-orange">
+          <small>Nazwa banku:</small> {{ loan?.bank.name }}
+        </p>
+        <p class="mb-1 color-orange">
+          <small>Nr kredytu:</small> {{ loan?.loanNumber }}
+        </p>
+        <p class="mb-1 color-orange"><small>Z dnia:</small> {{ loan?.date }}</p>
+        <p class="mb-1 color-orange">
           <small>Data pierwszej raty:</small> {{ loan?.firstPaymentDate }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Termin całkowitej spłaty:</small> {{ countDeadLine }}
         </p>
-        <p class="mb-5"><small>Nr konta:</small> {{ loan?.accountNumber }}</p>
-        <p class="mb-1">
+        <p class="mb-5 color-orange">
+          <small>Nr konta:</small> {{ loan?.accountNumber }}
+        </p>
+        <p class="mb-1 color-orange">
           <small>Kwota kredytu:</small>
           {{ UtilsService.formatCurrency(loan?.amount) }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Koszt kredytu:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(loan?.loanCost) }}</span
           >
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Ilość rat:</small> {{ loan?.numberOfInstallments }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Kwota raty:</small>
           {{ UtilsService.formatCurrency(loan?.installmentAmount) }}
         </p>
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Odsetki planowane:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(plannedInterest) }}
           </span>
         </p>
 
-        <p class="mb-3">
+        <p class="mb-3 color-orange">
           <small>Odsetki rzeczywiste:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(realInterest) }}
           </span>
         </p>
 
-        <p class="mb-4">
+        <p class="mb-4 color-orange">
           <small>Całkowity koszt kredytu:</small>
           <span class="color-red h4 ml-2">
             {{ UtilsService.formatCurrency(calculateCost) }}
           </span>
         </p>
 
-        <p class="mb-1">
+        <p class="mb-1 color-orange">
           <small>Spłacono:</small> {{ calculatePaid }} z
           {{ loan?.numberOfInstallments }}
         </p>
@@ -289,7 +302,7 @@ onMounted(async () => {
             ).toFixed(0)
           }}%
         </ProgressBar>
-        <label>Opis:</label>
+        <label class="color-orange">Opis:</label>
         <Textarea :v-model="loan?.otherInfo" rows="5" readonly />
       </div>
 
@@ -301,24 +314,28 @@ onMounted(async () => {
               <div class="w-full" style="text-align: left">Nr raty</div>
             </template>
             <template #body="{ data, field }">
-              <div style="text-align: left">{{ data[field] }}</div>
+              <div class="color-orange ml-3" style="text-align: left">
+                {{ data[field] }}
+              </div>
             </template>
           </Column>
           <Column field="paymentDeadline" header="Termin płatności">
             <template #body="{ data, field }">
-              <div style="text-align: center">
+              <div class="color-orange" style="text-align: center">
                 {{ data[field] }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountToPay" header="Kwota">
             <template #body="{ data, field }">
-              {{ UtilsService.formatCurrency(data[field]) }}
+              <div class="color-orange">
+                {{ UtilsService.formatCurrency(data[field]) }}
+              </div>
             </template>
           </Column>
           <Column field="paymentDate" header="Data płatności">
             <template #body="{ data, field }">
-              <div style="text-align: center">
+              <div class="color-orange" style="text-align: center">
                 {{
                   data[field] !== "-999999999-01-01" &&
                   data[field] !== "0001-01-01"
@@ -330,11 +347,13 @@ onMounted(async () => {
           </Column>
           <Column field="installmentAmountPaid" header="Kwota">
             <template #body="{ data, field }">
-              {{
-                data[field] !== 0
-                  ? UtilsService.formatCurrency(data[field])
-                  : ""
-              }}
+              <div class="color-orange">
+                {{
+                  data[field] !== 0
+                    ? UtilsService.formatCurrency(data[field])
+                    : ""
+                }}
+              </div>
             </template>
           </Column>
           <!--                EDIT, DELETE-->

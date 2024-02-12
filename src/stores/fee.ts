@@ -4,6 +4,7 @@ import { useAuthorizationStore } from "@/stores/authorization";
 import { PaymentStatus } from "@/assets/types/PaymentStatus";
 import { ErrorService } from "@/service/ErrorService";
 import { Fee, FeeFrequency, FeeInstallment } from "@/assets/types/Fee";
+import StatusType from "@/assets/types/StatusType";
 
 export const useFeeStore = defineStore("fee", {
   state: () => ({
@@ -19,26 +20,41 @@ export const useFeeStore = defineStore("fee", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getFeesPaid: (state) => {
+      return state.fees.filter((item) => item.feeStatus.name === "PAID");
+    },
+    getFeesToPay: (state) => {
+      return state.fees.filter((item) => item.feeStatus.name === "TO_PAY");
+    },
   },
 
   //actions = metody w komponentach
   actions: {
     //
+    //REFRESH FEES
+    //
+    async refreshLoans() {
+      await this.getFeesFromDb("ALL", true);
+    },
+    //
     //GET FEES FROM DB BY PAYMENT_STATUS
     //
-    async getFees(paymentStatus: string, installment: boolean) {
-      console.log(
-        "START - getFees(" + paymentStatus + ", " + installment + ")"
-      );
-      this.loadingFees = true;
+    async getFees(status: StatusType) {
+      console.log("START - getFees(" + status + ")");
 
       if (this.fees.length === 0) {
-        await this.getFeesFromDb(paymentStatus, installment);
+        await this.getFeesFromDb("ALL", true);
       }
-      this.loadingFees = false;
-      console.log("END - etFees(" + paymentStatus + ", " + installment + ")");
+      console.log("END - getFees(" + status + ")");
+      switch (status) {
+        case "TO_PAY":
+          return this.fees.filter((item) => item.feeStatus.name === "TO_PAY");
+        case "PAID":
+          return this.fees.filter((item) => item.feeStatus.name === "PAID");
+        case "ALL":
+        default:
+          return this.fees;
+      }
     },
     //
     //GET FEES FROM DB BY PAYMENT_STATUS
@@ -57,21 +73,17 @@ export const useFeeStore = defineStore("fee", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        if (this.fees.length === 0) {
-          const response = await httpCommon.get(
-            `/finance/fee/status?status=` +
-              paymentStatus +
-              "&installment=" +
-              installment,
-            {
-              headers: authorization.token !== "null" ? headers : {},
-            }
-          );
-          console.log("getFeesFromDb() - Ilosc[]: " + response.data.length);
-          this.fees = response.data;
-        } else {
-          console.log("getLoansFromDb() - BEZ GET");
-        }
+        const response = await httpCommon.get(
+          `/finance/fee/status?status=` +
+            paymentStatus +
+            "&installment=" +
+            installment,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
+        console.log("getFeesFromDb() - Ilosc[]: " + response.data.length);
+        this.fees = response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getFeesFromDb(): ", e);

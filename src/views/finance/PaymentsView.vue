@@ -35,7 +35,11 @@ watch(selectedYear, (newYear: number) => {
   <TheMenuFinance />
 
   <Toolbar class="m-6">
-    <template #start> ROK: {{ paymentStore.paymentSelectedYear }} </template>
+    <template #start
+      ><p class="color-orange mt-auto mb-auto">
+        ROK: {{ paymentStore.paymentSelectedYear }}
+      </p></template
+    >
 
     <template #center>
       <InputNumber
@@ -58,7 +62,7 @@ watch(selectedYear, (newYear: number) => {
       />
     </template>
   </Toolbar>
-  <div v-if="refreshKey">
+  <div class="ml-2 mr-2" v-if="refreshKey">
     <div v-for="[userId] in paymentStore.payments" :key="userId">
       <UserPayments
         :id-user="+userId"

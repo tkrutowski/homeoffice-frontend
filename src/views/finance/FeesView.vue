@@ -6,6 +6,7 @@ import { UtilsService } from "@/service/UtilsService";
 
 import { PaymentStatus } from "@/assets/types/PaymentStatus";
 import OfficeButton from "@/components/OfficeButton.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import EditButton from "@/components/EditButton.vue";
 import DeleteButton from "@/components/DeleteButton.vue";
 import StatusButton from "@/components/StatusButton.vue";
@@ -16,6 +17,7 @@ import { Fee, FeeInstallment } from "@/assets/types/Fee";
 import { useToast } from "primevue/usetoast";
 import { useFeeStore } from "@/stores/fee";
 import { usePaymentStore } from "@/stores/payments";
+import StatusType from "@/assets/types/StatusType";
 const toast = useToast();
 const feeStore = useFeeStore();
 const paymentStore = usePaymentStore();
@@ -30,6 +32,7 @@ const filters = ref({
 });
 const expandedRows = ref([]);
 const feeTemp = ref<Fee>();
+feeStore.getFees("ALL");
 const calculatePlannedCost = (installments: FeeInstallment[]): number => {
   console.log("XXX", installments);
   return installments
@@ -44,6 +47,32 @@ const calculateActualCost = (installments: FeeInstallment[]): number => {
 const calculateEndDate = (installments: FeeInstallment[]): string => {
   return installments[installments.length - 1].paymentDeadline;
 };
+//
+//--------------------------------DISPLAY FILTER
+//
+const filter = ref<StatusType>("ALL");
+const setFilter = (selectedFilter: StatusType) => {
+  filter.value = selectedFilter;
+  localStorage.setItem("selectedFilterFees", selectedFilter);
+};
+
+const savedFilter = localStorage.getItem("selectedFilterFees");
+if (savedFilter) {
+  filter.value = savedFilter as StatusType;
+}
+
+const filteredData = computed(() => {
+  switch (filter.value) {
+    case "TO_PAY":
+      return feeStore.getFeesToPay;
+    case "PAID":
+      return feeStore.getFeesPaid;
+    case "ALL":
+    default:
+      return feeStore.fees;
+  }
+});
+
 //
 //---------------------------------------------STATUS CHANGE--------------------------------------------------
 //
@@ -125,10 +154,6 @@ const editItem = (item: Fee) => {
     params: { isEdit: "true", feeId: feeItem.id },
   });
 };
-//---------------------------------------------MOUNTED-----------------------------------------------
-onMounted(() => {
-  feeStore.getFeesFromDb("ALL", true);
-});
 </script>
 <template>
   <Toast />
@@ -148,7 +173,7 @@ onMounted(() => {
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="mt-5">
+  <Panel class="mt-5 mt-3 ml-2 mr-2">
     <template #header>
       <div class="w-full flex justify-content-center">
         <h3 class="color-green">LISTA OPŁAT</h3>
@@ -165,7 +190,7 @@ onMounted(() => {
       v-if="!feeStore.loadingFees"
       v-model:expandedRows="expandedRows"
       v-model:filters="filters"
-      :value="feeStore.fees"
+      :value="filteredData"
       :loading="feeStore.loadingFees"
       striped-rows
       removable-sort
@@ -177,6 +202,7 @@ onMounted(() => {
       :global-filter-fields="['name', 'firm.name', 'date']"
       sort-field="date"
       :sort-order="-1"
+      row-hover
     >
       <template #header>
         <div class="flex justify-content-sm-between">
@@ -202,15 +228,21 @@ onMounted(() => {
         </h4>
       </template>
 
-      <template #loading>
-        <h4 class="color-green">Ładowanie danych. Proszę czekać...</h4>
-      </template>
-
       <Column expander style="width: 5rem" />
-      <Column field="name" header="Nazwa" sortable />
-      <Column field="firm.name" header="Nazwa firmy" sortable />
-      <Column field="date" header="Data" sortable />
-      <Column field="amount" header="Kwota" style="min-width: 120px">
+      <Column field="name" header="Nazwa" sortable class="color-orange" />
+      <Column
+        field="firm.name"
+        header="Nazwa firmy"
+        sortable
+        class="color-orange"
+      />
+      <Column field="date" header="Data" sortable class="color-orange" />
+      <Column
+        field="amount"
+        header="Kwota"
+        style="min-width: 120px"
+        class="color-orange"
+      >
         <template #body="slotProps">
           {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
         </template>
@@ -219,8 +251,9 @@ onMounted(() => {
         field="feeFrequency.viewName"
         header="Częstotliwość opłat"
         sortable
+        class="color-orange"
       />
-      <Column header="Data zakończenia" sortable>
+      <Column header="Data zakończenia" sortable class="color-orange">
         <template #body="slotProps">
           {{ calculateEndDate(slotProps.data.installmentList) }}
         </template>
@@ -230,7 +263,7 @@ onMounted(() => {
         <template #body="{ data, field }">
           <StatusButton
             v-tooltip.top="{
-              value: 'Zmień status opłaty (Spłacona/Do spłaty)',
+              value: 'Zmień status opłaty',
               showDelay: 1000,
               hideDelay: 300,
             }"
@@ -267,50 +300,52 @@ onMounted(() => {
       <template #expansion="slotProps">
         <div class="p-3">
           <h5 class="mb-3" style="text-align: center">
-            Szczególy opłaty {{ slotProps.data.name }}
+            <span class="color-orange"
+              >Szczególy opłaty {{ slotProps.data.name }}
+            </span>
           </h5>
           <hr />
           <div class="flex flex-row grid">
             <div class="flex flex-column col-12 col-xl-5">
-              <p class="mb-1 mt-3">
+              <p class="mb-1 mt-3 color-orange text-left">
                 <small>Nazwa opłaty:</small> {{ slotProps.data.name }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Nazwa firmy:</small> {{ slotProps.data.firm.name }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Nr umowy:</small> {{ slotProps.data.feeNumber }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Z dnia:</small> {{ slotProps.data.date }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Data pierwszej raty:</small>
                 {{ slotProps.data.firstPaymentDate }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Termin całkowitej spłaty:</small>
                 {{ calculateEndDate(slotProps.data.installmentList) }}
               </p>
-              <p class="mb-5">
+              <p class="mb-5 color-orange text-left">
                 <small>Nr konta:</small> {{ slotProps.data.accountNumber }}
               </p>
 
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Kwota opłaty:</small>
                 {{ UtilsService.formatCurrency(slotProps.data.amount) }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Częstotliwość opłat:</small>
                 <span class="color-red ml-1">
                   {{ slotProps.data.feeFrequency.viewName }}
                 </span>
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Ilość opłat:</small>
                 {{ slotProps.data.numberOfInstallments }}
               </p>
-              <p class="mb-1">
+              <p class="mb-1 color-orange text-left">
                 <small>Planowany koszt:</small>
                 <span class="color-red ml-1">
                   {{
@@ -320,7 +355,7 @@ onMounted(() => {
                   }}
                 </span>
               </p>
-              <p class="mb-3">
+              <p class="mb-3 color-orange text-left">
                 <small>Rzeczywisty koszt:</small>
                 <span class="color-red ml-1">
                   {{
@@ -331,7 +366,9 @@ onMounted(() => {
                 </span>
               </p>
 
-              <label>Dodatkowe informacje:</label>
+              <label class="color-orange text-left"
+                >Dodatkowe informacje:</label
+              >
               <Textarea
                 v-model="slotProps.data.otherInfo"
                 rows="5"
@@ -344,17 +381,21 @@ onMounted(() => {
               <DataTable :value="slotProps.data.installmentList">
                 <Column field="paymentDeadline" header="Termin płatności">
                   <template #body="{ data, field }">
-                    <div style="text-align: center">{{ data[field] }}</div>
+                    <div class="color-orange" style="text-align: center">
+                      {{ data[field] }}
+                    </div>
                   </template>
                 </Column>
                 <Column field="installmentAmountToPay" header="Kwota">
                   <template #body="{ data, field }">
-                    {{ UtilsService.formatCurrency(data[field]) }}
+                    <span class="color-orange">
+                      {{ UtilsService.formatCurrency(data[field]) }}
+                    </span>
                   </template>
                 </Column>
                 <Column field="paymentDate" header="Data płatności">
                   <template #body="{ data, field }">
-                    <div style="text-align: center">
+                    <div class="color-orange" style="text-align: center">
                       {{
                         data[field] === "-999999999-01-01" ? "" : data[field]
                       }}
@@ -363,7 +404,7 @@ onMounted(() => {
                 </Column>
                 <Column field="installmentAmountPaid" header="Kwota zapł.">
                   <template #body="{ data, field }">
-                    <div style="text-align: center">
+                    <div class="color-orange" style="text-align: center">
                       {{ UtilsService.formatCurrency(data[field]) }}
                     </div>
                   </template>
@@ -375,6 +416,57 @@ onMounted(() => {
       </template>
     </DataTable>
   </Panel>
+
+  <Toolbar class="sticky-toolbar">
+    <template #start>
+      <OfficeIconButton
+        v-tooltip.right="{
+          value: 'Odświerz listę opłat',
+          showDelay: 500,
+          hideDelay: 300,
+        }"
+        :icon="feeStore.loadingFees ? 'pi-spin pi-spinner' : 'pi-refresh'"
+        class="mr-2"
+        @click="feeStore.getFeesFromDb('ALL', true)"
+      />
+    </template>
+
+    <template #center>
+      <OfficeIconButton
+        v-tooltip.left="{
+          value: 'Wyświetl niespłacone',
+          showDelay: 500,
+          hideDelay: 300,
+        }"
+        :icon="feeStore.loadingFees ? 'pi-spin pi-spinner' : 'pi-stop'"
+        class="mr-2"
+        :active="filter === 'TO_PAY'"
+        @click="setFilter('TO_PAY')"
+      />
+      <OfficeIconButton
+        v-tooltip.top="{
+          value: 'Wyświetl spłacone',
+          showDelay: 500,
+          hideDelay: 300,
+        }"
+        :icon="feeStore.loadingFees ? 'pi-spin pi-spinner' : 'pi-check-square'"
+        class="mr-2"
+        :active="filter === 'PAID'"
+        @click="setFilter('PAID')"
+      />
+      <OfficeIconButton
+        v-tooltip.right="{
+          value: 'Wyświetl wszystkie',
+          showDelay: 500,
+          hideDelay: 300,
+        }"
+        :icon="feeStore.loadingFees ? 'pi-spin pi-spinner' : 'pi-list'"
+        class="mr-2"
+        :active="filter === 'ALL'"
+        @click="setFilter('ALL')"
+      />
+    </template>
+  </Toolbar>
 </template>
 
 <style scoped>

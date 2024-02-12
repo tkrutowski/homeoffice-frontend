@@ -185,7 +185,7 @@ const submitMultiChangeStatus = async () => {
     </template>
 
     <template #end>
-      <div class="flex flex-column">
+      <div class="flex flex-column color-orange">
         <p class="mb-1">
           <small>Zaznaczone:</small>
           {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
@@ -199,10 +199,4 @@ const submitMultiChangeStatus = async () => {
   </Toolbar>
 </template>
 
-<style scoped>
-.sticky-toolbar {
-  position: sticky;
-  bottom: 0;
-  z-index: 1000;
-}
-</style>
+<style scoped></style>
