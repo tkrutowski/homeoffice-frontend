@@ -41,49 +41,6 @@ const changeStatusConfirmationMessage = computed(() => {
   }
   return "No message";
 });
-// const submitMultiChangeStatus = async () => {
-//   console.log("submitMultiChangeStatus()");
-//   let newStatus: PaymentStatus = {
-//     name: "PAID",
-//     viewName: "Spłacony",
-//   };
-//   const purchasesToPay = purchasesStore.purchasesToPay;
-//   console.log(
-//     "submitMultiChangeStatus() LIST pinia: ",
-//     purchasesStore.purchasesToPay,
-//     purchasesStore.purchasesToPay.length
-//   );
-//   console.log(
-//     "submitMultiChangeStatus() LIST: ",
-//     purchasesToPay,
-//     purchasesToPay.length
-//   );
-//   for (const purchase of purchasesToPay) {
-//     console.log("submitMultiChangeStatus(): ", purchase);
-//     const result = await purchasesStore.payForPurchaseDb(
-//       purchase.id,
-//       newStatus
-//     );
-//     console.log("submitMultiChangeStatus() RESULT: ", result);
-//     if (result) {
-//       purchasesStore.delPurchaseToPay(purchase);
-//       toast.add({
-//         severity: "success",
-//         summary: "Potwierdzenie",
-//         detail: "Oznaczono jako spłacony zakup: " + purchase.name,
-//         life: 3000,
-//       });
-//     } else {
-//       toast.add({
-//         severity: "error",
-//         summary: "Niepowodzenie",
-//         detail: "NIE oznaczono jako spłacony zakup: " + purchase.name,
-//         life: 3000,
-//       });
-//     }
-//   }
-//   showStatusChangeConfirmationDialog.value = false;
-// };
 const submitMultiChangeStatus = async () => {
   console.log("submitMultiChangeStatus()");
   let newStatus: PaymentStatus = {

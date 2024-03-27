@@ -39,6 +39,7 @@ import InputSwitch from "primevue/inputswitch";
 import InputText from "primevue/inputtext";
 import InputMask from "primevue/inputmask";
 import InputNumber from "primevue/inputnumber";
+import Image from "primevue/image";
 import Listbox from "primevue/listbox";
 import Menu from "primevue/menu";
 import Menubar from "primevue/menubar";
@@ -125,5 +126,6 @@ app.component("TabMenu", TabMenu);
 app.component("Textarea", Textarea);
 app.component("Toast", Toast);
 app.component("Toolbar", Toolbar);
+app.component("Image", Image);
 
 app.mount("#app");

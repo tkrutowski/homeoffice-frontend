@@ -9,16 +9,15 @@ import IconButton from "@/components/IconButton.vue";
 import User from "@/assets/types/User";
 import { useFeeStore } from "@/stores/fee";
 import { useFirmsStore } from "@/stores/firms";
+import { useToast } from "primevue/usetoast";
+import Firm from "@/assets/types/Firm";
+import { Fee, FeeFrequency } from "@/assets/types/Fee";
+import TheMenuFinance from "@/components/TheMenuFinance.vue";
 
 const userStore = useUsersStore();
 const feeStore = useFeeStore();
 const firmStore = useFirmsStore();
 const route = useRoute();
-
-import { useToast } from "primevue/usetoast";
-import Firm from "@/assets/types/Firm";
-import { Fee, FeeFrequency } from "@/assets/types/Fee";
-import TheMenuFinance from "@/components/TheMenuFinance.vue";
 const toast = useToast();
 const selectedUser = ref<User | undefined>();
 const selectedFirm = ref<Firm | undefined>();
@@ -287,7 +286,7 @@ const showErrorFirstDate = () => {
             @click="() => router.push({ name: 'Fees' })"
           />
           <div class="w-full flex justify-content-center">
-            <h3 class="color-green">
+            <h3 class="color-orange">
               {{ isEdit ? `Edycja opłaty: ${fee?.name}` : "Nowa opłata" }}
             </h3>
           </div>

@@ -1,5 +1,19 @@
+<script setup lang="ts">
+import { useAuthorizationStore } from "@/stores/authorization";
+import { onMounted, ref } from "vue";
+import OfficeButton from "@/components/OfficeButton.vue";
+
+const authorizationStore = useAuthorizationStore();
+
+const username = ref<string>("");
+const password = ref<string>("");
+
+onMounted(() => {
+  console.log("MOUNTED");
+  authorizationStore.loginError = false;
+});
+</script>
 <template>
-  <!--  <div class="bg-office">-->
   <form
     class="login-form mb-5 mt-1 mt-md-5"
     @submit.prevent="authorizationStore.login(username, password)"
@@ -57,21 +71,7 @@
     </p>
   </form>
 </template>
-<script setup lang="ts">
-import { useAuthorizationStore } from "@/stores/authorization";
-import { onMounted, ref } from "vue";
-import OfficeButton from "@/components/OfficeButton.vue";
 
-const authorizationStore = useAuthorizationStore();
-
-const username = ref<string>("");
-const password = ref<string>("");
-
-onMounted(() => {
-  console.log("MOUNTED");
-  authorizationStore.loginError = false;
-});
-</script>
 <style scoped>
 #error {
   color: red;

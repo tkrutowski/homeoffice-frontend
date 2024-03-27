@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import PurchaseItem from "@/components/PurchaseItem.vue";
 import { Purchase } from "@/assets/types/Purchase";
-import { computed, onMounted, PropType, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { UtilsService } from "@/service/UtilsService";
 import moment from "moment";
 import { useCardsStore } from "@/stores/cards";
 import { usePurchasesStore } from "@/stores/purchases";
-import TheMenuFinance from "@/components/TheMenuFinance.vue";
 import PurchaseCurrentItem from "@/components/PurchaseCurrentItem.vue";
 
 const cardStore = useCardsStore();

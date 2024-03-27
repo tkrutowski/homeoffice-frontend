@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, PropType, onMounted, watch } from "vue";
+import { computed, ref, PropType, watch } from "vue";
 import { Purchase } from "@/assets/types/Purchase";
 import IconButton from "@/components/IconButton.vue";
-import DeleteButton from "@/components/DeleteButton.vue";
 import { UtilsService } from "@/service/UtilsService";
 import { useFirmsStore } from "@/stores/firms";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
@@ -10,7 +9,6 @@ import { PaymentStatus } from "@/assets/types/PaymentStatus";
 import { useToast } from "primevue/usetoast";
 const firmStore = useFirmsStore();
 import { usePurchasesStore } from "@/stores/purchases";
-import PayPaymentDialog from "@/components/PayPaymentDialog.vue";
 const purchaseStore = usePurchasesStore();
 const toast = useToast();
 const props = defineProps({

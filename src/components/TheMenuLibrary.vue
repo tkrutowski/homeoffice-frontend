@@ -9,101 +9,76 @@ const items = ref([
   {
     label: "Home",
     icon: "pi pi-fw pi-home",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessLibrary,
     // to: { name: "Home" },
     command: () => {
       router.push({ name: "Home" });
     },
   },
   {
-    label: "Kredyty",
+    label: "Książki",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessLibrary,
     items: [
       {
-        label: "Nowy kredyt",
+        label: "Nowa książka",
         icon: "pi pi-fw pi-file",
         // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
         command: () => {
           router.push({
-            name: "Loan",
-            params: { isEdit: "false", loanId: 0 },
+            name: "Book",
+            params: { isEdit: "false", bookId: 0 },
           });
         },
       },
       {
-        label: "Lista kredytów",
+        label: "Spis książek",
         icon: "pi pi-fw pi-list",
         // to: { name: "Invoices" },
         command: () => {
-          router.push({ name: "Loans" });
+          router.push({ name: "Books" });
+        },
+      },
+      {
+        label: "Cykle",
+        icon: "pi pi-fw pi-list",
+        // to: { name: "Invoices" },
+        command: () => {
+          router.push({ name: "SeriesSearch" });
         },
       },
     ],
   },
   {
-    label: "Opłaty",
+    label: "Moja półka",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessLibrary,
     items: [
       {
-        label: "Nowa opłata",
+        label: "Aktualnie czytane",
         icon: "pi pi-fw pi-file",
         // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
         command: () => {
           router.push({
-            name: "Fee",
-            params: { isEdit: "false", feeId: 0 },
+            name: "UserBooksReadNow",
+            // params: { isEdit: "false", feeId: 0 },
           });
         },
       },
       {
-        label: "Lista opłat",
+        label: "Poczekalnia",
         icon: "pi pi-fw pi-list",
         // to: { name: "Invoices" },
         command: () => {
-          router.push({ name: "Fees" });
+          router.push({ name: "UserBooksToRead" });
         },
       },
-    ],
-  },
-  {
-    label: "Płatności",
-    icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
-    items: [
       {
-        label: "Lista płatności",
+        label: "Przeczytane",
         icon: "pi pi-fw pi-list",
         // to: { name: "Invoices" },
         command: () => {
-          router.push({ name: "Payments" });
-        },
-      },
-    ],
-  },
-  {
-    label: "Zakupy",
-    icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
-    items: [
-      {
-        label: "Nowy zakup",
-        icon: "pi pi-fw pi-file",
-        // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
-        command: () => {
-          router.push({
-            name: "Purchase",
-            params: { isEdit: "false", purchaseId: 0 },
-          });
-        },
-      },
-      {
-        label: "Lista bierzących",
-        icon: "pi pi-fw pi-list",
-        // to: { name: "Invoices" },
-        command: () => {
-          router.push({ name: "PurchasesCurrent" });
+          router.push({ name: "UserBooksRead" });
         },
       },
     ],

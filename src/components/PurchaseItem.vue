@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, PropType, onMounted, watch } from "vue";
+import { computed, ref, PropType } from "vue";
 import { Purchase } from "@/assets/types/Purchase";
 import IconButton from "@/components/IconButton.vue";
-import DeleteButton from "@/components/DeleteButton.vue";
 import { UtilsService } from "@/service/UtilsService";
 import { useFirmsStore } from "@/stores/firms";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";

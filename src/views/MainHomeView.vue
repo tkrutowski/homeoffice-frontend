@@ -16,6 +16,16 @@ function runFinance() {
     });
   }
 }
+
+function runLibrary() {
+  console.log("START - library()");
+  if (authorizationStore.hasAccessLibrary) {
+    router.push({
+      name: "LibraryHome",
+      // params: { idUser: 0, isEdit: "false" },
+    });
+  }
+}
 </script>
 
 <template>
@@ -33,9 +43,9 @@ function runFinance() {
       @clicked="runFinance"
     />
     <AppCard
-      text-content="Kredyty, płatności i zakupy"
-      text-title="Finanse"
-      @clicked="runFinance"
+      text-content="Książki, audiobooki, ebooki"
+      text-title="Biblioteka"
+      @clicked="runLibrary"
     />
   </div>
   <TheFooter />

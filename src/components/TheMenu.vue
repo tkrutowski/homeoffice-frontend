@@ -15,56 +15,6 @@ const items = ref([
       router.push({ name: "Home" });
     },
   },
-  // {
-  //   label: "Kredyty",
-  //   icon: "pi pi-fw pi-euro",
-  //   disabled: !authorizationStore.hasAccessGoAhead,
-  //   items: [
-  //     {
-  //       label: "Nowy kredyt",
-  //       icon: "pi pi-fw pi-file",
-  //       // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
-  //       command: () => {
-  //         router.push({
-  //           name: "Loan",
-  //           params: { isEdit: "false", id: 0 },
-  //         });
-  //       },
-  //     },
-  //     {
-  //       label: "Lista kredytów",
-  //       icon: "pi pi-fw pi-list",
-  //       // to: { name: "Invoices" },
-  //       command: () => {
-  //         router.push({ name: "Loans" });
-  //       },
-  //     },
-  //   ],
-  // },
-  // {
-  //   label: "Klienci",
-  //   icon: "pi pi-fw pi-users",
-  //   disabled: !authorizationStore.hasAccessGoAhead,
-  //   items: [
-  //     {
-  //       label: "Nowy",
-  //       icon: "pi pi-fw pi-user-plus",
-  //       command: () => {
-  //         router.push({
-  //           name: "Customer",
-  //           params: { isEdit: "false", customerId: 0 },
-  //         });
-  //       },
-  //     },
-  //     {
-  //       label: "Lista klientów",
-  //       icon: "pi pi-fw pi-bars",
-  //       command: () => {
-  //         router.push({ name: "Customers" });
-  //       },
-  //     },
-  //   ],
-  // },
 ]);
 </script>
 

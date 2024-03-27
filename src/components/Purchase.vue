@@ -7,16 +7,11 @@ import { useFirmsStore } from "@/stores/firms";
 import { usePurchasesStore } from "@/stores/purchases";
 import { useRoute } from "vue-router";
 import { computed, onMounted, ref, watch } from "vue";
-import { Customer } from "@/assets/types/Customer";
-import { Loan } from "@/assets/types/Loan";
 import moment from "moment";
 import OfficeButton from "@/components/OfficeButton.vue";
 import { useToast } from "primevue/usetoast";
-import EditButton from "@/components/EditButton.vue";
-import DeleteButton from "@/components/DeleteButton.vue";
 import TheMenu from "@/components/TheMenu.vue";
 import router from "@/router";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Bank, Card } from "@/assets/types/Bank";
 import User from "@/assets/types/User";
@@ -35,7 +30,6 @@ const toast = useToast();
 const selectedUser = ref<User | undefined>();
 const selectedCard = ref<Card | undefined>();
 const selectedFirm = ref<Firm | undefined>();
-const selectedBank = ref<Bank | undefined>();
 
 const purchase = ref<Purchase>({
   id: 0,
@@ -150,10 +144,6 @@ const loanDateTemp = ref<string>("");
 watch(loanDateTemp, (newDate: string) => {
   purchase.value.purchaseDate = moment(new Date(newDate)).format("YYYY-MM-DD");
 });
-// const firstPaymentDateTemp = ref<string>("");
-// watch(firstPaymentDateTemp, (newDate: string) => {
-//   loan.value.firstPaymentDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-// });
 //
 //SAVE
 //

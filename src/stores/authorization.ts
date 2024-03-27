@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import User from "@/assets/types/User";
 import httpCommon from "@/http-common";
 import jwt_decode from "jwt-decode";
-// import * as jwt_decode from 'jwt-decode';
 export const useAuthorizationStore = defineStore("authorization", {
   state: () => ({
     token: "null",
@@ -47,6 +46,21 @@ export const useAuthorizationStore = defineStore("authorization", {
         );
       } catch (error) {
         console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
+    hasAccessLibrary(): boolean {
+      console.log("hasAccessFinance()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.token);
+        // console.log("token decoded: ", decoded);
+        return (
+          decoded.authorities.includes("ROLE_LIBRARY") ||
+          decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessLibrary() ERROR", error);
         return false;
       }
     },

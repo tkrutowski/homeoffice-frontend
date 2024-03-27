@@ -6,7 +6,7 @@
 </template>
 <style scoped>
 .my-button {
-  color: #2da687 !important;
+  color: #ee7f00 !important;
 }
 .my-button:hover {
   background-color: transparent !important;

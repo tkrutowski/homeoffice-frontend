@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Purchase } from "@/assets/types/Purchase";
 import PurchaseCurrentItem from "@/components/PurchaseCurrentItem.vue";
 import moment from "moment";
 import { computed, ref, watch } from "vue";

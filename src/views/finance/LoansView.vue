@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FilterMatchMode } from "primevue/api";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import router from "@/router";
 import { UtilsService } from "@/service/UtilsService";
 

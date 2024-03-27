@@ -14,6 +14,15 @@ import PaymentLoanView from "@/views/finance/PaymentLoanView.vue";
 import PurchasesCurrentView from "@/views/finance/PurchasesCurrentView.vue";
 import PurchaseView from "@/views/finance/PurchaseView.vue";
 
+//LIBRARY
+import LibraryHomeView from "@/views/library/LibraryHomeView.vue";
+import BooksView from "@/views/library/BooksView.vue";
+import BookView from "@/views/library/BookView.vue";
+import UserbooksReadNowView from "@/views/library/UserbooksReadNowView.vue";
+import UserbooksToReadView from "@/views/library/UserbooksToReadView.vue";
+import UserbooksReadView from "@/views/library/UserbooksReadView.vue";
+import SeriesSearchView from "@/views/library/SeriesSearchView.vue";
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -29,6 +38,43 @@ const routes: Array<RouteRecordRaw> = [
     path: "/error",
     name: "Error503",
     component: Error503View,
+  },
+  //----------------------------------------------LIBRARY--------------------------------------------
+  {
+    path: "/homelib",
+    name: "LibraryHome",
+    component: LibraryHomeView,
+  },
+  {
+    path: "/library/book/all",
+    name: "Books",
+    component: BooksView,
+  },
+  {
+    path: "/library/book/:isEdit/:bookId",
+    name: "Book",
+    component: BookView,
+    props: true,
+  },
+  {
+    path: "/library/book/shell/read_now",
+    name: "UserBooksReadNow",
+    component: UserbooksReadNowView,
+  },
+  {
+    path: "/library/book/shell/to_read",
+    name: "UserBooksToRead",
+    component: UserbooksToReadView,
+  },
+  {
+    path: "/library/book/shell/read",
+    name: "UserBooksRead",
+    component: UserbooksReadView,
+  },
+  {
+    path: "/library/book/series",
+    name: "SeriesSearch",
+    component: SeriesSearchView,
   },
   //----------------------------------------------FINANCE--------------------------------------------
   {
