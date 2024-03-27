@@ -2,6 +2,7 @@ package net.focik.homeoffice.library.domain.model;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,9 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Author {
+@Builder
+public class
+Author {
     private Integer id;
     private String firstName;
     private String lastName;

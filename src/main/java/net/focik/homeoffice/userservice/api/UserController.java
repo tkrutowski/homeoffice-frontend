@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,8 @@ import static org.springframework.http.HttpStatus.OK;
 @RequiredArgsConstructor
 @RestController
 //@RequestMapping(path = {"/", "/api/user"})
-@RequestMapping(path = {"/api/user"})
-//najpierw sprawdza czy jest jakiś exception handler w exceptionHandling
+@RequestMapping(path = {"/api/v1/user"})
+
 public class UserController extends ExceptionHandling {
 
     private final ModelMapper mapper;
@@ -40,12 +41,8 @@ public class UserController extends ExceptionHandling {
     private final IDeleteUserUseCase deleteUserUseCase;
     private final IChangePasswordUseCase changePasswordUseCase;
 
-    @GetMapping("/test")
-    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
-    String test(){
-        return "test";
-    }
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     ResponseEntity<AppUser> getUser(@PathVariable Long id) {
         int i = 0;
         log.info("USER-SERVICE: Try find user by id: = " + id);
@@ -57,6 +54,7 @@ public class UserController extends ExceptionHandling {
     }
 
     @GetMapping
+    @Secured("ROLE_ADMIN")
     ResponseEntity<List<UserDto>> getUsers( @RequestHeader(name = AUTHORITIES, required = false) String[] roles) {
 
         log.info("Try find all users");
@@ -74,7 +72,7 @@ public class UserController extends ExceptionHandling {
     }
 
     @PostMapping
-//    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<AppUser> register(@RequestBody AppUser user) throws UserNotFoundException, UserAlreadyExistsException, EmailAlreadyExistsException {
         int i = 0;
         AppUser newUser = addNewUserUseCase.addNewUser(user.getFirstName(), user.getLastName(), user.getUsername(), user.getPassword(),
@@ -83,7 +81,7 @@ public class UserController extends ExceptionHandling {
     }
 
     @PutMapping("/update")
-//    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<AppUser> updateUser(@RequestBody AppUser user) {
         AppUser updatedUser = updateUserUseCase.updateUser(user.getId(), user.getFirstName(),
                 user.getLastName(), user.getUsername(), user.getEmail());
@@ -91,21 +89,21 @@ public class UserController extends ExceptionHandling {
     }
 
     @PutMapping("/update/active/{id}")
-//    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<HttpResponse> updateUserActive(@PathVariable Long id, @RequestParam("enabled") boolean isEnabled) {
         updateUserUseCase.updateIsActive(id, isEnabled);
         return response(HttpStatus.OK, "Zaaktualizowano status użytkownika.");
     }
 
     @PutMapping("/update/lock/{id}")
-//    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<HttpResponse> updateUserLock(@PathVariable Long id, @RequestParam("lock") boolean isLock) {
         updateUserUseCase.updateIsLock(id, isLock);
         return response(HttpStatus.OK, "Zaaktualizowano status użytkownika.");
     }
 
     @PutMapping("/changepass/{id}")
-//    @PreAuthorize("hasAnyAuthority('ADMIN_WRITE_ALL','USER_WRITE')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<HttpResponse> changePassword(@PathVariable Long id, @RequestParam("oldPass") String oldPass, @RequestParam("newPass") String newPass) {
         changePasswordUseCase.changePassword(id, oldPass, newPass);
         return response(HttpStatus.OK, "Hasło zmienione.");
@@ -113,7 +111,7 @@ public class UserController extends ExceptionHandling {
 
 
     @DeleteMapping("/delete/{id}")
-//    @PreAuthorize("hasAnyAuthority('ADMIN_DELETE_ALL')")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id) {
         deleteUserUseCase.deleteUserById(id);
         return response(HttpStatus.NO_CONTENT, "Użytkownik usunięty.");

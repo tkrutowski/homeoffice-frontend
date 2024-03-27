@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/loan")
-//@CrossOrigin
+@RequestMapping("/api/v1/finance/loan")
+@CrossOrigin
 class LoanController {
 
     private final GetLoanUseCase getLoanUseCase;

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import net.focik.homeoffice.library.api.dto.BookApiDto;
 import net.focik.homeoffice.library.api.mapper.ApiBookMapper;
 import net.focik.homeoffice.library.domain.model.Book;
-import net.focik.homeoffice.library.domain.model.BookDto;
 import net.focik.homeoffice.library.domain.model.WebSite;
 import net.focik.homeoffice.library.domain.port.primary.DeleteBookUseCase;
 import net.focik.homeoffice.library.domain.port.primary.FindBookUseCase;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/library/book")
+@RequestMapping("/api/v1/library/book")
 public class BookController {
 
     private final SaveBookUseCase saveBookUseCase;
@@ -46,9 +45,10 @@ public class BookController {
 
     @GetMapping("/url")
     @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
-    ResponseEntity<BookDto> getBookByUrl(@RequestParam(name = "site") WebSite webSite, @RequestParam(name = "url") String url) {
-        BookDto bookDtoByUrl = findBookUseCase.findBookByUrl(webSite, url);
-        return new ResponseEntity<>(mapper.map(bookDtoByUrl, BookApiDto.class), HttpStatus.OK);
+    ResponseEntity<BookApiDto> getBookByUrl(@RequestParam(name = "site") WebSite webSite, @RequestParam(name = "url") String url) {
+        Book bookDtoByUrl = findBookUseCase.findBookByUrl(webSite, url);
+        BookApiDto dto = bookMapper.toDto(bookDtoByUrl);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @GetMapping("/series/{id}")

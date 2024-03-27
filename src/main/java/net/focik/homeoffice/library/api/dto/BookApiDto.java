@@ -3,6 +3,8 @@ package net.focik.homeoffice.library.api.dto;
 import lombok.*;
 import net.focik.homeoffice.library.domain.model.BookDto;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -11,10 +13,9 @@ import net.focik.homeoffice.library.domain.model.BookDto;
 public class BookApiDto implements BookDto {
 
     private Integer id;
-    private String series;
-    private String seriesURL;
-    private String authors;
-    private String categories;
+    private SeriesDto series;
+    private List<AuthorDto> authors;
+    private List<CategoryDto> categories;
     private String title;
     private String description;
     private String cover;

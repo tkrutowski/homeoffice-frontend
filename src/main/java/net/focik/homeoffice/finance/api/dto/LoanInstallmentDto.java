@@ -5,17 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class LoanInstallmentDto {
+public class LoanInstallmentDto implements InstallmentDto {
     private int idLoanInstallment;
     private int idLoan;
     private int installmentNumber;
-    private String installmentAmountToPay;
-    private String installmentAmountPaid;
-    private String paymentDeadline;
-    private String paymentDate;
-    private String paymentStatus;
+    private Number installmentAmountToPay;
+    private Number installmentAmountPaid;
+    private LocalDate paymentDeadline;
+    private LocalDate paymentDate;
+    private PaymentStatusDto paymentStatus;
 }

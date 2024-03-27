@@ -27,7 +27,7 @@ class LoanService {
 
 
     @Transactional
-    Loan saveLoan(Loan loan) {
+    public Loan saveLoan(Loan loan) {
         if (isNotValid(loan))
             throw new LoanNotValidException();
         Loan saved = loanRepository.saveLoan(loan);
@@ -37,7 +37,7 @@ class LoanService {
                     .idLoan(saved.getId())
                     .installmentNumber(i + 1)
                     .installmentAmountToPay(loan.getInstallmentAmount())
-                    .installmentAmountPaid(BigDecimal.ZERO)
+                    .installmentAmountPaid(Money.of(0, "PLN"))
                     .paymentDeadline(loan.getFirstPaymentDate().plusMonths(i))
                     .paymentStatus(PaymentStatus.TO_PAY)
                     .build());
@@ -67,7 +67,7 @@ class LoanService {
 
         if (installments != null && !installments.isEmpty()) {
             for (LoanInstallment installment : installments) {
-                sum = sum.add(Money.of(installment.getInstallmentAmountToPay(), "PLN"));
+                sum = sum.add(installment.getInstallmentAmountToPay());
             }
         }
         return sum;
@@ -139,15 +139,15 @@ class LoanService {
         loanRepository.deleteLoanById(idLoan);
     }
 
-    public Loan updateLoan(Loan loan) {
+    public void updateLoan(Loan loan) {
         if (isNotValid(loan))
             throw new LoanNotValidException();
-        return loanRepository.saveLoan(loan);
+        loanRepository.saveLoan(loan);
     }
 
     public LoanInstallment updateLoanInstallment(LoanInstallment loanInstallment) {
-        if (isNotValid(loanInstallment))
-            throw new LoanNotValidException();
+//        if (isNotValid(loanInstallment))
+//            throw new LoanNotValidException();
         return loanRepository.saveLoanInstallment(loanInstallment);
     }
 
@@ -156,15 +156,15 @@ class LoanService {
     }
 
     private boolean isNotValid(Loan a) {
-        if (Objects.equals(a.getAmount(), BigDecimal.ZERO))
+        if (Objects.equals(a.getAmount().getNumberStripped(), BigDecimal.ZERO))
             return true;
-        if (Objects.equals(a.getInstallmentAmount(), BigDecimal.ZERO))
+        if (Objects.equals(a.getInstallmentAmount().getNumberStripped(), BigDecimal.ZERO))
             return true;
         return a.getDate() == null;
     }
 
     private boolean isNotValid(LoanInstallment loanInstallment) {
-        if (Objects.equals(loanInstallment.getInstallmentAmountPaid(), BigDecimal.ZERO))
+        if (Objects.equals(loanInstallment.getInstallmentAmountPaid().getNumberStripped(), BigDecimal.ZERO))
             return true;
         return loanInstallment.getPaymentDate() == null;
     }

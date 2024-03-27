@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface FindUserBookUseCase {
     List<UserBook> findUserBooksForBookId(Integer idBook, String userName);
+    List<UserBook> findUserBooksByUser(String userName);
 
     UserBook findUserBook(Integer idUserBook);
 

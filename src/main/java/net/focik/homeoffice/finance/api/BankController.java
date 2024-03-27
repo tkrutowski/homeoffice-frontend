@@ -9,12 +9,6 @@ import net.focik.homeoffice.finance.domain.bank.port.primary.AddBankUseCase;
 import net.focik.homeoffice.finance.domain.bank.port.primary.DeleteBankUseCase;
 import net.focik.homeoffice.finance.domain.bank.port.primary.GetBankUseCase;
 import net.focik.homeoffice.finance.domain.bank.port.primary.UpdateBankUseCase;
-import net.focik.homeoffice.goahead.api.dto.BasicDto;
-import net.focik.homeoffice.goahead.api.dto.CustomerDto;
-import net.focik.homeoffice.goahead.api.dto.CustomerTypeDto;
-import net.focik.homeoffice.goahead.domain.customer.Customer;
-import net.focik.homeoffice.goahead.domain.customer.CustomerStatus;
-import net.focik.homeoffice.goahead.domain.customer.CustomerType;
 import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.springframework.http.HttpStatus;
@@ -22,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +24,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/bank")
+@RequestMapping("/api/v1/finance/bank")
 //@CrossOrigin
 public class BankController extends ExceptionHandling {
 
@@ -43,9 +36,9 @@ public class BankController extends ExceptionHandling {
 
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<BankDto> getById(@PathVariable int id,
-                                    @RequestParam(required = false) Boolean isAddress ) {
+                                    @RequestParam(required = false) Boolean isAddress) {
 
         log.info("Try find bank by id: " + id);
 
@@ -60,7 +53,7 @@ public class BankController extends ExceptionHandling {
     }
 
     @GetMapping()
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<List<BankDto>> getAll(@RequestParam(required = false) Boolean address) {
         log.info("Try get all banks - Address = " + address);
 
@@ -74,7 +67,7 @@ public class BankController extends ExceptionHandling {
     }
 
     @PostMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<BankDto> addBank(@RequestBody BankDto bankDto) {
         log.info("Try add new bank.");
 
@@ -90,7 +83,7 @@ public class BankController extends ExceptionHandling {
     }
 
     @PutMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<BankDto> updateBank(@RequestBody BankDto bankDto) {
         log.info("Try update bank with id: {}", bankDto.getId());
 
@@ -99,7 +92,7 @@ public class BankController extends ExceptionHandling {
     }
 
     @DeleteMapping("/{idBank}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_DELETE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_DELETE_ALL', 'FINANSE_DELETE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteBank(@PathVariable int idBank) {
         log.info("Try delete bank with id: " + idBank);
 

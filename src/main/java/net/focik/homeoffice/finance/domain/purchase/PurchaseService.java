@@ -2,7 +2,7 @@ package net.focik.homeoffice.finance.domain.purchase;
 
 import lombok.AllArgsConstructor;
 import net.focik.homeoffice.finance.domain.exception.CardNotValidException;
-import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
+import net.focik.homeoffice.finance.domain.exception.PurchaseNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.PurchaseNotValidException;
 import net.focik.homeoffice.finance.domain.purchase.port.secondary.PurchaseRepository;
 import net.focik.homeoffice.utils.share.PaymentStatus;
@@ -27,8 +27,7 @@ class PurchaseService {
     }
 
     List<Purchase> findPurchasesByUser(int idUser, PaymentStatus paymentStatus, LocalDate date) {
-        //TODO zmienić ID_USER!!!!!!!!!
-        List<Purchase> purchaseByUserId = purchaseRepository.findPurchaseByUserId(3);
+        List<Purchase> purchaseByUserId = purchaseRepository.findPurchaseByUserId(idUser);
 
         if (paymentStatus == null)
             return purchaseByUserId;
@@ -41,15 +40,16 @@ class PurchaseService {
     }
 
     public List<Purchase> findCurrent(int idUser) {
-        //TODO zmienić ID_USER!!!!!!!!!
-        Set<LocalDate> deadlines = purchaseRepository.findPurchaseByUserAndStatus(3, PaymentStatus.TO_PAY).stream()
+        Set<LocalDate> deadlines = purchaseRepository.findPurchaseByUserAndStatus(idUser, PaymentStatus.TO_PAY).stream()
 //                .filter(purchase -> purchase.getPaymentStatus().equals(PaymentStatus.TO_PAY))
                 .map(Purchase::getPaymentDeadline)
                 .collect(Collectors.toSet());
 
         List<Purchase> list = new ArrayList<>();
-        //TODO zmienić ID_USER!!!!!!!!!
-        deadlines.forEach(date -> list.addAll(purchaseRepository.findPurchaseByUserIdAndDeadline(3,date)));
+        deadlines.forEach(date -> list.addAll(purchaseRepository.findPurchaseByUserIdAndDeadline(idUser,date)
+                .stream()
+                .filter(purchase -> purchase.getPaymentStatus().equals(PaymentStatus.TO_PAY))
+                .collect(Collectors.toList())));
         return list;
     }
 
@@ -63,7 +63,7 @@ class PurchaseService {
         Optional<Purchase> purchaseById = purchaseRepository.findPurchaseById(idPurchase);
 
         if (purchaseById.isEmpty()) {
-            throw new LoanNotFoundException(idPurchase);
+            throw new PurchaseNotFoundException(idPurchase);
         }
 
         return purchaseById.get();
@@ -85,6 +85,4 @@ class PurchaseService {
             return true;
         return purchase.getPurchaseDate() == null && purchase.getPaymentDeadline() == null && purchase.getPaymentDate() == null;
     }
-
-
 }

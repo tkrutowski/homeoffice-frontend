@@ -2,12 +2,15 @@ package net.focik.homeoffice.finance.api.mapper;
 
 import lombok.RequiredArgsConstructor;
 import net.focik.homeoffice.finance.api.dto.FeeDto;
+import net.focik.homeoffice.finance.api.dto.FeeFrequencyDto;
 import net.focik.homeoffice.finance.api.dto.FeeInstallmentDto;
-import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
+import net.focik.homeoffice.finance.api.dto.PaymentStatusDto;
+import net.focik.homeoffice.finance.domain.exception.FeeNotValidException;
 import net.focik.homeoffice.finance.domain.fee.Fee;
 import net.focik.homeoffice.finance.domain.fee.FeeFrequencyEnum;
 import net.focik.homeoffice.finance.domain.fee.FeeInstallment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
+import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -30,13 +33,13 @@ public class ApiFeeMapper {
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
                 .feeNumber(dto.getFeeNumber())
-                .date(LocalDate.parse(dto.getDate()))
-                .feeFrequency(FeeFrequencyEnum.valueOf(dto.getFeeFrequency()))
+                .date(dto.getDate())
+                .feeFrequency(FeeFrequencyEnum.valueOf(dto.getFeeFrequency().getName()))
                 .numberOfPayments(dto.getNumberOfPayments())
-                .amount(BigDecimal.valueOf(Double.parseDouble(dto.getAmount())))
-                .firstPaymentDate(LocalDate.parse(dto.getFirstPaymentDate()))
+                .amount(Money.of(BigDecimal.valueOf(dto.getAmount().doubleValue()), "PLN"))
+                .firstPaymentDate(dto.getFirstPaymentDate())
                 .accountNumber(dto.getAccountNumber())
-                .feeStatus(PaymentStatus.valueOf(dto.getFeeStatus()))
+                .feeStatus(PaymentStatus.valueOf(dto.getFeeStatus().getName()))
                 .otherInfo(dto.getOtherInfo())
                 .build();
     }
@@ -48,15 +51,15 @@ public class ApiFeeMapper {
                 .idUser(fee.getIdUser())
                 .name(fee.getName())
                 .feeNumber(fee.getFeeNumber())
-                .date(fee.getDate().toString())
-                .feeFrequency(fee.getFeeFrequency().toString())
+                .date(fee.getDate())
+                .feeFrequency(new FeeFrequencyDto(fee.getFeeFrequency().toString(), fee.getFeeFrequency().getViewValue(), fee.getFeeFrequency().getFrequencyNumber()))
                 .numberOfPayments(fee.getNumberOfPayments())
-                .amount(String.format("%.2f", fee.getAmount()).replace(",", "."))
-                .firstPaymentDate(fee.getFirstPaymentDate().toString())
+                .amount(fee.getAmount().getNumber().doubleValue())
+                .firstPaymentDate(fee.getFirstPaymentDate())
                 .accountNumber(fee.getAccountNumber())
-                .feeStatus(fee.getFeeStatus().name())
+                .feeStatus(new PaymentStatusDto(fee.getFeeStatus().toString(), fee.getFeeStatus().getViewValue()))
                 .otherInfo(fee.getOtherInfo() == null ? "" : fee.getOtherInfo())
-                .installmentDtoList(fee.getInstallments() != null ? fee.getInstallments()
+                .installmentList(fee.getInstallments() != null ? fee.getInstallments()
                         .stream().map(this::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .build();
     }
@@ -65,11 +68,11 @@ public class ApiFeeMapper {
         return FeeInstallmentDto.builder()
                 .idFeeInstallment(fee.getIdFeeInstallment())
                 .idFee(fee.getIdFee())
-                .installmentAmountToPay(String.format("%.2f", fee.getInstallmentAmountToPay()).replace(",", "."))
-                .installmentAmountPaid(String.format("%.2f", fee.getInstallmentAmountPaid()).replace(",", "."))
-                .paymentDeadline(fee.getPaymentDeadline().toString())
-                .paymentDate(fee.getPaymentDate() != null ? fee.getPaymentDate().toString() : "")
-                .paymentStatus(fee.getPaymentStatus().name())
+                .installmentAmountToPay(fee.getInstallmentAmountToPay().getNumber().doubleValue())
+                .installmentAmountPaid(fee.getInstallmentAmountPaid().getNumber().doubleValue())
+                .paymentDeadline(fee.getPaymentDeadline())
+                .paymentDate(fee.getPaymentDate() != null ? fee.getPaymentDate() : LocalDate.MIN)
+                .paymentStatus(new PaymentStatusDto(fee.getPaymentStatus().toString(), fee.getPaymentStatus().getViewValue()))
                 .build();
     }
 
@@ -78,25 +81,23 @@ public class ApiFeeMapper {
         return FeeInstallment.builder()
                 .idFeeInstallment(dto.getIdFeeInstallment())
                 .idFee(dto.getIdFee())
-                .installmentAmountToPay(BigDecimal.valueOf(Double.parseDouble(dto.getInstallmentAmountToPay())))
-                .installmentAmountPaid(BigDecimal.valueOf(Double.parseDouble(dto.getInstallmentAmountPaid())))
-                .paymentDeadline(LocalDate.parse(dto.getPaymentDeadline()))
-                .paymentDate(LocalDate.parse(dto.getPaymentDate()))
-                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
+                .installmentAmountToPay(Money.of(BigDecimal.valueOf(dto.getInstallmentAmountToPay().doubleValue()), "PLN"))
+                .installmentAmountPaid(Money.of(BigDecimal.valueOf(dto.getInstallmentAmountPaid().doubleValue()), "PLN"))
+                .paymentDeadline(dto.getPaymentDeadline())
+                .paymentDate(dto.getPaymentDate())
+                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus().getName()))
                 .build();
     }
 
     private void valid(FeeDto dto) {
         if (dto.getIdUser() == 0)
-            throw new LoanNotValidException("IdUser can't be null.");
-        if (dto.getDate().isEmpty())
-            throw new LoanNotValidException("Date can't be empty.");
+            throw new FeeNotValidException("IdUser can't be null.");
+        if (dto.getDate() == null)
+            throw new FeeNotValidException("Date can't be empty.");
     }
 
     private void valid(FeeInstallmentDto dto) {
         if (dto.getIdFee() == 0)
-            throw new LoanNotValidException("IdFee can't be null.");
-        if (dto.getPaymentDate().isEmpty())
-            throw new LoanNotValidException("Date can't be empty.");
+            throw new FeeNotValidException("IdFee can't be null.");
     }
 }

@@ -14,8 +14,6 @@ import net.focik.homeoffice.finance.domain.fee.port.primary.AddFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.DeleteFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.GetFeeUseCase;
 import net.focik.homeoffice.finance.domain.fee.port.primary.UpdateFeeUseCase;
-import net.focik.homeoffice.library.api.dto.ReadingStatusDto;
-import net.focik.homeoffice.library.domain.model.ReadingStatus;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,7 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/fee")
+@RequestMapping("/api/v1/finance/fee")
 //@CrossOrigin
 class FeeController {
 
@@ -92,7 +90,7 @@ class FeeController {
     }
 
     @GetMapping("/frequency")
-    ResponseEntity<List<FrequencyDto>> getReadingStatus() {
+    ResponseEntity<List<FrequencyDto>> getFrequency() {
         FeeFrequencyEnum[] collect = (FeeFrequencyEnum.values());
         List<FrequencyDto> statusDtos = Arrays.stream(collect)
                 .map(type -> new FrequencyDto(type.name(), type.getViewValue()))

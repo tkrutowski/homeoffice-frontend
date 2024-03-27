@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -30,7 +29,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/library/userbook")
+@RequestMapping("/api/v1/library/userbook")
 public class UserBookController {
 
     private final FindUserBookUseCase findUserBookUseCase;
@@ -54,9 +53,21 @@ public class UserBookController {
         return new ResponseEntity<>(userBookMapper.toDto(userBook), HttpStatus.OK);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    ResponseEntity<List<UserBookApiDto>> getAllUserBooks() {
+        String userName = UserHelper.getUserName();
+        List<UserBook> allBooks;
+        allBooks = findUserBookUseCase.findUserBooksByUser(userName);
+        allBooks.sort((o1, o2) -> StringUtils.compare(o1.getBook().getTitle(), o2.getBook().getTitle()));
+        return new ResponseEntity<>(allBooks.stream()
+                .map(userBookMapper::toDto)
+                .collect(Collectors.toList()), HttpStatus.OK);
+    }
+
     @GetMapping("/status")
     @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
-    ResponseEntity<List<UserBookApiDto>> getAllUserBooks(@RequestParam(name = "status") ReadingStatus readingStatus,
+    ResponseEntity<List<UserBookApiDto>> getAllUserBooksByStatusAndYear(@RequestParam(name = "status") ReadingStatus readingStatus,
                                                          @RequestParam(name = "year", required = false) Integer year) {
         String userName = UserHelper.getUserName();
         List<UserBook> allBooks;
@@ -107,7 +118,7 @@ public class UserBookController {
     ResponseEntity<List<EditionTypeDto>> getEditionType() {
         EditionType[] collect = (EditionType.values());
         List<EditionTypeDto> statusDtos = Arrays.stream(collect)
-                .map(type -> new EditionTypeDto(type.name(), type.name()))
+                .map(type -> new EditionTypeDto(type.name(), type.getViewName()))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(statusDtos, OK);
     }

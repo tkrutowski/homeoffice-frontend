@@ -15,9 +15,9 @@ class UserBookApiDto implements BookDto {
     private Integer idUser;
     private BookApiDto book;
     private Integer idBookstore;
-    private String editionType;
-    private String readingStatus;
-    private String ownershipStatus;
+    private EditionTypeDto editionType;
+    private ReadingStatusDto readingStatus;
+    private OwnershipStatusDto ownershipStatus;
     private String readFrom;
     private String readTo;
     private String info;

@@ -2,8 +2,8 @@ package net.focik.homeoffice.finance.domain.card;
 
 import lombok.AllArgsConstructor;
 import net.focik.homeoffice.finance.domain.card.port.secondary.CardRepository;
+import net.focik.homeoffice.finance.domain.exception.CardNotFoundException;
 import net.focik.homeoffice.finance.domain.exception.CardNotValidException;
-import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
 import net.focik.homeoffice.utils.share.ActiveStatus;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +56,7 @@ class CardService {
         Optional<Card> cardById = cardRepository.findCardById(idCard);
 
         if (cardById.isEmpty()) {
-            throw new LoanNotFoundException(idCard);
+            throw new CardNotFoundException(idCard);
         }
 
         return cardById.get();
@@ -79,5 +79,4 @@ class CardService {
             return true;
         return card.getActivationDate() == null && card.getExpirationDate() == null;
     }
-
 }

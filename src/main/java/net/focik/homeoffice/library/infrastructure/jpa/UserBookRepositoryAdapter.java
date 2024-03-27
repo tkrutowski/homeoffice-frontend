@@ -9,7 +9,6 @@ import net.focik.homeoffice.library.infrastructure.mapper.JpaUserBookMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,12 +41,11 @@ public class UserBookRepositoryAdapter implements UserBookRepository {
     }
 
     @Override
-    public List<UserBook> findAll() {
-        List<UserBook> userBooksList = new ArrayList<>();
-//        userBookDtoRepository.findAll()
-//                .iterator()
-//                .forEachRemaining(userBookDbDto -> userBooksList.add(userBookDbDto.toDomain()));
-        return userBooksList;
+    public List<UserBook> findAllByUser(Long idUser) {
+        return userBookDtoRepository.findAllByUser_Id(idUser)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

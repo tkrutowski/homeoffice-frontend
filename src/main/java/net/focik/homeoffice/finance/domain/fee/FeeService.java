@@ -1,15 +1,14 @@
 package net.focik.homeoffice.finance.domain.fee;
 
 import lombok.AllArgsConstructor;
-import net.focik.homeoffice.finance.domain.exception.LoanInstallmentNotFoundException;
-import net.focik.homeoffice.finance.domain.exception.LoanNotFoundException;
-import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
+import net.focik.homeoffice.finance.domain.exception.*;
 import net.focik.homeoffice.finance.domain.fee.port.secondary.FeeRepository;
-import net.focik.homeoffice.utils.MoneyUtils;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
 
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,17 +23,17 @@ class FeeService {
 
     //-----------------------------FEE---------------------------
 
-
-    Fee saveFee(Fee fee) {
+    @Transactional
+    public Fee saveFee(Fee fee) {
         if (isNotValid(fee))
             throw new LoanNotValidException();
         Fee saved = feeRepository.saveFee(fee);
         List<FeeInstallment> feeInstallments = new ArrayList<>();
-        for (long i = 1; i <= saved.getNumberOfPayments(); i++) {
+        for (long i = 0; i < saved.getNumberOfPayments(); i++) {
             feeInstallments.add(FeeInstallment.builder()
                     .idFee(saved.getId())
                     .installmentAmountToPay(fee.getAmount())
-                    .installmentAmountPaid(BigDecimal.ZERO)
+                    .installmentAmountPaid(Money.of(0, "PLN"))
                     .paymentDeadline(fee.getFirstPaymentDate().plusMonths(fee.getFeeFrequency().getFrequencyNumber() * i))
                     .paymentStatus(PaymentStatus.TO_PAY)
                     .build());
@@ -90,7 +89,7 @@ class FeeService {
         Optional<Fee> feeById = feeRepository.findFeeById(idFee);
 
         if (feeById.isEmpty()) {
-            throw new LoanNotFoundException(idFee);
+            throw new FeeNotFoundException(idFee);
         }
 
         if (withFeeInstallment) {
@@ -134,8 +133,8 @@ class FeeService {
     }
 
     public FeeInstallment updateFeeInstallment(FeeInstallment feeInstallment) {
-        if (isNotValid(feeInstallment))
-            throw new LoanNotValidException();
+//        if (isNotValid(feeInstallment))
+//            throw new FeeNotValidException();
         return feeRepository.saveFeeInstallment(feeInstallment);
     }
 
@@ -144,13 +143,13 @@ class FeeService {
     }
 
     private boolean isNotValid(Fee fee) {
-        if (Objects.equals(fee.getAmount(), BigDecimal.ZERO))
+        if (Objects.equals(fee.getAmount().getNumberStripped(), BigDecimal.ZERO))
             return true;
         return fee.getDate() == null;
     }
 
     private boolean isNotValid(FeeInstallment feeInstallment) {
-        if (Objects.equals(feeInstallment.getInstallmentAmountPaid(), BigDecimal.ZERO))
+        if (Objects.equals(feeInstallment.getInstallmentAmountPaid().getNumberStripped(), BigDecimal.ZERO))
             return true;
         return feeInstallment.getPaymentDate() == null;
     }
@@ -160,13 +159,12 @@ class FeeService {
         Money result = Money.of(BigDecimal.ZERO, "PLN");
 
         for (Fee fee : feeList) {
-            Money feeAmount = MoneyUtils.mapToMoney(fee.getAmount());
-            BigDecimal reduce = fee.getInstallments().stream()
+            CurrencyUnit currencyUnit = Monetary.getCurrency("PLN");
+            Money feeInstallmentPayedOff = fee.getInstallments().stream()
                     .map(FeeInstallment::getInstallmentAmountToPay)
-                    .reduce(BigDecimal::add)
-                    .orElse(BigDecimal.ZERO);
-            Money feeInstallmentPayedOff = Money.of(reduce, "PLN");
-            result = result.add(feeAmount.subtract(feeInstallmentPayedOff));
+                    .reduce((money, money2) -> money2.add(money))
+                    .orElse(Money.zero(currencyUnit));
+            result = result.add(fee.getAmount().subtract(feeInstallmentPayedOff));
         }
 
         return result;

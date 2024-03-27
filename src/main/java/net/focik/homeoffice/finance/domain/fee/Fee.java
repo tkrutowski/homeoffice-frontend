@@ -6,8 +6,8 @@ import net.focik.homeoffice.finance.domain.payment.FinancialTransaction;
 import net.focik.homeoffice.finance.domain.payment.Payment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import net.focik.homeoffice.utils.share.PaymentType;
+import org.javamoney.moneta.Money;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class Fee implements FinancialTransaction {
     private LocalDate date;
     private FeeFrequencyEnum feeFrequency;
     private Integer numberOfPayments;//ile razy pobrać
-    private BigDecimal amount;
+    private Money amount;
     private LocalDate firstPaymentDate;
     private String accountNumber;
     private PaymentStatus feeStatus;

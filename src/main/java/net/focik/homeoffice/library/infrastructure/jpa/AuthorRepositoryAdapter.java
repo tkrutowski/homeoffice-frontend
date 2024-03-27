@@ -19,8 +19,9 @@ public class AuthorRepositoryAdapter implements AuthorRepository {
     private final ModelMapper mapper;
 
     @Override
-    public Integer add(Author author) {
-        return authorDtoRepository.save(mapper.map(author, AuthorDbDto.class)).getId();
+    public Author add(Author author) {
+        AuthorDbDto saved = authorDtoRepository.save(mapper.map(author, AuthorDbDto.class));
+        return  mapper.map(saved, Author.class);
     }
 
     @Override

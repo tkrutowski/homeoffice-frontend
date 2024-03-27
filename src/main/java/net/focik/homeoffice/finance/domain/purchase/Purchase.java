@@ -29,5 +29,10 @@ public class Purchase {
 
     public void changePaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+        if(paymentStatus.equals(PaymentStatus.PAID)){
+            paymentDate=LocalDate.now();
+        } else if (paymentStatus.equals(PaymentStatus.TO_PAY)) {
+            paymentDate=LocalDate.MIN;
+        }
     }
 }

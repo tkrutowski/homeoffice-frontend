@@ -1,13 +1,17 @@
 package net.focik.homeoffice.library.domain;
 
 import lombok.RequiredArgsConstructor;
+import net.focik.homeoffice.library.domain.exception.CategoryAlreadyExistException;
 import net.focik.homeoffice.library.domain.exception.CategoryNotFoundException;
 import net.focik.homeoffice.library.domain.model.Category;
 import net.focik.homeoffice.library.domain.port.secondary.CategoryRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -15,10 +19,10 @@ class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public Integer addCategory(Category category) {
+    public Category addCategory(Category category) {
         Optional<Category> optionalCategory = categoryRepository.findByName(category.getName());
         if (optionalCategory.isPresent()) {
-            throw new CategoryNotFoundException(category);
+            throw new CategoryAlreadyExistException(category);
         }
         return categoryRepository.add(category);
     }
@@ -49,4 +53,17 @@ class CategoryService {
         return categoryRepository.findAll();
     }
 
+    public Set<Category> validCategories(Set<Category> categories) {
+        Set<Category> categorySet = new HashSet<>();
+        List<Category> all = categoryRepository.findAll();
+        for (Category category : categories) {
+            String name = category.getName().trim();
+            Optional<Category> first = all.stream()
+                    .filter(cat -> StringUtils.containsIgnoreCase(cat.getName(), name))
+                    .findFirst();
+
+            categorySet.add(first.orElse(category));
+        }
+        return categorySet;
+    }
 }

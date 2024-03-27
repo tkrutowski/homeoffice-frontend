@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Component
 public interface CategoryRepository {
-    Integer add(Category category);
+    Category add(Category category);
 
     Optional<Category> edit(Category category);
 

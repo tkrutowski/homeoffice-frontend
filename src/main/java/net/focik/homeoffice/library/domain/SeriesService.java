@@ -5,10 +5,12 @@ import net.focik.homeoffice.library.domain.exception.SeriesAlreadyExistException
 import net.focik.homeoffice.library.domain.exception.SeriesNotFoundException;
 import net.focik.homeoffice.library.domain.model.Series;
 import net.focik.homeoffice.library.domain.port.secondary.SeriesRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -59,7 +61,17 @@ public class SeriesService {
 
     public List<Series> getAllSeries() {
         return seriesRepository.findAll().stream()
+                .filter(series -> Objects.nonNull(series.getTitle()))
                 .sorted(Comparator.comparing(Series::getTitle))
                 .collect(Collectors.toList());
+    }
+
+    public Series validSeries(Series series) {
+        List<Series> all = seriesRepository.findAll();
+        String title = series.getTitle().trim();
+        Optional<Series> first = all.stream()
+                .filter(serie -> StringUtils.containsIgnoreCase(serie.getTitle(), title))
+                .findFirst();
+        return first.orElse(series);
     }
 }

@@ -36,7 +36,7 @@ public class ApiBankMapper {
                 .build();
     }
 
-    private String convertIfNull(String valueToCheck){
-        return valueToCheck == null ? "": valueToCheck;
+    private String convertIfNull(String valueToCheck) {
+        return valueToCheck == null ? "" : valueToCheck;
     }
 }

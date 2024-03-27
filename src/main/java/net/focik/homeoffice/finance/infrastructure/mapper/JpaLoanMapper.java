@@ -7,6 +7,8 @@ import net.focik.homeoffice.finance.domain.loan.LoanInstallment;
 import net.focik.homeoffice.finance.infrastructure.dto.BankDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.LoanDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.LoanInstallmentDbDto;
+import org.javamoney.moneta.Money;
+import org.javamoney.moneta.spi.MoneyUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -23,38 +25,24 @@ public class JpaLoanMapper {
                 .id(loan.getId())
                 .bank(mapper.map(loan.getBank(), BankDbDto.class))
                 .idUser(loan.getIdUser())
-                .amount(loan.getAmount())
+                .amount(MoneyUtils.getBigDecimal(loan.getAmount().getNumber()))
                 .date(loan.getDate())
                 .loanNumber(loan.getLoanNumber())
                 .accountNumber(loan.getAccountNumber())
                 .firstPaymentDate(loan.getFirstPaymentDate())
                 .numberOfInstallments(loan.getNumberOfInstallments())
-                .installmentAmount(loan.getInstallmentAmount())
+                .installmentAmount(MoneyUtils.getBigDecimal(loan.getInstallmentAmount().getNumber()))
                 .name(loan.getName())
                 .otherInfo(loan.getOtherInfo())
                 .loanStatus(loan.getLoanStatus())
-                .loanCost(loan.getLoanCost())
+                .loanCost(MoneyUtils.getBigDecimal(loan.getLoanCost().getNumber()))
                 .build();
     }
 
     public Loan toDomain(LoanDbDto dto, List<LoanInstallmentDbDto> loanInstallments) {
-        return Loan.builder()
-                .id(dto.getId())
-                .bank(mapper.map(dto.getBank(), Bank.class))
-                .idUser(dto.getIdUser())
-                .name(dto.getName())
-                .amount(dto.getAmount())
-                .date(dto.getDate())
-                .loanNumber(dto.getLoanNumber())
-                .accountNumber(dto.getAccountNumber())
-                .firstPaymentDate(dto.getFirstPaymentDate())
-                .numberOfInstallments(dto.getNumberOfInstallments())
-                .installmentAmount(dto.getInstallmentAmount())
-                .loanStatus(dto.getLoanStatus())
-                .loanCost(dto.getLoanCost())
-                .otherInfo(dto.getOtherInfo())
-                .installments(mapListLoanInstallmentToSet(loanInstallments))
-                .build();
+        Loan loan = toDomain(dto);
+        loan.setInstallments(mapListLoanInstallmentToSet(loanInstallments));
+        return loan;
     }
 
     public Loan toDomain(LoanDbDto dto) {
@@ -63,15 +51,15 @@ public class JpaLoanMapper {
                 .bank(mapper.map(dto.getBank(), Bank.class))
                 .idUser(dto.getIdUser())
                 .name(dto.getName())
-                .amount(dto.getAmount())
+                .amount(Money.of(dto.getAmount(),"PLN"))
                 .date(dto.getDate())
                 .loanNumber(dto.getLoanNumber())
                 .accountNumber(dto.getAccountNumber())
                 .firstPaymentDate(dto.getFirstPaymentDate())
                 .numberOfInstallments(dto.getNumberOfInstallments())
-                .installmentAmount(dto.getInstallmentAmount())
+                .installmentAmount(Money.of(dto.getInstallmentAmount(),"PLN"))
                 .loanStatus(dto.getLoanStatus())
-                .loanCost(dto.getLoanCost())
+                .loanCost(Money.of(dto.getLoanCost(),"PLN"))
                 .otherInfo(dto.getOtherInfo())
                 .build();
     }
@@ -91,8 +79,8 @@ public class JpaLoanMapper {
                 .id(loanInstallment.getIdLoanInstallment())
                 .idLoan(loanInstallment.getIdLoan())
                 .installmentNumber(loanInstallment.getInstallmentNumber())
-                .installmentAmountToPay(loanInstallment.getInstallmentAmountToPay())
-                .installmentAmountPaid(loanInstallment.getInstallmentAmountPaid())
+                .installmentAmountToPay(MoneyUtils.getBigDecimal(loanInstallment.getInstallmentAmountToPay().getNumber()))
+                .installmentAmountPaid(MoneyUtils.getBigDecimal(loanInstallment.getInstallmentAmountPaid().getNumber()))
                 .paymentDeadline(loanInstallment.getPaymentDeadline())
                 .paymentDate(loanInstallment.getPaymentDate())
                 .paymentStatus(loanInstallment.getPaymentStatus())
@@ -104,8 +92,8 @@ public class JpaLoanMapper {
                 .idLoanInstallment(dto.getId())
                 .idLoan(dto.getIdLoan())
                 .installmentNumber(dto.getInstallmentNumber())
-                .installmentAmountToPay(dto.getInstallmentAmountToPay())
-                .installmentAmountPaid(dto.getInstallmentAmountPaid())
+                .installmentAmountToPay(Money.of(dto.getInstallmentAmountToPay(),"PLN"))
+                .installmentAmountPaid(Money.of(dto.getInstallmentAmountPaid(),"PLN"))
                 .paymentDeadline(dto.getPaymentDeadline())
                 .paymentDate(dto.getPaymentDate())
                 .paymentStatus(dto.getPaymentStatus())

@@ -1,5 +1,6 @@
 package net.focik.homeoffice.finance.api.mapper;
 
+import net.focik.homeoffice.finance.api.dto.PaymentStatusDto;
 import net.focik.homeoffice.finance.api.dto.PurchaseDto;
 import net.focik.homeoffice.finance.domain.exception.LoanNotValidException;
 import net.focik.homeoffice.finance.domain.purchase.Purchase;
@@ -29,7 +30,7 @@ public class ApiPurchaseMapper {
                 .paymentDeadline(LocalDate.parse(dto.getPaymentDeadline()))
                 .paymentDate(LocalDate.parse(dto.getPaymentDate()))
                 .otherInfo(dto.getOtherInfo())
-                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus()))
+                .paymentStatus(PaymentStatus.valueOf(dto.getPaymentStatus().getName()))
                 .isInstallment(dto.isInstallment())
                 .build();
     }
@@ -46,7 +47,7 @@ public class ApiPurchaseMapper {
                 .paymentDeadline(purchase.getPaymentDeadline().toString())
                 .paymentDate(purchase.getPaymentDate().toString())
                 .otherInfo(purchase.getOtherInfo() == null ? "" : purchase.getOtherInfo())
-                .paymentStatus(purchase.getPaymentStatus().toString())
+                .paymentStatus(new PaymentStatusDto(purchase.getPaymentStatus().toString(), purchase.getPaymentStatus().getViewValue()))
                 .isInstallment(purchase.isInstallment())
                 .build();
     }
@@ -56,7 +57,7 @@ public class ApiPurchaseMapper {
 
         for (Map.Entry<LocalDate, List<Purchase>> entry : inputMap.entrySet()) {
             outputMap.put(entry.getKey().toString(), entry.getValue().stream()
-                    .map(purchase -> toDto(purchase))
+                    .map(this::toDto)
                     .collect(Collectors.toList()));
 
         }

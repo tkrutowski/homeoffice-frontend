@@ -11,10 +11,10 @@ public class SecurityConstant {
     public static final String GET_ARRAYS_LLC = "FocikHome";
     public static final String GET_ARRAYS_ADMINISTRATION = "User Management Portal";
     public static final String AUTHORITIES = "authorities";
-    public static final String FORBIDDEN_MESSAGE = "You need to login in to access this page";
+    public static final String FORBIDDEN_MESSAGE = "You do not have enough rights to access this page";
     public static final String ACCESS_DENIED_MESSAGE = "You do not have permission to access this page";
     public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
-    public static final String[] PUBLIC_URLS = {"/api/auth/login"};//, "/api/user/register"}; //można potem dodać
+    public static final String[] PUBLIC_URLS = {"/api/v1/auth/login"};//, "/api/user/register"}; //można potem dodać
 //    public static final String[] PUBLIC_URLS = {"**"}; //można potem dodać
 
 }

@@ -15,6 +15,7 @@ import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import net.focik.homeoffice.utils.share.ActiveStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/card")
+@RequestMapping("/api/v1/finance/card")
 //@CrossOrigin
 public class CardController extends ExceptionHandling {
 
@@ -37,7 +38,7 @@ public class CardController extends ExceptionHandling {
 
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<CardDto> getById(@PathVariable int id) {
 
         log.info("Try find card by id: " + id);
@@ -53,7 +54,7 @@ public class CardController extends ExceptionHandling {
     }
 
     @GetMapping
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL') or hasRole('ROLE_ADMIN')")
     ResponseEntity<List<CardDto>> getAll(@RequestParam(required = false) ActiveStatus status) {
         log.info("Try get all card for status " + status);
 
@@ -67,7 +68,7 @@ public class CardController extends ExceptionHandling {
     }
 
     @GetMapping("/user/{userId}")
-        //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<List<CardDto>> getByUser(@PathVariable int userId, @RequestParam(required = false) ActiveStatus status) {
         log.info("Try get all card for status " + status);
 
@@ -81,7 +82,7 @@ public class CardController extends ExceptionHandling {
     }
 
     @PostMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<CardDto> addCard(@RequestBody CardDto cardDto) {
         log.info("Try add new card.");
 
@@ -97,8 +98,8 @@ public class CardController extends ExceptionHandling {
     }
 
     @PutMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
-    public ResponseEntity<CardDto> updateBank(@RequestBody CardDto cardDto) {
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<CardDto> updateCard(@RequestBody CardDto cardDto) {
         log.info("Try update card with id: {}", cardDto.getId());
 
         Card card = updateCardUseCase.updateCard(mapper.toDomain(cardDto));
@@ -106,8 +107,8 @@ public class CardController extends ExceptionHandling {
     }
 
     @PutMapping("/status/{id}")
-    //    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
-    public ResponseEntity<HttpResponse> updatePurchaseStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<HttpResponse> updateCardStatus(@PathVariable int id, @RequestBody BasicDto basicDto) {
         log.info("Try update perchase status.");
 
         updateCardUseCase.updateCardStatus(id, ActiveStatus.valueOf(basicDto.getValue()));
@@ -115,7 +116,7 @@ public class CardController extends ExceptionHandling {
     }
 
     @DeleteMapping("/{idCard}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_DELETE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_DELETE_ALL', 'FINANSE_DELETE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteCard(@PathVariable int idCard) {
         log.info("Try delete card with id: " + idCard);
 

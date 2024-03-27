@@ -18,6 +18,6 @@ public class PurchaseDto {
     private String paymentDeadline;
     private String paymentDate;
     private String otherInfo;
-    private String paymentStatus;
+    private PaymentStatusDto paymentStatus;
     private boolean isInstallment;
 }

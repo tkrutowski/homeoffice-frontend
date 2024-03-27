@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.ToString;
 import net.focik.homeoffice.finance.domain.payment.Installment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
+import org.javamoney.moneta.Money;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -16,8 +16,8 @@ public class LoanInstallment implements Installment {
     private int idLoanInstallment;
     private int idLoan;
     private int installmentNumber;
-    private BigDecimal installmentAmountToPay;
-    private BigDecimal installmentAmountPaid;
+    private Money installmentAmountToPay;
+    private Money installmentAmountPaid;
     private LocalDate paymentDeadline;
     private LocalDate paymentDate;
     private PaymentStatus paymentStatus;

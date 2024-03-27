@@ -13,6 +13,7 @@ import net.focik.homeoffice.utils.exceptions.ExceptionHandling;
 import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Log4j2
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/finance/firm")
+@RequestMapping("/api/v1/finance/firm")
 //@CrossOrigin
 public class FirmController extends ExceptionHandling {
 
@@ -35,7 +36,7 @@ public class FirmController extends ExceptionHandling {
 
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<FirmDto> getById(@PathVariable int id,
                                     @RequestParam(required = false) Boolean isAddress) {
 
@@ -52,7 +53,7 @@ public class FirmController extends ExceptionHandling {
     }
 
     @GetMapping()
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_READ_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_READ_ALL', 'FINANSE_READ') or hasRole('ROLE_ADMIN')")
     ResponseEntity<List<FirmDto>> getAll(@RequestParam(required = false) Boolean address) {
         log.info("Try get all firms - Address = " + address);
 
@@ -66,7 +67,7 @@ public class FirmController extends ExceptionHandling {
     }
 
     @PostMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<FirmDto> addFirm(@RequestBody FirmDto firmDto) {
         log.info("Try add new firm.");
 
@@ -82,7 +83,7 @@ public class FirmController extends ExceptionHandling {
     }
 
     @PutMapping
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_WRITE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_WRITE_ALL', 'FINANSE_WRITE', 'ROLE_ADMIN')")
     public ResponseEntity<FirmDto> updateFirm(@RequestBody FirmDto firmDto) {
         log.info("Try update firm with id: {}", firmDto.getId());
 
@@ -91,7 +92,7 @@ public class FirmController extends ExceptionHandling {
     }
 
     @DeleteMapping("/{idFirm}")
-//    @PreAuthorize("hasAnyAuthority('GOAHEAD_DELETE_ALL')")
+    @PreAuthorize("hasAnyAuthority('FINANSE_DELETE_ALL', 'FINANSE_DELETE', 'ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteFirm(@PathVariable int idFirm) {
         log.info("Try delete firm with id: " + idFirm);
 

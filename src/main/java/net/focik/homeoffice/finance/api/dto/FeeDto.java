@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Builder
@@ -15,13 +16,13 @@ public class FeeDto {
     private int idUser;
     private String name;
     private String feeNumber;
-    private String date;
-    private String feeFrequency;
+    private LocalDate date;
+    private FeeFrequencyDto feeFrequency;
     private Integer numberOfPayments;//ile razy pobrać
-    private String amount;
-    private String firstPaymentDate;
+    private Number amount;
+    private LocalDate firstPaymentDate;
     private String accountNumber;
-    private String feeStatus;
+    private PaymentStatusDto feeStatus;
     private String otherInfo;
-    private List<FeeInstallmentDto> installmentDtoList;
+    private List<FeeInstallmentDto> installmentList;
 }

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/library/bookstore")
+@RequestMapping("/api/v1/library/bookstore")
 public class BookstoreController {
     private final ModelMapper mapper;
     private final FindBookstoreUseCase findBookstoreUseCase;

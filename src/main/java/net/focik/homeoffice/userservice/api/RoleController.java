@@ -15,6 +15,7 @@ import net.focik.homeoffice.utils.exceptions.HttpResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = {"/", "/api/user/role"})
+@RequestMapping(path = {"/api/v1/user/role"})
 //najpierw sprawdza czy jest jakiś exception handler w exceptionHandling
 public class RoleController extends ExceptionHandling {
 
@@ -39,6 +40,7 @@ public class RoleController extends ExceptionHandling {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     ResponseEntity<List<RoleDto>> getUserRoles(@PathVariable Long id) {
         int i = 0;
 //        log.info("USER-SERVICE: Try find user by id: = " + id);
@@ -49,6 +51,7 @@ public class RoleController extends ExceptionHandling {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     ResponseEntity<List<RoleDto>> getRoles() {
         int i = 0;
 //        log.info("USER-SERVICE: Try find user by id: = " + id);
@@ -59,12 +62,14 @@ public class RoleController extends ExceptionHandling {
     }
 
     @PostMapping("/add")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> addRoleToUser(@RequestParam("userID") Long idUser, @RequestParam("roleID") Long idRole) {
         addRoleToUserUseCase.addRoleToUser(idUser, idRole);
         return response(HttpStatus.OK, "Dodano role do użytkownika.");
     }
 
     @DeleteMapping()
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> deleteRoleFromUser(@RequestParam("userID") Long idUser, @RequestParam("roleID") Long idRole) {
         deleteUsersRoleUseCase.deleteUsersRoleById(idUser, idRole);
         return response(HttpStatus.OK, "Role has been deleted from user.");
@@ -72,6 +77,7 @@ public class RoleController extends ExceptionHandling {
 
 
     @GetMapping("/details")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     ResponseEntity<List<PrivilegeDto>> getRolesDetails(@RequestParam("userID") Long idUser,
                                                        @RequestParam("roleID") Long idRole) {
 //        log.info("USER-SERVICE: Try find user by id: = " + id);
@@ -85,6 +91,7 @@ public class RoleController extends ExceptionHandling {
     }
 
     @PutMapping("/details")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpResponse> addPrivilegesToUserRole(@RequestParam("userID") Long idUser,
                                                                 @RequestParam("roleID") Long idRole,
                                                                 @RequestBody List<PrivilegeDto> privList) {

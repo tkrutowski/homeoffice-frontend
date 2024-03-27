@@ -1,24 +1,42 @@
 package net.focik.homeoffice.library.api;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import net.focik.homeoffice.library.api.dto.AuthorDto;
+import net.focik.homeoffice.library.api.mapper.ApiAuthorMapper;
+import net.focik.homeoffice.library.domain.model.Author;
+import net.focik.homeoffice.library.domain.port.primary.FindAuthorUseCase;
+import net.focik.homeoffice.library.domain.port.primary.SaveAuthorUseCase;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/authors")
+@RequestMapping("/api/v1/library/author")
 public class AuthorController {
-//    AuthorService authorService;
-//
-//    @GetMapping
-//    public List<Author> getAllAuthors() {
-//        return authorService.findAllAuthors();
-//    }
-//
-//    @PostMapping
-//    public Long addAuthor(@RequestBody Author author) {
-//        return authorService.addAuthor(author);
-//    }
+    final private FindAuthorUseCase authorUseCase;
+    private final ApiAuthorMapper authorMapper;
+    private final SaveAuthorUseCase saveAuthorUseCase;
+
+    //
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    ResponseEntity<List<AuthorDto>> getAllAuthors() {
+        List<Author> allAuthors = authorUseCase.getAllAuthors();
+        return new ResponseEntity<>(allAuthors.stream().map(authorMapper::toDto).collect(Collectors.toList()), HttpStatus.OK);
+    }
+
+    //
+    @PostMapping
+    @PreAuthorize("hasAnyAuthority('LIBRARY_READ_ALL','LIBRARY_READ')")
+    public ResponseEntity<AuthorDto> addAuthor(@RequestBody AuthorDto author) {
+        Author added = saveAuthorUseCase.add(authorMapper.toDomain(author));
+        return new ResponseEntity<>(authorMapper.toDto(added), HttpStatus.CREATED);
+    }
 //
 //    @PutMapping
 //    public Author editAuthor(@RequestBody Author author) {
@@ -34,6 +52,5 @@ public class AuthorController {
 //    public void delAuthor(@PathVariable Long id) {
 //        authorService.deleteAuthor(id);
 //    }
-
 
 }

@@ -6,8 +6,8 @@ import net.focik.homeoffice.finance.domain.payment.FinancialTransaction;
 import net.focik.homeoffice.finance.domain.payment.Payment;
 import net.focik.homeoffice.utils.share.PaymentStatus;
 import net.focik.homeoffice.utils.share.PaymentType;
+import org.javamoney.moneta.Money;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,15 +23,15 @@ public class Loan implements FinancialTransaction {
     private Bank bank;
     private int idUser;
     private String name;
-    private BigDecimal amount;
+    private Money amount;
     private LocalDate date;
     private String loanNumber;
     private String accountNumber;
     private LocalDate firstPaymentDate;
     private Integer numberOfInstallments;
-    private BigDecimal installmentAmount;
+    private Money installmentAmount;
     private PaymentStatus loanStatus;
-    private BigDecimal loanCost;//prowizja itp
+    private Money loanCost;//prowizja itp
     private String otherInfo;
     private List<LoanInstallment> installments;
 

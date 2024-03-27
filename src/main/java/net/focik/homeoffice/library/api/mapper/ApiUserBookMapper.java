@@ -2,18 +2,13 @@ package net.focik.homeoffice.library.api.mapper;
 
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
-import net.focik.homeoffice.library.api.dto.BookApiDto;
-import net.focik.homeoffice.library.api.dto.UserBookApiDto;
+import net.focik.homeoffice.library.api.dto.*;
 import net.focik.homeoffice.library.domain.model.*;
 import net.focik.homeoffice.userservice.domain.AppUser;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -26,12 +21,12 @@ private final ApiBookMapper bookMapper;
                 .idUser(Math.toIntExact(userBook.getUser().getId()))
                 .idBookstore(userBook.getBookstore().getId())
                 .book(bookMapper.toDto(userBook.getBook()))
-                .editionType(userBook.getEditionType().toString())
-                .readingStatus(userBook.getReadingStatus().toString())
-                .ownershipStatus(userBook.getOwnershipStatus().toString())
+                .editionType(new EditionTypeDto(userBook.getEditionType().name(), userBook.getEditionType().getViewName()))
+                .readingStatus(new ReadingStatusDto(userBook.getReadingStatus().name(), userBook.getReadingStatus().getViewValue()))
+                .ownershipStatus(new OwnershipStatusDto(userBook.getOwnershipStatus().name(), userBook.getOwnershipStatus().getViewValue()))
                 .readFrom(userBook.getReadFrom() != null ? userBook.getReadFrom().toString() : "")
-                .readTo(userBook.getReadTo()!=null?userBook.getReadTo().toString():"")
-                .info(userBook.getInfo()!=null?userBook.getInfo():"")
+                .readTo(userBook.getReadTo() != null ? userBook.getReadTo().toString() : "")
+                .info(userBook.getInfo() != null ? userBook.getInfo() : "")
                 .build();
     }
 
@@ -41,9 +36,9 @@ private final ApiBookMapper bookMapper;
                 .user(new AppUser(dto.getIdUser().longValue()))
                 .bookstore(new Bookstore(dto.getIdBookstore()))
                 .book(bookMapper.toDomain(dto.getBook()))
-                .editionType(EditionType.valueOf(dto.getEditionType()))
-                .readingStatus(ReadingStatus.valueOf(dto.getReadingStatus()))
-                .ownershipStatus(OwnershipStatus.valueOf(dto.getOwnershipStatus()))
+                .editionType(EditionType.valueOf(dto.getEditionType().getName()))
+                .readingStatus(ReadingStatus.valueOf(dto.getReadingStatus().getName()))
+                .ownershipStatus(OwnershipStatus.valueOf(dto.getOwnershipStatus().getName()))
                 .readFrom(Try.of(() -> LocalDate.parse(dto.getReadFrom())).getOrNull())
                 .readTo(Try.of(() -> LocalDate.parse(dto.getReadTo())).getOrNull())
                 .info(dto.getInfo())

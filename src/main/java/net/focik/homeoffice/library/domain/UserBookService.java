@@ -57,15 +57,18 @@ class UserBookService {
         }
         return userBookById.get();
     }
-
-    public List<UserBook> findBookByUserAndReadStatus(Long id, ReadingStatus readingStatus) {
-        return userBookRepository.findAllByUserAndReadStatus(id, readingStatus);
+    public List<UserBook> findUserBookByUser(Long idUser) {
+        return userBookRepository.findAllByUser(idUser);
     }
 
-    public List<UserBook> findBookByUserAndReadStatusAndYear(Long id, ReadingStatus readingStatus, int year) {
+    public List<UserBook> findBookByUserAndReadStatus(Long idUser, ReadingStatus readingStatus) {
+        return userBookRepository.findAllByUserAndReadStatus(idUser, readingStatus);
+    }
+
+    public List<UserBook> findBookByUserAndReadStatusAndYear(Long idUser, ReadingStatus readingStatus, int year) {
         LocalDate startDate = LocalDate.of(year, 1, 1);
         LocalDate stopDate = LocalDate.of(year, 12, 31);
-        return userBookRepository.findAllByUserAndReadStatusAndYear(id, readingStatus, startDate, stopDate);
+        return userBookRepository.findAllByUserAndReadStatusAndYear(idUser, readingStatus, startDate, stopDate);
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LibraryFacade implements FindBookUseCase, SaveBookUseCase, DeleteBookUseCase, SaveUserBookUseCase,
         FindSeriesUseCase, FindUserBookUseCase,FindBookstoreUseCase, SaveBookstoreUseCase, DeleteBookstoreUseCase,
-DeleteUserBookUseCase {
+DeleteUserBookUseCase, FindAuthorUseCase, FindCategoryUseCase, SaveAuthorUseCase, SaveCategoryUseCase{
 
     private final UserFacade userFacade;
     private final BookService bookService;
@@ -21,6 +21,8 @@ DeleteUserBookUseCase {
     private final SeriesService seriesService;
     private final UserBookService userBookService;
     private final BookstoreService bookstoreService;
+    private final AuthorService authorService;
+    private final CategoryService categoryService;
 
     @Override
     public Book findBook(Integer idBook) {
@@ -39,18 +41,20 @@ DeleteUserBookUseCase {
     }
 
     @Override
-    public List<BookDto> findNewBooksInSeries(Integer idSeries) {
+    public List<Book> findNewBooksInSeries(Integer idSeries) {
         Series series = seriesService.findSeries(idSeries);
         return scraperService.findBooksInSeries(series.getUrl());
     }
 
     @Override
-    public BookDto findBookByUrl(WebSite webSite, String url) {
+    public Book findBookByUrl(WebSite webSite, String url) {
         return scraperService.findBookByUrl(webSite, url);
     }
 
     @Override
     public Book addBook(Book book) {
+        book.setCategories(categoryService.validCategories(book.getCategories()));
+        book.setSeries(seriesService.validSeries(book.getSeries()));
         return bookService.addBook(book);
     }
 
@@ -78,6 +82,12 @@ DeleteUserBookUseCase {
     public List<UserBook> findUserBooksForBookId(Integer idBook, String userName) {
         AppUser user = userFacade.findUserByUsername(userName);
         return userBookService.findUserBooksForBookId(idBook, Math.toIntExact(user.getId()));
+    }
+
+    @Override
+    public List<UserBook> findUserBooksByUser(String userName) {
+        AppUser user = userFacade.findUserByUsername(userName);
+        return userBookService.findUserBookByUser(user.getId());
     }
 
     @Override
@@ -138,5 +148,35 @@ DeleteUserBookUseCase {
     public boolean deleteUserBook(Integer idUseBook) {
         userBookService.deleteUserBook(idUseBook);
         return true;
+    }
+
+    @Override
+    public Author getAuthor(Integer idAuthor) {
+        return null;
+    }
+
+    @Override
+    public List<Author> getAllAuthors() {
+        return authorService.findAllAuthors();
+    }
+
+    @Override
+    public Category getById(Integer idCategory) {
+        return null;
+    }
+
+    @Override
+    public List<Category> getAll() {
+        return categoryService.findAllCategories();
+    }
+
+    @Override
+    public Author add(Author author) {
+        return authorService.addAuthor(author);
+    }
+
+    @Override
+    public Category add(Category category) {
+        return categoryService.addCategory(category);
     }
 }

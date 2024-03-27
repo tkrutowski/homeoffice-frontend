@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Builder
@@ -14,16 +15,16 @@ public class LoanDto {
     private BankDto bank;
     private int idUser;
     private String name;
-    private String amount;
-    private String date;
+    private Number amount;
+    private LocalDate date;
     private String loanNumber;
     private String accountNumber;
-    private String firstPaymentDate;
+    private LocalDate firstPaymentDate;
     private int numberOfInstallments;
-    private String installmentAmount;
-    private String loanStatus;
-    private String loanCost;//prowizja itp
+    private Number installmentAmount;
+    private PaymentStatusDto loanStatus;
+    private Number loanCost;//prowizja itp
     private String otherInfo;
     private String amountToPay;
-    private List<LoanInstallmentDto> installmentDtoList;
+    private List<LoanInstallmentDto> installmentList;
 }

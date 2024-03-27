@@ -9,7 +9,7 @@ import java.util.Optional;
 @Component
 public interface AuthorRepository {
 
-    Integer add(Author author);
+    Author add(Author author);
 
     Optional<Author> findById(Integer id);
 

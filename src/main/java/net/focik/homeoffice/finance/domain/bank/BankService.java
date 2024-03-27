@@ -95,7 +95,6 @@ class BankService {
         if(!loansByBank.isEmpty()){
              throw new BankCanNotBeDeletedException("kredyty");
         }
-//        return true;
     }
 
     public Bank findById(Integer id, Boolean isAddress) {

@@ -17,7 +17,7 @@ class AuthorService {
 
     private final AuthorRepository authorRepository;
 
-    public Integer addAuthor(Author author) {
+    public Author addAuthor(Author author) {
         Optional<Author> optionalAuthor = authorRepository.findByFirstNameAndLastName(author.getFirstName(), author.getLastName());
         if (optionalAuthor.isPresent()) {
             throw new AuthorAlreadyExistException(author);

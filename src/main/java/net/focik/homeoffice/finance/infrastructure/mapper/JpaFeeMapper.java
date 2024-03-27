@@ -7,6 +7,8 @@ import net.focik.homeoffice.finance.domain.firm.Firm;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FeeInstallmentDbDto;
 import net.focik.homeoffice.finance.infrastructure.dto.FirmDbDto;
+import org.javamoney.moneta.Money;
+import org.javamoney.moneta.spi.MoneyUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +29,7 @@ public class JpaFeeMapper {
                 .date(fee.getDate())
                 .feeFrequencyEnum(fee.getFeeFrequency())
                 .numberOfPayments(fee.getNumberOfPayments())
-                .amount(fee.getAmount())
+                .amount(MoneyUtils.getBigDecimal(fee.getAmount().getNumber()))
                 .firstPaymentDate(fee.getFirstPaymentDate())
                 .accountNumber(fee.getAccountNumber())
                 .otherInfo(fee.getOtherInfo())
@@ -36,22 +38,9 @@ public class JpaFeeMapper {
     }
 
     public Fee toDomain(FeeDbDto dto, List<FeeInstallmentDbDto> feeInstallments) {
-        return Fee.builder()
-                .id(dto.getId())
-                .firm(mapper.map(dto.getFirm(), Firm.class))
-                .idUser(dto.getIdUser())
-                .name(dto.getName())
-                .feeNumber(dto.getFeeNumber())
-                .date(dto.getDate())
-                .feeFrequency(dto.getFeeFrequencyEnum())
-                .numberOfPayments(dto.getNumberOfPayments())
-                .amount(dto.getAmount())
-                .firstPaymentDate(dto.getFirstPaymentDate())
-                .accountNumber(dto.getAccountNumber())
-                .feeStatus(dto.getFeeStatus())
-                .otherInfo(dto.getOtherInfo())
-                .installments(mapListFeeInstallmentToSet(feeInstallments))
-                .build();
+        Fee fee = toDomain(dto);
+        fee.setInstallments(mapListFeeInstallmentToSet(feeInstallments));
+        return fee;
     }
 
     public Fee toDomain(FeeDbDto dto) {
@@ -64,7 +53,7 @@ public class JpaFeeMapper {
                 .date(dto.getDate())
                 .feeFrequency(dto.getFeeFrequencyEnum())
                 .numberOfPayments(dto.getNumberOfPayments())
-                .amount(dto.getAmount())
+                .amount(Money.of(dto.getAmount(),"PLN"))
                 .firstPaymentDate(dto.getFirstPaymentDate())
                 .accountNumber(dto.getAccountNumber())
                 .feeStatus(dto.getFeeStatus())
@@ -86,8 +75,8 @@ public class JpaFeeMapper {
         return FeeInstallmentDbDto.builder()
                 .id(feeInstallment.getIdFeeInstallment())
                 .idFee(feeInstallment.getIdFee())
-                .installmentAmountToPay(feeInstallment.getInstallmentAmountToPay())
-                .installmentAmountPaid(feeInstallment.getInstallmentAmountPaid())
+                .installmentAmountToPay(MoneyUtils.getBigDecimal(feeInstallment.getInstallmentAmountToPay().getNumber()))
+                .installmentAmountPaid(MoneyUtils.getBigDecimal(feeInstallment.getInstallmentAmountPaid().getNumber()))
                 .paymentDeadline(feeInstallment.getPaymentDeadline())
                 .paymentDate(feeInstallment.getPaymentDate())
                 .paymentStatus(feeInstallment.getPaymentStatus())
@@ -98,8 +87,8 @@ public class JpaFeeMapper {
         return FeeInstallment.builder()
                 .idFeeInstallment(dto.getId())
                 .idFee(dto.getIdFee())
-                .installmentAmountToPay(dto.getInstallmentAmountToPay())
-                .installmentAmountPaid(dto.getInstallmentAmountPaid())
+                .installmentAmountToPay(Money.of(dto.getInstallmentAmountToPay(),"PLN"))
+                .installmentAmountPaid(Money.of(dto.getInstallmentAmountPaid(),"PLN"))
                 .paymentDeadline(dto.getPaymentDeadline())
                 .paymentDate(dto.getPaymentDate())
                 .paymentStatus(dto.getPaymentStatus())

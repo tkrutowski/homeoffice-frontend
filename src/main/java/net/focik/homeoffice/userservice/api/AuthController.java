@@ -22,7 +22,7 @@ import static net.focik.homeoffice.userservice.domain.security.constant.Security
 @Log4j2
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = {"/api/auth"})
+@RequestMapping(path = {"/api/v1/auth"})
 //najpierw sprawdza czy jest jakiś exception handler w exceptionHandling
 public class AuthController extends ExceptionHandling {
 
