@@ -49,6 +49,66 @@ export const useAuthorizationStore = defineStore("authorization", {
         return false;
       }
     },
+    hasAccessFinancePurchase(): boolean {
+      console.log("hasAccessFinancePurchase()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.token);
+        // console.log("token decoded: ", decoded);
+        return (
+          decoded.authorities.includes("ROLE_FINANCE_PURCHASE") ||
+          decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
+    hasAccessFinancePayment(): boolean {
+      console.log("hasAccessFinancePayment()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.token);
+        // console.log("token decoded: ", decoded);
+        return (
+          decoded.authorities.includes("ROLE_FINANCE_PAYMENT") ||
+          decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
+    hasAccessFinanceLoan(): boolean {
+      console.log("hasAccessFinanceLoan()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.token);
+        // console.log("token decoded: ", decoded);
+        return (
+          decoded.authorities.includes("ROLE_FINANCE_LOAN") ||
+          decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
+    hasAccessFinanceFee(): boolean {
+      console.log("hasAccessFinanceFee()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.token);
+        // console.log("token decoded: ", decoded);
+        return (
+          decoded.authorities.includes("ROLE_FINANCE_FEE") ||
+          decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
     hasAccessLibrary(): boolean {
       console.log("hasAccessFinance()");
       try {

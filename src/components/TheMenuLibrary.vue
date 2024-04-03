@@ -9,7 +9,7 @@ const items = ref([
   {
     label: "Home",
     icon: "pi pi-fw pi-home",
-    disabled: !authorizationStore.hasAccessLibrary,
+    // disabled: !authorizationStore.hasAccessLibrary,
     // to: { name: "Home" },
     command: () => {
       router.push({ name: "Home" });

@@ -9,7 +9,7 @@ const items = ref([
   {
     label: "Home",
     icon: "pi pi-fw pi-home",
-    disabled: !authorizationStore.hasAccessFinance,
+    // disabled: !authorizationStore.hasAccessFinance,
     // to: { name: "Home" },
     command: () => {
       router.push({ name: "Home" });
@@ -18,7 +18,7 @@ const items = ref([
   {
     label: "Kredyty",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessFinanceLoan,
     items: [
       {
         label: "Nowy kredyt",
@@ -44,7 +44,7 @@ const items = ref([
   {
     label: "Opłaty",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessFinanceFee,
     items: [
       {
         label: "Nowa opłata",
@@ -70,7 +70,7 @@ const items = ref([
   {
     label: "Płatności",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessFinancePayment,
     items: [
       {
         label: "Lista płatności",
@@ -85,7 +85,7 @@ const items = ref([
   {
     label: "Zakupy",
     icon: "pi pi-fw pi-euro",
-    disabled: !authorizationStore.hasAccessFinance,
+    disabled: !authorizationStore.hasAccessFinancePurchase,
     items: [
       {
         label: "Nowy zakup",
