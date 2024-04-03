@@ -48,7 +48,7 @@ export const useFirmsStore = defineStore("firm", {
       };
       try {
         if (this.firms.length === 0) {
-          const response = await httpCommon.get(`/finance/firm`, {
+          const response = await httpCommon.get(`/v1/finance/firm`, {
             headers: authorization.token !== "null" ? headers : {},
           });
           console.log("getFirmsFromDb() - Ilosc[]: " + response.data.length);
@@ -80,7 +80,7 @@ export const useFirmsStore = defineStore("firm", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/firm/` + firmId, {
+        const response = await httpCommon.get(`/v1/finance/firm/` + firmId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -106,7 +106,7 @@ export const useFirmsStore = defineStore("firm", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/firm`, firm, {
+        const response = await httpCommon.post(`/v1/finance/firm`, firm, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.firms.push(response.data);
@@ -134,7 +134,7 @@ export const useFirmsStore = defineStore("firm", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/finance/firm`, firm, {
+        const response = await httpCommon.put(`/v1/finance/firm`, firm, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.firms.findIndex((f) => f.id === firm.id);
@@ -162,7 +162,7 @@ export const useFirmsStore = defineStore("firm", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/finance/firm/` + firmId, {
+        await httpCommon.delete(`/v1/finance/firm/` + firmId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.firms.findIndex((f) => f.id === firmId);

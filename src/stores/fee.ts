@@ -74,7 +74,7 @@ export const useFeeStore = defineStore("fee", {
       };
       try {
         const response = await httpCommon.get(
-          `/finance/fee/status?status=` +
+          `/v1/finance/fee/status?status=` +
             paymentStatus +
             "&installment=" +
             installment,
@@ -110,7 +110,7 @@ export const useFeeStore = defineStore("fee", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/fee/` + feeId, {
+        const response = await httpCommon.get(`/v1/finance/fee/` + feeId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -138,7 +138,7 @@ export const useFeeStore = defineStore("fee", {
       };
       try {
         await httpCommon.put(
-          `/finance/fee/status/` + feeId,
+          `/v1/finance/fee/status/` + feeId,
           { value: status.name },
           {
             headers: authorization.token !== "null" ? headers : {},
@@ -171,7 +171,7 @@ export const useFeeStore = defineStore("fee", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/fee`, fee, {
+        const response = await httpCommon.post(`/v1/finance/fee`, fee, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.fees.push(response.data);
@@ -199,7 +199,7 @@ export const useFeeStore = defineStore("fee", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/finance/fee`, fee, {
+        const response = await httpCommon.put(`/v1/finance/fee`, fee, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.fees.findIndex((f) => f.id === fee.id);
@@ -227,7 +227,7 @@ export const useFeeStore = defineStore("fee", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/finance/fee/` + feeId, {
+        await httpCommon.delete(`/v1/finance/fee/` + feeId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.fees.findIndex((f) => f.id === feeId);
@@ -257,7 +257,7 @@ export const useFeeStore = defineStore("fee", {
       };
       try {
         if (this.feeFrequencyTypes.length === 0) {
-          const response = await httpCommon.get(`/finance/fee/frequency`, {
+          const response = await httpCommon.get(`/v1/finance/fee/frequency`, {
             headers: authorization.token !== "null" ? headers : {},
           });
           this.feeFrequencyTypes = response.data;
@@ -288,7 +288,7 @@ export const useFeeStore = defineStore("fee", {
       };
       try {
         const response = await httpCommon.put(
-          `/finance/fee/installment`,
+          `/v1/finance/fee/installment`,
           installment,
           {
             headers: authorization.token !== "null" ? headers : {},

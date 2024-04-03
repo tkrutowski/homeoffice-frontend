@@ -84,7 +84,7 @@ export const usePurchasesStore = defineStore("purchase", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/purchase/current`, {
+        const response = await httpCommon.get(`/v1/finance/purchase/current`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getPurchaseCurrentFromDb() - Ilosc[]: " + response.data);
@@ -115,7 +115,7 @@ export const usePurchasesStore = defineStore("purchase", {
       };
       try {
         const response = await httpCommon.get(
-          `/finance/purchase/` + purchaseId,
+          `/v1/finance/purchase/` + purchaseId,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -143,9 +143,13 @@ export const usePurchasesStore = defineStore("purchase", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/purchase`, purchase, {
-          headers: authorization.token !== "null" ? headers : {},
-        });
+        const response = await httpCommon.post(
+          `/v1/finance/purchase`,
+          purchase,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
         //TODO sprawdzić czy można dodać bezpośrednio do tablicy
         const res: Purchase = response.data;
         if (this.purchases.has(res.paymentDeadline)) {
@@ -182,7 +186,7 @@ export const usePurchasesStore = defineStore("purchase", {
       };
       try {
         await httpCommon.put(
-          `/finance/purchase/status/` + purchaseId,
+          `/v1/finance/purchase/status/` + purchaseId,
           { value: status.name },
           {
             headers: authorization.token !== "null" ? headers : {},
@@ -231,7 +235,7 @@ export const usePurchasesStore = defineStore("purchase", {
       };
       try {
         await httpCommon.put(
-          `/finance/purchase/status/` + purchaseId,
+          `/v1/finance/purchase/status/` + purchaseId,
           { value: status.name },
           {
             headers: authorization.token !== "null" ? headers : {},

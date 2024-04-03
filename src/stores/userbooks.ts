@@ -60,7 +60,7 @@ export const useUserbooksStore = defineStore("userbook", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/userbook`, {
+        const response = await httpCommon.get(`/v1/library/userbook`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getUserbooksFromDb() - Ilosc[]: " + response.data.length);
@@ -90,7 +90,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/status?status=` + status.name,
+          `/v1/library/userbook/status?status=` + status.name,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -122,7 +122,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/` + userbookId,
+          `/v1/library/userbook/` + userbookId,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -155,7 +155,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/check?id=` + bookId,
+          `/v1/library/userbook/check?id=` + bookId,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -184,9 +184,13 @@ export const useUserbooksStore = defineStore("userbook", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/library/userbook`, userbook, {
-          headers: authorization.token !== "null" ? headers : {},
-        });
+        const response = await httpCommon.post(
+          `/v1/library/userbook`,
+          userbook,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
         this.userbooks.push(response.data);
         return true;
       } catch (e) {
@@ -212,9 +216,13 @@ export const useUserbooksStore = defineStore("userbook", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/library/userbook`, userbook, {
-          headers: authorization.token !== "null" ? headers : {},
-        });
+        const response = await httpCommon.put(
+          `/v1/library/userbook`,
+          userbook,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
         const index = this.userbooks.findIndex((ub) => ub.id === userbook.id);
         if (index !== -1) this.userbooks.splice(index, 1, response.data);
         return true;
@@ -240,7 +248,7 @@ export const useUserbooksStore = defineStore("userbook", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/library/userbook/` + userbookId, {
+        await httpCommon.delete(`/v1/library/userbook/` + userbookId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.userbooks.findIndex((b) => b.id === userbookId);
@@ -272,7 +280,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/ownership_status`,
+          `/v1/library/userbook/ownership_status`,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -304,7 +312,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/edition_type`,
+          `/v1/library/userbook/edition_type`,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -336,7 +344,7 @@ export const useUserbooksStore = defineStore("userbook", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/userbook/reading_status`,
+          `/v1/library/userbook/reading_status`,
           {
             headers: authorization.token !== "null" ? headers : {},
           }

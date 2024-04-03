@@ -95,7 +95,7 @@ export const useLoansStore = defineStore("loan", {
       };
       try {
         const response = await httpCommon.get(
-          `/finance/loan/status?status=` +
+          `/v1/finance/loan/status?status=` +
             paymentStatus +
             "&installment=" +
             installment,
@@ -131,7 +131,7 @@ export const useLoansStore = defineStore("loan", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/loan/` + loanId, {
+        const response = await httpCommon.get(`/v1/finance/loan/` + loanId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -159,7 +159,7 @@ export const useLoansStore = defineStore("loan", {
       };
       try {
         await httpCommon.put(
-          `/finance/loan/status/` + loanId,
+          `/v1/finance/loan/status/` + loanId,
           { value: status.name },
           {
             headers: authorization.token !== "null" ? headers : {},
@@ -192,7 +192,7 @@ export const useLoansStore = defineStore("loan", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/loan`, loan, {
+        const response = await httpCommon.post(`/v1/finance/loan`, loan, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.loans.push(response.data);
@@ -220,7 +220,7 @@ export const useLoansStore = defineStore("loan", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/finance/loan`, loan, {
+        const response = await httpCommon.put(`/v1/finance/loan`, loan, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.loans.findIndex((l) => l.id === loan.id);
@@ -248,7 +248,7 @@ export const useLoansStore = defineStore("loan", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/finance/loan/` + loanId, {
+        await httpCommon.delete(`/v1/finance/loan/` + loanId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.loans.findIndex((l) => l.id === loanId);
@@ -280,7 +280,7 @@ export const useLoansStore = defineStore("loan", {
       try {
         if (this.paymentTypes.length === 0) {
           const response = await httpCommon.get(
-            `/goahead/invoice/paymenttype`,
+            `/v1/goahead/invoice/paymenttype`,
             {
               headers: authorization.token !== "null" ? headers : {},
             }
@@ -313,7 +313,7 @@ export const useLoansStore = defineStore("loan", {
       };
       try {
         const response = await httpCommon.put(
-          `/finance/loan/installment`,
+          `/v1/finance/loan/installment`,
           installment,
           {
             headers: authorization.token !== "null" ? headers : {},

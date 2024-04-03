@@ -89,7 +89,7 @@ export const useCardsStore = defineStore("card", {
       };
       try {
         const response = await httpCommon.get(
-          `/finance/card?status=` + status,
+          `/v1/finance/card?status=` + status,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -125,7 +125,7 @@ export const useCardsStore = defineStore("card", {
       };
       try {
         const response = await httpCommon.get(
-          `/finance/card/user/` + userId + `?status=` + status,
+          `/v1/finance/card/user/` + userId + `?status=` + status,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -159,7 +159,7 @@ export const useCardsStore = defineStore("card", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/card/` + cardId, {
+        const response = await httpCommon.get(`/v1/finance/card/` + cardId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -185,7 +185,7 @@ export const useCardsStore = defineStore("card", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/card`, card, {
+        const response = await httpCommon.post(`/v1/finance/card`, card, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.cards.push(response.data);
@@ -213,7 +213,7 @@ export const useCardsStore = defineStore("card", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/finance/card`, card, {
+        const response = await httpCommon.put(`/v1/finance/card`, card, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.cards.findIndex((b) => b.id === card.id);
@@ -241,7 +241,7 @@ export const useCardsStore = defineStore("card", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/finance/card/` + cardId, {
+        await httpCommon.delete(`/v1/finance/card/` + cardId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.cards.findIndex((b) => b.id === cardId);

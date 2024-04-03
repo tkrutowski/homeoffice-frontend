@@ -42,7 +42,7 @@ export const useBookstoreStore = defineStore("bookstore", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/bookstore`, {
+        const response = await httpCommon.get(`/v1/library/bookstore`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getBookstoreFromDb() - Ilosc[]: " + response.data.length);
@@ -74,7 +74,7 @@ export const useBookstoreStore = defineStore("bookstore", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/bookstore/` + bookstoreId,
+          `/v1/library/bookstore/` + bookstoreId,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -104,7 +104,7 @@ export const useBookstoreStore = defineStore("bookstore", {
       };
       try {
         const response = await httpCommon.post(
-          `/library/bookstore`,
+          `/v1/library/bookstore`,
           bookstore,
           {
             headers: authorization.token !== "null" ? headers : {},
@@ -135,9 +135,13 @@ export const useBookstoreStore = defineStore("bookstore", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/library/bookstore`, bookstore, {
-          headers: authorization.token !== "null" ? headers : {},
-        });
+        const response = await httpCommon.put(
+          `/v1/library/bookstore`,
+          bookstore,
+          {
+            headers: authorization.token !== "null" ? headers : {},
+          }
+        );
         const index = this.bookstores.findIndex((b) => b.id === bookstore.id);
         if (index !== -1) this.bookstores.splice(index, 1, response.data);
         return true;
@@ -163,7 +167,7 @@ export const useBookstoreStore = defineStore("bookstore", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/library/bookstore/` + bookstoreId, {
+        await httpCommon.delete(`/v1/library/bookstore/` + bookstoreId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.bookstores.findIndex((b) => b.id === bookstoreId);

@@ -53,7 +53,7 @@ export const useUsersStore = defineStore("user", {
       };
       try {
         if (this.users.length === 0) {
-          const response = await httpCommon.get(`/user`, {
+          const response = await httpCommon.get(`/v1/user`, {
             headers: authorization.token !== "null" ? headers : {},
           });
           console.log("getUsersFromDb() - Ilosc[]: " + response.data.length);
@@ -85,7 +85,7 @@ export const useUsersStore = defineStore("user", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/user/` + userId, {
+        const response = await httpCommon.get(`/v1/user/` + userId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -111,7 +111,7 @@ export const useUsersStore = defineStore("user", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/user`, user, {
+        const response = await httpCommon.post(`/v1/user`, user, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.users.push(response.data);
@@ -139,7 +139,7 @@ export const useUsersStore = defineStore("user", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/user`, user, {
+        const response = await httpCommon.put(`/v1/user`, user, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.users.findIndex((u) => u.id === user.id);
@@ -167,7 +167,7 @@ export const useUsersStore = defineStore("user", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/user/` + userId, {
+        await httpCommon.delete(`/v1/user/` + userId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.users.findIndex((b) => b.id === userId);

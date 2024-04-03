@@ -92,7 +92,7 @@ export const usePaymentStore = defineStore("payment", {
       try {
         // if (this.payments.size === 0) {
         const response = await httpCommon.get(
-          `/finance/payment?status=` +
+          `/v1/finance/payment?status=` +
             paymentStatus +
             "&date=" +
             this.paymentSelectedYear,

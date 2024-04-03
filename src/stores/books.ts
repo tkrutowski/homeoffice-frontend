@@ -63,7 +63,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/book`, {
+        const response = await httpCommon.get(`/v1/library/book`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getBooksFromDb() - Ilosc[]: " + response.data.length);
@@ -92,7 +92,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/book/` + bookId, {
+        const response = await httpCommon.get(`/v1/library/book/` + bookId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -121,7 +121,7 @@ export const useBooksStore = defineStore("book", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/book/series/` + seriesId,
+          `/v1/library/book/series/` + seriesId,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -153,7 +153,7 @@ export const useBooksStore = defineStore("book", {
       };
       try {
         const response = await httpCommon.get(
-          `/library/book/url?site=` + webSite + "&url=" + url,
+          `/v1/library/book/url?site=` + webSite + "&url=" + url,
           {
             headers: authorization.token !== "null" ? headers : {},
           }
@@ -182,7 +182,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/library/book/` + bookId, {
+        await httpCommon.delete(`/v1/library/book/` + bookId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.books.findIndex((l) => l.id === bookId);
@@ -210,7 +210,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/library/book`, book, {
+        const response = await httpCommon.post(`/v1/library/book`, book, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.books.push(response.data);
@@ -239,7 +239,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/library/book`, book, {
+        const response = await httpCommon.put(`/v1/library/book`, book, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.books.findIndex((b) => b.id === book.id);
@@ -271,7 +271,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/author`, {
+        const response = await httpCommon.get(`/v1/library/author`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getAuthorsFromDb() - Ilosc[]: " + response.data.length);
@@ -298,7 +298,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/library/author`, author, {
+        const response = await httpCommon.post(`/v1/library/author`, author, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.authors.push(response.data);
@@ -329,7 +329,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/series`, {
+        const response = await httpCommon.get(`/v1/library/series`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getSeriesFromDb() - Ilosc[]: " + response.data.length);
@@ -360,7 +360,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/library/category`, {
+        const response = await httpCommon.get(`/v1/library/category`, {
           headers: authorization.token !== "null" ? headers : {},
         });
         console.log("getCategoriesFromDb() - Ilosc[]: " + response.data.length);
@@ -387,7 +387,7 @@ export const useBooksStore = defineStore("book", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/library/category`, cat, {
+        const response = await httpCommon.post(`/v1/library/category`, cat, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.categories.push(response.data);

@@ -35,7 +35,7 @@ export const useBanksStore = defineStore("bank", {
       };
       try {
         if (this.banks.length === 0) {
-          const response = await httpCommon.get(`/finance/bank`, {
+          const response = await httpCommon.get(`/v1/finance/bank`, {
             headers: authorization.token !== "null" ? headers : {},
           });
           console.log("getBanksFromDb() - Ilosc[]: " + response.data.length);
@@ -67,7 +67,7 @@ export const useBanksStore = defineStore("bank", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.get(`/finance/bank/` + bankId, {
+        const response = await httpCommon.get(`/v1/finance/bank/` + bankId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         return response.data;
@@ -93,7 +93,7 @@ export const useBanksStore = defineStore("bank", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.post(`/finance/bank`, bank, {
+        const response = await httpCommon.post(`/v1/finance/bank`, bank, {
           headers: authorization.token !== "null" ? headers : {},
         });
         this.banks.push(response.data);
@@ -121,7 +121,7 @@ export const useBanksStore = defineStore("bank", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        const response = await httpCommon.put(`/finance/bank`, bank, {
+        const response = await httpCommon.put(`/v1/finance/bank`, bank, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.banks.findIndex((b) => b.id === bank.id);
@@ -149,7 +149,7 @@ export const useBanksStore = defineStore("bank", {
         Authorization: "Bearer " + authorization.token,
       };
       try {
-        await httpCommon.delete(`/finance/bank/` + bankId, {
+        await httpCommon.delete(`/v1/finance/bank/` + bankId, {
           headers: authorization.token !== "null" ? headers : {},
         });
         const index = this.banks.findIndex((b) => b.id === bankId);
