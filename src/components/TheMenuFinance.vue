@@ -117,7 +117,7 @@ const items = ref([
       <img alt="logo" src="@/assets/HomeOffice.png" height="30" class="mr-2" />
     </template>
     <template #end>
-      <div v-if="!authorizationStore.isAuthenticated">
+      <div v-if="!authorizationStore.isAuthenticatedOrToken">
         <router-link :to="{ name: 'login' }" style="text-decoration: none">
           <OfficeButton
             size="sm"

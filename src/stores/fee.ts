@@ -70,7 +70,7 @@ export const useFeeStore = defineStore("fee", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
@@ -79,7 +79,7 @@ export const useFeeStore = defineStore("fee", {
             "&installment=" +
             installment,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("getFeesFromDb() - Ilosc[]: " + response.data.length);
@@ -107,11 +107,11 @@ export const useFeeStore = defineStore("fee", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/fee/` + feeId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -134,14 +134,14 @@ export const useFeeStore = defineStore("fee", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.put(
           `/v1/finance/fee/status/` + feeId,
           { value: status.name },
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         const fee = this.fees.find((l) => l.id === feeId);
@@ -168,11 +168,11 @@ export const useFeeStore = defineStore("fee", {
       console.log("START - addFeeDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/finance/fee`, fee, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.fees.push(response.data);
         return true;
@@ -196,11 +196,11 @@ export const useFeeStore = defineStore("fee", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/finance/fee`, fee, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.fees.findIndex((f) => f.id === fee.id);
         if (index !== -1) this.fees.splice(index, 1, response.data);
@@ -224,11 +224,11 @@ export const useFeeStore = defineStore("fee", {
       console.log("START - deleteFeeDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/finance/fee/` + feeId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.fees.findIndex((f) => f.id === feeId);
         if (index !== -1) this.fees.splice(index, 1);
@@ -253,12 +253,12 @@ export const useFeeStore = defineStore("fee", {
       this.loadingFeeFrequencyType = true;
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         if (this.feeFrequencyTypes.length === 0) {
           const response = await httpCommon.get(`/v1/finance/fee/frequency`, {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           });
           this.feeFrequencyTypes = response.data;
         } else {
@@ -284,14 +284,14 @@ export const useFeeStore = defineStore("fee", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(
           `/v1/finance/fee/installment`,
           installment,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         const fee: Fee | undefined = this.fees.find(

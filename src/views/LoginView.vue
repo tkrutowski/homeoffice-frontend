@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useAuthorizationStore } from "@/stores/authorization";
+import { useAuthorizationStore } from "../stores/authorization";
 import { onMounted, ref } from "vue";
-import OfficeButton from "@/components/OfficeButton.vue";
+import OfficeButton from "../components/OfficeButton.vue";
 
 const authorizationStore = useAuthorizationStore();
+import router from "@/router";
 
 const username = ref<string>("");
 const password = ref<string>("");
@@ -12,62 +13,82 @@ onMounted(() => {
   console.log("MOUNTED");
   authorizationStore.loginError = false;
 });
+
+async function login() {
+  let result = await authorizationStore.login(username.value, password.value);
+
+  if (result) {
+    //TODO załadować karty kredytowe i inne
+    // router.back();
+    goBack();
+  }
+}
+
+function goBack(): void {
+  let history: string[] | [] = JSON.parse(
+    localStorage.getItem("navigationHistory") || "[]"
+  );
+  let lastAddress = history[history.length - 1];
+  if (lastAddress && (lastAddress === "/error" || lastAddress === "/login")) {
+    history = history.slice(-25);
+    history = history.filter((item) => item !== lastAddress); // Usuń ostatnią odwiedzoną stronę
+    localStorage.setItem("navigationHistory", JSON.stringify(history));
+  }
+
+  if (history.length > 0) router.replace(history[history.length - 1]);
+  else router.replace("/");
+}
 </script>
 <template>
-  <form
-    class="login-form mb-5 mt-1 mt-md-5"
-    @submit.prevent="authorizationStore.login(username, password)"
-  >
-    <h2 class="mb-5 color-orange text-center">Logowanie</h2>
+  <form class="login-form mb-5 mt-1 mt-md-5" @submit.prevent="login()">
+    <h2 class="mb-5 mt-5 color-orange text-center">Logowanie</h2>
 
     <!-- ERROR -->
     <div v-if="authorizationStore.loginError">
       <p id="error">Niestety podałeś niewłaściwy login lub hasło.</p>
     </div>
 
-    <!-- LOGIN id="form-group-login"-->
-    <div class="form-group color-orange mb-3">
-      <label for="inputLogin" class="form-label">Login</label>
-      <input
-        type="text"
-        id="inputLogin"
-        class="form-control form-control-lg"
-        placeholder="Nazwa użytkownika"
+    <FloatLabel>
+      <InputText
+        id="username"
+        v-model="username"
+        class="w-full"
         autocomplete="username"
         required
-        v-model="username"
       />
-    </div>
+      <label for="username">Login</label>
+    </FloatLabel>
 
     <!-- PASSWORD -->
-    <div class="form-group color-orange">
-      <label for="inputPassword" class="form-label">Hasło</label>
-      <input
-        type="password"
-        id="inputPassword"
-        class="form-control form-control-lg"
-        placeholder="Hasło"
-        autocomplete="current-password"
-        required
+    <FloatLabel class="mt-5">
+      <Password
         v-model="password"
+        toggleMask
+        required
+        id="password"
+        class="w-full"
+        autocomplete="current-password"
+        :inputStyle="{ width: '100%' }"
+        :feedback="false"
       />
-    </div>
+      <label for="password" class="w-full">Hasło</label>
+    </FloatLabel>
 
     <!-- BUTTON -->
     <office-button
       text="zaloguj się"
-      class="btn mt-3 mb-1"
+      class="btn mt-5 mb-1"
       style="width: 100%"
       btn-type="office"
       type="submit"
       :disabled="authorizationStore.btnDisabled"
-      :is-busy-icon="authorizationStore.busyIcon"
+      :loading="authorizationStore.loading"
       >Zaloguj się
     </office-button>
     <p class="text-right mb-4">
       <router-link class="color-gray link" to="/forgot-password"
-        >Nie pamiętam hasła</router-link
-      >
+        >Nie pamiętam hasła
+      </router-link>
     </p>
   </form>
 </template>
@@ -89,7 +110,7 @@ onMounted(() => {
 
 /* mouse over link */
 .link:hover {
-  color: rgb(238, 127, 0);
+  color: rgba(255, 245, 0, 0.7);
   text-decoration: none;
 }
 

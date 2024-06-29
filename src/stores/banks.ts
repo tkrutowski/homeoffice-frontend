@@ -31,12 +31,12 @@ export const useBanksStore = defineStore("bank", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         if (this.banks.length === 0) {
           const response = await httpCommon.get(`/v1/finance/bank`, {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           });
           console.log("getBanksFromDb() - Ilosc[]: " + response.data.length);
           this.banks = response.data;
@@ -64,11 +64,11 @@ export const useBanksStore = defineStore("bank", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/bank/` + bankId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -90,11 +90,11 @@ export const useBanksStore = defineStore("bank", {
       console.log("START - addBankDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/finance/bank`, bank, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.banks.push(response.data);
         return true;
@@ -118,11 +118,11 @@ export const useBanksStore = defineStore("bank", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/finance/bank`, bank, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.banks.findIndex((b) => b.id === bank.id);
         if (index !== -1) this.banks.splice(index, 1, response.data);
@@ -146,11 +146,11 @@ export const useBanksStore = defineStore("bank", {
       console.log("START - deleteBankDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/finance/bank/` + bankId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.banks.findIndex((b) => b.id === bankId);
         if (index !== -1) this.banks.splice(index, 1);

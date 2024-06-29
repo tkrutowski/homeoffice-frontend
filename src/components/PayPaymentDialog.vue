@@ -65,9 +65,9 @@ const cancel = () => {
 <template>
   <Dialog modal class="p-fluid min-w-50vw" close-on-escape @abort="cancel">
     <template #header>
-      <h4 class="color-green">
+      <h2 class="color-green">
         {{ $props.isEdit ? "Edytuj wpłatę" : "Dodaj wpłatę" }}
-      </h4>
+      </h2>
     </template>
     <div class="field mb-1">
       <label class="mb-0" for="name">Data płatności:</label>
@@ -90,7 +90,7 @@ const cancel = () => {
       }}</small>
     </div>
     <template #footer>
-      <div class="flex flex-row justify-content-end">
+      <div class="flex flex-row justify-content-end gap-2">
         <OfficeButton text="Anuluj" btn-type="office" @click="cancel" />
         <OfficeButton text="Zapisz" btn-type="office-save" @click="submit" />
       </div>

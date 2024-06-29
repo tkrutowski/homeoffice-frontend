@@ -91,7 +91,7 @@ export const useLoansStore = defineStore("loan", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
@@ -100,7 +100,7 @@ export const useLoansStore = defineStore("loan", {
             "&installment=" +
             installment,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("getLoansFromDb() - Ilosc[]: " + response.data.length);
@@ -128,11 +128,11 @@ export const useLoansStore = defineStore("loan", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/loan/` + loanId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -155,14 +155,14 @@ export const useLoansStore = defineStore("loan", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.put(
           `/v1/finance/loan/status/` + loanId,
           { value: status.name },
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         const loan = this.loans.find((l) => l.id === loanId);
@@ -189,11 +189,11 @@ export const useLoansStore = defineStore("loan", {
       console.log("START - addLoanDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/finance/loan`, loan, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.loans.push(response.data);
         return true;
@@ -217,11 +217,11 @@ export const useLoansStore = defineStore("loan", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/finance/loan`, loan, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.loans.findIndex((l) => l.id === loan.id);
         if (index !== -1) this.loans.splice(index, 1, response.data);
@@ -245,11 +245,11 @@ export const useLoansStore = defineStore("loan", {
       console.log("START - deleteLoanDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/finance/loan/` + loanId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.loans.findIndex((l) => l.id === loanId);
         if (index !== -1) this.loans.splice(index, 1);
@@ -275,14 +275,14 @@ export const useLoansStore = defineStore("loan", {
       this.loadingPaymentType = true;
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         if (this.paymentTypes.length === 0) {
           const response = await httpCommon.get(
             `/v1/goahead/invoice/paymenttype`,
             {
-              headers: authorization.token !== "null" ? headers : {},
+              headers: authorization.accessToken !== "null" ? headers : {},
             }
           );
           this.paymentTypes = response.data;
@@ -309,14 +309,14 @@ export const useLoansStore = defineStore("loan", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(
           `/v1/finance/loan/installment`,
           installment,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("loan store ", this.loans);

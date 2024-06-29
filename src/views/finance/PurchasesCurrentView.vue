@@ -3,17 +3,15 @@ import TheMenuFinance from "@/components/TheMenuFinance.vue";
 import PurchaseCurrentItemGroup from "@/components/PurchaseCurrentItemGroup.vue";
 import { UtilsService } from "@/service/UtilsService";
 import { usePurchasesStore } from "@/stores/purchases";
-import { useFirmsStore } from "@/stores/firms";
 import { computed, onMounted, ref } from "vue";
 import { PaymentStatus } from "@/assets/types/PaymentStatus";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { useToast } from "primevue/usetoast";
 import router from "@/router";
-const firmStore = useFirmsStore();
 const purchasesStore = usePurchasesStore();
 const toast = useToast();
 
-firmStore.getFirmsFromDb();
+UtilsService.getTypesForFinance();
 purchasesStore.getPurchaseCurrentFromDb();
 onMounted(() => {
   purchasesStore.clearPurchasesToPay();
@@ -156,4 +154,12 @@ const submitMultiChangeStatus = async () => {
   </Toolbar>
 </template>
 
-<style scoped></style>
+<style scoped>
+.sticky-toolbar {
+  position: sticky;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+</style>

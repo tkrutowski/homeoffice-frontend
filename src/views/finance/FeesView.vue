@@ -176,7 +176,7 @@ const editItem = (item: Fee) => {
   <Panel class="mt-5 mt-3 ml-2 mr-2">
     <template #header>
       <div class="w-full flex justify-content-center">
-        <h3 class="color-green">LISTA OPŁAT</h3>
+        <h2 class="m-0">LISTA OPŁAT</h2>
         <div v-if="feeStore.loadingFees">
           <ProgressSpinner
             class="ml-3"
@@ -205,20 +205,22 @@ const editItem = (item: Fee) => {
       row-hover
     >
       <template #header>
-        <div class="flex justify-content-sm-between">
+        <div class="flex justify-content-between">
           <router-link
             :to="{ name: 'Fee', params: { isEdit: 'false', feeId: 0 } }"
             style="text-decoration: none"
           >
             <OfficeButton text="Nowa opłata" btn-type="office" />
           </router-link>
-          <span class="p-input-icon-left">
-            <i class="pi pi-search" />
+          <IconField iconPosition="left">
+            <InputIcon>
+              <i class="pi pi-search" />
+            </InputIcon>
             <InputText
               v-model="filters['global'].value"
               placeholder="Keyword Search"
             />
-          </span>
+          </IconField>
         </div>
       </template>
 

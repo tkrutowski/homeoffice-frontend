@@ -57,7 +57,7 @@ watch(selectedYear, (newYear: number) => {
         text="wyszukaj"
         btn-type="office"
         :btn-disabled="paymentStore.loadingPayments"
-        :is-busy-icon="paymentStore.loadingPayments"
+        :loading="paymentStore.loadingPayments"
         @click="getPayments"
       />
     </template>

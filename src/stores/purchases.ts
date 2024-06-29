@@ -81,11 +81,11 @@ export const usePurchasesStore = defineStore("purchase", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/purchase/current`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getPurchaseCurrentFromDb() - Ilosc[]: " + response.data);
         const purchasesTemp = new Map(Object.entries(response.data));
@@ -111,13 +111,13 @@ export const usePurchasesStore = defineStore("purchase", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/finance/purchase/` + purchaseId,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         return response.data;
@@ -140,14 +140,14 @@ export const usePurchasesStore = defineStore("purchase", {
       console.log("START - addPurchaseDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(
           `/v1/finance/purchase`,
           purchase,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         //TODO sprawdzić czy można dodać bezpośrednio do tablicy
@@ -182,14 +182,14 @@ export const usePurchasesStore = defineStore("purchase", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.put(
           `/v1/finance/purchase/status/` + purchaseId,
           { value: status.name },
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
 
@@ -231,14 +231,14 @@ export const usePurchasesStore = defineStore("purchase", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.put(
           `/v1/finance/purchase/status/` + purchaseId,
           { value: status.name },
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
 

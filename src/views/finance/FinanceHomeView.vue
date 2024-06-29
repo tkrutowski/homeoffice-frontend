@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import TheFooter from "@/components/TheFooter.vue";
 import TheMenuFinance from "@/components/TheMenuFinance.vue";
+import { UtilsService } from "@/service/UtilsService";
+UtilsService.getTypesForFinance();
 </script>
 
 <template>

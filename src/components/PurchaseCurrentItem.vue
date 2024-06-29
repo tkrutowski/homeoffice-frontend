@@ -116,7 +116,7 @@ watch(
     @save="submitChangeStatus"
     @cancel="showStatusChangeConfirmationDialog = false"
   />
-  <Card class="text-office-orange mb-3 p-card">
+  <Card class="text-color mb-3 p-card">
     <template #header>
       <div class="purchase-header">
         <Checkbox
@@ -124,7 +124,7 @@ watch(
           class="custom-checkbox mt-2 ml-2"
           :binary="true"
         />
-        <h6 class="mb-2 mt-2 ml-3">{{ props.purchase.purchaseDate }}</h6>
+        <h4 class="mb-2 mt-2 ml-3">{{ props.purchase.purchaseDate }}</h4>
         <div class="flex">
           <!-- Enabled -->
           <IconButton

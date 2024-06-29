@@ -87,7 +87,7 @@ export const usePaymentStore = defineStore("payment", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         // if (this.payments.size === 0) {
@@ -97,7 +97,7 @@ export const usePaymentStore = defineStore("payment", {
             "&date=" +
             this.paymentSelectedYear,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("getPaymentsFromDb() - Ilosc[]: " + response.data);

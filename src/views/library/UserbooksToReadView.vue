@@ -45,8 +45,8 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
     @cancel="showUserbookDialog = false"
   />
   <div>
-    <div class="info-bar color-gray mt-5">
-      <h4 class="font-bold">Moja półka - książki w poczekalni...</h4>
+    <div class="info-bar mt-5">
+      <h2 class="mb-4">Moja półka - książki w poczekalni...</h2>
       <div v-if="userbookStore.loadingUserbooks">
         <ProgressSpinner
           class="ml-2"
@@ -73,6 +73,6 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
   text-align: center;
   padding-top: 10px;
   width: inherit;
-  background-color: rgb(238 127 0) !important;
+  background-color: #1e1e1e;
 }
 </style>

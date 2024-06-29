@@ -1,36 +1,19 @@
 <template>
-  <button
-    class="btn"
+  <Button
+    type="button"
     :class="{
       office: btnType === 'office',
       'office-save': btnType === 'office-save',
     }"
     :disabled="btnDisabled"
-  >
-    {{ text }}
-    <span
-      v-if="isBusyIcon"
-      class="spinner-border spinner-border-sm"
-      role="status"
-      aria-hidden="true"
-    ></span>
-    <span
-      v-if="isErrorIcon"
-      class="pi pi-times color-red"
-      role="status"
-      aria-hidden="true"
-    ></span>
-    <span
-      v-if="isOkIcon"
-      class="pi pi-check color-green"
-      role="status"
-      aria-hidden="true"
-    ></span>
-  </button>
+    :loading="loading"
+    icon-pos="right"
+    :label="text"
+  />
 </template>
 
 <script setup lang="ts">
-import ButtonType from "@/assets/types/ButtonType";
+import { ButtonType } from "@/assets/types/ButtonType";
 
 defineProps({
   btnType: {
@@ -46,15 +29,7 @@ defineProps({
     type: Boolean,
     required: false,
   },
-  isBusyIcon: {
-    type: Boolean,
-    required: false,
-  },
-  isErrorIcon: {
-    type: Boolean,
-    required: false,
-  },
-  isOkIcon: {
+  loading: {
     type: Boolean,
     required: false,
   },
@@ -62,28 +37,19 @@ defineProps({
 </script>
 
 <style scoped>
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .office {
   display: block;
   background-color: rgb(238, 127, 0);
   color: #332600 !important;
   border-color: rgb(238, 127, 0) !important;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   font-weight: bold;
+  border-radius: 5px;
 }
 
 .office:hover {
-  color: white !important;
-  background-color: rgba(153, 82, 0) !important;
+  background-color: rgba(255, 180, 80) !important;
 }
 
 .office:disabled {
@@ -100,10 +66,11 @@ defineProps({
   display: block;
   width: 150px;
   background-color: rgba(220, 56, 72, 0.7) !important;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: rgb(232, 230, 227) !important;
   border-color: rgb(238, 127, 0, 1) !important;
+  border-radius: 5px;
 }
 
 .office-save:hover {

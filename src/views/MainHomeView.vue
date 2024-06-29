@@ -31,7 +31,7 @@ function runLibrary() {
 <template>
   <TheMenu />
   <h1
-    v-if="!authorizationStore.isAuthenticated"
+    v-if="!authorizationStore.isAuthenticatedOrToken"
     class="color-orange flex justify-content-center mt-8"
   >
     Musisz się najpierw zalogować... ;)
@@ -40,11 +40,13 @@ function runLibrary() {
     <AppCard
       text-content="Kredyty, płatności i zakupy"
       text-title="Finanse"
+      :btn-disabled="!authorizationStore.hasAccessFinance"
       @clicked="runFinance"
     />
     <AppCard
       text-content="Książki, audiobooki, ebooki"
       text-title="Biblioteka"
+      :btn-disabled="!authorizationStore.hasAccessLibrary"
       @clicked="runLibrary"
     />
   </div>

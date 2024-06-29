@@ -78,9 +78,9 @@ const getAmount = computed(() => {
     : installment.value?.installmentAmountToPay;
 });
 const getDate = computed(() => {
-  if (installment.value?.paymentDate !== "-999999999-01-01")
-    return installment.value?.paymentDate;
-  return moment().format("YYYY-MM-DD");
+  if (installment.value?.paymentDate?.startsWith("+"))
+    return moment().format("YYYY-MM-DD");
+  return installment.value?.paymentDate;
 });
 
 // ---------------------------------------------EDIT PAYMENT--------------------------------
@@ -206,9 +206,9 @@ const refresh = async () => {
         @click="() => router.push({ name: 'Loans' })"
       />
       <div class="w-full flex justify-content-center">
-        <h3 class="color-green">
+        <h2 class="m-0">
           {{ `Szczegóły kredytu: ${loan?.name}` }}
-        </h3>
+        </h2>
         <div v-if="loansStore.loadingLoans">
           <ProgressSpinner
             class="ml-3"
@@ -218,67 +218,59 @@ const refresh = async () => {
         </div>
       </div>
     </template>
-    <div class="flex flex-row grid">
+    <div class="formgrid grid">
       <!--      LEFT-->
-      <div class="flex flex-column col-12 col-xl-5">
-        <p class="mb-1 mt-3 color-orange">
-          <small>Nazwa kredytu:</small> {{ loan?.name }}
-        </p>
-        <p class="mb-1 color-orange">
-          <small>Nazwa banku:</small> {{ loan?.bank.name }}
-        </p>
-        <p class="mb-1 color-orange">
-          <small>Nr kredytu:</small> {{ loan?.loanNumber }}
-        </p>
-        <p class="mb-1 color-orange"><small>Z dnia:</small> {{ loan?.date }}</p>
-        <p class="mb-1 color-orange">
+      <div class="field col">
+        <p class="mb-1 mt-3"><small>Nazwa kredytu:</small> {{ loan?.name }}</p>
+        <p class="mb-1"><small>Nazwa banku:</small> {{ loan?.bank?.name }}</p>
+        <p class="mb-1"><small>Nr kredytu:</small> {{ loan?.loanNumber }}</p>
+        <p class="mb-1"><small>Z dnia:</small> {{ loan?.date }}</p>
+        <p class="mb-1">
           <small>Data pierwszej raty:</small> {{ loan?.firstPaymentDate }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Termin całkowitej spłaty:</small> {{ countDeadLine }}
         </p>
-        <p class="mb-5 color-orange">
-          <small>Nr konta:</small> {{ loan?.accountNumber }}
-        </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-5"><small>Nr konta:</small> {{ loan?.accountNumber }}</p>
+        <p class="mb-1">
           <small>Kwota kredytu:</small>
           {{ UtilsService.formatCurrency(loan?.amount) }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Koszt kredytu:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(loan?.loanCost) }}</span
           >
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Ilość rat:</small> {{ loan?.numberOfInstallments }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Kwota raty:</small>
           {{ UtilsService.formatCurrency(loan?.installmentAmount) }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Odsetki planowane:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(plannedInterest) }}
           </span>
         </p>
 
-        <p class="mb-3 color-orange">
+        <p class="mb-3">
           <small>Odsetki rzeczywiste:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(realInterest) }}
           </span>
         </p>
 
-        <p class="mb-4 color-orange">
+        <p class="mb-4">
           <small>Całkowity koszt kredytu:</small>
           <span class="color-red h4 ml-2">
             {{ UtilsService.formatCurrency(calculateCost) }}
           </span>
         </p>
 
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Spłacono:</small> {{ calculatePaid }} z
           {{ loan?.numberOfInstallments }}
         </p>
@@ -302,52 +294,49 @@ const refresh = async () => {
             ).toFixed(0)
           }}%
         </ProgressBar>
-        <label class="color-orange">Opis:</label>
-        <Textarea :v-model="loan?.otherInfo" rows="5" readonly />
+        <div class="flex flex-column">
+          <label for="info">Opis:</label>
+          <Textarea :v-model="loan?.otherInfo" rows="5" readonly id="info" />
+        </div>
       </div>
 
       <!--      RIGHT TABLE-->
-      <div class="flex flex-column col-12 col-xl-7">
+      <div class="field col">
         <DataTable :value="installments" v-if="!loansStore.loadingLoans">
           <Column field="installmentNumber">
             <template #header>
               <div class="w-full" style="text-align: left">Nr raty</div>
             </template>
             <template #body="{ data, field }">
-              <div class="color-orange ml-3" style="text-align: left">
+              <div class="ml-3" style="text-align: left">
                 {{ data[field] }}
               </div>
             </template>
           </Column>
           <Column field="paymentDeadline" header="Termin płatności">
             <template #body="{ data, field }">
-              <div class="color-orange" style="text-align: center">
+              <div style="text-align: center">
                 {{ data[field] }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountToPay" header="Kwota">
             <template #body="{ data, field }">
-              <div class="color-orange">
+              <div>
                 {{ UtilsService.formatCurrency(data[field]) }}
               </div>
             </template>
           </Column>
           <Column field="paymentDate" header="Data płatności">
             <template #body="{ data, field }">
-              <div class="color-orange" style="text-align: center">
-                {{
-                  data[field] !== "-999999999-01-01" &&
-                  data[field] !== "0001-01-01"
-                    ? data[field]
-                    : ""
-                }}
+              <div style="text-align: center">
+                {{ data[field].startsWith("+") ? "" : data[field] }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountPaid" header="Kwota">
             <template #body="{ data, field }">
-              <div class="color-orange">
+              <div>
                 {{
                   data[field] !== 0
                     ? UtilsService.formatCurrency(data[field])
@@ -399,4 +388,8 @@ const refresh = async () => {
   </Panel>
 </template>
 
-<style scoped></style>
+<style scoped>
+.color-red {
+  color: #dc3545;
+}
+</style>

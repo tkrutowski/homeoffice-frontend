@@ -61,9 +61,8 @@ const getClassAmount = (installments: Installment[], month: number) => {
   const paymentDeadline = installment?.paymentDeadline;
   if (!paymentDeadline) return "no-credit";
 
-  let isPaid =
-    installment?.paymentDate !== "-999999999-01-01" &&
-    installment?.paymentDate !== "0001-01-01";
+  let date = moment(installment?.paymentDate).format("yyyy-MM-DD");
+  let isPaid = !date.startsWith("Invalid");
   if (isPaid) return "paid";
   else {
     const deadline = moment(installment?.paymentDeadline);
@@ -84,9 +83,9 @@ const getDate = (installments: Installment[], month: number) => {
 
   const paymentDate = installment?.paymentDate;
   if (paymentDate) {
-    let isPaid =
-      paymentDate !== "-999999999-01-01" && paymentDate !== "0001-01-01";
-    return isPaid ? paymentDate : "";
+    let date = moment(paymentDate).format("yyyy-MM-DD");
+    let isPaid = !date.startsWith("Invalid");
+    return isPaid ? date : "";
   }
 };
 
@@ -100,9 +99,8 @@ const getClassDate = (installments: Installment[], month: number) => {
   const paymentDeadline = installment?.paymentDeadline;
   if (!paymentDeadline) return "no-credit";
 
-  let isPaid =
-    installment?.paymentDate !== "-999999999-01-01" &&
-    installment?.paymentDate !== "0001-01-01";
+  let date = moment(installment?.paymentDate).format("yyyy-MM-DD");
+  let isPaid = !date.startsWith("Invalid");
   if (isPaid) return "paid";
   return null;
 };
@@ -187,6 +185,7 @@ const getUserFullName = (id: number) => {
 //------------------------------------MOUNTED------------------------------
 onMounted(() => {
   console.log("onMounted UserPayments");
+  moment.locale("pl");
   payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
 });
 </script>
@@ -195,9 +194,9 @@ onMounted(() => {
   <Panel class="mt-5">
     <template #header>
       <div class="w-full flex justify-content-center">
-        <h3 class="color-green">
+        <h2 class="m-0">
           {{ getUserFullName(idUser) }}
-        </h3>
+        </h2>
         <div v-if="paymentStore.loadingPayments">
           <ProgressSpinner
             class="ml-3"
@@ -209,13 +208,13 @@ onMounted(() => {
     </template>
     <DataTable
       v-model:selection="selectedPayment"
-      removable-sort
-      sort-field="paymentDay"
-      :value="payments"
       :loading="paymentStore.loadingPayments"
-      scrollable
       :sort-order="1"
+      :value="payments"
+      removable-sort
+      scrollable
       selection-mode="single"
+      sort-field="paymentDay"
       table-style="min-width: 50rem"
       @rowSelect="onRowSelect"
     >

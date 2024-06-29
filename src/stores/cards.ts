@@ -3,7 +3,7 @@ import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
 import { ActiveStatus, Card } from "@/assets/types/Bank";
-import cardAlfa from "/src/assets/images/alfa_card.png";
+import cardAlfa from "@/assets/images/alfa_card.png";
 import cardMillennium from "@/assets/images/millenium_card.png";
 import cardAllegro from "@/assets/images/allegro_card.png";
 import cardSaturn from "@/assets/images/saturn_card.png";
@@ -85,13 +85,13 @@ export const useCardsStore = defineStore("card", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/finance/card?status=` + status,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("getCardsFromDb() - Ilosc[]: " + response.data.length);
@@ -121,13 +121,13 @@ export const useCardsStore = defineStore("card", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/finance/card/user/` + userId + `?status=` + status,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log(
@@ -156,11 +156,11 @@ export const useCardsStore = defineStore("card", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/card/` + cardId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -182,11 +182,11 @@ export const useCardsStore = defineStore("card", {
       console.log("START - addCardDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/finance/card`, card, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.cards.push(response.data);
         return true;
@@ -210,11 +210,11 @@ export const useCardsStore = defineStore("card", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/finance/card`, card, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.cards.findIndex((b) => b.id === card.id);
         if (index !== -1) this.cards.splice(index, 1, response.data);
@@ -238,11 +238,11 @@ export const useCardsStore = defineStore("card", {
       console.log("START - deleteCardDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/finance/card/` + cardId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.cards.findIndex((b) => b.id === cardId);
         if (index !== -1) this.cards.splice(index, 1);

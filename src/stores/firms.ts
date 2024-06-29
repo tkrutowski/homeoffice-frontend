@@ -44,18 +44,14 @@ export const useFirmsStore = defineStore("firm", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
-        if (this.firms.length === 0) {
-          const response = await httpCommon.get(`/v1/finance/firm`, {
-            headers: authorization.token !== "null" ? headers : {},
-          });
-          console.log("getFirmsFromDb() - Ilosc[]: " + response.data.length);
-          this.firms = response.data;
-        } else {
-          console.log("getFirmsFromDb() - BEZ GET");
-        }
+        const response = await httpCommon.get(`/v1/finance/firm`, {
+          headers: authorization.accessToken !== "null" ? headers : {},
+        });
+        console.log("getFirmsFromDb() - Ilosc[]: " + response.data.length);
+        this.firms = response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getFirmsFromDb(): ", e);
@@ -77,11 +73,11 @@ export const useFirmsStore = defineStore("firm", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/finance/firm/` + firmId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -103,11 +99,11 @@ export const useFirmsStore = defineStore("firm", {
       console.log("START - addBankDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/finance/firm`, firm, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.firms.push(response.data);
         return true;
@@ -131,11 +127,11 @@ export const useFirmsStore = defineStore("firm", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/finance/firm`, firm, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.firms.findIndex((f) => f.id === firm.id);
         if (index !== -1) this.firms.splice(index, 1, response.data);
@@ -159,11 +155,11 @@ export const useFirmsStore = defineStore("firm", {
       console.log("START - deleteFirmDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/finance/firm/` + firmId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.firms.findIndex((f) => f.id === firmId);
         if (index !== -1) this.firms.splice(index, 1);

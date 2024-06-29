@@ -70,6 +70,7 @@ const realInterest = computed(() => {
 // ---------------------------------------------EDIT PAYMENT---------------------------------
 const showPaymentModal = ref(false);
 const installment = ref<FeeInstallment>();
+
 function openPaymentModal(i: FeeInstallment) {
   installment.value = { ...i };
   showPaymentModal.value = true;
@@ -97,6 +98,7 @@ async function savePayment(date: string, amount: number) {
   }
   isBusy.value = false;
 }
+
 //---------------------------------------------DELETE PAYMENT-----------------------------
 const showDeleteConfirmationDialog = ref<boolean>(false);
 
@@ -191,53 +193,43 @@ onMounted(async () => {
         @click="() => router.push({ name: 'Fees' })"
       />
       <div class="w-full flex justify-content-center">
-        <h3 class="color-green">
+        <h2>
           {{ `Szczegóły opłaty: ${fee?.name}` }}
-        </h3>
+        </h2>
       </div>
     </template>
-    <div class="flex flex-row">
+    <div class="formgrid grid">
       <!--   LEFT   -->
-      <div class="flex flex-column col-12 col-xl-5 m-auto">
-        <p class="mb-1 mt-3 color-orange">
-          <small>Nazwa opłaty:</small> {{ fee?.name }}
-        </p>
-        <p class="mb-1 color-orange">
-          <small>Nazwa firmy:</small> {{ fee?.firm.name }}
-        </p>
-        <p class="mb-1 color-orange">
-          <small>Nr umowy:</small> {{ fee?.feeNumber }}
-        </p>
-        <p class="mb-1 color-orange"><small>Z dnia:</small> {{ fee?.date }}</p>
-        <p class="mb-1 color-orange">
+      <div class="field col">
+        <p class="mb-1 mt-3"><small>Nazwa opłaty:</small> {{ fee?.name }}</p>
+        <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm.name }}</p>
+        <p class="mb-1"><small>Nr umowy:</small> {{ fee?.feeNumber }}</p>
+        <p class="mb-1"><small>Z dnia:</small> {{ fee?.date }}</p>
+        <p class="mb-1">
           <small>Data pierwszej opłaty:</small> {{ fee?.firstPaymentDate }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Termin całkowitej spłaty:</small> {{ countDeadLine }}
         </p>
-        <p class="mb-5 color-orange">
-          <small>Nr konta:</small> {{ fee?.accountNumber }}
-        </p>
+        <p class="mb-5"><small>Nr konta:</small> {{ fee?.accountNumber }}</p>
 
-        <p class="mb-1 color-orange">
-          <small>Kwota opłaty:</small> {{ fee?.amount }} zł
-        </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1"><small>Kwota opłaty:</small> {{ fee?.amount }} zł</p>
+        <p class="mb-1">
           <small>Częstotliwość opłat:</small>
           {{ fee?.feeFrequency.viewName }}
         </p>
 
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Ilość opłat:</small> {{ fee?.numberOfPayments }}
         </p>
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Koszt planowany:</small>
           <span class="color-red ml-1">
             {{ UtilsService.formatCurrency(plannedInterest) }}</span
           >
         </p>
 
-        <p class="mb-1 color-orange">
+        <p class="mb-1">
           <small>Obecna różnica:</small>
           <span class="color-red ml-1"
             >{{ UtilsService.formatCurrency(currentInterest) }}
@@ -250,38 +242,39 @@ onMounted(async () => {
             >{{ UtilsService.formatCurrency(realInterest) }}
           </span>
         </p>
-
-        <label class="color-orange">Opis:</label>
-        <Textarea :v-model="fee?.otherInfo" rows="5" readonly />
+        <div class="flex flex-column">
+          <label for="info">Opis:</label>
+          <Textarea id="info" :v-model="fee?.otherInfo" rows="5" readonly />
+        </div>
       </div>
 
       <!--      RIGHT TABLE -->
-      <div class="flex flex-column col-12 col-xl-7">
+      <div class="field col">
         <DataTable :value="installments">
           <Column field="paymentDeadline" header="Termin płatności">
             <template #body="{ data, field }">
-              <div class="color-orange" style="text-align: center">
+              <div style="text-align: center">
                 {{ data[field] }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountToPay" header="Kwota">
             <template #body="{ data, field }">
-              <div class="color-orange">
+              <div>
                 {{ UtilsService.formatCurrency(data[field]) }}
               </div>
             </template>
           </Column>
           <Column field="paymentDate" header="Data płatności">
             <template #body="{ data, field }">
-              <div class="color-orange" style="text-align: center">
-                {{ data[field] !== "-999999999-01-01" ? data[field] : "" }}
+              <div style="text-align: center">
+                {{ data[field].startsWith("+") ? "" : data[field] }}
               </div>
             </template>
           </Column>
           <Column field="installmentAmountPaid" header="Kwota">
             <template #body="{ data, field }">
-              <div class="color-orange">
+              <div>
                 {{
                   data[field] !== 0
                     ? UtilsService.formatCurrency(data[field])
@@ -337,5 +330,9 @@ onMounted(async () => {
 <style scoped>
 #fee-panel {
   max-width: 1000px;
+}
+
+.color-red {
+  color: #dc3545;
 }
 </style>

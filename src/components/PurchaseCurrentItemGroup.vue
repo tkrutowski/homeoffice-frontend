@@ -1,3 +1,4 @@
+2
 <script setup lang="ts">
 import PurchaseCurrentItem from "@/components/PurchaseCurrentItem.vue";
 import moment from "moment";
@@ -21,6 +22,17 @@ const deadlineDate = ref(props.deadlineDate);
 const purchases = computed(() => {
   return purchasesStore.getPurchasesByDate(deadlineDate.value);
 });
+
+// Watch to handle changes in purchases
+watch(
+  purchases,
+  (newPurchases) => {
+    if (newPurchases && newPurchases.length > 0) {
+      idCard.value = newPurchases[0].idCard;
+    }
+  },
+  { immediate: true }
+);
 
 const calculateToPay = computed(() => {
   return UtilsService.formatCurrency(toPay.value);
@@ -50,6 +62,10 @@ watch(
   },
   { deep: true }
 );
+const getCardLogo = computed(() => {
+  console.log("getCardLogo", idCard.value);
+  return cardStore.getCardLogo(idCard.value);
+});
 </script>
 
 <template>
@@ -62,28 +78,21 @@ watch(
         class="purchase-header mb-3"
         :class="isExpired() ? 'bg-office-expired03' : 'bg-office-paid03'"
       >
-        <img
-          :src="cardStore.getCardLogo(idCard)"
-          alt="Card logo"
-          class="image-card ml-4 mt-3 mb-2"
-        />
-        <h4
+        <img :src="getCardLogo" alt="Card logo" class="image-card ml-4 p-1" />
+        <h2
           v-tooltip.top="{
             value: 'Termin spłaty',
             showDelay: 1000,
             hideDelay: 300,
           }"
-          class="mb-0"
         >
           {{ props.deadlineDate }}
-        </h4>
+        </h2>
 
         <div class="purchase-header-item mr-5">
           <div>
-            <span class="item-title" title="Nazwa firmy">Do zapłaty:</span>
-            <span class="pl-2 color-red" title="Nazwa firmy">{{
-              calculateToPay
-            }}</span>
+            <span class="item-title">Do zapłaty:</span>
+            <span class="pl-2 color-red">{{ calculateToPay }}</span>
           </div>
         </div>
       </div>
@@ -105,6 +114,7 @@ watch(
 .item-group {
   margin: 50px auto;
   max-width: 700px;
+  color: #ee7f00;
 }
 .image-card {
   max-height: 70px;
@@ -125,5 +135,17 @@ watch(
 }
 .item-title {
   font-size: 0.8rem;
+}
+.bg-office-expired03 {
+  background-color: rgba(137, 6, 6, 0.3) !important;
+}
+.bg-office-expired01 {
+  background-color: rgba(137, 6, 6, 0.1) !important;
+}
+.bg-office-paid03 {
+  background-color: rgba(7, 63, 1, 0.3) !important;
+}
+.bg-office-dark1 {
+  background-color: #1e2122 !important;
 }
 </style>

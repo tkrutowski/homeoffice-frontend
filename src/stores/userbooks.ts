@@ -57,11 +57,11 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/userbook`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getUserbooksFromDb() - Ilosc[]: " + response.data.length);
         this.userbooks = response.data;
@@ -86,13 +86,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/status?status=` + status.name,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("getBanksFromDb() - Ilosc[]: " + response.data.length);
@@ -118,13 +118,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/` + userbookId,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         return response.data;
@@ -151,13 +151,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/check?id=` + bookId,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         return response.data;
@@ -181,14 +181,14 @@ export const useUserbooksStore = defineStore("userbook", {
       console.log("START - addUserbookDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(
           `/v1/library/userbook`,
           userbook,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         this.userbooks.push(response.data);
@@ -213,14 +213,14 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(
           `/v1/library/userbook`,
           userbook,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         const index = this.userbooks.findIndex((ub) => ub.id === userbook.id);
@@ -245,11 +245,11 @@ export const useUserbooksStore = defineStore("userbook", {
       console.log("START - deleteUserbookDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/library/userbook/` + userbookId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.userbooks.findIndex((b) => b.id === userbookId);
         if (index !== -1) this.userbooks.splice(index, 1);
@@ -276,13 +276,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/ownership_status`,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         this.ownershipStatus = response.data;
@@ -308,13 +308,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/edition_type`,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         this.editionTypes = response.data;
@@ -340,13 +340,13 @@ export const useUserbooksStore = defineStore("userbook", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/userbook/reading_status`,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         this.readingStatuses = response.data;
