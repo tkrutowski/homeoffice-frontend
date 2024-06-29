@@ -3,11 +3,9 @@
     color: #a3b8ce;
 }
 
-.main-menu {
-    border: 1px solid #ee7f00;
-    border-radius: 0.25rem;
-    margin-left: 10px;
-    margin-right: 10px;
+a {
+    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+    text-decoration: none;
 }
 
 
@@ -260,6 +258,17 @@
 .p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {
     color: rgba(238, 127, 0, 0.6);
     margin-left: 0.5rem;
+}
+
+.p-menubar-root-list{
+    margin-bottom: 0;
+}
+
+.main-menu {
+    border: 1px solid #ee7f00;
+    border-radius: 0.25rem;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 /*--------------------------------------------------TOOLBAR--------------------------------------*/

@@ -17,6 +17,7 @@
           btn-type="office"
           text="wejście"
           type="button"
+          :btn-disabled="btnDisabled"
           @click="clicked"
         />
       </div>
@@ -38,6 +39,11 @@ defineProps({
   textContent: {
     type: String,
     required: true,
+  },
+  btnDisabled: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
 });
 function clicked() {

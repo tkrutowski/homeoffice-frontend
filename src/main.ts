@@ -8,12 +8,8 @@ import PrimeVue from "primevue/config";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 // import "primevue/resources/themes/lara-light-blue/theme.css";
-import "primevue/resources/themes/arya-orange/theme.css";
+import "primevue/resources/themes/homeoffice/theme.css";
 // import "primevue/resources/themes/rhea/theme.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap";
-import "@/assets/css/main.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 
 import ToastService from "primevue/toastservice";
 
@@ -23,17 +19,12 @@ import Card from "primevue/card";
 import Checkbox from "primevue/checkbox";
 import Column from "primevue/column";
 import ColumnGroup from "primevue/columngroup";
-// import ConfirmDialog from 'primevue/confirmdialog';
-// import ConfirmPopup from 'primevue/confirmpopup';
-// import ConfirmationService from 'primevue/confirmationservice';
 import ContextMenu from "primevue/contextmenu";
 import DataTable from "primevue/datatable";
 import DataViewLayoutOptions from "primevue/dataviewlayoutoptions";
 import Dialog from "primevue/dialog";
-import DialogService from "primevue/dialogservice";
 import Divider from "primevue/divider";
 import Dropdown from "primevue/dropdown";
-// import DynamicDialog from 'primevue/dynamicdialog';
 import InlineMessage from "primevue/inlinemessage";
 import InputSwitch from "primevue/inputswitch";
 import InputText from "primevue/inputtext";
@@ -62,7 +53,9 @@ import Toast from "primevue/toast";
 import Toolbar from "primevue/toolbar";
 import Tooltip from "primevue/tooltip";
 import AutoComplete from "primevue/autocomplete";
-
+import FloatLabel from "primevue/floatlabel";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
 declare module "pinia" {
   export interface PiniaCustomProperties {
     router: Router;
@@ -79,7 +72,172 @@ const app = createApp(App);
 
 app.use(pinia);
 app.use(router);
-app.use(PrimeVue);
+app.use(PrimeVue, {
+  locale: {
+    accept: "Tak",
+    addRule: "Dodaj regułę",
+    am: "AM",
+    apply: "Zastosuj",
+    cancel: "Anuluj",
+    choose: "Wybierz",
+    chooseDate: "Wybierz datę",
+    chooseMonth: "Wybierz miesiąc",
+    chooseYear: "Wybierz rok",
+    clear: "Wyczyść",
+    completed: "Ukończone",
+    contains: "Zawiera",
+    custom: "Zwyczaj",
+    dateAfter: "Po",
+    dateBefore: "Przed",
+    dateFormat: "dd.mm.yy",
+    dateIs: "Równa",
+    dateIsNot: "Nierówna",
+    dayNames: [
+      "Niedziela",
+      "Poniedziałek",
+      "Wtorek",
+      "Środa",
+      "Czwartek",
+      "Piątek",
+      "Sobota",
+    ],
+    dayNamesMin: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+    dayNamesShort: ["Ndz", "Pon", "Wt", "Śr", "Czw", "Pt", "Sob"],
+    emptyFilterMessage: "Brak wyników wyszukiwania",
+    emptyMessage: "Brak danych",
+    emptySearchMessage: "Nie znaleziono wyników",
+    emptySelectionMessage: "Brak wybranego elementu",
+    endsWith: "Kończy się na",
+    equals: "Równe",
+    fileSizeTypes: ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
+    filter: "Filtr",
+    firstDayOfWeek: 1,
+    gt: "Większe od",
+    gte: "Większe lub równe",
+    lt: "Mniejsze od",
+    lte: "Mniejsze lub równe",
+    matchAll: "Dopasuj wszystko",
+    matchAny: "Dopasuj dowolne",
+    medium: "Średni",
+    monthNames: [
+      "Styczeń",
+      "Luty",
+      "Marzec",
+      "Kwiecień",
+      "Maj",
+      "Czerwiec",
+      "Lipiec",
+      "Sierpień",
+      "Wrzesień",
+      "Październik",
+      "Listopad",
+      "Grudzień",
+    ],
+    monthNamesShort: [
+      "Sty",
+      "Lut",
+      "Mar",
+      "Kwi",
+      "Maj",
+      "Cze",
+      "Lip",
+      "Sie",
+      "Wrz",
+      "Paź",
+      "Lis",
+      "Gru",
+    ],
+    nextDecade: "Następna dekada",
+    nextHour: "Następna godzina",
+    nextMinute: "Następna minuta",
+    nextMonth: "Następny miesiąc",
+    nextSecond: "Następna sekunda",
+    nextYear: "Następny rok",
+    noFilter: "Wyczyść filtr",
+    notContains: "Nie zawiera",
+    notEquals: "Nierówne",
+    now: "Teraz",
+    passwordPrompt: "Wprowadź hasło",
+    pending: "Oczekuje",
+    pm: "PM",
+    prevDecade: "Poprzednia dekada",
+    prevHour: "Poprzednia godzina",
+    prevMinute: "Poprzednia minuta",
+    prevMonth: "Poprzedni miesiąc",
+    prevSecond: "Poprzednia sekunda",
+    prevYear: "Poprzedni rok",
+    quarterNames: ["I Kwartał", "II Kwartał", "III Kwartał", "IV Kwartał"],
+    quarterNamesShort: ["I Kw", "II Kw", "III Kw", "IV Kw"],
+    reject: "Nie",
+    removeRule: "Usuń regułę",
+    searchMessage: "Dostępnych jest {0} wyników",
+    selectionMessage: "Wybrano {0} elementów",
+    showMonthAfterYear: false,
+    startsWith: "Zaczyna się od",
+    strong: "Silny",
+    today: "Dzisiaj",
+    upload: "Wgraj",
+    weak: "Słaby",
+    weekHeader: "Tydzień",
+    aria: {
+      cancelEdit: "Anuluj edycję",
+      close: "Zamknij",
+      collapseLabel: "Zawalić się",
+      collapseRow: "Zwinięty wiersz",
+      editRow: "Edycja wiersza",
+      expandLabel: "Zwiększać",
+      expandRow: "Wiersz rozwinięty",
+      falseLabel: "Fałsz",
+      filterConstraint: "Ograniczenie filtra",
+      filterOperator: "Operator filtra",
+      firstPageLabel: "Pierwsza strona",
+      gridView: "Widok siatki",
+      hideFilterMenu: "Ukryj menu filtrów",
+      jumpToPageDropdownLabel: "Przejdź do menu rozwijanego strony",
+      jumpToPageInputLabel: "Przejdź do wprowadzania strony",
+      lastPageLabel: "Ostatnia strona",
+      listView: "Widok listy",
+      moveAllToSource: "Przenieś wszystko do źródła",
+      moveAllToTarget: "Przenieś wszystko do celu",
+      moveBottom: "Przesuń w dół",
+      moveDown: "Położyć",
+      moveTop: "Przesuń do góry",
+      moveToSource: "Przenieś do źródła",
+      moveToTarget: "Przenieś do celu",
+      moveUp: "Podnieść",
+      navigation: "Nawigacja",
+      next: "Następny",
+      nextPageLabel: "Następna strona",
+      nullLabel: "Nie zaznaczone",
+      otpLabel: "Proszę wprowadzić znak hasła jednorazowego {0}",
+      pageLabel: "Strona {page}",
+      passwordHide: "Ukryj hasło",
+      passwordShow: "Pokaż hasło",
+      previous: "Poprzedni",
+      previousPageLabel: "Poprzednia strona",
+      rotateLeft: "Obróć w lewo",
+      rotateRight: "Obróć w prawo",
+      rowsPerPageLabel: "Wierszy na stronę",
+      saveEdit: "Zapisz edycję",
+      scrollTop: "Przewiń do góry",
+      selectAll: "Wszystkie elementy zaznaczone",
+      selectLabel: "Wybierać",
+      selectRow: "Wiersz zaznaczony",
+      showFilterMenu: "Pokaż menu filtrów",
+      slide: "Slajd",
+      slideNumber: "{slideNumber}",
+      star: "1 gwiazdka",
+      stars: "{star} gwiazdek",
+      trueLabel: "Prawda",
+      unselectAll: "Wszystkie elementy odznaczone",
+      unselectLabel: "Odznacz",
+      unselectRow: "Wiersz odznaczony",
+      zoomImage: "Powiększ obraz",
+      zoomIn: "Przybliż",
+      zoomOut: "Oddal",
+    },
+  },
+});
 app.use(ToastService);
 
 app.directive("tooltip", Tooltip);
@@ -100,7 +258,10 @@ app.component("DataViewLayoutOptions", DataViewLayoutOptions);
 app.component("Dialog", Dialog);
 app.component("Divider", Divider);
 app.component("Dropdown", Dropdown);
+app.component("FloatLabel", FloatLabel);
 app.component("Image", Image);
+app.component("IconField", IconField);
+app.component("InputIcon", InputIcon);
 app.component("InlineMessage", InlineMessage);
 app.component("InputMask", InputMask);
 app.component("InputNumber", InputNumber);

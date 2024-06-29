@@ -15,7 +15,7 @@ import Toast from "primevue/toast";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   //text-align: center;
-  color: #2c3e50;
+  color: #ee7f00;
 
   background-color: #222526 !important;
 }
