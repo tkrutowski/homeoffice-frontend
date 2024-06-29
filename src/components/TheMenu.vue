@@ -9,7 +9,6 @@ const items = ref([
   {
     label: "Home",
     icon: "pi pi-fw pi-home",
-    disabled: !authorizationStore.hasAccessGoAhead,
     // to: { name: "Home" },
     command: () => {
       router.push({ name: "Home" });
@@ -24,7 +23,7 @@ const items = ref([
       <img alt="logo" src="@/assets/HomeOffice.png" height="30" class="mr-2" />
     </template>
     <template #end>
-      <div v-if="!authorizationStore.isAuthenticated">
+      <div v-if="!authorizationStore.isAuthenticatedOrToken">
         <router-link :to="{ name: 'login' }" style="text-decoration: none">
           <OfficeButton
             size="sm"
@@ -46,4 +45,11 @@ const items = ref([
     </template>
   </Menubar>
 </template>
-<style scoped></style>
+<style scoped>
+.main-menu {
+  border: 1px solid #ee7f00;
+  border-radius: 0.25rem;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+</style>

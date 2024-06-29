@@ -27,7 +27,7 @@ const book = ref<Book>({
   title: "",
   description: "",
   cover: "",
-  bookInSeriesNo: 0,
+  bookInSeriesNo: "",
 });
 
 const btnShowError = ref<boolean>(false);
@@ -298,29 +298,27 @@ function findBook() {
     setTimeout(() => (btnSearchShowError.value = false), 5000);
   } else {
     btnSearchDisabled.value = true;
-    bookStore
-      .getBookFromUrl("UPOLUJ_EBOOKA", searchUrl.value)
-      .then((bookByUrl) => {
-        if (!bookByUrl.title) {
-          btnSearchDisabled.value = false;
-          changeStatusSearchIcon(false, false, true);
-          setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
-          toast.add({
-            severity: "info",
-            summary: "Informacja",
-            detail: "Nie znaleziono książki.",
-            life: 3500,
-          });
-        } else {
-          btnSearchDisabled.value = false;
-          changeStatusSearchIcon(false, true, false);
-          setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
-          book.value = bookByUrl;
-          selectedAuthors.value = book.value.authors;
-          selectedCategories.value = book.value.categories;
-          selectedSeries.value = book.value.series;
-        }
-      });
+    bookStore.getBookFromUrl(searchUrl.value).then((bookByUrl) => {
+      if (!bookByUrl.title) {
+        btnSearchDisabled.value = false;
+        changeStatusSearchIcon(false, false, true);
+        setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
+        toast.add({
+          severity: "info",
+          summary: "Informacja",
+          detail: "Nie znaleziono książki.",
+          life: 3500,
+        });
+      } else {
+        btnSearchDisabled.value = false;
+        changeStatusSearchIcon(false, true, false);
+        setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
+        book.value = bookByUrl;
+        selectedAuthors.value = book.value.authors;
+        selectedCategories.value = book.value.categories;
+        selectedSeries.value = book.value.series;
+      }
+    });
   }
 }
 function resetForm() {
@@ -332,7 +330,7 @@ function resetForm() {
     title: "",
     description: "",
     cover: "",
-    bookInSeriesNo: 0,
+    bookInSeriesNo: "",
   };
   selectedAuthors.value = [];
   selectedCategories.value = [];
@@ -421,15 +419,12 @@ const showErrorCover = () => {
             @click="() => router.push({ name: 'Books' })"
           />
           <div class="w-full flex justify-content-center">
-            <h3 class="color-green">
+            <h2 class="color-green">
               {{ isEdit ? `Edycja książki: ${book?.title}` : "Nowa książka" }}
-            </h3>
+            </h2>
           </div>
         </template>
-        <!-- ---------------------------------------------  UPOLUJ EBOOKA --------------------------            -->
         <div v-if="!isEdit" class="flex flex-column grid ebook">
-          <h3 class="color-orange m-auto">UpolujEboka.pl</h3>
-
           <!-- URL -->
           <div class="flex flex-column">
             <label class="color-orange" for="url">URL:</label>
@@ -462,7 +457,7 @@ const showErrorCover = () => {
 
         <!--  --------------------------------------------------------BOOK---------------------------------      -->
         <div class="flex flex-row grid">
-          <div class="flex flex-column col-12 col-xl-8">
+          <div class="flex flex-column col-12 xl:col-8">
             <!-- ROW-1   TITLE -->
             <div class="flex flex-column col-12 ebook">
               <label class="color-orange" for="title">Tytuł:</label>
@@ -478,7 +473,7 @@ const showErrorCover = () => {
             </div>
 
             <!-- ROW-2   AUTHOR -->
-            <div class="flex flex-row ebook gap-2">
+            <div class="flex flex-row ebook gap-2 w-max">
               <div class="flex flex-column">
                 <label class="color-orange" for="author">Wybierz autora:</label>
                 <AutoComplete
@@ -523,7 +518,7 @@ const showErrorCover = () => {
 
             <!-- ROW-3  SERIES / NUMBER  -->
             <div class="flex-row flex ebook">
-              <div class="flex flex-column col-12 col-md-6">
+              <div class="flex flex-column col-12 md:col-9">
                 <label class="color-orange" for="series">Seria:</label>
                 <AutoComplete
                   id="input-customer"
@@ -543,15 +538,12 @@ const showErrorCover = () => {
                 />
               </div>
 
-              <div class="flex flex-column col-12 col-md-6">
+              <div class="flex flex-column col-12 md:col-3">
                 <label class="color-orange" for="seriesNo">Cześć:</label>
-                <InputNumber
+                <InputText
                   id="seriesNo"
                   v-model="book.bookInSeriesNo"
-                  mode="decimal"
-                  show-buttons
-                  :min="0"
-                  :max="50"
+                  maxlength="5"
                 />
               </div>
             </div>

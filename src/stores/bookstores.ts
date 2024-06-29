@@ -39,11 +39,11 @@ export const useBookstoreStore = defineStore("bookstore", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/bookstore`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getBookstoreFromDb() - Ilosc[]: " + response.data.length);
         this.bookstores = response.data;
@@ -70,13 +70,13 @@ export const useBookstoreStore = defineStore("bookstore", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/bookstore/` + bookstoreId,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         return response.data;
@@ -100,14 +100,14 @@ export const useBookstoreStore = defineStore("bookstore", {
       console.log("START - addBankDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(
           `/v1/library/bookstore`,
           bookstore,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         this.bookstores.push(response.data);
@@ -132,14 +132,14 @@ export const useBookstoreStore = defineStore("bookstore", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(
           `/v1/library/bookstore`,
           bookstore,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         const index = this.bookstores.findIndex((b) => b.id === bookstore.id);
@@ -164,11 +164,11 @@ export const useBookstoreStore = defineStore("bookstore", {
       console.log("START - deleteBookstoreDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/library/bookstore/` + bookstoreId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.bookstores.findIndex((b) => b.id === bookstoreId);
         if (index !== -1) this.bookstores.splice(index, 1);

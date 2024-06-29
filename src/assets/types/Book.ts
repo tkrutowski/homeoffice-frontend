@@ -23,7 +23,7 @@ export interface Book {
   title: string;
   description: string;
   cover: string;
-  bookInSeriesNo: number;
+  bookInSeriesNo: string;
 }
 export interface Author {
   id: number;

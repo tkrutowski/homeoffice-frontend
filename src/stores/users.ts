@@ -49,12 +49,12 @@ export const useUsersStore = defineStore("user", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         if (this.users.length === 0) {
           const response = await httpCommon.get(`/v1/user`, {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           });
           console.log("getUsersFromDb() - Ilosc[]: " + response.data.length);
           this.users = response.data;
@@ -82,11 +82,11 @@ export const useUsersStore = defineStore("user", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/user/` + userId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -108,11 +108,11 @@ export const useUsersStore = defineStore("user", {
       console.log("START - addUserDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/user`, user, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.users.push(response.data);
         return true;
@@ -136,11 +136,11 @@ export const useUsersStore = defineStore("user", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/user`, user, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.users.findIndex((u) => u.id === user.id);
         if (index !== -1) this.users.splice(index, 1, response.data);
@@ -164,11 +164,11 @@ export const useUsersStore = defineStore("user", {
       console.log("START - deleteUserDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/user/` + userId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.users.findIndex((b) => b.id === userId);
         if (index !== -1) this.users.splice(index, 1);

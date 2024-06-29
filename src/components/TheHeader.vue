@@ -1,19 +1,23 @@
 <template>
-  <div id="logo-back" class="color-orange d-none d-md-flex">
-    <img id="logo" alt="HomeOffice logo" src="../assets/HomeOffice.png" />
-    <h1 id="name">HomeOffice</h1>
-  </div>
-  <div id="logo-back-mobile" class="color-orange d-md-none">
+  <div id="logo-back-mobile" class="color-yellow">
     <img
       id="logo-mobile"
-      alt="HomeOffice logo"
+      alt="ProgasOffice logo"
       src="../assets/HomeOffice.png"
     />
-    <h1 id="name-mobile">HomeOffice</h1>
+    <div class="flex flex-column align-items-end">
+      <h1 class="pr-3">HomeOffice</h1>
+      <span class="pr-1" v-if="authStore.isAuthenticatedOrToken">
+        Użytkownik: {{ authStore.username }}
+      </span>
+    </div>
   </div>
   <br />
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { useAuthorizationStore } from "@/stores/authorization";
+const authStore = useAuthorizationStore();
+</script>
 
 <style scoped>
 #logo {

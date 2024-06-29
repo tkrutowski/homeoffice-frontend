@@ -1,5 +1,7 @@
 import { useBookstoreStore } from "@/stores/bookstores";
 import { useUserbooksStore } from "@/stores/userbooks";
+import { useCardsStore } from "@/stores/cards";
+import { useFirmsStore } from "@/stores/firms";
 import { Author, Category } from "@/assets/types/Book";
 
 export const UtilsService = {
@@ -25,6 +27,17 @@ export const UtilsService = {
       userbookStore.getReadingStatusFromDb();
   },
 
+  getTypesForFinance() {
+    const cardStore = useCardsStore();
+    if (cardStore.cards.length === 0) {
+      cardStore.getCardsFromDb("ALL");
+    }
+
+    const firmStore = useFirmsStore();
+    if (firmStore.firms.length === 0) {
+      firmStore.getFirmsFromDb();
+    }
+  },
   displayAuthors(authors: Author[]) {
     return authors
       .map((author) => author.lastName + " " + author.firstName)

@@ -60,11 +60,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/book`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getBooksFromDb() - Ilosc[]: " + response.data.length);
         this.books = response.data;
@@ -89,11 +89,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/book/` + bookId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         return response.data;
       } catch (e) {
@@ -117,13 +117,13 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
           `/v1/library/book/series/` + seriesId,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log(
@@ -144,18 +144,17 @@ export const useBooksStore = defineStore("book", {
     },
     //
     //Get books from url
-    async getBookFromUrl(webSite: Website, url: string) {
-      console.log("START - getBookFromUrl(" + webSite + ")");
-      console.log("URL: " + url);
+    async getBookFromUrl(url: string) {
+      console.log("START - getBookFromUrl(" + url + ")");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(
-          `/v1/library/book/url?site=` + webSite + "&url=" + url,
+          `/v1/library/book/url?&url=` + url,
           {
-            headers: authorization.token !== "null" ? headers : {},
+            headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
         console.log("BOOK URL: " + JSON.stringify(response.data));
@@ -179,11 +178,11 @@ export const useBooksStore = defineStore("book", {
       console.log("START - deleteBookDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         await httpCommon.delete(`/v1/library/book/` + bookId, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.books.findIndex((l) => l.id === bookId);
         if (index !== -1) this.books.splice(index, 1);
@@ -207,11 +206,11 @@ export const useBooksStore = defineStore("book", {
       console.log("START - addBookDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/library/book`, book, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.books.push(response.data);
         return true;
@@ -236,11 +235,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.put(`/v1/library/book`, book, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         const index = this.books.findIndex((b) => b.id === book.id);
         if (index !== -1) this.books.splice(index, 1, response.data);
@@ -268,11 +267,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/author`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getAuthorsFromDb() - Ilosc[]: " + response.data.length);
         this.authors = response.data;
@@ -295,11 +294,11 @@ export const useBooksStore = defineStore("book", {
       console.log("START - addAuthorDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/library/author`, author, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.authors.push(response.data);
         return true;
@@ -326,11 +325,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/series`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getSeriesFromDb() - Ilosc[]: " + response.data.length);
         this.series = response.data;
@@ -357,11 +356,11 @@ export const useBooksStore = defineStore("book", {
 
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.get(`/v1/library/category`, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         console.log("getCategoriesFromDb() - Ilosc[]: " + response.data.length);
         this.categories = response.data;
@@ -384,11 +383,11 @@ export const useBooksStore = defineStore("book", {
       console.log("START - addCategoryDb()");
       const authorization = useAuthorizationStore();
       const headers = {
-        Authorization: "Bearer " + authorization.token,
+        Authorization: "Bearer " + authorization.accessToken,
       };
       try {
         const response = await httpCommon.post(`/v1/library/category`, cat, {
-          headers: authorization.token !== "null" ? headers : {},
+          headers: authorization.accessToken !== "null" ? headers : {},
         });
         this.categories.push(response.data);
         return true;
