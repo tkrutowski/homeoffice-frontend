@@ -8,8 +8,9 @@ import PrimeVue from "primevue/config";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 // import "primevue/resources/themes/lara-light-blue/theme.css";
-import "primevue/resources/themes/homeoffice/theme.css";
+// import "primevue/resources/themes/homeoffice/theme.css";
 // import "primevue/resources/themes/rhea/theme.css";
+import "@/assets/css/theme.css";
 
 import ToastService from "primevue/toastservice";
 
