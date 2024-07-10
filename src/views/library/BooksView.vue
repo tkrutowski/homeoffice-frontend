@@ -134,7 +134,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
     <template #header>
       <div class="w-full flex justify-content-center">
         <h2>LISTA KSIĄŻEK</h2>
-        <div v-if="bookStore.loadingBooks">
+        <div v-if="bookStore.loadingBooks" class="flex align-items-center">
           <ProgressSpinner
             class="ml-3"
             style="width: 40px; height: 40px"

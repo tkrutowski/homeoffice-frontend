@@ -2,11 +2,12 @@
 import TheFooter from "@/components/TheFooter.vue";
 import TheMenu from "@/components/TheMenu.vue";
 import { useAuthorizationStore } from "@/stores/authorization";
+import { useBooksStore } from "@/stores/books";
 import AppCard from "@/components/AppCard.vue";
 import router from "@/router";
 
 const authorizationStore = useAuthorizationStore();
-
+const booksStore = useBooksStore();
 function runFinance() {
   console.log("START - finance()");
   if (authorizationStore.hasAccessFinance) {
@@ -20,6 +21,7 @@ function runFinance() {
 function runLibrary() {
   console.log("START - library()");
   if (authorizationStore.hasAccessLibrary) {
+    if (booksStore.books.length === 0) booksStore.getBooksFromDb();
     router.push({
       name: "LibraryHome",
       // params: { idUser: 0, isEdit: "false" },

@@ -43,7 +43,7 @@ export const useBooksStore = defineStore("book", {
     //
     async getBooks() {
       console.log("START - getBooks()");
-      if (this.books.length === 0) {
+      if (this.books.length === 0 && !this.loadingBooks) {
         await this.getBooksFromDb();
       }
       console.log("END - getBooks()");

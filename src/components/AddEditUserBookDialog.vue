@@ -154,16 +154,16 @@ const cancel = () => {
 <template>
   <Dialog modal class="p-fluid min-w-50vw" close-on-escape @abort="cancel">
     <template #header>
-      <h4 class="color-orange">
+      <h2 class="color-orange">
         {{
           $props.isEdit
             ? "Edytuj książkę na półce"
             : "Dodaj nową książkę na półkę"
         }}
-      </h4>
+      </h2>
     </template>
     <div class="flex flex-row grid">
-      <div class="flex flex-column col-12 col-xl-7">
+      <div class="flex flex-column col-12 xl:col-7">
         <!-- ROW-1   BOOKSTORE -->
         <div class="flex flex-row">
           <div class="flex flex-column col-12">
@@ -314,7 +314,7 @@ const cancel = () => {
       <!-- ROW-   COVER -->
       <div class="flex flex-column m-auto ebook w-auto">
         <img
-          v-if="userbook.book?.cover.length > 0"
+          v-if="userbook.book && userbook.book.cover.length > 0"
           :src="userbook.book?.cover"
           height="500"
           width="333"
@@ -338,7 +338,7 @@ const cancel = () => {
       </div>
     </div>
     <template #footer>
-      <div class="flex flex-row justify-content-end">
+      <div class="flex flex-row justify-content-end gap-2">
         <OfficeButton text="Anuluj" btn-type="office" @click="cancel" />
         <OfficeButton text="Zapisz" btn-type="office-save" @click="submit" />
       </div>
