@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import OfficeButton from "@/components/OfficeButton.vue";
 import Calendar from "primevue/calendar";
+import moment from "moment";
 
 const emit = defineEmits<{
   (e: "save", date: string, amount: number): void;
@@ -24,7 +25,7 @@ const props = defineProps({
     default: false,
   },
 });
-const newDate = ref<string>(props.date);
+const newDate = ref<Date>(moment(props.date).toDate());
 const newAmount = ref<number>(props.amount);
 const submitted = ref(false);
 
@@ -39,7 +40,7 @@ watch(
 watch(
   () => props.date,
   (newValue) => {
-    newDate.value = newValue;
+    newDate.value = moment(newValue).toDate();
   },
   { immediate: true }
 );

@@ -115,8 +115,15 @@ async function newLoan() {
       setTimeout(() => {
         router.push({ name: "Loans" });
       }, 3000);
-    } else btnShowError.value = true;
-
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Błąd",
+        detail: "Błąd podczas zapisywania kredytu",
+        life: 3000,
+      });
+    }
+    btnShowError.value = true;
     btnSaveDisabled.value = false;
 
     setTimeout(() => {
@@ -275,9 +282,9 @@ const showErrorFirstDate = () => {
             @click="() => router.push({ name: 'Loans' })"
           />
           <div class="w-full flex justify-content-center">
-            <h3 class="color-green">
+            <h2>
               {{ isEdit ? `Edycja kredytu: ${loan?.name}` : "Nowy kredyt" }}
-            </h3>
+            </h2>
           </div>
         </template>
         <div class="flex flex-row grid">

@@ -79,7 +79,7 @@ function openPaymentModal(i: FeeInstallment) {
 async function savePayment(date: string, amount: number) {
   if (installment.value) {
     isBusy.value = true;
-    installment.value.paymentDate = date;
+    installment.value.paymentDate = moment(date).format("YYYY-MM-DD");
     installment.value.installmentAmountPaid = amount;
     installment.value.paymentStatus = { name: "PAID", viewName: "Spłacony" };
     showPaymentModal.value = false;
@@ -92,6 +92,13 @@ async function savePayment(date: string, amount: number) {
         severity: "success",
         summary: "Potwierdzenie",
         detail: "Zaktualizowano płatność.",
+        life: 3000,
+      });
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Potwierdzenie",
+        detail: "Błąd podczas płatność.",
         life: 3000,
       });
     }
@@ -120,7 +127,7 @@ const submitDelete = async () => {
       name: "TO_PAY",
       viewName: "Do zapłaty",
     };
-    installment.value.paymentDate = null;
+    installment.value.paymentDate = "";
     installment.value.installmentAmountPaid = 0;
     showDeleteConfirmationDialog.value = false;
     const savedFee = await feeStore.updateFeeInstallmentDb(installment.value);
@@ -136,6 +143,7 @@ const submitDelete = async () => {
       });
     }
   }
+  await refresh();
   isBusy.value = false;
 };
 
@@ -145,7 +153,10 @@ const getAmount = computed(() => {
     : installment.value?.installmentAmountToPay;
 });
 const getDate = computed(() => {
-  if (installment.value?.paymentDate !== "-999999999-01-01")
+  if (
+    installment.value?.paymentDate !==
+    ("-999999999-01-01" && "+1000000000-01-01")
+  )
     return installment.value?.paymentDate;
   return moment().format("YYYY-MM-DD");
 });
@@ -158,10 +169,13 @@ const isEdit = computed(() => {
 //-----------------------------------------------------MOUNTED------------------------------------------
 onMounted(async () => {
   console.log("onMounted GET");
-  fee.value = await feeStore.getFeeFromDb(+props.id);
-  installments.value = fee.value?.installmentList;
-  // await feeStore.getFees("ALL", true);
+  feeStore.getFees("ALL");
+  refresh();
 });
+const refresh = async () => {
+  fee.value = await feeStore.getFeeFromDb(+props.id);
+  installments.value = fee.value ? fee.value?.installmentList : [];
+};
 </script>
 
 <template>
@@ -202,7 +216,7 @@ onMounted(async () => {
       <!--   LEFT   -->
       <div class="field col">
         <p class="mb-1 mt-3"><small>Nazwa opłaty:</small> {{ fee?.name }}</p>
-        <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm.name }}</p>
+        <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm?.name }}</p>
         <p class="mb-1"><small>Nr umowy:</small> {{ fee?.feeNumber }}</p>
         <p class="mb-1"><small>Z dnia:</small> {{ fee?.date }}</p>
         <p class="mb-1">
@@ -216,7 +230,7 @@ onMounted(async () => {
         <p class="mb-1"><small>Kwota opłaty:</small> {{ fee?.amount }} zł</p>
         <p class="mb-1">
           <small>Częstotliwość opłat:</small>
-          {{ fee?.feeFrequency.viewName }}
+          {{ fee?.feeFrequency?.viewName }}
         </p>
 
         <p class="mb-1">

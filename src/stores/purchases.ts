@@ -137,7 +137,7 @@ export const usePurchasesStore = defineStore("purchase", {
     //ADD PURCHASE
     //
     async addPurchaseDb(purchase: Purchase) {
-      console.log("START - addPurchaseDb()");
+      // console.log("START - addPurchaseDb()", purchase);
       const authorization = useAuthorizationStore();
       const headers = {
         Authorization: "Bearer " + authorization.accessToken,

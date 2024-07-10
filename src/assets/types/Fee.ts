@@ -23,7 +23,7 @@ export interface FeeInstallment {
   installmentAmountToPay: number;
   installmentAmountPaid: number;
   paymentDeadline: string;
-  paymentDate: string | null | undefined;
+  paymentDate: string | undefined;
   paymentStatus: PaymentStatus;
 }
 

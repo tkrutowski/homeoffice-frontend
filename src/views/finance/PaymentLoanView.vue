@@ -21,7 +21,7 @@ const paymentStore = usePaymentStore();
 const toast = useToast();
 
 const loan = ref<Loan>();
-const installments = ref<LoanInstallment[]>();
+const installments = ref<LoanInstallment[]>([]);
 const isBusy = ref<boolean>(false);
 
 const props = defineProps({
@@ -82,7 +82,16 @@ const getDate = computed(() => {
     return moment().format("YYYY-MM-DD");
   return installment.value?.paymentDate;
 });
-
+const calculateProgressBar = computed(() => {
+  if (loan.value)
+    return (
+      (loan.value.installmentList.filter((i) => i.paymentStatus.name === "PAID")
+        .length /
+        loan.value.numberOfInstallments) *
+      100
+    );
+  return 0;
+});
 // ---------------------------------------------EDIT PAYMENT--------------------------------
 const showPaymentModal = ref(false);
 const installment = ref<LoanInstallment>();
@@ -94,17 +103,15 @@ function openPaymentModal(i: LoanInstallment) {
 async function savePayment(date: string, amount: number) {
   isBusy.value = true;
   if (installment.value) {
-    installment.value.paymentDate = date;
+    installment.value.paymentDate = moment(date).format("YYYY-MM-DD");
     installment.value.installmentAmountPaid = amount;
     installment.value.paymentStatus = { name: "PAID", viewName: "Spłacony" };
     showPaymentModal.value = false;
 
-    console.log("przed update, ", installment.value);
     const savedLoan = await loansStore.updateLoanInstallmentDb(
       installment.value
     );
 
-    console.log("po upate, ", savedLoan);
     //update views
     if (savedLoan) {
       installments.value = savedLoan.installmentList;
@@ -113,6 +120,13 @@ async function savePayment(date: string, amount: number) {
         severity: "success",
         summary: "Potwierdzenie",
         detail: "Zaktualizowano płatność.",
+        life: 3000,
+      });
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Potwierdzenie",
+        detail: "Błąd podczas płatność.",
         life: 3000,
       });
     }
@@ -141,7 +155,7 @@ const submitDelete = async () => {
       name: "TO_PAY",
       viewName: "Do zapłaty",
     };
-    installment.value.paymentDate = null;
+    installment.value.paymentDate = "";
     installment.value.installmentAmountPaid = 0;
     showDeleteConfirmationDialog.value = false;
     console.log("przed del, ", installment.value);
@@ -161,7 +175,7 @@ const submitDelete = async () => {
       });
     }
   }
-  refresh();
+  await refresh();
   isBusy.value = false;
 };
 
@@ -173,7 +187,7 @@ onMounted(async () => {
 });
 const refresh = async () => {
   loan.value = await loansStore.getLoanFromDb(+props.id);
-  installments.value = loan.value?.installmentList;
+  installments.value = loan.value ? loan.value?.installmentList : [];
 };
 </script>
 
@@ -275,24 +289,8 @@ const refresh = async () => {
           {{ loan?.numberOfInstallments }}
         </p>
 
-        <ProgressBar
-          :value="
-            (loan?.installmentList.filter(
-              (i) => i.paymentStatus.name === 'PAID'
-            ).length /
-              loan?.numberOfInstallments) *
-            100
-          "
-        >
-          {{
-            (
-              (loan?.installmentList.filter(
-                (i) => i.paymentStatus.name === "PAID"
-              ).length /
-                loan?.numberOfInstallments) *
-              100
-            ).toFixed(0)
-          }}%
+        <ProgressBar :value="calculateProgressBar">
+          {{ calculateProgressBar.toFixed(0) }}%
         </ProgressBar>
         <div class="flex flex-column">
           <label for="info">Opis:</label>
