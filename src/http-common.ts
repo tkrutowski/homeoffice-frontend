@@ -27,7 +27,10 @@ apiClient.interceptors.request.use(
 let refreshing = false;
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("response: ", response);
+    return response;
+  },
   async (error) => {
     const refreshToken: string | null =
       localStorage.getItem("refreshToken") || null;
@@ -51,7 +54,7 @@ apiClient.interceptors.response.use(
       authStore.logout();
     }
     refreshing = false;
-    return error;
+    throw error;
   }
 );
 

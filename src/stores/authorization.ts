@@ -1,9 +1,13 @@
 import { defineStore } from "pinia";
-import User from "@/assets/types/User";
 import httpCommon from "@/http-common";
 import { ErrorService } from "@/service/ErrorService";
 import jwt_decode from "jwt-decode";
 import moment from "moment";
+import { useFeeStore } from "@/stores/fee";
+import { useLoansStore } from "@/stores/loans";
+import { usePaymentStore } from "@/stores/payments";
+import { usePurchasesStore } from "@/stores/purchases";
+import { useUserbooksStore } from "@/stores/userbooks";
 
 export const useAuthorizationStore = defineStore("authorization", {
   state: () => ({
@@ -199,10 +203,20 @@ export const useAuthorizationStore = defineStore("authorization", {
     //
     logout(): void {
       console.log("START - logout()");
+      const feeStore = useFeeStore();
+      const loanStore = useLoansStore();
+      const paymentStore = usePaymentStore();
+      const purchaseStore = usePurchasesStore();
+      const userbookStore = useUserbooksStore();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("username");
       this.$reset(); //store reset
+      feeStore.fees = [];
+      loanStore.loans = [];
+      paymentStore.payments.clear();
+      purchaseStore.purchases.clear();
+      userbookStore.userbooks = [];
       this.router.replace({ name: "login" });
     },
     //
