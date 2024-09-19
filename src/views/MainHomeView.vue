@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import TheFooter from "@/components/TheFooter.vue";
 import TheMenu from "@/components/TheMenu.vue";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { useBooksStore } from "@/stores/books";
@@ -11,10 +10,10 @@ const booksStore = useBooksStore();
 function runFinance() {
   console.log("START - finance()");
   if (authorizationStore.hasAccessFinance) {
-    router.push({
-      name: "FinanceHome",
-      // params: { idUser: 0, isEdit: "false" },
-    });
+    // router.push({
+    //   name: "FinanceHome",
+    //   // params: { idUser: 0, isEdit: "false" },
+    // });
   }
 }
 
@@ -34,25 +33,24 @@ function runLibrary() {
   <TheMenu />
   <h1
     v-if="!authorizationStore.isAuthenticatedOrToken"
-    class="color-orange flex justify-content-center mt-8"
+    class="color-office flex justify-center mt-8"
   >
     Musisz się najpierw zalogować... ;)
   </h1>
-  <div v-else class="flex flex-row justify-content-center gap-2 mt-5">
+  <div v-else class="flex flex-row justify-center gap-2 mt-5">
     <AppCard
       text-content="Kredyty, płatności i zakupy"
       text-title="Finanse"
-      :btn-disabled="!authorizationStore.hasAccessFinance"
+      :disabled="!authorizationStore.hasAccessFinance"
       @clicked="runFinance"
     />
     <AppCard
       text-content="Książki, audiobooki, ebooki"
       text-title="Biblioteka"
-      :btn-disabled="!authorizationStore.hasAccessLibrary"
+      :disabled="!authorizationStore.hasAccessLibrary"
       @clicked="runLibrary"
     />
   </div>
-  <TheFooter />
 </template>
 
 <style scoped></style>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import TheMenuLibrary from "@/components/TheMenuLibrary.vue";
+import TheMenuLibrary from "@/components/library/TheMenuLibrary.vue";
 import { useUserbooksStore } from "@/stores/userbooks";
-import UserBookSmall from "@/components/UserBookSmall.vue";
-import AddEditUserBookDialog from "@/components/AddEditUserBookDialog.vue";
+import UserBookSmall from "@/components/library/UserBookSmall.vue";
+import AddEditUserBookDialog from "@/components/library/AddEditUserBookDialog.vue";
 import { computed, ref } from "vue";
-import { UserBook } from "@/assets/types/Book";
+import { UserBook } from "@/types/Book";
 
 const userbookStore = useUserbooksStore();
 import { useToast } from "primevue/usetoast";
@@ -94,7 +94,7 @@ const submitDelete = async () => {
       </div>
     </div>
 
-    <div class="flex flex-row justify-content-center">
+    <div class="flex flex-row flex-wrap justify-center">
       <div v-for="ub in userbookStore.getBooksReadNow" :key="ub.id">
         <UserBookSmall
           :userbook="ub"
@@ -115,6 +115,11 @@ const submitDelete = async () => {
   text-align: center;
   padding-top: 10px;
   width: inherit;
-  background-color: #1e1e1e;
+  background-color: var(--p-surface-200); /* lub dowolny inny kolor dla jasnego motywu */
 }
+
+/* Dla ciemnego motywu */
+  .p-dark .info-bar {
+    background-color: var(--p-surface-800); /* lub dowolny inny kolor dla ciemnego motywu */
+  }
 </style>

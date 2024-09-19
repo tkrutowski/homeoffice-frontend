@@ -9,14 +9,3 @@ import Toast from "primevue/toast";
   <router-view />
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  //text-align: center;
-  color: #ee7f00;
-
-  background-color: #222526 !important;
-}
-</style>

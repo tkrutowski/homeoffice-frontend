@@ -47,4 +47,14 @@ export const UtilsService = {
   displayCategory(categories: Category[]) {
     return categories.map((category) => category.name).join(", ");
   },
+
+  findPatternInString(inputString, pattern, split) {
+  // Dzielimy string na elementy według separatora ";;"
+  const elements = inputString.split(split);
+
+  // Filtrujemy elementy, które zawierają wzorzec (pattern)
+  const matchedElements = elements.filter(element => element.includes(pattern));
+
+  return matchedElements;
+}
 };

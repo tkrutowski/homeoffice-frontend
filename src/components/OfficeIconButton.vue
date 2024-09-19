@@ -3,7 +3,7 @@ const props = defineProps({
   icon: {
     type: String,
     required: false,
-    default: "pi-file",
+    default: "pi pi-file",
   },
   btnDisabled: {
     type: Boolean,
@@ -14,20 +14,29 @@ const props = defineProps({
     required: false,
     default: false,
   },
+  severity: {
+    type: String,
+    required: false,
+    default: "warn",
+  },
 });
 </script>
 <template>
-  <Button class="icon-only" :class="{ isActive: active }">
-    <i class="pi" :class="props.icon" :style="{ fontWeight: 'bold' }"></i>
+  <Button class="icon-only" :icon="props.icon" rounded outlined :class="{ isActive: active }" :severity="props.severity">
   </Button>
 </template>
+<!--    <i class="pi" :class="props.icon" :style="{ fontWeight: 'bold' }"></i>-->
 
+//.icon-only:hover {
+//  color: white !important;
+//  background-color: rgba(153, 82, 0) !important;
+//}
 <style scoped>
+  //background-color: rgb(238, 127, 0);
+  //display: block;
+  //color: #332600 !important;
+  //border-color: rgb(238, 127, 0) !important;
 .icon-only {
-  display: block;
-  background-color: rgb(238, 127, 0);
-  color: #332600 !important;
-  border-color: rgb(238, 127, 0) !important;
 
   outline: none; /* Brak zarysu po kliknięciu */
   padding: 10px 20px; /* Padding wewnątrz przycisku */
@@ -36,10 +45,6 @@ const props = defineProps({
   transition: box-shadow 0.3s ease, transform 0.3s ease; /* Animacja dla płynności */
 }
 
-.icon-only:hover {
-  color: white !important;
-  background-color: rgba(153, 82, 0) !important;
-}
 
 .icon-only:disabled {
   color: white !important;

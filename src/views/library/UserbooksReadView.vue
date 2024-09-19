@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import TheMenuLibrary from "@/components/TheMenuLibrary.vue";
+import TheMenuLibrary from "@/components/library/TheMenuLibrary.vue";
 import { useUserbooksStore } from "@/stores/userbooks";
-import UserBookSmall from "@/components/UserBookSmall.vue";
+import UserBookSmall from "@/components/library/UserBookSmall.vue";
 import OfficeButton from "@/components/OfficeButton.vue";
 import { ref } from "vue";
-import { UserBook } from "@/assets/types/Book";
-import AddEditUserBookDialog from "@/components/AddEditUserBookDialog.vue";
+import { UserBook } from "@/types/Book";
+import AddEditUserBookDialog from "@/components/library/AddEditUserBookDialog.vue";
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const userbookStore = useUserbooksStore();
@@ -69,9 +69,9 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
       </div>
     </div>
 
-    <Toolbar class="m-6">
+    <Toolbar class="m-6 dark-color">
       <template #start
-        ><p class="color-orange mt-auto mb-auto">
+        ><p class="mt-auto mb-auto">
           ROK: {{ displayedYear }}
         </p></template
       >
@@ -80,17 +80,17 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
         <InputNumber
           v-model="selectedYear"
           :min="2010"
-          :max="2030"
+          :max="2040"
           show-buttons
           :format="false"
-          buttonLayout="horizontal"
+          button-layout="horizontal"
         />
       </template>
 
       <template #end>
         <OfficeButton
-          text="wyszukaj"
-          btn-type="office"
+          text="wyświetl"
+          btn-type="office-regular"
           :btn-disabled="userbookStore.loadingUserbooks"
           :is-busy-icon="userbookStore.loadingUserbooks"
           @click="getUserbooks"
@@ -98,15 +98,15 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
       </template>
     </Toolbar>
 
-    <div class="flex flex-row flex-wrap justify-content-center">
+    <div class="flex flex-row flex-wrap justify-center">
       <div v-for="ub in userbooks" :key="ub.id">
         <UserBookSmall :userbook="ub" @edit="editUserbook" />
       </div>
     </div>
   </div>
-  <Toolbar class="sticky-toolbar">
+  <Toolbar class="sticky-toolbar m-6">
     <template #start>
-      <div class="flex flex-column color-orange">
+      <div class="flex flex-row dark-color gap-3">
         <p class="mb-1">
           <small>Audiobook:</small>
           {{ getTotalAudiobook("AUDIOBOOK") }}
@@ -123,7 +123,7 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
     </template>
 
     <template #end>
-      <p class="mb-1 color-orange">
+      <p class="mb-1 dark-color">
         RAZEM:
         {{
           getTotalAudiobook("AUDIOBOOK") +
@@ -144,6 +144,14 @@ const submitEditUserbook = async (newUserbook: UserBook) => {
   text-align: center;
   padding-top: 10px;
   width: inherit;
-  background-color: #1e1e1e;
+  background-color: var(--p-surface-200); /* lub dowolny inny kolor dla jasnego motywu */
+}
+/* Dla ciemnego motywu */
+.p-dark .info-bar {
+  background-color: var(--p-surface-800); /* lub dowolny inny kolor dla ciemnego motywu */
+}
+
+.p-dark .dark-color {
+  color: var( --office-color); /* lub dowolny inny kolor dla ciemnego motywu */
 }
 </style>

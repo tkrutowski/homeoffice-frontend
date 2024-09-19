@@ -39,21 +39,21 @@ const cancel = () => {
 <template>
   <Dialog :style="{ width: '550px' }" :modal="true">
     <template #header>
-      <h4 class="color-orange">{{ msg }}</h4>
+      <h4>{{ msg }}</h4>
     </template>
-    <div class="flex flex-column mb-3">
-      <label for="label1" class="color-orange mb-1">{{ label1 }}</label>
+    <div class="flex flex-col mb-3">
+      <label for="label1" class="mb-1">{{ label1 }}</label>
       <InputText id="label1" v-model="input1" class="flex-auto" autofocus />
     </div>
-    <div v-if="label2 !== 'label2'" class="flex flex-column">
-      <label for="label2" class="color-orange mb-1">{{ label2 }}</label>
-      <InputText id="label2" class="flex-auto" v-model="input2" />
+    <div v-if="label2 !== 'label2'" class="flex flex-col">
+      <label for="label2" class="mb-1">{{ label2 }}</label>
+      <InputText id="label2" v-model="input2" class="flex-auto" />
     </div>
     <template #footer>
-      <div class="flex flex-row gap-1 justify-content-end">
+      <div class="flex flex-row gap-4 ">
         <OfficeButton
           text="Anuluj"
-          btn-type="office"
+          btn-type="office-regular"
           @click="cancel"
           @abort="cancel"
         ></OfficeButton>

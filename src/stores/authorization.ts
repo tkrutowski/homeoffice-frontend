@@ -23,9 +23,20 @@ export const useAuthorizationStore = defineStore("authorization", {
 
   //getters = computed
   getters: {
+    hasAccessAdmin(): boolean {
+      try {
+        const decoded = jwt_decode(this.accessToken);
+        return (
+            decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
     isAuthenticatedOrToken(): boolean {
       if (this.accessToken) {
-        const decoded: any = jwt_decode(this.accessToken);
+        const decoded = jwt_decode(this.accessToken);
         return (
           this.isAuthenticated || moment.unix(decoded.exp).isAfter(moment())
         );
@@ -145,7 +156,7 @@ export const useAuthorizationStore = defineStore("authorization", {
       this.accessToken = token;
       localStorage.setItem("accessToken", token);
       this.isAuthenticated = true;
-      const decoded: any = jwt_decode(this.accessToken);
+      const decoded = jwt_decode(this.accessToken);
       this.username = decoded.sub;
       localStorage.setItem("username", decoded.sub);
 

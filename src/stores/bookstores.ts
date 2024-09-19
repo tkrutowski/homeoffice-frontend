@@ -37,14 +37,8 @@ export const useBookstoreStore = defineStore("bookstore", {
       console.log("START - getBookstoreFromDb()");
       this.loadingBookstore = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.get(`/v1/library/bookstore`, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/library/bookstore`);
         console.log("getBookstoreFromDb() - Ilosc[]: " + response.data.length);
         this.bookstores = response.data;
       } catch (e) {

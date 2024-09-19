@@ -1,23 +1,23 @@
 <template>
-  <Card class="custom-card" style="max-width: 20rem">
+  <Card class="custom-card"  >
     <template #header>
-      <h4 class="mb-0 text-center color-orange">
+      <h3 class="mb-0 text-center header pt-2">
         {{ textTitle }}
-      </h4>
+      </h3>
     </template>
 
     <template #content>
-      <p class="color-orange">{{ textContent }}</p>
+      <p class="text-center text-color">{{ textContent }}</p>
     </template>
 
     <template #footer>
       <div class="card-footer">
         <OfficeButton
           class="w-full mb-2"
-          btn-type="office"
+          btn-type="office-regular"
           text="wejście"
           type="button"
-          :btn-disabled="btnDisabled"
+          :btn-disabled="disabled"
           @click="clicked"
         />
       </div>
@@ -25,7 +25,7 @@
   </Card>
 </template>
 <script setup lang="ts">
-import OfficeButton from "@/components/OfficeButton.vue";
+import OfficeButton from "../components/OfficeButton.vue";
 // const emit = defineEmits(['clicked'])
 const emit = defineEmits<{
   (e: "clicked"): void;
@@ -40,10 +40,10 @@ defineProps({
     type: String,
     required: true,
   },
-  btnDisabled: {
+  disabled: {
     type: Boolean,
     required: false,
-    default: false,
+    default: true
   },
 });
 function clicked() {
@@ -58,7 +58,13 @@ function clicked() {
   justify-content: center;
 }
 .custom-card {
-  background-color: #1a1a1a; /* Wybierz swój kolor */
-  border: 2px solid #ee7f00;
+  width: 270px;
+  border-color: #dc3545!important;
+}
+.header{
+  font-weight: bolder;
+  letter-spacing: 1.2px;
+  color: var(--text-color)!important;
+
 }
 </style>

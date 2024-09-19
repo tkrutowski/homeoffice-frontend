@@ -14,13 +14,45 @@ const items = ref([
       router.push({ name: "Home" });
     },
   },
+  {
+    label: "Administracja",
+    icon: "pi pi-fw pi-user",
+    visible: authorizationStore.hasAccessAdmin,
+    items: [
+      {
+        label: "Użytkownicy",
+        icon: "pi pi-fw pi-users",
+        disabled: true,
+        // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
+        command: () => {
+          router.push({
+            name: "Book",
+            params: { isEdit: "false", bookId: 0 },
+          });
+        },
+      },
+      {
+        label: "Uprawnienia ",
+        icon: "pi pi-fw pi-folder-open",
+        disabled: !authorizationStore.hasAccessAdmin,
+        command: () => {
+          if(window.location.href.includes(router.resolve({name: "Privileges"}).href)) {
+            const redirect = JSON.stringify({ name: 'Privileges' });
+            router.push({ path: '/refresh', query: { redirect: redirect } });
+          }else {
+            router.push({ name: "Privileges" });
+          }
+        },
+      },
+    ],
+  },
 ]);
 </script>
 
 <template>
   <Menubar :model="items" class="main-menu">
     <template #start>
-      <img alt="logo" src="@/assets/HomeOffice.png" height="30" class="mr-2" />
+      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
     </template>
     <template #end>
       <div v-if="!authorizationStore.isAuthenticatedOrToken">
@@ -28,7 +60,7 @@ const items = ref([
           <OfficeButton
             size="sm"
             class="my-2 ml-2 my-sm-0"
-            btn-type="office"
+            btn-type="office-regular"
             text="zaloguj się"
           />
         </router-link>
@@ -37,7 +69,7 @@ const items = ref([
         <OfficeButton
           size="sm"
           class="my-2 ml-2 my-sm-0"
-          btn-type="office"
+          btn-type="office-regular"
           text="wyloguj"
           :onclick="authorizationStore.logout"
         />

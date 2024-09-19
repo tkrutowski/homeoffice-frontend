@@ -148,18 +148,9 @@ export const useUserbooksStore = defineStore("userbook", {
     ): Promise<UserBook[] | undefined> {
       console.log("START - getUserbookFromDb(" + bookId + ")");
       this.loadingUserbooks = true;
-
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.get(
-          `/v1/library/userbook/check?id=` + bookId,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
-        );
+          `/v1/library/userbook/check?id=` + bookId);
         return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {

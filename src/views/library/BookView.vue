@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useBooksStore } from "@/stores/books";
-import { useRoute } from "vue-router";
-import { computed, onMounted, ref, watch } from "vue";
+import {useBooksStore} from "@/stores/books";
+import {useRoute} from "vue-router";
+import {computed, onMounted, ref, watch} from "vue";
 import OfficeButton from "@/components/OfficeButton.vue";
 import router from "@/router";
-import IconButton from "@/components/IconButton.vue";
-import { useToast } from "primevue/usetoast";
-import { Author, Book, Category, Series } from "@/assets/types/Book";
-import TheMenuLibrary from "@/components/TheMenuLibrary.vue";
+import IconButton from "@/components/OfficeIconButton.vue";
+import {useToast} from "primevue/usetoast";
+import {Author, Book, Category, Series} from "@/types/Book";
+import TheMenuLibrary from "@/components/library/TheMenuLibrary.vue";
 import AddDialog from "@/components/AddDialog.vue";
 import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
@@ -37,10 +37,10 @@ const btnSaveDisabled = ref<boolean>(false);
 
 const isSaveBtnDisabled = computed(() => {
   return (
-    bookStore.loadingBooks ||
-    bookStore.loadingSeries ||
-    bookStore.loadingAuthors ||
-    btnSaveDisabled.value
+      bookStore.loadingBooks ||
+      bookStore.loadingSeries ||
+      bookStore.loadingAuthors ||
+      btnSaveDisabled.value
   );
 });
 //
@@ -90,6 +90,7 @@ function saveFee() {
     newBook();
   }
 }
+
 //
 //---------------------------------------------------------NEW BOOK----------------------------------------------
 //
@@ -143,6 +144,7 @@ async function newBook() {
 //-----------------------------------------------------EDIT BOOK------------------------------------------------
 //
 const isEdit = ref<boolean>(false);
+
 async function editBook() {
   if (isNotValid()) {
     showError("Uzupełnij brakujące elementy");
@@ -165,7 +167,7 @@ async function editBook() {
       });
       btnShowOk.value = true;
       setTimeout(() => {
-        router.push({ name: "Books" });
+        router.push({name: "Books"});
       }, 3000);
     } else btnShowError.value = true;
 
@@ -176,6 +178,7 @@ async function editBook() {
     }, 5000);
   }
 }
+
 //---------------------------------------------MOUNTED--------------------------------------------
 onMounted(() => {
   console.log("onMounted GET");
@@ -190,28 +193,28 @@ onMounted(async () => {
   btnSaveDisabled.value = true;
   isEdit.value = route.params.isEdit === "true";
   const bookId = Number(route.params.bookId as string);
-  if (isEdit.value === false && bookId === -1) {
+  if (!isEdit.value && bookId === -1) {
     book.value = bookStore.tempBook;
     selectedAuthors.value = book.value.authors;
     selectedCategories.value = book.value.categories;
     selectedSeries.value = book.value.series;
-  } else if (isEdit.value === false && bookId === 0) {
+  } else if (!isEdit.value && bookId === 0) {
     console.log("onMounted NEW BOOK");
   } else {
     console.log("onMounted EDIT BOOK");
     bookStore
-      .getBookFromDb(bookId)
-      .then((data) => {
-        if (data) {
-          book.value = data;
-          selectedAuthors.value = book.value.authors;
-          selectedCategories.value = book.value.categories;
-          selectedSeries.value = book.value.series;
-        }
-      })
-      .catch((error) => {
-        console.error("Błąd podczas pobierania książek:", error);
-      });
+        .getBookFromDb(bookId)
+        .then((data) => {
+          if (data) {
+            book.value = data;
+            selectedAuthors.value = book.value.authors;
+            selectedCategories.value = book.value.categories;
+            selectedSeries.value = book.value.series;
+          }
+        })
+        .catch((error) => {
+          console.error("Błąd podczas pobierania książek:", error);
+        });
   }
   btnSaveDisabled.value = false;
 });
@@ -219,6 +222,7 @@ onMounted(async () => {
 //--------------------------------------------------AUTHOR
 //
 const showAddModal = ref(false);
+
 async function saveAuthor(firstName: string, lastName: string) {
   console.log("in1: ", firstName);
   console.log("in2: ", lastName);
@@ -248,10 +252,12 @@ async function saveAuthor(firstName: string, lastName: string) {
     }
   }
 }
+
 //
 //--------------------------------------------------CATEGORY
 //
 const showAddCategoryModal = ref(false);
+
 async function saveCategory(name: string) {
   console.log("in1: ", name);
   showAddCategoryModal.value = false;
@@ -279,6 +285,7 @@ async function saveCategory(name: string) {
     }
   }
 }
+
 //
 //----------------------------------------------SEARCH---------------------------------------------
 //
@@ -321,6 +328,7 @@ function findBook() {
     });
   }
 }
+
 function resetForm() {
   book.value = {
     id: 0,
@@ -339,11 +347,13 @@ function resetForm() {
   btnSaveDisabled.value = false;
   btnSaveDisabled.value = false;
 }
+
 function changeStatusSearchIcon(busy: boolean, saved: boolean, error: boolean) {
   btnSearchShowBusy.value = busy;
   btnSearchShowError.value = error;
   btnSearchShowOk.value = saved;
 }
+
 //
 //------------------------------------------------ERROR----------------------------------------------------------
 //
@@ -363,10 +373,10 @@ const isSearchNotValid = () => {
 };
 const isNotValid = () => {
   return (
-    showErrorTitle() ||
-    showErrorAuthor() ||
-    showErrorCategory() ||
-    showErrorCover()
+      showErrorTitle() ||
+      showErrorAuthor() ||
+      showErrorCategory() ||
+      showErrorCover()
   );
 };
 const showErrorUrl = () => {
@@ -387,273 +397,273 @@ const showErrorCover = () => {
 </script>
 
 <template>
-  <Toast />
-  <TheMenuLibrary />
+  <Toast/>
+  <TheMenuLibrary/>
   <AddDialog
-    v-model:visible="showAddModal"
-    label2="Nazwisko:"
-    msg="Dodaj autora"
-    label1="Imię:"
-    @save="saveAuthor"
-    @cancel="showAddModal = false"
+      v-model:visible="showAddModal"
+      label2="Nazwisko:"
+      msg="Dodaj autora"
+      label1="Imię:"
+      @save="saveAuthor"
+      @cancel="showAddModal = false"
   />
   <AddDialog
-    v-model:visible="showAddCategoryModal"
-    msg="Dodaj kategorię"
-    label1="Nazwa:"
-    @save="saveCategory"
-    @cancel="showAddCategoryModal = false"
+      v-model:visible="showAddCategoryModal"
+      msg="Dodaj kategorię"
+      label1="Nazwa:"
+      @save="saveCategory"
+      @cancel="showAddCategoryModal = false"
   />
 
-  <div class="m-4">
+  <div class="m-4 max-w-6xl mx-auto">
     <form @submit.stop.prevent="saveFee">
       <Panel>
         <template #header>
           <IconButton
-            v-tooltip.right="{
+              v-tooltip.right="{
               value: 'Powrót do listy książek',
               showDelay: 500,
               hideDelay: 300,
             }"
-            icon="pi-fw pi-list"
-            @click="() => router.push({ name: 'Books' })"
+              icon="pi pi-fw pi-list"
+              @click="() => router.push({ name: 'Books' })"
           />
-          <div class="w-full flex justify-content-center">
-            <h2 class="color-green">
+          <div class="w-full flex justify-center">
+            <h2>
               {{ isEdit ? `Edycja książki: ${book?.title}` : "Nowa książka" }}
             </h2>
           </div>
         </template>
-        <div v-if="!isEdit" class="flex flex-column grid ebook">
+        <Fieldset v-if="!isEdit" legend="URL" class="flex flex-col ">
           <!-- URL -->
-          <div class="flex flex-column">
-            <label class="color-orange" for="url">URL:</label>
+          <div class="flex flex-col mt-3">
             <InputText
-              id="url"
-              v-model="searchUrl"
-              :class="{ 'p-invalid': showErrorUrl() }"
+                id="url"
+                v-model="searchUrl"
+                :class="{ 'p-invalid': showErrorUrl() }"
             />
             <small class="p-error">{{
-              showErrorUrl() ? "Pole jest wymagane." : "&nbsp;"
-            }}</small>
+                showErrorUrl() ? "Pole jest wymagane." : "&nbsp;"
+              }}</small>
           </div>
 
           <!--   BTN SEARCH -->
-          <div class="flex flex-row">
-            <div class="flex col justify-content-center">
-              <OfficeButton
+          <div class="flex justify-center">
+            <OfficeButton
                 text="wyszukaj"
                 type="button"
-                btn-type="office"
+                btn-type="office-regular"
                 :is-busy-icon="btnSearchShowBusy"
                 :is-error-icon="btnSearchShowError"
                 :is-ok-icon="btnSearchShowOk"
                 :btn-disabled="btnSearchDisabled"
                 @click="findBook()"
-              />
-            </div>
+            />
           </div>
-        </div>
+        </Fieldset>
 
         <!--  --------------------------------------------------------BOOK---------------------------------      -->
-        <div class="flex flex-row grid">
-          <div class="flex flex-column col-12 xl:col-8">
-            <!-- ROW-1   TITLE -->
-            <div class="flex flex-column col-12 ebook">
-              <label class="color-orange" for="title">Tytuł:</label>
-              <InputText
-                id="title"
-                v-model="book.title"
-                maxlength="50"
-                :class="{ 'p-invalid': showErrorTitle() }"
-              />
-              <small class="p-error">{{
-                showErrorTitle() ? "Pole jest wymagane." : "&nbsp;"
-              }}</small>
-            </div>
-
-            <!-- ROW-2   AUTHOR -->
-            <div class="flex flex-row ebook gap-2 w-max">
-              <div class="flex flex-column">
-                <label class="color-orange" for="author">Wybierz autora:</label>
-                <AutoComplete
-                  id="input-customer"
-                  v-model="selectedAuthors"
-                  class="m-auto w-full"
-                  dropdown
-                  multiple
-                  force-selection
-                  :class="{ 'p-invalid': showErrorAuthor() }"
-                  :suggestions="filteredAuthors"
-                  :option-label="
-                    (author) => author.firstName + ' ' + author.lastName
-                  "
-                  @complete="searchAuthor"
+        <Fieldset class="w-full " legend="Książka">
+          <div class="grid grid-cols-6 gap-4">
+            <div  class="col-start-1 col-span-4">
+              <!-- ROW-1   TITLE -->
+              <div class="flex flex-col">
+                <label class="ml-2 mb-1" for="title">Tytuł:</label>
+                <InputText
+                    id="title"
+                    v-model="book.title"
+                    maxlength="50"
+                    :class="{ 'p-invalid': showErrorTitle() }"
                 />
                 <small class="p-error">{{
-                  showErrorAuthor() ? "Pole jest wymagane." : "&nbsp;"
-                }}</small>
+                    showErrorTitle() ? "Pole jest wymagane." : "&nbsp;"
+                  }}</small>
               </div>
-              <OfficeIconButton
-                v-tooltip.right="{
+
+              <!-- ROW-2   AUTHOR -->
+              <div class="flex gap-2">
+                <div class="flex flex-col w-full">
+                  <label class="ml-2 mb-1" for="author">Wybierz autora:</label>
+                  <AutoComplete
+                      id="author"
+                      v-model="selectedAuthors"
+                      dropdown
+                      multiple
+                      force-selection
+                      :class="{ 'p-invalid': showErrorAuthor() }"
+                      :suggestions="filteredAuthors"
+                      :option-label="
+                    (author) => author.firstName + ' ' + author.lastName
+                  "
+                      @complete="searchAuthor"
+                  />
+                  <small class="p-error">{{
+                      showErrorAuthor() ? "Pole jest wymagane." : "&nbsp;"
+                    }}</small>
+                </div>
+                <OfficeIconButton
+                    v-tooltip.right="{
                   value: 'Dodaj autora',
                   showDelay: 500,
                   hideDelay: 300,
                 }"
-                :icon="
-                  bookStore.loadingAuthors ? 'pi-spin pi-spinner' : 'pi-plus'
+                    :icon="
+                  bookStore.loadingAuthors ? 'pi pi-spin pi-spinner' : 'pi pi-plus'
                 "
-                style="height: 42px; width: 42px; padding: 0"
-                class="mt-1 align-self-center"
-                @click="showAddModal = true"
-              />
-              <div v-if="bookStore.loadingAuthors" class="mt-4">
-                <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
+                    style="height: 35px; width: 35px; padding: 0"
+                    class="mt-1 self-center"
+                    @click="showAddModal = true"
                 />
-              </div>
-            </div>
-
-            <!-- ROW-3  SERIES / NUMBER  -->
-            <div class="flex-row flex ebook">
-              <div class="flex flex-column col-12 md:col-9">
-                <label class="color-orange" for="series">Seria:</label>
-                <AutoComplete
-                  id="input-customer"
-                  v-model="selectedSeries"
-                  dropdown
-                  force-selection
-                  :suggestions="filteredSeries"
-                  field="title"
-                  @complete="searchSeries"
-                />
-              </div>
-              <div v-if="bookStore.loadingSeries" class="mt-4">
-                <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-                />
+                <div v-if="bookStore.loadingAuthors" class="mt-4">
+                  <ProgressSpinner
+                      class="ml-2 mt-1"
+                      style="width: 40px; height: 40px"
+                      stroke-width="5"
+                  />
+                </div>
               </div>
 
-              <div class="flex flex-column col-12 md:col-3">
-                <label class="color-orange" for="seriesNo">Cześć:</label>
-                <InputText
-                  id="seriesNo"
-                  v-model="book.bookInSeriesNo"
-                  maxlength="5"
-                />
-              </div>
-            </div>
+              <!-- ROW-3  SERIES / NUMBER  -->
+              <div class="flex gap-2 mb-5">
+                <div class="flex flex-col w-full">
+                  <label class="ml-2 mb-1" for="series">Seria:</label>
+                  <AutoComplete
+                      id="series"
+                      v-model="selectedSeries"
+                      dropdown
+                      force-selection
+                      :suggestions="filteredSeries"
+                      field="title"
+                      option-label="title"
+                      @complete="searchSeries"
+                  />
+                </div>
+                <div v-if="bookStore.loadingSeries" class="mt-4">
+                  <ProgressSpinner
+                      class="ml-2 mt-1"
+                      style="width: 40px; height: 40px"
+                      stroke-width="5"
+                  />
+                </div>
 
-            <!-- ROW-4   CATEGORY -->
-            <div class="flex flex-row ebook gap-2">
-              <div class="flex flex-column">
-                <label class="color-orange" for="category"
+                <div class="flex flex-col">
+                  <label for="seriesNo">Cześć:</label>
+                  <InputText
+                      id="seriesNo"
+                      v-model="book.bookInSeriesNo"
+                      maxlength="5"
+                  />
+                </div>
+              </div>
+
+              <!-- ROW-4   CATEGORY -->
+              <div class="flex gap-2">
+                <div class="flex flex-col w-full">
+                  <label class="ml-2 mb-1" for="category"
                   >Wybierz kategorię:</label
-                >
-                <AutoComplete
-                  id="category"
-                  v-model="selectedCategories"
-                  dropdown
-                  multiple
-                  force-selection
-                  :class="{ 'p-invalid': showErrorCategory() }"
-                  :suggestions="filteredCategories"
-                  field="name"
-                  @complete="searchCategory"
-                />
-                <small class="p-error">{{
-                  showErrorCategory() ? "Pole jest wymagane." : "&nbsp;"
-                }}</small>
-              </div>
-              <OfficeIconButton
-                v-tooltip.right="{
+                  >
+                  <AutoComplete
+                      id="category"
+                      v-model="selectedCategories"
+                      dropdown
+                      multiple
+                      force-selection
+                      :class="{ 'p-invalid': showErrorCategory() }"
+                      :suggestions="filteredCategories"
+                      field="name"
+                      option-label="name"
+                      @complete="searchCategory"
+                  />
+                  <small class="p-error">{{
+                      showErrorCategory() ? "Pole jest wymagane." : "&nbsp;"
+                    }}</small>
+                </div>
+                <OfficeIconButton
+                    v-tooltip.right="{
                   value: 'Dodaj kategorię',
                   showDelay: 500,
                   hideDelay: 300,
                 }"
-                :icon="
-                  bookStore.loadingCategories ? 'pi-spin pi-spinner' : 'pi-plus'
+                    :icon="
+                  bookStore.loadingCategories ? 'pi pi-spin pi-spinner' : 'pi pi-plus'
                 "
-                style="height: 42px; width: 42px; padding: 0"
-                class="mt-1 align-self-center"
-                @click="showAddCategoryModal = true"
-              />
-              <div v-if="bookStore.loadingCategories" class="mt-4">
-                <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
+                    style="height: 35px; width: 35px; padding: 0"
+                    class="mt-1 self-center"
+                    @click="showAddCategoryModal = true"
                 />
+                <div v-if="bookStore.loadingCategories" class="mt-4">
+                  <ProgressSpinner
+                      class="ml-2 mt-1"
+                      style="width: 40px; height: 40px"
+                      stroke-width="5"
+                  />
+                </div>
+              </div>
+
+              <!-- ROW-5   URL -->
+              <div class="flex flex-col  ">
+                <label class="ml-2 mb-1" for="cover">URL okładki:</label>
+                <InputText
+                    id="cover"
+                    v-model="book.cover"
+                    :class="{ 'p-invalid': showErrorCover() }"
+                />
+                <small class="p-error">{{
+                    showErrorCover() ? "Pole jest wymagane." : "&nbsp;"
+                  }}</small>
               </div>
             </div>
-          </div>
 
-          <!-- ROW-   COVER -->
-          <div class="flex flex-column m-auto ebook w-auto">
-            <img
-              v-if="book.cover.length > 0"
-              :src="book.cover"
-              height="500"
-              width="333"
-              alt="Okładka do książki"
-            />
-            <img
-              v-else
-              src="@/assets/images/no_cover.jpg"
-              height="300"
-              width="300"
-              alt="Okładka do książki"
-            />
+            <!-- ROW-   COVER -->
+            <div class="col-start-5 col-span-2">
+              <img
+                  v-if="book.cover.length > 0"
+                  :src="book.cover"
+                  height="500"
+                  width="333"
+                  alt="Okładka do książki"
+              />
+              <img
+                  v-else
+                  src="@/assets/images/no_cover.jpg"
+                  height="300"
+                  width="300"
+                  alt="Okładka do książki"
+              />
+            </div>
           </div>
-        </div>
+        </Fieldset>
 
-        <!-- ROW-5   URL -->
-        <div class="flex flex-column ebook">
-          <label class="color-orange" for="cover">URL okładki:</label>
-          <InputText
-            id="cover"
-            v-model="book.cover"
-            :class="{ 'p-invalid': showErrorCover() }"
-          />
-          <small class="p-error">{{
-            showErrorCover() ? "Pole jest wymagane." : "&nbsp;"
-          }}</small>
-        </div>
+
 
         <!-- ROW-7  OTHER INFO  -->
-        <div class="flex flex-column col-12 ebook">
-          <label class="color-orange" for="description"
-            >Dodatkowe informacje:</label
-          >
+        <Fieldset legend="Dodatkowe informacje" >
           <Textarea
-            id="description"
-            v-model="book.description"
-            rows="5"
-            cols="30"
+              id="description"
+              v-model="book.description"
+              fluid
+              rows="5"
+              cols="30"
           />
-        </div>
+        </Fieldset>
 
         <!-- ROW-8  BTN SAVE -->
-        <div class="flex flex-row justify-content-center gap-2">
+        <div class="flex flex-row justify-end gap-2 mt-6">
           <OfficeButton
-            v-if="!isEdit"
-            text="Reset"
-            type="button"
-            btn-type="office"
-            @click="resetForm()"
+              v-if="!isEdit"
+              text="Reset"
+              type="button"
+              btn-type="office-regular"
+              @click="resetForm()"
           />
           <OfficeButton
-            text="zapisz"
-            btn-type="office-save"
-            type="submit"
-            :is-busy-icon="btnShowBusy"
-            :is-error-icon="btnShowError"
-            :is-ok-icon="btnShowOk"
-            :btn-disabled="isSaveBtnDisabled"
+              text="zapisz"
+              btn-type="office-save"
+              type="submit"
+              :is-busy-icon="btnShowBusy"
+              :is-error-icon="btnShowError"
+              :is-ok-icon="btnShowOk"
+              :btn-disabled="isSaveBtnDisabled"
           />
         </div>
       </Panel>
@@ -662,11 +672,4 @@ const showErrorCover = () => {
 </template>
 
 <style scoped>
-.ebook {
-  background-color: #1a1a1a !important;
-  color: rgb(238, 127, 0) !important;
-  border-radius: 10px;
-  padding: 0.5rem 1.5rem 0.5rem 1.5rem !important;
-  margin: 0.5rem !important;
-}
 </style>

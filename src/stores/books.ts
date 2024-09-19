@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
-import Website, { Author, Book, Category, Series } from "@/assets/types/Book";
+import { Author, Book, Category, Series } from "@/types/Book";
 
 export const useBooksStore = defineStore("book", {
   state: () => ({
@@ -18,7 +18,7 @@ export const useBooksStore = defineStore("book", {
     tempBook: {} as Book,
 
     books: [] as Book[],
-    booksInSeries: [] as Book[],
+    // booksInSeries: [] as Book[],
     authors: [] as Author[],
     series: [] as Series[],
     categories: [] as Category[],
@@ -26,8 +26,13 @@ export const useBooksStore = defineStore("book", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getSortedSeries: (state) =>
+        state.series.filter(serie => serie.id != 2)
+            .sort((a, b) => a.title.localeCompare(b.title)),
+
+    getSeriesHasNewBooks: (state) =>
+        state.series.filter(serie => serie.hasNewBooks)
+            .sort((a, b) => a.title.localeCompare(b.title))
   },
 
   //actions = metody w komponentach
@@ -58,14 +63,12 @@ export const useBooksStore = defineStore("book", {
       console.log("START - getBooksFromDb()");
       this.loadingBooks = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
+      // const authorization = useAuthorizationStore();
+      // const headers = {
+      //   Authorization: "Bearer " + authorization.accessToken,
+      // };
       try {
-        const response = await httpCommon.get(`/v1/library/book`, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/library/book`);
         console.log("getBooksFromDb() - Ilosc[]: " + response.data.length);
         this.books = response.data;
       } catch (e) {
@@ -111,25 +114,17 @@ export const useBooksStore = defineStore("book", {
     //
     //GET  BOOKS IN SERIES FROM DB BY ID
     //
-    async getBooksInSeriesFromDb(seriesId: number): Promise<void> {
+    async getBooksInSeriesFromDb(seriesId: number): Promise<Book[]> {
       console.log("START - getBooksInSeriesFromDb(" + seriesId + ")");
       this.loadingBooksInSeries = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.get(
-          `/v1/library/book/series/` + seriesId,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
-        );
+          `/v1/library/book/series/` + seriesId);
         console.log(
           "getBooksInSeriesFromDb() - Ilosc[]: " + response.data.length
         );
-        this.booksInSeries = response.data;
+        return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getBooksInSeriesFromDb(): ", e);
@@ -137,9 +132,37 @@ export const useBooksStore = defineStore("book", {
         } else {
           console.log("An unexpected error occurred: ", e);
         }
+        return [];
       } finally {
         this.loadingBooksInSeries = false;
         console.log("END - getBooksInSeriesFromDb()");
+      }
+    },
+    //
+    //GET ALL BOOKS IN SERIES FROM DB BY ID
+    //
+    async getNewBooksInSeriesFromDb(seriesId: number, url:string): Promise<Book[]> {
+      console.log("START - getNewBooksInSeriesFromDb(" + seriesId + ")");
+      this.loadingBooksInSeries = true;
+
+      try {
+        const response = await httpCommon.get(
+            `/v1/library/book/series/new/${seriesId}?url=${url}`);
+        console.log(
+            "getNewBooksInSeriesFromDb() - Ilosc[]: " + response.data.length
+        );
+        return response.data;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR getNewBooksInSeriesFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return [];
+      } finally {
+        this.loadingBooksInSeries = false;
+        console.log("END - getNewBooksInSeriesFromDb()");
       }
     },
     //
@@ -322,15 +345,8 @@ export const useBooksStore = defineStore("book", {
     async getSeriesFromDb(): Promise<void> {
       console.log("START - getSeriesFromDb()");
       this.loadingSeries = true;
-
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.get(`/v1/library/series`, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/library/series`);
         console.log("getSeriesFromDb() - Ilosc[]: " + response.data.length);
         this.series = response.data;
       } catch (e) {
@@ -345,23 +361,38 @@ export const useBooksStore = defineStore("book", {
         console.log("END - getSeriesFromDb()");
       }
     },
-
-    //-------------------------------------------------------CATEGORY
     //
     //GET SERIES FROM DB
+    //
+    async getSeriesByIdFromDb(id:number): Promise<Series> {
+      console.log("START - getSeriesFromDb()");
+      this.loadingSeries = true;
+      try {
+        const response = await httpCommon.get(`/v1/library/series/${id}`);
+        console.log("getSeriesFromDb() - Ilosc[]: " + response.data.length);
+        return response.data;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR getSeriesFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+      } finally {
+        this.loadingSeries = false;
+        console.log("END - getSeriesFromDb()");
+      }
+    },
+    //-------------------------------------------------------CATEGORY
+    //
+    //GET CATEGORIES FROM DB
     //
     async getCategoriesFromDb(): Promise<void> {
       console.log("START - getCategoriesFromDb()");
       this.loadingCategories = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.get(`/v1/library/category`, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/library/category`);
         console.log("getCategoriesFromDb() - Ilosc[]: " + response.data.length);
         this.categories = response.data;
       } catch (e) {
@@ -381,14 +412,8 @@ export const useBooksStore = defineStore("book", {
     //
     async addCategoryDb(cat: Category) {
       console.log("START - addCategoryDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.post(`/v1/library/category`, cat, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.post(`/v1/library/category`, cat);
         this.categories.push(response.data);
         return true;
       } catch (e) {
