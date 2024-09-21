@@ -180,7 +180,7 @@ export const useBooksStore = defineStore("book", {
             headers: authorization.accessToken !== "null" ? headers : {},
           }
         );
-        console.log("BOOK URL: " + JSON.stringify(response.data));
+        // console.log("BOOK URL: " + JSON.stringify(response.data));
         return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
@@ -244,7 +244,6 @@ export const useBooksStore = defineStore("book", {
         } else {
           console.log("An unexpected error occurred: ", e);
         }
-        return false;
       } finally {
         console.log("END - addBookDb()");
       }
@@ -383,6 +382,32 @@ export const useBooksStore = defineStore("book", {
         console.log("END - getSeriesFromDb()");
       }
     },
+
+    //
+    //UPDATE SERIES
+    //
+    async updateSeriesDb(series: Series) {
+      console.log("START - updateSeriesDb()");
+      try {
+        const response = await httpCommon.put(`/v1/library/series`, series);
+
+        const index = this.series.findIndex((s) => s.id === series.id);
+        if (index !== -1) this.series.splice(index, 1, response.data);
+        return response.data;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR updateSeriesDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return false;
+      } finally {
+        console.log("END - updateSeriesDb()");
+      }
+    },
+
+
     //-------------------------------------------------------CATEGORY
     //
     //GET CATEGORIES FROM DB

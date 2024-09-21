@@ -13,20 +13,7 @@ const props = defineProps({
   },
 });
 
-const seriesCal = computed(() => {
-  let tempSeries = props.userbook?.book?.series;
-  if (tempSeries && tempSeries.title?.length > 21) {
-    return tempSeries.title.slice(0, 21) + "...";
-  }
-  return tempSeries?.title;
-});
-const titleCal = computed(() => {
-  let org = props.userbook?.book?.title;
-  if (org && org.length > 20) {
-    return org.slice(0, 20) + "...";
-  }
-  return org;
-});
+
 const isRead = computed(() => {
   return props.userbook.readTo.length > 0
       ? props.userbook.readTo
@@ -100,8 +87,8 @@ const showSeriesInfoDialog = ref<boolean>(false);
             <p class="pb-2"> Tytuł: <span class="text-xl font-semibold pl-2">{{ userbook.book.title }}</span> </p>
             <p class="pb-2"> Autor: <span class="text-xl font-semibold pl-2">{{ getAuthors }}</span> </p>
             <p class="pb-2"> Autor: <span class="text-xl font-bold">{{ getCategories }}</span> </p>
-            <p v-if="userbook.book.bookInSeriesNo > 0" class="pb-2"> Cykl: <span class="text-xl font-bold">{{ userbook.book.series.title }}</span> </p>
-            <p v-if="userbook.book.bookInSeriesNo > 0" class="pb-2"> Część: <span class="text-xl font-bold">{{ userbook.book.bookInSeriesNo }}</span> </p>
+            <p v-if="userbook.book?.series != null" class="pb-2"> Cykl: <span class="text-xl font-bold">{{ userbook.book.series.title }}</span> </p>
+            <p v-if="userbook.book?.series != null" class="pb-2"> Część: <span class="text-xl font-bold">{{ userbook.book.bookInSeriesNo }}</span> </p>
             <p class="pb-2"> Księgarnia: <span class="text-xl font-bold">{{ getBookstore.name }}</span> </p>
             <p class="pb-2"> Stan posiadania: <span class="text-xl font-bold">{{ userbook.ownershipStatus.viewName }}</span> </p>
             <p class="pb-2"> Stan czytania: <span class="text-xl font-bold">{{ userbook.readingStatus.viewName }}</span> </p>
@@ -129,11 +116,5 @@ const showSeriesInfoDialog = ref<boolean>(false);
   color: var(--office-color); /* lub dowolny inny kolor dla ciemnego motywu */
 }
 
-.book-series {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0;
-}
 
 </style>

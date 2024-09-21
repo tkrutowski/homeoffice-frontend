@@ -8,10 +8,12 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddDialog: typeof import('./src/components/AddDialog.vue')['default']
+    AddEditSeriesDialog: typeof import('./src/components/library/AddEditSeriesDialog.vue')['default']
     AddEditUserBookDialog: typeof import('./src/components/library/AddEditUserBookDialog.vue')['default']
     AppCard: typeof import('./src/components/AppCard.vue')['default']
     AutoComplete: typeof import('primevue/autocomplete')['default']
     Button: typeof import('primevue/button')['default']
+    Calendar: typeof import('primevue/calendar')['default']
     Card: typeof import('primevue/card')['default']
     Carousel: typeof import('primevue/carousel')['default']
     Column: typeof import('primevue/column')['default']

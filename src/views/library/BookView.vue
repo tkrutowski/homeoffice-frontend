@@ -82,7 +82,7 @@ watch(selectedCategories, (newCategory: Category[] | []) => {
 //
 //SAVE
 //
-function saveFee() {
+function saveBook() {
   submitted.value = true;
   if (isEdit.value) {
     editBook();
@@ -106,9 +106,7 @@ async function newBook() {
     book.value.authors = selectedAuthors.value;
     book.value.categories = selectedCategories.value;
     book.value.series = selectedSeries.value;
-    const result = await bookStore.addBookDb(book.value);
-
-    if (result) {
+    bookStore.addBookDb(book.value).then(() => {
       toast.add({
         severity: "success",
         summary: "Potwierdzenie",
@@ -120,15 +118,25 @@ async function newBook() {
       setTimeout(() => {
         resetForm();
       }, 1000);
-    } else {
-      toast.add({
-        severity: "warn",
-        summary: "Info",
-        detail: "Książka już istnieje w bazie danych.",
-        life: 3000,
-      });
-      btnShowError.value = true;
-    }
+    }).catch(reason => {
+      console.log("reason", reason);
+      if (reason.response.status === 409) {
+        toast.add({
+          severity: "warn",
+          summary: "Info",
+          detail: "Książka już istnieje w bazie danych.",
+          life: 3000,
+        });
+      } else {
+        toast.add({
+          severity: "error",
+          summary: "Błąd",
+          detail: "Błąd podczas dodawania książki.",
+          life: 3000,
+        });
+        btnShowError.value = true;
+      }
+    });
 
     btnSaveDisabled.value = false;
     btnShowBusy.value = false;
@@ -325,6 +333,14 @@ function findBook() {
         selectedCategories.value = book.value.categories;
         selectedSeries.value = book.value.series;
       }
+    }).catch(() => {
+      btnSearchDisabled.value = false;
+      toast.add({
+        severity: "error",
+        summary: "Błąd",
+        detail: "Błąd podczas wyszukiwania książki...",
+        life: 3500,
+      });
     });
   }
 }
@@ -416,7 +432,7 @@ const showErrorCover = () => {
   />
 
   <div class="m-4 max-w-6xl mx-auto">
-    <form @submit.stop.prevent="saveFee">
+    <form @submit.stop.prevent="saveBook">
       <Panel>
         <template #header>
           <IconButton

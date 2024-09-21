@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import {PropType, ref, watchEffect} from "vue";
+import {computed, PropType, ref, watchEffect} from "vue";
 import {useUserbooksStore} from "@/stores/userbooks";
 import {Book, Series, UserBook} from "@/types/Book";
 import {useBooksStore} from "@/stores/books";
 import {useToast} from "primevue/usetoast";
 import AddBookToShellDialog from "@/components/library/AddEditUserBookDialog.vue";
-import SeriesBookNew from "@/components/library/SeriesBook.vue";
+import SeriesBook from "@/components/library/SeriesBook.vue";
 import {UtilsService} from "@/service/UtilsService.ts";
+import AddEditSeriesDialog from "@/components/library/AddEditSeriesDialog.vue";
 
 const booksStore = useBooksStore();
 const userbookStore = useUserbooksStore();
@@ -24,14 +25,12 @@ const booksInSeries = ref<Book[]>([]);
 const tempSeries = ref<Series | null>(null);
 
 watchEffect(async () => {
-  console.log("watch", props.series);
   tempSeries.value = props.series;
   await refresh();
 });
 
 async function refresh() {
   const result = await booksStore.getBooksInSeriesFromDb(props.series?.id);
-  tempSeries.value = await booksStore.getSeriesByIdFromDb(props.series?.id);
   booksInSeries.value = result.sort((a, b) => a.bookInSeriesNo - b.bookInSeriesNo);
 }
 
@@ -55,10 +54,9 @@ async function findNewBookInSeries(url: string) {
           });
           booksInSeries.value.push(...result.sort((a, b) => a.bookInSeriesNo - b.bookInSeriesNo));
         }
-        booksStore.getSeriesByIdFromDb(props.series?.id).then(series =>  tempSeries.value = series)
+        booksStore.getSeriesByIdFromDb(props.series?.id).then(series => tempSeries.value = series)
       })
-      .catch(reason => {
-        console.log(reason);
+      .catch(() => {
         toast.add({
           severity: "error",
           summary: "Błąd",
@@ -75,12 +73,10 @@ async function findNewBookInSeries(url: string) {
 const showUserbookDialog = ref<boolean>(false);
 const tempIdBook = ref<number>(0);
 const addUserbook = (book: Book) => {
-  console.log("ddUserbook()", book);
   tempIdBook.value = book.id;
   showUserbookDialog.value = true;
 };
 const submitAddUserbook = async (newUserbook: UserBook) => {
-  console.log("submitAddUserbook()", newUserbook);
   showUserbookDialog.value = false;
   if (newUserbook) {
     const result = await userbookStore.addUserbookDb(newUserbook);
@@ -93,6 +89,40 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
         life: 3000,
       });
     }
+  }
+};
+
+//
+//-------------------------------------------------------SERIES
+//
+const showSeriesDialog = ref<boolean>(false);
+const tempIdSeries = ref<number>(0);
+const editSeries = () => {
+  tempIdSeries.value = tempSeries.value.id;
+  showSeriesDialog.value = true;
+};
+const submitSeries = async (series: Series) => {
+  showSeriesDialog.value = false;
+  if (series && series.id > 0) {
+    console.log("submitSeries(): EDIT");
+    booksStore.updateSeriesDb(series)
+        .then(res => {
+          tempSeries.value = res;
+          toast.add({
+            severity: "success",
+            summary: "Potwierdzenie",
+            detail: "Zaaktualizowano cykl: " + series.title,
+            life: 3000,
+          });
+        })
+        .catch(() => {
+          toast.add({
+            severity: "error",
+            summary: "Błąd",
+            detail: "Błąd podczas aktualizacji cyklu: " + series.title,
+            life: 3000,
+          });
+        })
   }
 };
 
@@ -142,6 +172,13 @@ const items = ref([
     },
   },
   {
+    label: 'Edytuj',
+    icon: 'pi pi-file-edit',
+    command: () => {
+      editSeries();
+    },
+  },
+  {
     separator: true
   },
   {
@@ -150,9 +187,9 @@ const items = ref([
       {
         label: 'Legimi',
         icon: 'pi pi-search',
-        disabled: !props.series?.url.includes('legimi.pl'),
+        disabled: computed(() => !tempSeries.value?.url.includes('legimi.pl')),
         command: () => {
-          const result: string[] = UtilsService.findPatternInString(props.series?.url, 'legimi.pl', ';;');
+          const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'legimi.pl', ';;');
           if (result.length > 0) {
             findNewBookInSeries(result[0])
           }
@@ -161,9 +198,9 @@ const items = ref([
       {
         label: 'Upoluj ebooka',
         icon: 'pi pi-search',
-        disabled: !props.series?.url.includes('upolujebooka.pl'),
+        disabled: computed(() => !tempSeries.value?.url.includes('upolujebooka.pl')),
         command: () => {
-          const result: string[] = UtilsService.findPatternInString(props.series?.url, 'upolujebooka.pl', ';;');
+          const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'upolujebooka.pl', ';;');
           if (result.length > 0) {
             findNewBookInSeries(result[0])
           }
@@ -172,9 +209,9 @@ const items = ref([
       {
         label: 'Lubimy czytać',
         icon: 'pi pi-search',
-        disabled: !props.series?.url.includes('lubimyczytac.pl'),
+        disabled: computed(() => !tempSeries.value?.url.includes('lubimyczytac.pl')),
         command: () => {
-          const result: string[] = UtilsService.findPatternInString(props.series?.url, 'lubimyczytac.pl', ';;');
+          const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'lubimyczytac.pl', ';;');
           if (result.length > 0) {
             findNewBookInSeries(result[0])
           }
@@ -196,6 +233,13 @@ const toggle = (event) => {
       @cancel="showUserbookDialog = false"
   />
 
+  <AddEditSeriesDialog
+      v-model:visible="showSeriesDialog"
+      :id-series="tempIdSeries"
+      @save="submitSeries"
+      @cancel="showSeriesDialog = false"
+  />
+
   <Panel toggleable class="mb-10">
     <template #header>
       <span
@@ -205,8 +249,9 @@ const toggle = (event) => {
     </template>
     <template #footer>
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <Tag v-if="tempSeries != null && tempSeries.hasNewBooks" value="Znaleziono nowe książki" severity="success"
-             class="larger-tag"/>
+        <Tag
+            v-if="tempSeries.hasNewBooks" value="Znaleziono nowe książki" severity="success"
+            class="larger-tag"/>
         <span v-else/>
         <span class="text-surface-500 dark:text-surface-400">Sprawdzono: {{ tempSeries.checkDate }}</span>
       </div>
@@ -225,7 +270,7 @@ const toggle = (event) => {
       >
         <template #item="slotProps">
 
-          <SeriesBookNew :book="slotProps.data" @new-userbook="addUserbook"/>
+          <SeriesBook :book="slotProps.data" @new-userbook="addUserbook"/>
         </template>
       </Carousel>
     </div>

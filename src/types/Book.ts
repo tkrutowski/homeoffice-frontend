@@ -28,7 +28,7 @@ export interface BookDto {
 }
 export interface Book {
   id: number;
-  series: Series;
+  series: Series | null;
   authors: Author[];
   categories: Category[];
   title: string;

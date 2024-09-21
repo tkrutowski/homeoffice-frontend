@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, PropType, ref} from "vue";
-import {Book, UserBook} from "@/assets/types/Book";
-import {UtilsService} from "@/service/UtilsService";
+import {Book, UserBook} from "@/types/Book";
 import ImageButton from "@/components/ImageButton.vue";
 import {useUserbooksStore} from "@/stores/userbooks";
 import router from "@/router";

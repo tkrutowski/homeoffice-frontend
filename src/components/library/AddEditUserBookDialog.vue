@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import {ref, watch} from "vue";
 import OfficeButton from "@/components/OfficeButton.vue";
-import Calendar from "primevue/calendar";
 import {useBookstoreStore} from "@/stores/bookstores";
 import {useUserbooksStore} from "@/stores/userbooks";
 import {useBooksStore} from "@/stores/books";
-import {Bookstore, UserBook} from "@/assets/types/Book";
+import {Bookstore, UserBook} from "@/types/Book";
 import moment from "moment/moment";
 import {UtilsService} from "@/service/UtilsService";
 
