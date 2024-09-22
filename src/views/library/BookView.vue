@@ -164,26 +164,34 @@ async function editBook() {
     book.value.authors = selectedAuthors.value;
     book.value.categories = selectedCategories.value;
     book.value.series = selectedSeries.value;
-    const result = await bookStore.updateBookDb(book.value);
-
-    if (result) {
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Zaaktualizowano książkę: " + book.value?.title,
-        life: 3000,
-      });
-      btnShowOk.value = true;
-      setTimeout(() => {
-        router.push({name: "Books"});
-      }, 3000);
-    } else btnShowError.value = true;
-
-    setTimeout(() => {
-      btnShowError.value = false;
-      btnShowOk.value = false;
-      btnShowError.value = false;
-    }, 5000);
+    await bookStore.updateBookDb(book.value)
+        .then(() => {
+          toast.add({
+            severity: "success",
+            summary: "Potwierdzenie",
+            detail: "Zaaktualizowano książkę: " + book.value?.title,
+            life: 3000,
+          });
+          btnShowOk.value = true;
+          setTimeout(() => {
+            router.push({name: "Books"});
+          }, 3000);
+        })
+        .catch(() => {
+          toast.add({
+            severity: "error",
+            summary: "Błąd",
+            detail: "Błąd podczas edycji książki.",
+            life: 3000,
+          });
+          btnShowError.value = true;
+          setTimeout(() => {
+                btnShowError.value = false;
+                btnShowOk.value = false;
+                btnShowError.value = false;
+              },
+              5000);
+        })
   }
 }
 
@@ -481,7 +489,7 @@ const showErrorCover = () => {
         <!--  --------------------------------------------------------BOOK---------------------------------      -->
         <Fieldset class="w-full " legend="Książka">
           <div class="grid grid-cols-6 gap-4">
-            <div  class="col-start-1 col-span-4">
+            <div class="col-start-1 col-span-4">
               <!-- ROW-1   TITLE -->
               <div class="flex flex-col">
                 <label class="ml-2 mb-1" for="title">Tytuł:</label>
@@ -651,9 +659,8 @@ const showErrorCover = () => {
         </Fieldset>
 
 
-
         <!-- ROW-7  OTHER INFO  -->
-        <Fieldset legend="Dodatkowe informacje" >
+        <Fieldset legend="Dodatkowe informacje">
           <Textarea
               id="description"
               v-model="book.description"

@@ -24,7 +24,6 @@ declare module 'vue' {
     Dropdown: typeof import('primevue/dropdown')['default']
     Fieldset: typeof import('primevue/fieldset')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     IconField: typeof import('primevue/iconfield')['default']
     Image: typeof import('primevue/image')['default']
     ImageButton: typeof import('./src/components/ImageButton.vue')['default']
