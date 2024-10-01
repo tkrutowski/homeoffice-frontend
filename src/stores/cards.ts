@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
-import { ActiveStatus, Card } from "@/assets/types/Bank";
+import { ActiveStatus, Card } from "@/types/Bank";
 import cardAlfa from "@/assets/images/alfa_card.png";
 import cardMillennium from "@/assets/images/millenium_card.png";
 import cardAllegro from "@/assets/images/allegro_card.png";

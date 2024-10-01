@@ -2,7 +2,7 @@ import { useBookstoreStore } from "@/stores/bookstores";
 import { useUserbooksStore } from "@/stores/userbooks";
 import { useCardsStore } from "@/stores/cards";
 import { useFirmsStore } from "@/stores/firms";
-import { Author, Category } from "@/assets/types/Book";
+import { Author, Category } from "@/types/Book";
 
 export const UtilsService = {
   formatCurrency(value: number | undefined) {

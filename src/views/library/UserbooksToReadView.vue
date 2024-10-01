@@ -4,7 +4,7 @@ import { useUserbooksStore } from "@/stores/userbooks";
 import UserBookSmall from "@/components/library/UserBookSmall.vue";
 import { useToast } from "primevue/usetoast";
 import { ref } from "vue";
-import { UserBook } from "@/assets/types/Book";
+import { UserBook } from "@/types/Book";
 import AddEditUserBookDialog from "@/components/library/AddEditUserBookDialog.vue";
 const toast = useToast();
 const userbookStore = useUserbooksStore();

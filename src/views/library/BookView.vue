@@ -185,6 +185,7 @@ async function editBook() {
             life: 3000,
           });
           btnShowError.value = true;
+          btnSaveDisabled.value = false;
           setTimeout(() => {
                 btnShowError.value = false;
                 btnShowOk.value = false;

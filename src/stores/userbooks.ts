@@ -7,7 +7,7 @@ import {
   OwnershipStatus,
   ReadingStatus,
   UserBook,
-} from "@/assets/types/Book";
+} from "@/types/Book";
 
 export const useUserbooksStore = defineStore("userbook", {
   state: () => ({

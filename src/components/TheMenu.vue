@@ -44,6 +44,19 @@ const items = ref([
           }
         },
       },
+      {
+        label: "Logi ",
+        icon: "pi pi-fw pi-chart-bar",
+        disabled: !authorizationStore.hasAccessAdmin,
+        command: () => {
+          if(window.location.href.includes(router.resolve({name: "Logs"}).href)) {
+            const redirect = JSON.stringify({ name: 'Logs' });
+            router.push({ path: '/refresh', query: { redirect: redirect } });
+          }else {
+            router.push({ name: "Logs" });
+          }
+        },
+      },
     ],
   },
 ]);

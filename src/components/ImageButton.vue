@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ImageType } from "@/assets/types/ButtonType";
 const props = defineProps({
   imgSrc: {
-    type: String as () => ImageType,
+    type: String,
     required: false,
     default: "logo",
   },

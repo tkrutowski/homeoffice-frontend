@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
-import User from "@/assets/types/User";
+import User, {Role} from "@/types/User";
 
 export const useUsersStore = defineStore("user", {
   state: () => ({
@@ -10,8 +10,11 @@ export const useUsersStore = defineStore("user", {
     btnDisabled: false,
     busyIcon: false,
     loadingUsers: false,
+    loadingPrivileges: false,
+    loadingRoles: false,
 
     users: [] as User[],
+    roles: [] as Role[]
   }),
 
   //getters = computed
@@ -38,29 +41,30 @@ export const useUsersStore = defineStore("user", {
       if (user) return user;
       else return undefined;
     },
-
+    getNotUserRoles(userRoles: Role[]) {
+      console.log('userRoles', userRoles);
+      return this.getRolesAllFromDb()
+          .then((roles: Role[]) => {
+            console.log('Role1', roles);
+            console.log('Role2', roles.filter(role =>
+                !userRoles.some(userRole => userRole.id === role.id)));
+            return roles.filter(role =>
+                !userRoles.some(userRole => userRole.id === role.id)
+            );
+          });
+    },
     //--------------------------------------DATABASE--------------------------------------
     //
     //GET USERS
     //
-    async getUsersFromDb(): Promise<void> {
+    async getUsersFromDb(): Promise<User[]> {
       console.log("START - getUsersFromDb()");
       this.loadingUsers = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        if (this.users.length === 0) {
-          const response = await httpCommon.get(`/v1/user`, {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          });
-          console.log("getUsersFromDb() - Ilosc[]: " + response.data.length);
-          this.users = response.data;
-        } else {
-          console.log("getUsersFromDb() - BEZ GET");
-        }
+        const response = await httpCommon.get(`/v1/user`);
+        console.log("getUsersFromDb() - Ilosc[]: " + response.data.length);
+        return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getUsersFromDb(): ", e);
@@ -68,6 +72,7 @@ export const useUsersStore = defineStore("user", {
         } else {
           console.log("An unexpected error occurred: ", e);
         }
+        return []
       } finally {
         this.loadingUsers = false;
         console.log("END - getUsersFromDb()");
@@ -183,6 +188,119 @@ export const useUsersStore = defineStore("user", {
         return false;
       } finally {
         console.log("END - deleteUserDb()");
+      }
+    },
+
+
+
+    //
+    // GET Privileges by user
+    //
+    async getPrivilegesByUserFromDb(idUser: number): Promise<Privilege[]> {
+      console.log("START - getUsersFromDb()");
+      this.loadingPrivileges = true;
+
+      try {
+        const response = await httpCommon.get(`/v1/user/role/`+ idUser);
+        console.log("getPrivilegesByUserFromDb() - Ilosc[]: " + response.data.length);
+        return response.data;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR getPrivilegesByUserFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return []
+      } finally {
+        this.loadingPrivileges = false;
+        console.log("END - getPrivilegesByUserFromDb()");
+      }
+    },
+    //
+    //UPDATE Privilege
+    //
+    async updatePrivilegeDb(privilege: Privilege) {
+      console.log("START - updatePrivilegeDb()");
+      try {
+        await httpCommon.put(`/v1/user/role`, privilege);
+        return true;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR updatePrivilegeDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return false;
+      } finally {
+        console.log("END - updatePrivilegeDb()");
+      }
+    },
+    //
+    // ADD Privileges to user
+    //
+    async addPrivilegesToUserFromDb(idUser: number, idRole: number) {
+      console.log("START - addPrivilegesToUSerFromDb()");
+
+      try {
+        await httpCommon.post(`/v1/user/role?userID=${idUser}&roleID=${idRole}`);
+        return true;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR addPrivilegesToUSerFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return false
+      } finally {
+        console.log("END - addPrivilegesToUSerFromDb()");
+      }
+    },
+    //
+    // DELETE Privileges from user
+    //
+    async deletePrivilegesFromUserFromDb(idUser: number, idRole: number) {
+      console.log("START - addPrivilegesToUSerFromDb()");
+
+      try {
+        await httpCommon.delete(`/v1/user/role?userID=${idUser}&roleID=${idRole}`);
+        return true;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR addPrivilegesToUSerFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return false
+      } finally {
+        console.log("END - addPrivilegesToUSerFromDb()");
+      }
+    },
+    //
+    // GET ALL roles
+    //
+    async getRolesAllFromDb(): Promise<Role[]> {
+      console.log("START - getUsersFromDb()");
+      this.loadingRoles = true;
+
+      try {
+        const response = await httpCommon.get(`/v1/user/role`);
+        console.log("getPrivilegesByUserFromDb() - Ilosc[]: " + response.data.length);
+        return response.data;
+      } catch (e) {
+        if (ErrorService.isAxiosError(e)) {
+          console.log("ERROR getPrivilegesByUserFromDb(): ", e);
+          ErrorService.validateError(e);
+        } else {
+          console.log("An unexpected error occurred: ", e);
+        }
+        return []
+      } finally {
+        this.loadingRoles = false;
+        console.log("END - getPrivilegesByUserFromDb()");
       }
     },
   },

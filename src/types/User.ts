@@ -1,4 +1,4 @@
-interface User {
+export interface User {
   id: number;
   firstName: string;
   lastName: string;
@@ -9,4 +9,16 @@ interface User {
   notLocked: boolean;
 }
 
-export default User;
+export interface Privilege {
+  id: number;
+  idUser: number;
+  role: Role;
+  read: PrivilegeType;
+  write: PrivilegeType;
+  delete: PrivilegeType;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+}

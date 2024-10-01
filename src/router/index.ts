@@ -26,6 +26,10 @@ import UserbooksToReadView from "@/views/library/UserbooksToReadView.vue";
 import UserbooksReadView from "@/views/library/UserbooksReadView.vue";
 import SeriesSearchView from "@/views/library/SeriesSearchView.vue";
 
+//ADMIN
+import PrivilegesView  from "@/views/PrivilegesView.vue";
+import LogsView  from "@/views/LogsView.vue";
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -47,6 +51,17 @@ const routes: Array<RouteRecordRaw> = [
     name:'refresh',
     component: RefreshComponent,
     props: true,
+  },
+  //----------------------------------------------ADMIN--------------------------------------------
+  {
+    path: "/admin/privileges",
+    name: "Privileges",
+    component: PrivilegesView,
+  },
+  {
+    path: "/admin/logs",
+    name: "Logs",
+    component: LogsView,
   },
   //----------------------------------------------LIBRARY--------------------------------------------
   {

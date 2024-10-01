@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
-import { Loan, LoanInstallment } from "@/assets/types/Loan";
+import { Loan, LoanInstallment } from "@/types/Loan";
 import { useAuthorizationStore } from "@/stores/authorization";
-import { PaymentStatus } from "@/assets/types/PaymentStatus";
-import { PaymentMethod } from "@/assets/types/PaymentMethod";
+import { PaymentStatus } from "@/types/PaymentStatus";
+import { PaymentMethod } from "@/types/PaymentMethod";
 import { ErrorService } from "@/service/ErrorService";
-import StatusType from "@/assets/types/StatusType";
+import StatusType from "@/types/StatusType";
 
 export const useLoansStore = defineStore("loan", {
   state: () => ({

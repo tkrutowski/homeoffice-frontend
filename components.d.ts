@@ -41,6 +41,7 @@ declare module 'vue' {
     RefreshComponent: typeof import('./src/components/RefreshComponent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Select: typeof import('primevue/select')['default']
     SeriesBook: typeof import('./src/components/library/SeriesBook.vue')['default']
     SeriesCarusel: typeof import('./src/components/library/SeriesCarusel.vue')['default']
     SeriesCaruselInfoDialog: typeof import('./src/components/library/SeriesCaruselInfoDialog.vue')['default']

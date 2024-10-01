@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
-import { PaymentStatus } from "@/assets/types/PaymentStatus";
+import { PaymentStatus } from "@/types/PaymentStatus";
 import { ErrorService } from "@/service/ErrorService";
-import { Purchase } from "@/assets/types/Purchase";
+import { Purchase } from "@/types/Purchase";
 
 export const usePurchasesStore = defineStore("purchase", {
   state: () => ({

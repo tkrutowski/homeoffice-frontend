@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
-import { Bank } from "@/assets/types/Bank";
+import { Bank } from "@/types/Bank";
 
 export const useBanksStore = defineStore("bank", {
   state: () => ({

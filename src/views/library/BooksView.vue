@@ -6,7 +6,7 @@ import {useBooksStore} from "@/stores/books";
 import {useUserbooksStore} from "@/stores/userbooks";
 import {computed, ref} from "vue";
 import {FilterMatchMode, FilterOperator, FilterService} from '@primevue/core/api';
-import {Author, Book, Category, UserBook} from "@/assets/types/Book";
+import {Author, Book, Category, UserBook} from "@/types/Book";
 import router from "@/router";
 import {useToast} from "primevue/usetoast";
 import AddBookToShellDialog from "@/components/library/AddEditUserBookDialog.vue";
@@ -112,16 +112,23 @@ const submitDelete = async () => {
   console.log("submitDelete()");
   showDeleteConfirmationDialog.value = false;
   if (bookTemp.value) {
-    const result = await bookStore.deleteBookDb(bookTemp.value.id);
-    if (result) {
-      //update payment
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Usunięto książkę: " + bookTemp.value?.title,
-        life: 3000,
-      });
-    }
+    await bookStore.deleteBookDb(bookTemp.value.id)
+        .then(() => {
+          toast.add({
+            severity: "success",
+            summary: "Potwierdzenie",
+            detail: "Usunięto książkę: " + bookTemp.value?.title,
+            life: 3000,
+          });
+        })
+        .catch(() => {
+          toast.add({
+            severity: "error",
+            summary: "Błąd",
+            detail: "Nie usunięto książki: " + bookTemp.value?.title,
+            life: 3000,
+          });
+        })
   }
 };
 //
