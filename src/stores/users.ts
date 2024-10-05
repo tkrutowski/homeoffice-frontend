@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+import {defineStore} from "pinia";
 import httpCommon from "@/http-common";
-import { useAuthorizationStore } from "@/stores/authorization";
-import { ErrorService } from "@/service/ErrorService";
+import {useAuthorizationStore} from "@/stores/authorization";
+import {ErrorService} from "@/service/ErrorService";
 import User, {Role} from "@/types/User";
 
 export const useUsersStore = defineStore("user", {
@@ -52,6 +52,9 @@ export const useUsersStore = defineStore("user", {
                 !userRoles.some(userRole => userRole.id === role.id)
             );
           });
+    },
+    async refreshUsers() {
+      this.users = await this.getUsersFromDb();
     },
     //--------------------------------------DATABASE--------------------------------------
     //

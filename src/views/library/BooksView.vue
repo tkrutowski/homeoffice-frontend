@@ -10,7 +10,6 @@ import {Author, Book, Category, UserBook} from "@/types/Book";
 import router from "@/router";
 import {useToast} from "primevue/usetoast";
 import AddBookToShellDialog from "@/components/library/AddEditUserBookDialog.vue";
-import IconButton from "@/components/OfficeIconButton.vue";
 import {BookDto} from "@/types/Book.ts";
 import OfficeButton from "@/components/OfficeButton.vue";
 
@@ -318,7 +317,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
       <Column header="Akcja" :exportable="false" style="max-width: 70px">
         <template #body="slotProps">
           <div class="flex flex-row justify-between">
-            <IconButton
+            <OfficeIconButton
                 v-tooltip.top="{
                 value: 'Dodaj książkę na półkę',
                 showDelay: 1000,
@@ -327,7 +326,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
                 icon="pi pi-file-plus"
                 @click="addUserbook(slotProps.data.id)"
             />
-            <IconButton
+            <OfficeIconButton
                 v-tooltip.top="{
                 value: 'Edytuj książkę',
                 showDelay: 1000,
@@ -336,7 +335,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
                 icon="pi pi-file-edit"
                 @click="editItem(slotProps.data)"
             />
-            <IconButton
+            <OfficeIconButton
                 v-tooltip.top="{
                 value: 'Usuń książkę',
                 showDelay: 1000,
@@ -410,4 +409,13 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
   </Toolbar>
 </template>
 
-<style scoped></style>
+<style scoped>
+.p-datatable >>> .p-datatable-tbody > tr > td {
+  /*text-align: left;*/
+  /*border: 1px solid #383838;*/
+  /*border-width: 0 0 1px 0;*/
+
+  padding: 0 !important;
+  /*padding: .3rem .3rem !important;*/
+}
+</style>

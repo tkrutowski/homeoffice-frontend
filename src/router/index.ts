@@ -6,14 +6,14 @@ import RefreshComponent from "@/components/RefreshComponent.vue";
 import {useAuthorizationStore} from "@/stores/authorization.ts";
 
 //FINANCE
-// import FinanceHomeView from "@/views/finance/FinanceHomeView.vue";
+import FinanceHomeView from "@/views/finance/FinanceHomeView.vue";
 // import LoanView from "@/views/finance/LoanView.vue";
 // import LoansView from "@/views/finance/LoansView.vue";
 // import FeesView from "@/views/finance/FeesView.vue";
 // import FeeView from "@/views/finance/FeeView.vue";
-// import PaymentsView from "@/views/finance/PaymentsView.vue";
-// import PaymentFeeView from "@/views/finance/PaymentFeeView.vue";
-// import PaymentLoanView from "@/views/finance/PaymentLoanView.vue";
+import PaymentsView from "@/views/finance/PaymentsView.vue";
+import PaymentFeeView from "@/views/finance/PaymentFeeView.vue";
+import PaymentLoanView from "@/views/finance/PaymentLoanView.vue";
 // import PurchasesCurrentView from "@/views/finance/PurchasesCurrentView.vue";
 // import PurchaseView from "@/views/finance/PurchaseView.vue";
 
@@ -101,11 +101,11 @@ const routes: Array<RouteRecordRaw> = [
     component: SeriesSearchView,
   },
   //----------------------------------------------FINANCE--------------------------------------------
-  // {
-  //   path: "/home",
-  //   name: "FinanceHome",
-  //   component: FinanceHomeView,
-  // },
+  {
+    path: "/home",
+    name: "FinanceHome",
+    component: FinanceHomeView,
+  },
   //LOAN
   // {
   //   path: "/finance/loan/all",
@@ -131,24 +131,24 @@ const routes: Array<RouteRecordRaw> = [
   //   props: true,
   // },
   //PAYMENT
-  // {
-  //   path: "/finance/payment",
-  //   name: "Payments",
-  //   component: PaymentsView,
-  //   props: true,
-  // },
-  // {
-  //   path: "/finance/payment/fee/:id",
-  //   name: "PaymentFee",
-  //   component: PaymentFeeView,
-  //   props: true,
-  // },
-  // {
-  //   path: "/finance/payment/loan/:id",
-  //   name: "PaymentLoan",
-  //   component: PaymentLoanView,
-  //   props: true,
-  // },
+  {
+    path: "/finance/payment",
+    name: "Payments",
+    component: PaymentsView,
+    props: true,
+  },
+  {
+    path: "/finance/payment/fee/:id",
+    name: "PaymentFee",
+    component: PaymentFeeView,
+    props: true,
+  },
+  {
+    path: "/finance/payment/loan/:id",
+    name: "PaymentLoan",
+    component: PaymentLoanView,
+    props: true,
+  },
   //PURCHASE
   // {
   //   path: "/finance/purchase/current",

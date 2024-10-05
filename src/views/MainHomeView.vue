@@ -10,10 +10,10 @@ const booksStore = useBooksStore();
 function runFinance() {
   console.log("START - finance()");
   if (authorizationStore.hasAccessFinance) {
-    // router.push({
-    //   name: "FinanceHome",
-    //   // params: { idUser: 0, isEdit: "false" },
-    // });
+    router.push({
+      name: "FinanceHome",
+      // params: { idUser: 0, isEdit: "false" },
+    });
   }
 }
 

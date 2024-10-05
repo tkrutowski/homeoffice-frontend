@@ -12,6 +12,7 @@ export const usePaymentStore = defineStore("payment", {
     btnDisabled: false,
     busyIcon: false,
     loadingPayments: false,
+    paymentDetails: String,
     paymentSelectedYear: new Date().getFullYear(),
 
     payments: new Map<string, Payment[]>(),

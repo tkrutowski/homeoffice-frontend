@@ -156,33 +156,14 @@ h6 {
 }
 
 /*----------------------------------------------------TABLE------------------------------------------------------------*/
-.p-datatable .p-datatable-thead > tr > th {
-  text-align: left;
-  padding: 1rem 1rem;
-  border: 1px solid #383838;
-  border-width: 0 0 1px 0;
-  font-weight: 600;
-  transition: box-shadow 0.2s;
-}
+
   /*background: rgba(255, 245, 0, .05);*/
   /*color: rgba(255, 255, 255, 0.87);*/
 
 
-.p-datatable .p-datatable-footer {
-    padding: .1rem .1rem !important;
- }
-.p-datatable .p-column-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.p-datatable .p-datatable-tbody > tr > td {
-  /*text-align: left;*/
-  /*border: 1px solid #383838;*/
-  /*border-width: 0 0 1px 0;*/
 
-   padding: .3rem .3rem !important;
-}
+
+
 /*header- zawijanie wierszy */
 .p-datatable-resizable-table > .p-datatable-thead > tr > th, .p-datatable-resizable-table > .p-datatable-tfoot > tr > td, .p-datatable-resizable-table > .p-datatable-tbody > tr > td {
   overflow: hidden;
