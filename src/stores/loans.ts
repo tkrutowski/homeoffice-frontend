@@ -13,6 +13,7 @@ export const useLoansStore = defineStore("loan", {
     btnDisabled: false,
     busyIcon: false,
     loadingLoans: false,
+    rowsPerPage: parseInt(localStorage.getItem("rowsPerPageLoans") || "20", 10),
 
     loadingInvoiceNo: false,
     loadingPaymentType: false,

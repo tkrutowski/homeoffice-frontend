@@ -284,7 +284,7 @@ const refresh = async () => {
       <div class="col-span-md:col-span-5">
         <Fieldset legend="Szczegóły wpłat">
           <DataTable :value="installments" size="small">
-            <Column field="paymentDeadline" header="Termin płatności">
+            <Column field="paymentDeadline" header="Termin płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
                   {{ data[field] }}
@@ -298,7 +298,7 @@ const refresh = async () => {
                 </div>
               </template>
             </Column>
-            <Column field="paymentDate" header="Data płatności">
+            <Column field="paymentDate" header="Data płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
                   {{ data[field].startsWith("+") ? "" : data[field] }}

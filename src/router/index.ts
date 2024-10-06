@@ -7,8 +7,8 @@ import {useAuthorizationStore} from "@/stores/authorization.ts";
 
 //FINANCE
 import FinanceHomeView from "@/views/finance/FinanceHomeView.vue";
-// import LoanView from "@/views/finance/LoanView.vue";
-// import LoansView from "@/views/finance/LoansView.vue";
+import LoanView from "@/views/finance/LoanView.vue";
+import LoansView from "@/views/finance/LoansView.vue";
 // import FeesView from "@/views/finance/FeesView.vue";
 // import FeeView from "@/views/finance/FeeView.vue";
 import PaymentsView from "@/views/finance/PaymentsView.vue";
@@ -107,17 +107,17 @@ const routes: Array<RouteRecordRaw> = [
     component: FinanceHomeView,
   },
   //LOAN
-  // {
-  //   path: "/finance/loan/all",
-  //   name: "Loans",
-  //   component: LoansView,
-  // },
-  // {
-  //   path: "/finance/loan/:isEdit/:loanId",
-  //   name: "Loan",
-  //   component: LoanView,
-  //   props: true,
-  // },
+  {
+    path: "/finance/loan/all",
+    name: "Loans",
+    component: LoansView,
+  },
+  {
+    path: "/finance/loan/:isEdit/:loanId",
+    name: "Loan",
+    component: LoanView,
+    props: true,
+  },
   //FEE
   // {
   //   path: "/finance/fee/all",
