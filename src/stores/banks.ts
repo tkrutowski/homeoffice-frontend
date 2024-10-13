@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
-import { Bank } from "@/types/Bank";
+import {Bank} from "@/types/Bank";
 
 export const useBanksStore = defineStore("bank", {
   state: () => ({
@@ -16,12 +16,20 @@ export const useBanksStore = defineStore("bank", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getSortedBanks: (state) => {
+      console.log("getSortedBanks from pinia", state)
+      return  state.banks.sort((a, b) => a.name.localeCompare(b.name))
+    }
   },
 
   //actions = metody w komponentach
   actions: {
+    getBank(idBank: number): Bank | undefined {
+      const bank = this.banks.find((bank) => bank.id === idBank);
+      if (bank) return bank;
+      else return undefined;
+    },
+    /////////////////////////////////////////////DATABASE//////////////////////////
     //
     //GET BANKS
     //

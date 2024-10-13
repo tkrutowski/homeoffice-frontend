@@ -88,6 +88,21 @@ export const useAuthorizationStore = defineStore("authorization", {
         return false;
       }
     },
+    hasAccessFinancePurchaseWriteAll(): boolean {
+      console.log("hasAccessFinancePurchase()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.accessToken);
+        // console.log("token decoded: ", decoded);
+        return (
+            decoded.authorities.includes("FINANCE_PURCHASE_WRITE_ALL") ||
+            decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessFinance() ERROR", error);
+        return false;
+      }
+    },
     hasAccessFinancePayment(): boolean {
       console.log("hasAccessFinancePayment()");
       try {

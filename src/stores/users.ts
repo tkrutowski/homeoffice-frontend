@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import httpCommon from "@/http-common";
 import {useAuthorizationStore} from "@/stores/authorization";
 import {ErrorService} from "@/service/ErrorService";
-import User, {Role} from "@/types/User";
+import {User, Role} from "@/types/User";
 
 export const useUsersStore = defineStore("user", {
   state: () => ({
@@ -19,12 +19,30 @@ export const useUsersStore = defineStore("user", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getUsers: (state) => {
+      console.log("getUsers from pinia", state)
+      return state.users;
+    },
+    getUserByPrivileges: (state) => {
+      const authorization = useAuthorizationStore();
+      if(authorization.hasAccessFinancePurchaseWriteAll){
+        return state.users;
+      }
+      const user = state.users.find((user) => user.username === authorization.username);
+      console.log("getUserByPrivileges", user)
+      if (user) return [user];
+      else return [];
+    },
   },
 
   //actions = metody w komponentach
   actions: {
+    getUser(idUser: number): User | undefined {
+      const user = this.users.find((user) => user.id === idUser);
+      if (user) return user;
+      else return undefined;
+    },
+
     //
     //GET USER FULL NAME
     //
@@ -54,20 +72,20 @@ export const useUsersStore = defineStore("user", {
           });
     },
     async refreshUsers() {
-      this.users = await this.getUsersFromDb();
+      await this.getUsersFromDb();
     },
     //--------------------------------------DATABASE--------------------------------------
     //
     //GET USERS
     //
-    async getUsersFromDb(): Promise<User[]> {
+    async getUsersFromDb(): Promise<void> {
       console.log("START - getUsersFromDb()");
       this.loadingUsers = true;
 
       try {
         const response = await httpCommon.get(`/v1/user`);
         console.log("getUsersFromDb() - Ilosc[]: " + response.data.length);
-        return response.data;
+        this.users = response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
           console.log("ERROR getUsersFromDb(): ", e);
@@ -75,7 +93,6 @@ export const useUsersStore = defineStore("user", {
         } else {
           console.log("An unexpected error occurred: ", e);
         }
-        return []
       } finally {
         this.loadingUsers = false;
         console.log("END - getUsersFromDb()");

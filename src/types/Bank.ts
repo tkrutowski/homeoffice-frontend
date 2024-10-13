@@ -18,13 +18,13 @@ export interface Card {
   idBank: number;
   idUser: number;
   name: string;
-  activationDate: string;
+  activationDate: Date | undefined;
   limit: number;
   repaymentDay: number;
-  expirationDate: string;
+  expirationDate: Date | undefined;
   otherInfo: string;
   activeStatus: ActiveStatus;
   cardNumber: string;
   closingDay: number;
-  image: string;
+  imageUrl: string;
 }

@@ -287,7 +287,6 @@ const showErrorFirstDate = () => {
             </h2>
           </div>
         </template>
-<!--        <div class="flex flex-row ">-->
           <div class="flex flex-col ">
             <!-- ROW-1   NAME -->
             <div class="flex flex-col">
@@ -309,14 +308,13 @@ const showErrorFirstDate = () => {
                 <label for="input-customer"
                   >Wybierz użytkownika:</label
                 >
-                <Dropdown
+                <Select
                   id="input-customer"
                   v-model="selectedUser"
                   :class="{ 'p-invalid': showErrorUser() }"
                   :options="userStore.users"
                   :option-label="(user) => user.firstName + ' ' + user.lastName"
-                  :onchange="(loan.idUser = selectedUser ? selectedUser.id : 0)"
-                  required
+                  @change="(loan.idUser = selectedUser ? selectedUser.id : 0)"
                 />
                 <small class="p-error">{{
                   showErrorUser() ? "Pole jest wymagane." : "&nbsp;"
@@ -337,7 +335,7 @@ const showErrorFirstDate = () => {
                 <label for="input-customer"
                   >Wybierz bank:</label
                 >
-                <Dropdown
+                <Select
                   id="input-customer"
                   v-model="selectedBank"
                   :class="{ 'p-invalid': showErrorBank() }"
@@ -492,8 +490,7 @@ const showErrorFirstDate = () => {
           </div>
 
         <!-- ROW-6  BTN SAVE -->
-        <div class="flex flex-row"/>
-          <div class="flex mt-5 justify-center">
+          <div class="flex mt-5 justify-end">
             <OfficeButton
               text="zapisz"
               btn-type="office-save"
@@ -503,7 +500,6 @@ const showErrorFirstDate = () => {
               :is-ok-icon="btnShowOk"
               :btn-disabled="isSaveBtnDisabled"
             />
-<!--          </div>-->
         </div>
       </Panel>
     </form>

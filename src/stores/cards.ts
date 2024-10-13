@@ -3,11 +3,6 @@ import httpCommon from "@/http-common";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
 import { ActiveStatus, Card } from "@/types/Bank";
-import cardAlfa from "@/assets/images/alfa_card.png";
-import cardMillennium from "@/assets/images/millenium_card.png";
-import cardAllegro from "@/assets/images/allegro_card.png";
-import cardSaturn from "@/assets/images/saturn_card.png";
-import cardPkoBp from "@/assets/images/pkoBp_card.png";
 export const useCardsStore = defineStore("card", {
   state: () => ({
     loginError: false,
@@ -20,44 +15,28 @@ export const useCardsStore = defineStore("card", {
 
   //getters = computed
   getters: {
-    // getSortedInvoices: (state) =>
-    //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+    getCardsInactive: (state) => {
+      return state.cards.filter((item) => item.activeStatus === "INACTIVE");
+    },
+    getCardsActive: (state) => {
+      return state.cards.filter((item) => item.activeStatus === "ACTIVE");
+    },
   },
 
   //actions = metody w komponentach
   actions: {
-    getCardLogo(idCard: number) {
-      console.log("START - getCardLogo(", idCard, ")");
-      let result;
-      switch (idCard) {
-        case 2:
-          // console.log('SATURN');
-          result = cardSaturn;
-          break;
-        case 3:
-        case 8:
-          // console.log('ALFA');
-          result = cardAlfa;
-          break;
-        case 4:
-        case 5:
-          // console.log('PKO_BP');
-          result = cardPkoBp;
-          break;
-        case 6:
-          // console.log('DEBET');
-          result = cardMillennium;
-          break;
-        case 7:
-          // console.log('ALLEGRO');
-          result = cardAllegro;
-          break;
-        default:
-          console.log("Number is not 1, 2, or 3");
-          break;
-      }
+     getCardLogo(idCard: number) {
+      // console.log("START - getCardLogo(", idCard, ")");
+      let card = null;
+      if (this.cards.length == 0){
+         this.getCardsFromDb("ALL").then(() => {
+         card = this.cards.find(value => value.id === idCard);
 
-      return result;
+         })
+      }else {
+         card = this.cards.find(value => value.id === idCard);
+      }
+      return card ?card.imageUrl : card;
     },
     //
     //Get card by id
@@ -206,7 +185,7 @@ export const useCardsStore = defineStore("card", {
     //UPDATE CARD
     //
     async updateCardDb(card: Card) {
-      console.log("START - updateCardDb()");
+      console.log("START - updateCardDb()", card);
 
       const authorization = useAuthorizationStore();
       const headers = {
@@ -236,14 +215,8 @@ export const useCardsStore = defineStore("card", {
     //
     async deleteCardDb(cardId: number) {
       console.log("START - deleteCardDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        await httpCommon.delete(`/v1/finance/card/` + cardId, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        await httpCommon.delete(`/v1/finance/card/` + cardId);
         const index = this.cards.findIndex((b) => b.id === cardId);
         if (index !== -1) this.cards.splice(index, 1);
         return true;

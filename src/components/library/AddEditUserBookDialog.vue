@@ -109,14 +109,14 @@ const showErrorDateFrom = () => {
       submitted.value &&
       (userbook.value.readingStatus.name === "READ_NOW" ||
           userbook.value.readingStatus.name === "READ") &&
-      userbook.value.readFrom.length === 0
+      (!userbook.value.readFrom || userbook.value.readFrom.length === 0)
   );
 };
 const showErrorDateTo = () => {
   return (
       submitted.value &&
       userbook.value.readingStatus.name === "READ" &&
-      userbook.value.readTo.length === 0
+      (!userbook.value.readTo || userbook.value.readFrom.length === 0)
   );
 };
 const submit = () => {
@@ -172,18 +172,17 @@ const cancel = () => {
               <label class="ml-2 mb-1" for="input-bookstore"
               >Wybierz księgarnię:</label
               >
-              <Dropdown
+              <Select
                   id="input-bookstore"
                   v-model="selectedBookstore"
                   :class="{ 'p-invalid': showErrorBookstore() }"
                   :options="bookstoreStore.bookstores"
                   option-label="name"
-                  :onchange="
+                  @change="
                 (userbook.idBookstore = selectedBookstore
                   ? selectedBookstore.id
                   : 0)
               "
-                  required
               />
               <small class="p-error">{{
                   showErrorBookstore() ? "Pole jest wymagane." : "&nbsp;"
@@ -204,13 +203,12 @@ const cancel = () => {
               <label class="ml-2 mb-1" for="input-ownership"
               >Wybierz własność:</label
               >
-              <Dropdown
+              <Select
                   id="input-ownership"
                   v-model="userbook.ownershipStatus"
                   :class="{ 'p-invalid': showErrorOwnership() }"
                   :options="userbookStore.ownershipStatus"
                   option-label="viewName"
-                  required
               />
               <small class="p-error">{{
                   showErrorOwnership() ? "Pole jest wymagane." : "&nbsp;"
@@ -231,13 +229,12 @@ const cancel = () => {
               <label class="ml-2 mb-1" for="input-edition"
               >Wybierz rodzaj:</label
               >
-              <Dropdown
+              <Select
                   id="input-edition"
                   v-model="userbook.editionType"
                   :class="{ 'p-invalid': showErrorEditionType() }"
                   :options="userbookStore.editionTypes"
                   option-label="viewName"
-                  required
               />
               <small class="p-error">{{
                   showErrorEditionType() ? "Pole jest wymagane." : "&nbsp;"
@@ -256,13 +253,12 @@ const cancel = () => {
           <div class="flex flex-row">
             <div class="flex flex-col w-full">
               <label class="ml-2 mb-1" for="input-read">Stan czytania:</label>
-              <Dropdown
+              <Select
                   id="input-read"
                   v-model="userbook.readingStatus"
                   :class="{ 'p-invalid': showErrorReadingStatus() }"
                   :options="userbookStore.readingStatuses"
                   option-label="viewName"
-                  required
               />
               <small class="p-error">{{
                   showErrorReadingStatus() ? "Pole jest wymagane." : "&nbsp;"
@@ -287,7 +283,7 @@ const cancel = () => {
                     v-model="readingDateFrom"
                     show-icon
                     date-format="yy-mm-dd"
-                    :class="{ 'p-invalid': showErrorDateFrom() }"
+                    :invalid="showErrorDateFrom()"
                 />
                 <small class="p-error">{{
                     showErrorDateFrom() ? "Pole jest wymagane." : "&nbsp;"
@@ -303,7 +299,7 @@ const cancel = () => {
                     v-model="readingDateTo"
                     show-icon
                     date-format="yy-mm-dd"
-                    :class="{ 'p-invalid': showErrorDateTo() }"
+                    :invalid="showErrorDateTo()"
                 />
                 <small class="p-error">{{
                     showErrorDateTo() ? "Pole jest wymagane." : "&nbsp;"

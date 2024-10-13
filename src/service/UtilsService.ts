@@ -3,6 +3,7 @@ import { useUserbooksStore } from "@/stores/userbooks";
 import { useCardsStore } from "@/stores/cards";
 import { useFirmsStore } from "@/stores/firms";
 import { Author, Category } from "@/types/Book";
+import moment from "moment";
 
 export const UtilsService = {
   formatCurrency(value: number | undefined) {
@@ -12,6 +13,12 @@ export const UtilsService = {
         style: "currency",
         currency: "PLN",
       });
+  },
+
+  formatDate(value: Date | string | undefined) {
+    if(value){
+      return moment(value).format("YYYY-MM-DD");
+    }
   },
 
   getTypesForLibrary() {

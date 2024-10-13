@@ -123,7 +123,7 @@ onMounted(async () => {
 <template>
   <TheMenu/>
   <div class="card flex flex-col justify-center items-center">
-    <Select v-model="selectedUser" :options="users"
+    <Select v-model="selectedUser" :options="userStore.users"
             :optionLabel="(user) => user.lastName + ' ' + user.firstName"
             placeholder="Wybierz użytkownika"
             :loading="userStore.loadingUsers"

@@ -14,8 +14,10 @@ import LoansView from "@/views/finance/LoansView.vue";
 import PaymentsView from "@/views/finance/PaymentsView.vue";
 import PaymentFeeView from "@/views/finance/PaymentFeeView.vue";
 import PaymentLoanView from "@/views/finance/PaymentLoanView.vue";
-// import PurchasesCurrentView from "@/views/finance/PurchasesCurrentView.vue";
-// import PurchaseView from "@/views/finance/PurchaseView.vue";
+import PurchasesCurrentView from "@/views/finance/PurchasesCurrentView.vue";
+import PurchaseView from "@/views/finance/PurchaseView.vue";
+import CardsView from "@/views/finance/CardsView.vue";
+import CardView from "@/views/finance/CardView.vue";
 
 //LIBRARY
 import LibraryHomeView from "@/views/library/LibraryHomeView.vue";
@@ -150,18 +152,18 @@ const routes: Array<RouteRecordRaw> = [
     props: true,
   },
   //PURCHASE
-  // {
-  //   path: "/finance/purchase/current",
-  //   name: "PurchasesCurrent",
-  //   component: PurchasesCurrentView,
-  //   props: true,
-  // },
-  // {
-  //   path: "/finances/purchase/:isEdit/:purchaseId",
-  //   name: "Purchase",
-  //   component: PurchaseView,
-  //   props: true,
-  // },
+  {
+    path: "/finance/purchase/current",
+    name: "PurchasesCurrent",
+    component: PurchasesCurrentView,
+    props: true,
+  },
+  {
+    path: "/finances/purchase/:isEdit/:purchaseId",
+    name: "Purchase",
+    component: PurchaseView,
+    props: true,
+  },
   // {
   //   path: '/about',
   //   name: 'about',
@@ -170,6 +172,19 @@ const routes: Array<RouteRecordRaw> = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   // }
+  //CARDS
+  {
+    path: "/finance/payment/cards",
+    name: "Cards",
+    component: CardsView,
+    props: true,
+  },
+  {
+    path: "/finance/payment/card/:isEdit/:cardId",
+    name: "Card",
+    component: CardView,
+    props: true,
+  },
 ];
 
 const router = createRouter({

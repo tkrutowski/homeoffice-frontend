@@ -48,7 +48,7 @@ const ifExistsMsg = computed(() => {
     let msg = "";
     existedUserbooks.value.forEach((book) => {
       if (book.readingStatus.name === "READ") {
-        msg += "Przeczytana (" + book.readFrom + " - " + book.readTo + ")";
+        msg += "\nPrzeczytana (" + book.readFrom + " - " + book.readTo + ")";
       } else if (book.readingStatus.name === "NOT_READ") {
         msg += "Nie przeczytana";
       } else if (book.readingStatus.name === "READ_NOW") {
@@ -57,7 +57,7 @@ const ifExistsMsg = computed(() => {
     });
     return msg;
   } else {
-    return "Książka na mojej półce";
+    return "Brak książki na mojej półce";
   }
 });
 
@@ -150,23 +150,18 @@ const getLatestReadStatus = computed(() => {
     <div class="flex mb-0 font-medium justify-center">{{ getLatestReadStatus }}</div>
     <div class="flex justify-between items-center">
       <div class="mt-0 font-semibold text-3xl">#{{ props.book.bookInSeriesNo }}</div>
-      <span>
-                                <ImageButton
-                                    v-if="props.book?.id === 0"
-                                    img-src="add-to-library"
-                                    @click="addToLibrary"
-                                />
-      <ImageButton
+      <span :title="ifExistsMsg">
+        <ImageButton
+            v-if="props.book?.id === 0"
+            img-src="add-to-library"
+            @click="addToLibrary"
+        />
+        <ImageButton
           v-else-if="existedUserbooks.length > 0"
-          v-tooltip.top="{
-          value: ifExistsMsg,
-          showDelay: 1000,
-          hideDelay: 300,
-        }"
           img-src="onShell"
-      />
-      <ImageButton v-else img-src="add-to-shell" @click="newUserbook"/>
-                        </span>
+        />
+        <ImageButton v-else img-src="add-to-shell" @click="newUserbook"/>
+      </span>
     </div>
   </div>
 </template>

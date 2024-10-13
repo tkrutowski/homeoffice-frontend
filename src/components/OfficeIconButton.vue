@@ -19,10 +19,15 @@ const props = defineProps({
     required: false,
     default: "warn",
   },
+  rounded: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
 });
 </script>
 <template>
-  <Button class="icon-only" :icon="props.icon" rounded outlined :class="{ isActive: active }" :severity="props.severity">
+  <Button class="icon-only" :icon="props.icon" :rounded="props.rounded" outlined :class="{ isActive: active }" :severity="props.severity">
   </Button>
 </template>
 <!--    <i class="pi" :class="props.icon" :style="{ fontWeight: 'bold' }"></i>-->

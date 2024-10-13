@@ -116,6 +116,31 @@ const items = ref([
         },
       },
     ],
+  }, {
+    label: "Karty",
+    icon: "pi pi-fw pi-credit-card",
+    disabled: !authorizationStore.hasAccessFinanceFee,
+    items: [
+      {
+        label: "Nowa karta",
+        icon: "pi pi-fw pi-file",
+        // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
+        command: () => {
+          router.push({
+            name: "Card",
+            params: { isEdit: "false", cardId: 0 },
+          });
+        },
+      },
+      {
+        label: "Lista kart",
+        icon: "pi pi-fw pi-list",
+        // to: { name: "Invoices" },
+        command: () => {
+          router.push({ name: "Cards" });
+        },
+      },
+    ],
   },
 ]);
 </script>
