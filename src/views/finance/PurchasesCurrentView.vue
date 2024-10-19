@@ -23,15 +23,21 @@ onMounted(() => {
 const showStatusChangeConfirmationDialog = ref<boolean>(false);
 const changeStatusConfirmationMessage = computed(() => {
   const purchasesToPay = purchasesStore.purchasesToPay;
+  const amountAll = purchasesToPay
+      .map(value => parseFloat(value.amount))
+      .reduce((acc, curr) => acc + curr, 0);
+  console.log("amountAll", amountAll);
   if (purchasesToPay && purchasesToPay.length > 0) {
     const purchaseNamesListHtml = `
       <ul style="padding-left: 20px; list-style-type: none;">
         ${purchasesToPay
           .map(
             (purchase) =>
-              `<li style="text-indent: -20px; margin-left: 50px;">- ${purchase.name}</li>`
+              `<li style="text-indent: -20px; margin-left: 50px;">- ${purchase.name}: ${UtilsService.formatCurrency(purchase.amount)} zł</li>`
           )
           .join("")}
+        </BR>
+        <li style="text-indent: -30px; margin-left: 50px;">RAZEM: ${amountAll} zł</li>
       </ul>
     `;
 
