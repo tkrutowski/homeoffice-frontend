@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
 import { Loan, LoanInstallment } from "@/types/Loan";
-import { useAuthorizationStore } from "@/stores/authorization";
 import { PaymentStatus } from "@/types/PaymentStatus";
 import { PaymentMethod } from "@/types/PaymentMethod";
 import { ErrorService } from "@/service/ErrorService";
@@ -77,7 +76,11 @@ export const useLoansStore = defineStore("loan", {
           return this.loans;
       }
     },
-
+    getLoan(idLoan: number) {
+      console.log("getLoan START ", idLoan)
+      return  this.loans.find((item) => item.id === idLoan);
+      },
+    //------------------------------------------------DATABASE--------------------------------
     //
     //GET LOANS FROM DB BY PAYMENT_STATUS
     //
@@ -90,19 +93,12 @@ export const useLoansStore = defineStore("loan", {
       );
       this.loadingLoans = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.get(
           `/v1/finance/loan/status?status=` +
             paymentStatus +
             "&installment=" +
-            installment,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
+            installment
         );
         console.log("getLoansFromDb() - Ilosc[]: " + response.data.length);
         this.loans = response.data;
@@ -127,14 +123,8 @@ export const useLoansStore = defineStore("loan", {
       console.log("START - getLoanFromDb(" + loanId + ")");
       this.loadingLoans = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.get(`/v1/finance/loan/` + loanId, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/finance/loan/` + loanId);
         return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
@@ -154,17 +144,10 @@ export const useLoansStore = defineStore("loan", {
     async updateLoanStatusDb(loanId: number, status: PaymentStatus) {
       console.log("START - updateLoanStatusDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         await httpCommon.put(
           `/v1/finance/loan/status/` + loanId,
-          { value: status.name },
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
+          { value: status.name }
         );
         const loan = this.loans.find((l) => l.id === loanId);
         if (loan) {
@@ -188,14 +171,8 @@ export const useLoansStore = defineStore("loan", {
     //
     async addLoanDb(loan: Loan) {
       console.log("START - addLoanDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.post(`/v1/finance/loan`, loan, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.post(`/v1/finance/loan`, loan);
         this.loans.push(response.data);
         return true;
       } catch (e) {
@@ -216,14 +193,8 @@ export const useLoansStore = defineStore("loan", {
     async updateLoanDb(loan: Loan) {
       console.log("START - updateLoanDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.put(`/v1/finance/loan`, loan, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.put(`/v1/finance/loan`, loan);
         const index = this.loans.findIndex((l) => l.id === loan.id);
         if (index !== -1) this.loans.splice(index, 1, response.data);
         return true;
@@ -244,14 +215,8 @@ export const useLoansStore = defineStore("loan", {
     //
     async deleteLoanDb(loanId: number) {
       console.log("START - deleteLoanDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        await httpCommon.delete(`/v1/finance/loan/` + loanId, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        await httpCommon.delete(`/v1/finance/loan/` + loanId);
         const index = this.loans.findIndex((l) => l.id === loanId);
         if (index !== -1) this.loans.splice(index, 1);
         return true;
@@ -274,18 +239,10 @@ export const useLoansStore = defineStore("loan", {
     async getPaymentType() {
       console.log("START - getPaymentType()");
       this.loadingPaymentType = true;
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         if (this.paymentTypes.length === 0) {
           const response = await httpCommon.get(
-            `/v1/goahead/invoice/paymenttype`,
-            {
-              headers: authorization.accessToken !== "null" ? headers : {},
-            }
-          );
+            `/v1/goahead/invoice/paymenttype`);
           this.paymentTypes = response.data;
         } else {
           console.log("getPaymentType() - BEZ GET");
@@ -308,17 +265,10 @@ export const useLoansStore = defineStore("loan", {
     async updateLoanInstallmentDb(installment: LoanInstallment) {
       console.log("START - updateLoanInstallmentDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.put(
           `/v1/finance/loan/installment`,
-          installment,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
+          installment
         );
         console.log("loan store ", this.loans);
         const loan = this.loans.find((l) => l.id === installment.idLoan);

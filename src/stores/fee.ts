@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
-import { useAuthorizationStore } from "@/stores/authorization";
 import { PaymentStatus } from "@/types/PaymentStatus";
 import { ErrorService } from "@/service/ErrorService";
 import { Fee, FeeFrequency, FeeInstallment } from "@/types/Fee";
@@ -56,6 +55,10 @@ export const useFeeStore = defineStore("fee", {
           return this.fees;
       }
     },
+    getFee(idFee: number) {
+      return this.fees.find((item) => item.id === idFee);
+    },
+    //----------------------------------------------DATABASE--------------------------------------------
     //
     //GET FEES FROM DB BY PAYMENT_STATUS
     //
@@ -68,20 +71,12 @@ export const useFeeStore = defineStore("fee", {
       );
       this.loadingFees = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.get(
           `/v1/finance/fee/status?status=` +
             paymentStatus +
             "&installment=" +
-            installment,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
-        );
+            installment);
         console.log("getFeesFromDb() - Ilosc[]: " + response.data.length);
         this.fees = response.data;
       } catch (e) {
@@ -105,14 +100,8 @@ export const useFeeStore = defineStore("fee", {
       console.log("START - getFeeFromDb(" + feeId + ")");
       this.loadingFees = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.get(`/v1/finance/fee/` + feeId, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.get(`/v1/finance/fee/` + feeId);
         return response.data;
       } catch (e) {
         if (ErrorService.isAxiosError(e)) {
@@ -132,18 +121,10 @@ export const useFeeStore = defineStore("fee", {
     async updateFeeStatusDb(feeId: number, status: PaymentStatus) {
       console.log("START - updateFeeStatusDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         await httpCommon.put(
           `/v1/finance/fee/status/` + feeId,
-          { value: status.name },
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
-        );
+          { value: status.name });
         const fee = this.fees.find((l) => l.id === feeId);
         if (fee) {
           fee.feeStatus = status;
@@ -166,14 +147,8 @@ export const useFeeStore = defineStore("fee", {
     //
     async addFeeDb(fee: Fee) {
       console.log("START - addFeeDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.post(`/v1/finance/fee`, fee, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.post(`/v1/finance/fee`, fee);
         this.fees.push(response.data);
         return true;
       } catch (e) {
@@ -194,14 +169,8 @@ export const useFeeStore = defineStore("fee", {
     async updateFeeDb(fee: Fee) {
       console.log("START - updateFeeDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        const response = await httpCommon.put(`/v1/finance/fee`, fee, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        const response = await httpCommon.put(`/v1/finance/fee`, fee);
         const index = this.fees.findIndex((f) => f.id === fee.id);
         if (index !== -1) this.fees.splice(index, 1, response.data);
         return true;
@@ -222,14 +191,8 @@ export const useFeeStore = defineStore("fee", {
     //
     async deleteFeeDb(feeId: number) {
       console.log("START - deleteFeeDb()");
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
-        await httpCommon.delete(`/v1/finance/fee/` + feeId, {
-          headers: authorization.accessToken !== "null" ? headers : {},
-        });
+        await httpCommon.delete(`/v1/finance/fee/` + feeId);
         const index = this.fees.findIndex((f) => f.id === feeId);
         if (index !== -1) this.fees.splice(index, 1);
         return true;
@@ -251,15 +214,9 @@ export const useFeeStore = defineStore("fee", {
     async getFeeFrequencyType() {
       console.log("START - getFeeFrequencyType()");
       this.loadingFeeFrequencyType = true;
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         if (this.feeFrequencyTypes.length === 0) {
-          const response = await httpCommon.get(`/v1/finance/fee/frequency`, {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          });
+          const response = await httpCommon.get(`/v1/finance/fee/frequency`);
           this.feeFrequencyTypes = response.data;
         } else {
           console.log("getFeeFrequencyType() - BEZ GET");
@@ -282,17 +239,10 @@ export const useFeeStore = defineStore("fee", {
     async updateFeeInstallmentDb(installment: FeeInstallment) {
       console.log("START - updateFeeInstallmentDb()");
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         const response = await httpCommon.put(
           `/v1/finance/fee/installment`,
-          installment,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
+          installment
         );
         const fee: Fee | undefined = this.fees.find(
           (l) => l.id === installment.idFee

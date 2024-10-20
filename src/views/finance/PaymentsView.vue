@@ -4,9 +4,14 @@ import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
 import OfficeButton from "@/components/OfficeButton.vue";
 import { onMounted, ref, watch } from "vue";
 
-import { usePaymentStore } from "@/stores/payments";
+import {usePaymentStore} from "@/stores/payments";
+import {useUsersStore} from "@/stores/users";
+import {useLoansStore} from "@/stores/loans.ts";
+import {useFeeStore} from "@/stores/fee.ts";
+
+const loansStore = useLoansStore();
+const feeStore = useFeeStore();
 const paymentStore = usePaymentStore();
-import { useUsersStore } from "@/stores/users";
 const userStore = useUsersStore();
 
 const selectedYear = ref<number>(new Date().getFullYear());
@@ -21,9 +26,8 @@ async function getPayments() {
 onMounted(async () => {
   console.log("onMounted PaymentView");
   if (userStore.users.length === 0) await userStore.refreshUsers();
-});
-
-onMounted(() => {
+  if (loansStore.loans.length === 0) await loansStore.refreshLoans();
+  if (feeStore.fees.length === 0) await feeStore.refreshLoans();
   if (paymentStore.payments.size !== 0) refreshKey.value = true;
 });
 

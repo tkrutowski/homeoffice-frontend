@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import httpCommon from "@/http-common";
-import { useAuthorizationStore } from "@/stores/authorization";
 import { ErrorService } from "@/service/ErrorService";
 import { Payment, PaymentType } from "@/types/Payment";
 import { Fee } from "@/types/Fee";
@@ -86,20 +85,13 @@ export const usePaymentStore = defineStore("payment", {
       );
       this.loadingPayments = true;
 
-      const authorization = useAuthorizationStore();
-      const headers = {
-        Authorization: "Bearer " + authorization.accessToken,
-      };
       try {
         // if (this.payments.size === 0) {
         const response = await httpCommon.get(
           `/v1/finance/payment?status=` +
             paymentStatus +
             "&date=" +
-            this.paymentSelectedYear,
-          {
-            headers: authorization.accessToken !== "null" ? headers : {},
-          }
+            this.paymentSelectedYear
         );
         console.log("getPaymentsFromDb() - Ilosc[]: " + response.data);
         const paymentsTemp = new Map(Object.entries(response.data));

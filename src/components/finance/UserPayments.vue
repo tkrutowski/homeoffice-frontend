@@ -7,9 +7,13 @@ import {Installment, Payment} from "@/types/Payment";
 
 import {usePaymentStore} from "@/stores/payments";
 import {useUsersStore} from "@/stores/users";
+import {useLoansStore} from "@/stores/loans.ts";
+import {useFeeStore} from "@/stores/fee.ts";
 
 const paymentStore = usePaymentStore();
 const userStore = useUsersStore();
+const loansStore = useLoansStore();
+const feeStore = useFeeStore();
 
 const props = defineProps({
   idUser: {
@@ -159,6 +163,27 @@ const calculateTotalToPay = (month: number) => {
       )
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
 };
+
+const findBankOrFirmName = (payment: Payment) => {
+  console.log("findBankOrFirmName START", payment);
+  let result = "";
+  if (payment.paymentType === "LOAN") {
+    const loan = loansStore.getLoan(payment.installments[0].idLoan);
+    result = loan?.bank.name || '';
+  }
+  if (payment.paymentType === "FEE") {
+    const fee = feeStore.getFee(payment.installments[0].idFee);
+    result = fee?.firm.name || '';
+  }
+
+  if (result.length > 20) {
+    return result.slice(0, 15) + "...";
+  }
+
+  return result;
+};
+
+
 const getMonth = (month: number) => {
   switch (month) {
     case 1:
@@ -246,6 +271,21 @@ onMounted(() => {
         <template #body="{ data, field }">
           <div class="name">
             {{ data[field] }}
+          </div>
+        </template>
+      </Column>
+
+      <!--  BANK/FIRM    -->
+      <Column
+          field="bank"
+          header="Bank/Firma"
+          sortable
+          frozen
+          style="min-width: 130px"
+      >
+        <template #body="{ data }">
+          <div class="name">
+            {{ findBankOrFirmName(data) }}
           </div>
         </template>
       </Column>
