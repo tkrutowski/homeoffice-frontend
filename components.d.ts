@@ -54,6 +54,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Row: typeof import('primevue/row')['default']
+    ScrollPanel: typeof import('primevue/scrollpanel')['default']
     Select: typeof import('primevue/select')['default']
     SeriesBook: typeof import('./src/components/library/SeriesBook.vue')['default']
     SeriesCarusel: typeof import('./src/components/library/SeriesCarusel.vue')['default']

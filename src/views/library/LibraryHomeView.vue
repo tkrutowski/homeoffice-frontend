@@ -34,11 +34,11 @@ const showSeries = (series: Series) => {
 
 <template>
   <TheMenuLibrary/>
-  <Dialog header=" " v-model:visible="showSeriesDialog" modal>
-    <series-carusel :series="selectedSeries"/>
+  <Dialog v-model:visible="showSeriesDialog" header=" " modal style="max-width: 80vw;">
+    <series-carusel :series="selectedSeries" />
   </Dialog>
-  <div class="grid grid-cols-6 gap-4 m-6">
-    <Card>
+  <div class="grid grid-cols-9 gap-4 m-6 ">
+    <Card class="col-span-2">
       <template #title>
         <div class="flex justify-center">
 
@@ -46,16 +46,17 @@ const showSeries = (series: Series) => {
         </div>
       </template>
       <template #content>
-        <div class="card book-info" v-for="series in bookStore.getSeriesHasNewBooks" :key="series.id"
-             @click="showSeries(series)">
-          <p class="pb-2"> Cykl: <span class="text-xl font-semibold pl-2">{{ series.title }}</span></p>
-          <p class="pb-2"> Data: <span class=" font-semibold pl-2">{{ series.checkDate }}</span></p>
-
-        </div>
+        <ScrollPanel style="width: 100%; height: 700px">
+          <div v-for="series in bookStore.getSeriesHasNewBooks" :key="series.id" class="card book-info"
+               @click="showSeries(series)">
+            <p class="pb-2"> Cykl: <span class="text-xl font-semibold pl-2">{{ series.title }}</span></p>
+            <p class="pb-2"> Data: <span class=" font-semibold pl-2">{{ series.checkDate }}</span></p>
+          </div>
+        </ScrollPanel>
       </template>
     </Card>
 
-    <Panel class="col-span-5">
+    <Panel class="col-span-7">
       <template #header>
         <div class="w-full  flex justify-center gap-4">
           <span class="font-bold text-3xl ml-2">Aktualnie czytane...</span>
@@ -70,7 +71,7 @@ const showSeries = (series: Series) => {
       </template>
       <Carousel
           :value="userbookStore.getBooksReadNow"
-          :num-visible="2"
+          :num-visible="1"
           :num-scroll="1"
           :responsive-options="responsiveOptions"
       >

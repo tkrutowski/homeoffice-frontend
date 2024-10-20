@@ -240,7 +240,7 @@ const toggle = (event) => {
       @cancel="showSeriesDialog = false"
   />
 
-  <Panel toggleable class="mb-10">
+  <Panel toggleable class="mb-10 w-full">
     <template #header>
       <span
           class="font-bold text-3xl ml-2">{{ props.series.title }} - {{
@@ -265,8 +265,9 @@ const toggle = (event) => {
       <Carousel
           :value="booksInSeries"
           :responsive-options="responsiveOptions"
-          :num-visible="5"
+          :num-visible="4"
           :num-scroll="2"
+          class="w-full"
       >
         <template #item="slotProps">
 
