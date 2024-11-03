@@ -15,10 +15,23 @@ export const UtilsService = {
       });
   },
 
-  formatDate(value: Date | string | undefined) {
+  formatDateToString(value: Date | string | undefined):string {
     if(value){
-      return moment(value).format("YYYY-MM-DD");
+       const date=  moment(value).format("YYYY-MM-DD");
+       return (date === "0001-01-01") ? "": date;
     }
+  },
+
+  formatDate(value: Date | string | undefined):Date | undefined {
+    if(value){
+      const date=  moment(value).format("YYYY-MM-DD");
+      return (date === "0001-01-01") ? null : new Date(date);
+    }
+  },
+
+  //zaznacza tekst po kliknięciu
+  selectText(event) {
+    event.target.select();
   },
 
   getTypesForLibrary() {

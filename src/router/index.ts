@@ -32,6 +32,12 @@ import SeriesSearchView from "@/views/library/SeriesSearchView.vue";
 import PrivilegesView  from "@/views/PrivilegesView.vue";
 import LogsView  from "@/views/LogsView.vue";
 
+
+//DEVICE
+import DevicesHomeView from "@/views/device/DeviceHomeView.vue";
+import DevicesView from "@/views/device/DevicesView.vue";
+import DeviceView from "@/views/device/DeviceView.vue";
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -132,7 +138,7 @@ const routes: Array<RouteRecordRaw> = [
   //   component: FeeView,
   //   props: true,
   // },
-  //PAYMENT
+  //--------------------------------------------------------PAYMENT
   {
     path: "/finance/payment",
     name: "Payments",
@@ -151,7 +157,7 @@ const routes: Array<RouteRecordRaw> = [
     component: PaymentLoanView,
     props: true,
   },
-  //PURCHASE
+  //---------------------------------------------------------------PURCHASE
   {
     path: "/finance/purchase/current",
     name: "PurchasesCurrent",
@@ -172,7 +178,7 @@ const routes: Array<RouteRecordRaw> = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   // }
-  //CARDS
+  //-------------------------------------------------CARDS
   {
     path: "/finance/payment/cards",
     name: "Cards",
@@ -183,6 +189,23 @@ const routes: Array<RouteRecordRaw> = [
     path: "/finance/payment/card/:isEdit/:cardId",
     name: "Card",
     component: CardView,
+    props: true,
+  },
+  //----------------------------------------------DEVICE--------------------------------------------
+  {
+    path: "/homedevice",
+    name: "DevicesHome",
+    component: DevicesHomeView,
+  },
+  {
+    path: "/devices/device/all",
+    name: "Devices",
+    component: DevicesView,
+  },
+  {
+    path: "/devices/device/:isEdit/:deviceId",
+    name: "Device",
+    component: DeviceView,
     props: true,
   },
 ];
@@ -200,9 +223,10 @@ router.beforeEach((to, from, next) => {
     localStorage.setItem('navigationHistory', JSON.stringify(history));
   }
   const refreshToken = localStorage.getItem('refreshToken') || null;
-  if (to.name !== 'login' && !authStore.isAuthenticated && refreshToken === null) {
+  if (to.name !== 'login' && to.name !== 'Error503' && !authStore.isAuthenticated && refreshToken === null) {
     next({name: 'login'})
-  } else
+  } else{
     next()
+    }
 })
 export default router;

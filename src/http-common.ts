@@ -11,7 +11,7 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    if (config.url?.endsWith("/login") || config.url?.endsWith("/refresh")) {
+    if (config.url?.endsWith("/login") || config.url?.endsWith("/refresh") || config.url?.endsWith("/test")) {
       console.log("Żądanie do /login, pomijanie nagłówka Authorization");
     } else {
       const authStore = useAuthorizationStore();

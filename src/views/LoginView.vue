@@ -3,11 +3,12 @@ import {onMounted, ref} from "vue";
 import router from "@/router";
 import {useAuthorizationStore} from "../stores/authorization";
 import OfficeButton from "../components/OfficeButton.vue";
-
+import { useToast } from "primevue/usetoast";
 const authorizationStore = useAuthorizationStore();
 
 const username = ref<string>("");
 const password = ref<string>("");
+const toast = useToast();
 
 onMounted(() => {
   console.log("MOUNTED");
@@ -20,6 +21,13 @@ async function login() {
   if (result) {
     // router.back();
     goBack()
+  }else {
+    toast.add({
+      severity: "error",
+      summary: "Logowanie",
+      detail: "Niepoprawne dane logowania",
+      life: 5000,
+    });
   }
 }
 
@@ -45,11 +53,6 @@ function goBack(): void {
       @submit.prevent="login()"
   >
     <h2 class="mb-5 mt-5 text-center font-bold text-color!important" >Logowanie</h2>
-
-    <!-- ERROR -->
-    <div v-if="authorizationStore.loginError">
-      <p id="error">Niestety podałeś niewłaściwy login lub hasło.</p>
-    </div>
 
     <!-- USERNAME -->
     <FloatLabel class="">

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import TheHeader from "@/components/TheHeader.vue";
+import TheMenu from "@/components/TheMenu.vue";
 </script>
 
 <template>
-  <TheHeader />
-  <div class="mt-5 pt-5">
+  <TheMenu/>
+  <div class="flex flex-col justify-center items-center w-full mt-10">
     <h2>Serwis chwilowo niedostępny</h2>
-    <h3>Proszę spróbować za chwilę...</h3>
+    <h3 class="mt-3">Proszę spróbować za chwilę...</h3>
   </div>
 </template>
 

@@ -200,7 +200,7 @@ const editCard = (item: Card) => {
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
                   <div>
                     <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ bankStore.getBank(item.idBank)?.name }}</span>
-                    <div class="text-sm font-medium mt-2">{{  UtilsService.formatDate(item.expirationDate) }}</div>
+                    <div class="text-sm font-medium mt-2">{{ UtilsService.formatDateToString(item.expirationDate) }}</div>
                     <div class="text-sm font-medium mt-2">Dzień spłaty: {{ item.repaymentDay }}</div>
                   </div>
                 </div>

@@ -64,6 +64,7 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     TheHeader: typeof import('./src/components/TheHeader.vue')['default']
     TheMenu: typeof import('./src/components/TheMenu.vue')['default']
+    TheMenuDevice: typeof import('./src/components/device/TheMenuDevice.vue')['default']
     TheMenuFinance: typeof import('./src/components/finance/TheMenuFinance.vue')['default']
     TheMenuLibrary: typeof import('./src/components/library/TheMenuLibrary.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']

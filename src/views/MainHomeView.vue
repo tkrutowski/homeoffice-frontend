@@ -2,11 +2,14 @@
 import TheMenu from "@/components/TheMenu.vue";
 import { useAuthorizationStore } from "@/stores/authorization";
 import { useBooksStore } from "@/stores/books";
+import {useDevicesStore} from "@/stores/devices.ts";
 import AppCard from "@/components/AppCard.vue";
 import router from "@/router";
 
 const authorizationStore = useAuthorizationStore();
 const booksStore = useBooksStore();
+const deviceStore = useDevicesStore();
+
 function runFinance() {
   console.log("START - finance()");
   if (authorizationStore.hasAccessFinance) {
@@ -23,6 +26,17 @@ function runLibrary() {
     if (booksStore.books.length === 0) booksStore.getBooksFromDb();
     router.push({
       name: "LibraryHome",
+      // params: { idUser: 0, isEdit: "false" },
+    });
+  }
+}
+
+function runDevice() {
+  console.log("START - device()");
+  if (authorizationStore.hasAccessDevice) {
+    if (deviceStore.devices.length === 0) deviceStore.getDevicesFromDB();
+    router.push({
+      name: "DevicesHome",
       // params: { idUser: 0, isEdit: "false" },
     });
   }
@@ -49,6 +63,12 @@ function runLibrary() {
       text-title="Biblioteka"
       :disabled="!authorizationStore.hasAccessLibrary"
       @clicked="runLibrary"
+    />
+    <AppCard
+        text-content="Kopmputery, tablety i inne"
+        text-title="Urządzenia"
+        :disabled="!authorizationStore.hasAccessDevice"
+        @clicked="runDevice"
     />
   </div>
 </template>

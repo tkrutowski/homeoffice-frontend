@@ -1,13 +1,13 @@
-import { defineStore } from "pinia";
+import {defineStore} from "pinia";
 import httpCommon from "@/http-common";
-import { ErrorService } from "@/service/ErrorService";
+import {ErrorService} from "@/service/ErrorService";
 import jwt_decode from "jwt-decode";
 import moment from "moment";
-import { useFeeStore } from "@/stores/fee";
-import { useLoansStore } from "@/stores/loans";
-import { usePaymentStore } from "@/stores/payments";
-import { usePurchasesStore } from "@/stores/purchases";
-import { useUserbooksStore } from "@/stores/userbooks";
+import {useFeeStore} from "@/stores/fee";
+import {useLoansStore} from "@/stores/loans";
+import {usePaymentStore} from "@/stores/payments";
+import {usePurchasesStore} from "@/stores/purchases";
+import {useUserbooksStore} from "@/stores/userbooks";
 
 export const useAuthorizationStore = defineStore("authorization", {
   state: () => ({
@@ -163,6 +163,21 @@ export const useAuthorizationStore = defineStore("authorization", {
         return false;
       }
     },
+    hasAccessDevice(): boolean {
+      console.log("hasAccessDevices()");
+      try {
+        // console.log("token : ", this.token);
+        const decoded = jwt_decode(this.accessToken);
+        // console.log("token decoded: ", decoded);
+        return (
+            decoded.authorities.includes("ROLE_DEVICE") ||
+            decoded.authorities.includes("ROLE_ADMIN")
+        );
+      } catch (error) {
+        console.log("hasAccessLibrary() ERROR", error);
+        return false;
+      }
+    },
   },
 
   //actions = metody w komponentach
@@ -212,7 +227,6 @@ export const useAuthorizationStore = defineStore("authorization", {
       } catch (e) {
         console.log("ERROR login(): ", e);
         this.$reset();
-        this.loginError = true;
         if (ErrorService.isAxiosError(e)) {
           ErrorService.validateError(e);
         } else {
@@ -265,6 +279,14 @@ export const useAuthorizationStore = defineStore("authorization", {
         this.logout();
         throw e;
       }
+    },
+
+    //
+    // TEST PING
+    //
+    async testPing() {
+      console.log("START - testPing()");
+        return await httpCommon.get("/v1/auth/test");
     },
   },
 });

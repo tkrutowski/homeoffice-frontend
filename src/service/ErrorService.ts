@@ -21,12 +21,29 @@ export const ErrorService = {
     //   life: 3000,
     // });
 
-    if (e.response?.status === 401) {
-      console.log("!!!401");
+    if (e.code=="ERR_NETWORK" || e.code == "ERR_CONNECTION_REFUSED") {
+      console.log("NETWORK ERROR");
       router.push({
-        name: "login",
+        name: "Error503",
       });
-    } else if (e.response?.status === 503) {
+    }
+
+    if (e.response?.status === 401) {
+
+      console.log("!!!401");
+      // authStore.testPing().then(res => {
+      //   if (res.status === 200) {
+          router.push({
+            name: "login",
+          });
+        // }else {
+        //   router.push({
+        //     name: "Error503",
+        //   });
+        // }
+      // })
+
+    } else if (e.response?.status === 204) {
       router.push({
         name: "Error503",
       });

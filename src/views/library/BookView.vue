@@ -370,7 +370,6 @@ function resetForm() {
   selectedSeries.value = undefined;
   submitted.value = false;
   btnSaveDisabled.value = false;
-  btnSaveDisabled.value = false;
 }
 
 function changeStatusSearchIcon(busy: boolean, saved: boolean, error: boolean) {

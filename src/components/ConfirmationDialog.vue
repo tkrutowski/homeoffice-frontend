@@ -34,7 +34,7 @@ const cancel = () => {
       <span v-html="msg"></span>
     </div>
     <template #footer>
-      <div class="flex flex-row gap-1 justify-content-end">
+      <div class="flex flex-row gap-3 justify-content-end">
         <OfficeButton
           text="Anuluj"
           btn-type="office-regular"
