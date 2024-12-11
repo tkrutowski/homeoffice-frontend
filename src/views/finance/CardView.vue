@@ -1,46 +1,47 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router";
-import {onMounted, ref, watch} from "vue";
-import {useCardsStore} from "@/stores/cards.ts";
-import {useBanksStore} from "@/stores/banks.ts";
-import {useUsersStore} from "@/stores/users.ts";
-import {useToast} from "primevue/usetoast";
-import OfficeButton from "@/components/OfficeButton.vue";
-import router from "@/router";
-import IconButton from "@/components/OfficeIconButton.vue";
-import {User} from "@/types/User.ts";
-import {Bank, Card} from "@/types/Bank.ts";
-import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
-import moment from "moment";
+import {useRoute} from 'vue-router'
+import {onMounted, ref} from 'vue'
+import {useCardsStore} from '../../stores/cards'
+import {useBanksStore} from '../../stores/banks'
+import {useUsersStore} from '../../stores/users'
+import {useToast} from 'primevue/usetoast'
+import OfficeButton from '../../components/OfficeButton.vue'
+import router from '../../router'
+import IconButton from '../../components/OfficeIconButton.vue'
+import type {User} from '../../types/User'
+import type {Bank, Card} from '../../types/Bank'
+import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
+import {UtilsService} from '../../service/UtilsService'
+import type {AxiosError} from "axios";
 
-const route = useRoute();
-const cardStore = useCardsStore();
-const bankStore = useBanksStore();
-const userStore = useUsersStore();
-const toast = useToast();
-
+const route = useRoute()
+const cardStore = useCardsStore()
+const bankStore = useBanksStore()
+const userStore = useUsersStore()
+const toast = useToast()
 
 // const card = ref<Card>();
 const card = ref<Card>({
   id: 0,
   idBank: 0,
   idUser: 0,
-  name: "",
-  activationDate: undefined,
+  name: '',
+  activationDate: null,
   limit: 0,
   repaymentDay: 1,
-  expirationDate: undefined,
-  otherInfo: "",
-  activeStatus: "ACTIVE",
-  cardNumber: "",
+  expirationDate: null,
+  otherInfo: '',
+  activeStatus: 'ACTIVE',
+  cardNumber: '',
   closingDay: 1,
-  imageUrl: ""
-});
+  imageUrl: '',
+})
 
-const btnShowError = ref<boolean>(false);
-const btnShowBusy = ref<boolean>(false);
-const btnShowOk = ref<boolean>(false);
-const btnSaveDisabled = ref<boolean>(false);
+const btnShowError = ref<boolean>(false)
+const btnShowBusy = ref<boolean>(false)
+const btnShowOk = ref<boolean>(false)
+const btnSaveDisabled = ref<boolean>(false)
+
 
 // const isSaveBtnDisabled = computed(() => {
 //   return (
@@ -51,30 +52,28 @@ const btnSaveDisabled = ref<boolean>(false);
 //   );
 // });
 
-const activationDate = ref<string>("");
-watch(activationDate, (newDate: string) => {
-  if (card.value)
-    card.value.activationDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
-const expirationDate = ref<string>("");
-watch(expirationDate, (newDate: string) => {
-  if (card.value)
-    card.value.expirationDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+// const activationDate = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
+// watch(activationDate, (newDate: Date | null) => {
+//   if (card.value) card.value.activationDate = newDate
+// })
+// const expirationDate = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
+// watch(expirationDate, (newDate: Date | null) => {
+//   if (card.value) card.value.expirationDate = newDate
+// })
 
-const selectedUser = ref<User | undefined>();
+const selectedUser = ref<User | null>(null)
 
 function onUserChange() {
   if (selectedUser.value) {
-    card.value.idUser = selectedUser.value?.id;
+    card.value.idUser = selectedUser.value?.id
   }
 }
 
-const selectedBank = ref<Bank | undefined>();
+const selectedBank = ref<Bank | null>(null)
 
 function onBankChange() {
   if (selectedBank.value) {
-    card.value.idBank = selectedBank.value?.id;
+    card.value.idBank = selectedBank.value?.id
   }
 }
 
@@ -82,11 +81,11 @@ function onBankChange() {
 //SAVE
 //
 function saveCard() {
-  submitted.value = true;
+  submitted.value = true
   if (isEdit.value) {
-    editCard();
+    editCard()
   } else {
-    newCard();
+    newCard()
   }
 }
 
@@ -94,168 +93,169 @@ function saveCard() {
 //---------------------------------------------------------NEW BOOK----------------------------------------------
 //
 async function newCard() {
-  console.log("newCard()");
+  console.log('newCard()')
   if (isNotValid()) {
-    showError("Uzupełnij brakujące elementy");
-    btnShowError.value = true;
-    setTimeout(() => (btnShowError.value = false), 5000);
+    showError('Uzupełnij brakujące elementy')
+    btnShowError.value = true
+    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
-    btnSaveDisabled.value = true;
-    btnShowBusy.value = true;
-    cardStore.addCardDb(card.value).then(() => {
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Dodano kartę: " + card.value?.name,
-        life: 3000,
-      });
-      btnShowBusy.value = false;
-      btnShowOk.value = true;
-      setTimeout(() => {
-        resetForm();
-      }, 1000);
-    }).catch(reason => {
-      console.log("reason", reason);
-      if (reason.response.status === 409) {
-        toast.add({
-          severity: "warn",
-          summary: "Info",
-          detail: "Karta o tej nazwię już istnieje w bazie danych.",
-          life: 3000,
-        });
-      } else {
-        toast.add({
-          severity: "error",
-          summary: "Błąd",
-          detail: "Błąd podczas dodawania książki.",
-          life: 3000,
-        });
-        btnShowError.value = true;
-      }
-    });
+    btnSaveDisabled.value = true
+    btnShowBusy.value = true
+    cardStore
+        .addCardDb(card.value)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano kartę: ' + card.value?.name,
+            life: 3000,
+          })
+          btnShowBusy.value = false
+          btnShowOk.value = true
+          setTimeout(() => {
+            resetForm()
+          }, 1000)
+        })
+        .catch((reason: AxiosError) => {
+          console.log('reason', reason)
+          if (reason.response?.status === 409) {
+            toast.add({
+              severity: 'warn',
+              summary: 'Info',
+              detail: 'Karta o tej nazwię już istnieje w bazie danych.',
+              life: 3000,
+            })
+          } else {
+            toast.add({
+              severity: 'error',
+              summary: 'Błąd',
+              detail: 'Błąd podczas dodawania książki.',
+              life: 3000,
+            })
+            btnShowError.value = true
+          }
+        })
 
-    btnSaveDisabled.value = false;
-    btnShowBusy.value = false;
-    submitted.value = false;
+    btnSaveDisabled.value = false
+    btnShowBusy.value = false
+    submitted.value = false
     setTimeout(() => {
-      btnShowError.value = false;
-      btnShowOk.value = false;
-    }, 5000);
+      btnShowError.value = false
+      btnShowOk.value = false
+    }, 5000)
   }
 }
 
 //
 //-----------------------------------------------------EDIT BOOK------------------------------------------------
 //
-const isEdit = ref<boolean>(false);
+const isEdit = ref<boolean>(false)
 
 async function editCard() {
   if (isNotValid()) {
-    showError("Uzupełnij brakujące elementy");
-    btnShowError.value = true;
-    setTimeout(() => (btnShowError.value = false), 5000);
+    showError('Uzupełnij brakujące elementy')
+    btnShowError.value = true
+    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
-    btnSaveDisabled.value = true;
-    console.log("editCard()");
-    await cardStore.updateCardDb(card.value)
+    btnSaveDisabled.value = true
+    console.log('editCard()')
+    await cardStore
+        .updateCardDb(card.value)
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Zaaktualizowano kartę: " + card.value?.name,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zaaktualizowano kartę: ' + card.value?.name,
             life: 3000,
-          });
-          btnShowOk.value = true;
+          })
+          btnShowOk.value = true
           setTimeout(() => {
-            router.push({name: "Cards"});
-          }, 3000);
+            router.push({name: 'Cards'})
+          }, 3000)
         })
         .catch(() => {
           toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Błąd podczas edycji karty.",
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Błąd podczas edycji karty.',
             life: 3000,
-          });
-          btnShowError.value = true;
-          btnSaveDisabled.value = false;
+          })
+          btnShowError.value = true
+          btnSaveDisabled.value = false
           setTimeout(() => {
-                btnShowError.value = false;
-                btnShowOk.value = false;
-                btnShowError.value = false;
-              },
-              5000);
+            btnShowError.value = false
+            btnShowOk.value = false
+            btnShowError.value = false
+          }, 5000)
         })
   }
 }
 
 //---------------------------------------------MOUNTED--------------------------------------------
 onMounted(async () => {
-  console.log("onMounted GET");
-  btnSaveDisabled.value = true;
-  if (userStore.users.length === 0) await userStore.getUsersFromDb();
-  if (bankStore.banks.length === 0) await bankStore.getBanksFromDb();
-  isEdit.value = route.params.isEdit === "true";
-  const cardId = Number(route.params.cardId as string);
+  console.log('onMounted GET')
+  btnSaveDisabled.value = true
+  if (userStore.users.length === 0) await userStore.getUsersFromDb()
+  if (bankStore.banks.length === 0) await bankStore.getBanksFromDb()
+  isEdit.value = route.params.isEdit === 'true'
+  const cardId = Number(route.params.cardId as string)
   if (!isEdit.value && cardId === 0) {
-    console.log("onMounted NEW CARD");
+    console.log('onMounted NEW CARD')
   } else {
-    console.log("onMounted EDIT CARD");
+    console.log('onMounted EDIT CARD')
     cardStore
         .getCardFromDb(cardId)
-        .then((data) => {
+        .then((data: Card | null) => {
           if (data) {
-            card.value = data;
-
-            selectedUser.value = userStore.getUser(card.value.idUser);
-            selectedBank.value = bankStore.getBank(card.value.idBank);
-            activationDate.value = moment(card.value.activationDate).format("YYYY-MM-DD");
-            expirationDate.value = moment(card.value.expirationDate).format("YYYY-MM-DD");
+            card.value = data
+            selectedUser.value = userStore.getUser(card.value.idUser)
+            selectedBank.value = bankStore.getBank(card.value.idBank)
+            // activationDate.value = card.value.activationDate
+            // expirationDate.value = card.value.expirationDate
           }
         })
-        .catch((error) => {
-          console.error("Błąd podczas pobierania kart:", error);
-        });
+        .catch((error: AxiosError) => {
+          console.error('Błąd podczas pobierania kart:', error)
+        })
   }
-  btnSaveDisabled.value = false;
-});
-
+  btnSaveDisabled.value = false
+})
 
 function resetForm() {
   card.value = {
     id: 0,
     idBank: 0,
     idUser: 0,
-    name: "",
-    activationDate: undefined,
+    name: '',
+    activationDate: null,
     limit: 0,
     repaymentDay: 1,
-    expirationDate: undefined,
-    otherInfo: "",
-    activeStatus: "ACTIVE",
-    cardNumber: "",
+    expirationDate: null,
+    otherInfo: '',
+    activeStatus: 'ACTIVE',
+    cardNumber: '',
     closingDay: 1,
-    imageUrl: ""
-  };
-  selectedBank.value = undefined;
-  selectedUser.value = undefined;
-  submitted.value = false;
-  btnSaveDisabled.value = false;
+    imageUrl: '',
+  }
+  selectedBank.value = null
+  selectedUser.value = null
+  submitted.value = false
+  btnSaveDisabled.value = false
 }
 
 //
 //------------------------------------------------ERROR----------------------------------------------------------
 //
-const submitted = ref(false);
+const submitted = ref(false)
 
 const showError = (msg: string) => {
   toast.add({
-    severity: "error",
-    summary: "Error Message",
+    severity: 'error',
+    summary: 'Error Message',
     detail: msg,
     life: 3000,
-  });
-};
+  })
+}
 const isNotValid = () => {
   return (
       showErrorName() ||
@@ -265,29 +265,29 @@ const isNotValid = () => {
       showErrorBank() ||
       showErrorExpirationDate() ||
       showErrorActivationDate()
-  );
-};
+  )
+}
 const showErrorName = () => {
-  return submitted.value && card.value.name.length === 0;
-};
+  return submitted.value && card.value.name.length === 0
+}
 const showErrorNumber = () => {
-  return submitted.value && card.value.cardNumber.length === 0;
-};
+  return submitted.value && card.value.cardNumber.length === 0
+}
 const showErrorLimit = () => {
-  return submitted.value && card.value.limit == 0;
-};
+  return submitted.value && card.value.limit == 0
+}
 const showErrorUser = () => {
-  return submitted.value && card.value.idUser <= 0;
-};
+  return submitted.value && card.value.idUser <= 0
+}
 const showErrorBank = () => {
-  return submitted.value && card.value.idBank <= 0;
-};
+  return submitted.value && card.value.idBank <= 0
+}
 const showErrorExpirationDate = () => {
-  return submitted.value && !card.value.expirationDate;
-};
+  return submitted.value && !card.value.expirationDate
+}
 const showErrorActivationDate = () => {
-  return submitted.value && !card.value.activationDate;
-};
+  return submitted.value && !card.value.activationDate
+}
 </script>
 
 <template>
@@ -309,15 +309,14 @@ const showErrorActivationDate = () => {
           />
           <div class="w-full flex justify-center">
             <h2>
-              {{ isEdit ? `Edycja karty: ${card?.name}` : "Nowa karta" }}
+              {{ isEdit ? `Edycja karty: ${card?.name}` : 'Nowa karta' }}
             </h2>
           </div>
         </template>
 
         <!--  --------------------------------------------------------CARD---------------------------------      -->
-        <Fieldset class="w-full " legend="Karta">
+        <Fieldset class="w-full" legend="Karta">
           <div class="grid grid-cols-6 gap-4">
-
             <!-- IMAGE -->
             <div class="col-start-1 col-span-2 mt-4 ml-2">
               <img
@@ -327,15 +326,8 @@ const showErrorActivationDate = () => {
                   width="140"
                   alt="Karta"
               />
-              <img
-                  v-else
-                  src="@/assets/images/no-card.jpg"
-                  height="100"
-                  width="200"
-                  alt="Karta"
-              />
+              <img v-else src="@/assets/images/no-card.jpg" height="100" width="200" alt="Karta"/>
             </div>
-
 
             <div class="col-start-3 col-span-4">
               <!-- ROW-1   NAME -->
@@ -348,7 +340,7 @@ const showErrorActivationDate = () => {
                     :class="{ 'p-invalid': showErrorName() }"
                 />
                 <small class="p-error">{{
-                    showErrorName() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorName() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
 
@@ -362,34 +354,34 @@ const showErrorActivationDate = () => {
                     :class="{ 'p-invalid': showErrorNumber() }"
                 />
                 <small class="p-error">{{
-                    showErrorNumber() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
 
-
-              <!-- ROW-3   LIMIT URL -->
+            <!-- ROW-3   LIMIT URL -->
             <div class="col-start-1 col-span-2">
               <div class="flex flex-col">
                 <label class="ml-2 mb-1" for="name">Limit na karcie:</label>
                 <InputNumber
                     id="name"
                     v-model="card.limit"
-                    mode="currency" currency="PLN" locale="pl-PL" fluid
+                    mode="currency"
+                    currency="PLN"
+                    locale="pl-PL"
+                    fluid
+                    @focus="UtilsService.selectText"
                     :invalid="showErrorLimit()"
                 />
                 <small class="p-error">{{
-                    showErrorLimit() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorLimit() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
             <div class="col-start-3 col-span-4">
-              <div class="flex flex-col  ">
+              <div class="flex flex-col">
                 <label class="ml-2 mb-1" for="cover">URL zdjęcia:</label>
-                <InputText
-                    id="cover"
-                    v-model="card.imageUrl"
-                />
+                <InputText id="cover" v-model="card.imageUrl"/>
               </div>
             </div>
 
@@ -400,7 +392,11 @@ const showErrorActivationDate = () => {
                 <InputNumber
                     id="name"
                     v-model="card.closingDay"
-                    mode="decimal" show-buttons :min="1" :max="28" fluid
+                    mode="decimal"
+                    show-buttons
+                    :min="1"
+                    :max="28"
+                    fluid
                 />
               </div>
             </div>
@@ -410,14 +406,16 @@ const showErrorActivationDate = () => {
                 <InputNumber
                     id="name"
                     v-model="card.repaymentDay"
-                    mode="decimal" show-buttons :min="1" :max="28" fluid
+                    mode="decimal"
+                    show-buttons
+                    :min="1"
+                    :max="28"
+                    fluid
                 />
-
               </div>
             </div>
 
-
-              <!-- ROW-4   USER BANK-->
+            <!-- ROW-4   USER BANK-->
             <div class="col-start-1 col-span-3">
               <div class="flex flex-row gap-4">
                 <div class="flex flex-col w-full">
@@ -431,7 +429,7 @@ const showErrorActivationDate = () => {
                       @change="onUserChange"
                   />
                   <small class="p-error">{{
-                      showErrorUser() ? "Pole jest wymagane." : "&nbsp;"
+                      showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
                 </div>
                 <div v-if="userStore.loadingUsers" class="mt-3 content-center">
@@ -457,7 +455,7 @@ const showErrorActivationDate = () => {
                       @change="onBankChange"
                   />
                   <small class="p-error">{{
-                      showErrorBank() ? "Pole jest wymagane." : "&nbsp;"
+                      showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
                 </div>
                 <div v-if="bankStore.loadingBanks" class="mt-3 content-center">
@@ -470,20 +468,19 @@ const showErrorActivationDate = () => {
               </div>
             </div>
 
-
             <!-- ROW-5  DATES  -->
             <div class="col-start-1 col-span-3">
               <div class="flex flex-col w-full">
                 <label class="ml-2 mb-1" for="activationDate">Data aktywacji:</label>
                 <DatePicker
                     id="activationDate"
-                    v-model="activationDate"
+                    v-model="card.activationDate"
                     show-icon
                     date-format="yy-mm-dd"
                     :invalid="showErrorActivationDate()"
                 />
                 <small class="p-error">{{
-                    showErrorActivationDate() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorActivationDate() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
@@ -493,29 +490,22 @@ const showErrorActivationDate = () => {
                 <label class="ml-2 mb-1" for="expirationDate">Data ważności:</label>
                 <DatePicker
                     id="expirationDate"
-                    v-model="expirationDate"
+                    v-model="card.expirationDate"
                     show-icon
                     date-format="yy-mm-dd"
                     :invalid="showErrorExpirationDate()"
                 />
                 <small class="p-error">{{
-                    showErrorExpirationDate() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorExpirationDate() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
           </div>
         </Fieldset>
 
-
         <!-- ROW-6  OTHER INFO  -->
         <Fieldset legend="Dodatkowe informacje">
-          <Textarea
-              id="description"
-              v-model="card.otherInfo"
-              fluid
-              rows="5"
-              cols="30"
-          />
+          <Textarea id="description" v-model="card.otherInfo" fluid rows="5" cols="30"/>
         </Fieldset>
 
         <!-- ROW-8  BTN SAVE -->
@@ -534,7 +524,6 @@ const showErrorActivationDate = () => {
               :is-busy-icon="btnShowBusy"
               :is-error-icon="btnShowError"
               :is-ok-icon="btnShowOk"
-              :btn-disabled="isSaveBtnDisabled"
           />
         </div>
       </Panel>
@@ -542,5 +531,4 @@ const showErrorActivationDate = () => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

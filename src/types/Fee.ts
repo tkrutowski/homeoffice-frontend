@@ -1,34 +1,35 @@
-import { PaymentStatus } from "@/assets/types/PaymentStatus";
-import Firm from "@/assets/types/Firm";
+import type { PaymentStatus } from './PaymentStatus'
+import type { Firm } from './Firm'
 
 export interface Fee {
-  id: number;
-  firm: Firm | undefined;
-  idUser: number;
-  name: string;
-  feeNumber: string;
-  date: string;
-  feeFrequency: FeeFrequency | undefined;
-  numberOfPayments: number;
-  amount: number;
-  firstPaymentDate: string;
-  accountNumber: string;
-  feeStatus: PaymentStatus;
-  otherInfo: string;
-  installmentList: FeeInstallment[];
+  id: number
+  firm: Firm | null
+  idUser: number
+  name: string
+  feeNumber: string
+  date: Date | null
+  feeFrequency: FeeFrequency | null
+  numberOfPayments: number
+  amount: number
+  firstPaymentDate: Date | null
+  accountNumber: string
+  feeStatus: PaymentStatus
+  otherInfo: string
+  installmentList: FeeInstallment[]
 }
+
 export interface FeeInstallment {
-  idFeeInstallment: number;
-  idFee: number;
-  installmentAmountToPay: number;
-  installmentAmountPaid: number;
-  paymentDeadline: string;
-  paymentDate: string | undefined;
-  paymentStatus: PaymentStatus;
+  idFeeInstallment: number
+  idFee: number
+  installmentAmountToPay: number
+  installmentAmountPaid: number
+  paymentDeadline: Date | null
+  paymentDate: Date | null
+  paymentStatus: PaymentStatus
 }
 
 export interface FeeFrequency {
-  name: string;
-  viewName: string;
-  frequencyNumber: number;
+  name: string
+  viewName: string
+  frequencyNumber: number
 }

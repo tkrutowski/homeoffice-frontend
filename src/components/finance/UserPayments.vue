@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import moment from "moment";
-import {onMounted, ref} from "vue";
-import {UtilsService} from "@/service/UtilsService";
-import router from "@/router";
-import {Installment, Payment} from "@/types/Payment";
+import moment from 'moment'
+import {onMounted, ref} from 'vue'
+import {UtilsService} from '../../service/UtilsService'
+import router from '../../router'
+import type {Installment, Payment} from '../../types/Payment'
 
-import {usePaymentStore} from "@/stores/payments";
-import {useUsersStore} from "@/stores/users";
-import {useLoansStore} from "@/stores/loans.ts";
-import {useFeeStore} from "@/stores/fee.ts";
+import {usePaymentStore} from '../../stores/payments'
+import {useUsersStore} from '../../stores/users'
+import {useLoansStore} from '../../stores/loans'
+import {useFeeStore} from '../../stores/fee.ts'
 
-const paymentStore = usePaymentStore();
-const userStore = useUsersStore();
-const loansStore = useLoansStore();
-const feeStore = useFeeStore();
+const paymentStore = usePaymentStore()
+const userStore = useUsersStore()
+const loansStore = useLoansStore()
+const feeStore = useFeeStore()
 
 const props = defineProps({
   idUser: {
@@ -24,221 +24,216 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-});
+})
 
-const selectedPayment = ref<Payment>();
-const selectedYear = ref<number>(props.year);
-const payments = ref<Payment[]>();
+const selectedPayment = ref<Payment | null>(null)
+const selectedYear = ref<number>(props.year)
+const payments = ref<Payment[]>([])
 
 const onRowSelect = (event: any) => {
-  console.log("ON_ROW_SELECT: ", event);
-  // console.log("ON_ROW_SELECT: ", event.data.paymentType);
-  const payment =
-      event.data.paymentType === "LOAN" ? "PaymentLoan" : "PaymentFee";
+  const payment = event.data.paymentType === 'LOAN' ? 'PaymentLoan' : 'PaymentFee'
   router.push({
     name: payment,
     params: {id: event.data.id},
-  });
-};
+  })
+}
 const getAmount = (installments: Installment[], month: number) => {
-  let installment = installments.find(
-      (pay) =>
-          parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-          selectedYear.value &&
-          parseInt(moment(pay.paymentDeadline).format("M")) === month
-  );
+  const installment: Installment | undefined = installments.find(
+      (pay: Installment) =>
+          pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+          pay.paymentDeadline.getMonth() + 1 === month,
+  )
 
   return installment === undefined
-      ? "null"
+      ? 'null'
       : +installment.installmentAmountPaid === 0
           ? UtilsService.formatCurrency(installment.installmentAmountToPay)
-          : UtilsService.formatCurrency(installment.installmentAmountPaid);
-};
+          : UtilsService.formatCurrency(installment.installmentAmountPaid)
+}
 
 const getClassAmount = (installments: Installment[], month: number) => {
-  let installment = installments.find(
-      (pay) =>
-          parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-          selectedYear.value &&
-          parseInt(moment(pay.paymentDeadline).format("M")) === month
-  );
-  const paymentDeadline = installment?.paymentDeadline;
-  if (!paymentDeadline) return "no-credit";
+  const installment: Installment | undefined = installments.find(
+      (pay: Installment) =>
+          pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+          pay.paymentDeadline?.getMonth() + 1 === month,
+  )
+  const paymentDeadline = installment?.paymentDeadline
+  if (!paymentDeadline) return 'no-credit'
 
-  let date = moment(installment?.paymentDate).format("yyyy-MM-DD");
-  let isPaid = !date.startsWith("Invalid");
+  const date = moment(installment?.paymentDate).format('yyyy-MM-DD')
+  const isPaid = !date.startsWith('Invalid')
   if (isPaid) {
-    const deadline = moment(installment?.paymentDeadline);
-    const paymentDate = moment(installment?.paymentDate);
+    const deadline = moment(installment?.paymentDeadline)
+    const paymentDate = moment(installment?.paymentDate)
 
-    if (paymentDate.isAfter(deadline)) return "overdue";
-    else return "paid";
+    if (paymentDate.isAfter(deadline)) return 'overdue'
+    else return 'paid'
   } else {
-    const deadline = moment(installment?.paymentDeadline);
-    const now = moment();
-    if (now.isAfter(deadline)) return "overdue";
+    const deadline = moment(installment?.paymentDeadline)
+    const now = moment()
+    if (now.isAfter(deadline)) return 'overdue'
   }
-  return null;
-};
+  return 'to-pay'
+}
 
 const getDate = (installments: Installment[], month: number) => {
-  let installment = installments.find(
-      (pay) =>
-          parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-          selectedYear.value &&
-          parseInt(moment(pay.paymentDeadline).format("M")) === month
-  );
-  if (!installment) return "null";
+  const installment: Installment | undefined = installments.find(
+      (pay: Installment) =>
+          pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+          pay.paymentDeadline?.getMonth() + 1 === month,
+  )
+  if (!installment) return 'null'
 
-  const paymentDate = installment?.paymentDate;
+  const paymentDate = installment?.paymentDate
   if (paymentDate) {
-    let date = moment(paymentDate).format("yyyy-MM-DD");
-    let isPaid = !date.startsWith("Invalid");
-    return isPaid ? date : "";
+    const date = moment(paymentDate).format('yyyy-MM-DD')
+    const isPaid = !date.startsWith('Invalid')
+    return isPaid ? date : ''
   }
-};
+}
 
 const getClassDate = (installments: Installment[], month: number) => {
-  let installment = installments.find(
-      (pay) =>
-          parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-          selectedYear.value &&
-          parseInt(moment(pay.paymentDeadline).format("M")) === month
-  );
-  const paymentDeadline = installment?.paymentDeadline;
-  if (!paymentDeadline) return "no-credit";
+  const installment = installments.find(
+      (pay: Installment) =>
+          pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+          pay.paymentDeadline?.getMonth() + 1 === month,
+  )
+  const paymentDeadline = installment?.paymentDeadline
+  if (!paymentDeadline) return 'no-credit'
 
-  let date = moment(installment?.paymentDate).format("yyyy-MM-DD");
-  let isPaid = !date.startsWith("Invalid");
+  const date = moment(installment?.paymentDate).format('yyyy-MM-DD')
+  const isPaid = !date.startsWith('Invalid')
   if (isPaid) {
-    const deadline = moment(installment?.paymentDeadline);
-    const paymentDate = moment(installment?.paymentDate);
+    const deadline = moment(installment?.paymentDeadline)
+    const paymentDate = moment(installment?.paymentDate)
 
-    if (paymentDate.isAfter(deadline)) return "overdue";
-    else return "paid";
+    if (paymentDate.isAfter(deadline)) return 'overdue'
+    else return 'paid'
   }
-  return null;
-};
+  return null
+}
 
 const calculateTotal = (month: number) => {
   return payments.value
       ?.map((value) => value.installments)
       .flatMap((value) => value)
       .filter(
-          (pay) =>
-              parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-              selectedYear.value &&
-              parseInt(moment(pay.paymentDeadline).format("M")) === month
+          (pay: Installment) =>
+              pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+              pay.paymentDeadline.getMonth() + 1 === month,
       )
       .map((value) => value.installmentAmountToPay)
-      .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-};
+      .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+}
 const calculateTotalPaid = (month: number) => {
   return payments.value
       ?.map((value) => value.installments)
       .flatMap((value) => value)
       .filter(
-          (pay) =>
-              parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-              selectedYear.value &&
-              parseInt(moment(pay.paymentDeadline).format("M")) === month
+          (pay: Installment) =>
+              pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+              pay.paymentDeadline.getMonth() + 1 === month,
       )
       .map((value) => value.installmentAmountPaid)
-      .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-};
+      .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+}
 const calculateTotalToPay = (month: number) => {
   return payments.value
       ?.map((value) => value.installments)
       .flatMap((value) => value)
       .filter(
-          (pay) =>
-              parseInt(moment(pay.paymentDeadline).format("yyyy")) ===
-              selectedYear.value &&
-              parseInt(moment(pay.paymentDeadline).format("M")) === month
+          (pay: Installment) =>
+              pay.paymentDeadline?.getFullYear() === selectedYear.value &&
+              pay.paymentDeadline.getMonth() + 1 === month,
       )
       .map((value) =>
           value.installmentAmountToPay - value.installmentAmountPaid < 0
               ? 0
-              : value.installmentAmountToPay - value.installmentAmountPaid
+              : value.installmentAmountToPay - value.installmentAmountPaid,
       )
-      .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-};
+      .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+}
 
 const findBankOrFirmName = (payment: Payment) => {
-  console.log("findBankOrFirmName START", payment);
-  let result = "";
-  if (payment.paymentType === "LOAN") {
-    const loan = loansStore.getLoan(payment.installments[0].idLoan);
-    result = loan?.bank.name || '';
+  let result = ''
+  if (payment.paymentType === 'LOAN' && payment.installments.length > 0) {
+    const firstInstallment = payment.installments[0]
+    if (UtilsService.isLoanInstallment(firstInstallment)) {
+      const loan = loansStore.getLoan(firstInstallment.idLoan)
+      if (loan && loan.bank) {
+        result = loan.bank.name
+      }
+    }
   }
-  if (payment.paymentType === "FEE") {
-    const fee = feeStore.getFee(payment.installments[0].idFee);
-    result = fee?.firm.name || '';
+
+  if (payment.paymentType === 'FEE' && payment.installments.length > 0) {
+    const firstInstallment = payment.installments[0]
+    if (UtilsService.isFeeInstallment(firstInstallment)) {
+      const fee = feeStore.getFee(firstInstallment.idFee)
+      if (fee && fee.firm) {
+        result = fee.firm.name
+      }
+    }
   }
 
   if (result.length > 20) {
-    return result.slice(0, 15) + "...";
+    return result.slice(0, 15) + '...'
   }
 
-  return result;
-};
-
+  return result
+}
 
 const getMonth = (month: number) => {
   switch (month) {
     case 1:
-      return "Styczeń";
+      return 'Styczeń'
     case 2:
-      return "Luty";
+      return 'Luty'
     case 3:
-      return "Marzec";
+      return 'Marzec'
     case 4:
-      return "Kwiecień";
+      return 'Kwiecień'
     case 5:
-      return "Maj";
+      return 'Maj'
     case 6:
-      return "Czerwiec";
+      return 'Czerwiec'
     case 7:
-      return "Lipiec";
+      return 'Lipiec'
     case 8:
-      return "Sierpień";
+      return 'Sierpień'
     case 9:
-      return "Wrzesień";
+      return 'Wrzesień'
     case 10:
-      return "Październik";
+      return 'Październik'
     case 11:
-      return "Listopad";
+      return 'Listopad'
     case 12:
-      return "Grudzień";
+      return 'Grudzień'
     default:
-      return "null";
+      return 'null'
   }
-};
+}
 const getUserFullName = (id: number) => {
-  return userStore.getUserFullName(id);
-};
+  return userStore.getUserFullName(id)
+}
 
 //------------------------------------MOUNTED------------------------------
 onMounted(() => {
-  console.log("onMounted UserPayments");
-  moment.locale("pl");
-  payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
-});
+  console.log('onMounted UserPayments')
+  moment.locale('pl')
+  payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString())
+})
 </script>
 
 <template>
   <Panel class="mt-5">
     <template #header>
       <div class="w-full flex justify-center">
-        <h2 class="m-0">
+        <p class="m-0 text-3xl">
           {{ getUserFullName(idUser) }}
-        </h2>
+        </p>
         <div v-if="paymentStore.loadingPayments">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 40px; height: 40px"
-              stroke-width="5"
-          />
+          <ProgressSpinner class="ml-3" style="width: 40px; height: 40px" stroke-width="5"/>
         </div>
       </div>
     </template>
@@ -253,21 +248,16 @@ onMounted(() => {
         sort-field="paymentDay"
         table-style="min-width: 50rem"
         @row-select="onRowSelect"
+        size="small"
     >
       <template #empty>
-        <h4 v-if="!paymentStore.loadingPayments" class="color-red">
+        <p v-if="!paymentStore.loadingPayments" class="text-red-500 text-3xl">
           Nie znaleziono opłat...
-        </h4>
+        </p>
       </template>
 
       <!--  NAME    -->
-      <Column
-          field="name"
-          header="Nazwa"
-          sortable
-          frozen
-          style="min-width: 180px"
-      >
+      <Column field="name" header="Nazwa" :sortable="true" frozen style="min-width: 180px">
         <template #body="{ data, field }">
           <div class="name">
             {{ data[field] }}
@@ -276,13 +266,7 @@ onMounted(() => {
       </Column>
 
       <!--  BANK/FIRM    -->
-      <Column
-          field="bank"
-          header="Bank/Firma"
-          sortable
-          frozen
-          style="min-width: 130px"
-      >
+      <Column field="bank" header="Bank/Firma" :sortable="true" frozen style="min-width: 150px">
         <template #body="{ data }">
           <div class="name">
             {{ findBankOrFirmName(data) }}
@@ -291,13 +275,7 @@ onMounted(() => {
       </Column>
 
       <!--  PAYMENT DAY    -->
-      <Column
-          field="paymentDay"
-          header="Dzień"
-          sortable
-          frozen
-          style="width: 85px"
-      >
+      <Column field="paymentDay" header="Dzień" :sortable="true" style="width: 85px">
         <template #body="{ data, field }">
           <div class="day">
             {{ data[field] }}
@@ -307,31 +285,30 @@ onMounted(() => {
 
       <!--  MONTHS    -->
       <div v-for="number in 12" :key="number">
+        <!--  AMOUNT -->
         <Column
             field="amount"
             :header="getMonth(number)"
-            header-style="justify-content: center;"
-            style="min-width: 100px; align-content: center; justify-content: center;"
+            headerStyle="min-width: 100px;"
+            headerClass="user-payment"
+            class="user-payment"
         >
           <template #body="slotProps">
-            <div
-                class="flex justify-center"
-                :class="getClassAmount(slotProps.data.installments, number)"
-            >
+            <div :class="getClassAmount(slotProps.data.installments, number)">
               {{ getAmount(slotProps.data.installments, number) }}
             </div>
           </template>
         </Column>
+
+        <!--   DATA     -->
         <Column
-            header="Data zapł."
-            style="min-width: 110px; align-content: center; justify-content: center;"
-            class="p-column-data-zapl">
+            header="Data zapł." fefacrot
+            headerStyle="min-width: 110px;"
+            headerClass=" user-payment"
+            class="p-column-data-zapl user-payment"
+        >
           <template #body="slotProps">
-            <div
-                class=""
-                :class="getClassDate(slotProps.data.installments, number)"
-            >
-              <!--                  slotProps.data.paymentDay-->
+            <div :class="getClassDate(slotProps.data.installments, number)">
               {{ getDate(slotProps.data.installments, number) }}
             </div>
           </template>
@@ -340,12 +317,7 @@ onMounted(() => {
 
       <ColumnGroup type="footer">
         <Row>
-          <Column
-              footer="Razem:"
-              :colspan="2"
-              footer-style="text-align:left"
-              frozen
-          />
+          <Column footer="Razem:" :colspan="3" frozen footer-style="text-align:left"/>
           <Column
               v-for="number in 12"
               :key="number"
@@ -356,7 +328,7 @@ onMounted(() => {
         <Row>
           <Column
               footer="Zapłacono:"
-              :colspan="2"
+              :colspan="3"
               footer-style="text-align:left"
               footer-class="ml-5"
               frozen
@@ -369,12 +341,7 @@ onMounted(() => {
           />
         </Row>
         <Row>
-          <Column
-              footer="Do zapłaty:"
-              :colspan="2"
-              footer-style="text-align:left"
-              frozen
-          />
+          <Column footer="Do zapłaty:" :colspan="3" frozen footer-style="text-align:left"/>
           <Column
               v-for="number in 12"
               :key="number"
@@ -388,31 +355,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
-.p-datatable >>> .p-datatable-column-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.no-credit {
-  background-color: red;
-  color: red;
-  padding: 0.3rem 0 0.3rem 0;
-}
-
-.paid {
-  background-color: #2ca083;
-  color: black;
-  padding: 0.3rem 0 0.3rem 0;
-}
-
-.to-pay {
-  padding: 0.3rem 0 0.3rem 0;
-}
-
 .name {
-  padding: 0.3rem 0 0.3rem 1rem;
+  padding: 0.3rem 0 0.3rem 0;
   text-align: left;
 }
 
@@ -421,45 +365,45 @@ onMounted(() => {
   text-align: center;
 }
 
+.no-credit {
+  display: flex;
+  justify-content: center;
+  background-color: red;
+  color: red;
+  padding: 0.7rem 0;
+  min-width: 100%;
+}
+
+.paid {
+  display: flex;
+  justify-content: center;
+  background-color: #2ca083;
+  color: black;
+  padding: 0.7rem 0;
+  min-width: 100%;
+}
+
+.to-pay {
+  display: flex;
+  justify-content: center;
+  padding: 0.7rem 0;
+}
+
 .overdue {
+  display: flex;
+  justify-content: center;
   background-color: yellow;
   color: black;
-  padding: 0.3rem 0 0.3rem 0;
-}
-
-.p-datatable >>> .p-datatable-tbody > tr > td {
-  //text-align: center;
-  //border: 1px solid black;
-  //border-width: 0 1px 1px 0;
-  padding: 0;
-}
-
-.p-datatable >>> .p-datatable-tfoot > tr > td {
-  padding: 0;
+  padding: 0.7rem 0;
+  min-width: 100%;
 }
 
 .p-datatable >>> .p-datatable-column-footer {
   margin-left: 1rem;
 }
 
-/* Przykład ustawienia obramowania między specyficznymi kolumnami */
-.p-datatable >>> td.p-column-data-zapl {
-  border-right: 1px solid var(--p-datatable-body-cell-border-color); /* Dodaj obramowanie po prawej stronie kolumny „Data zapł.” */
-}
-
-/* Standardowy styl wierszy tabeli */
-.p-datatable >>> tr {
-  transition: border 0.3s ease; /* Dodanie płynnej zmiany obramowania */
-}
-
 /* Styl podczas najechania myszką */
-.p-datatable >>> tr:hover {
-  border: 2px solid #00ff00; /* Przykładowe niebieskie obramowanie */
-  background-color: transparent; /* Upewnij się, że tło nie zmienia się */
-}
-
-/* Aby usunąć wyszarzenie */
-.p-datatable >>> tr:hover td {
-  background-color: inherit; /* Zapobiega wyszarzeniu kolumn w wierszu */
+.p-datatable >>> .p-datatable-tbody > tr:hover {
+  filter: brightness(0.75); /* Przyciemnia każdy kolor o 25% */
 }
 </style>

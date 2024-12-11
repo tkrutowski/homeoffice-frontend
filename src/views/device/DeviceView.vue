@@ -1,121 +1,128 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router";
-import {useDevicesStore} from "@/stores/devices.ts";
-import { useFirmsStore } from "@/stores/firms.ts";
-import {computed, onMounted, ref, watch} from "vue";
-import OfficeButton from "@/components/OfficeButton.vue";
-import router from "@/router";
-import IconButton from "@/components/OfficeIconButton.vue";
-import {useToast} from "primevue/usetoast";
-import AddDialog from "@/components/AddDialog.vue";
-import OfficeIconButton from "@/components/OfficeIconButton.vue";
-import {Device, DeviceType} from "@/types/Devices.ts";
-import {Firm} from "@/types/Firm.ts";
-import TheMenuDevice from "@/components/device/TheMenuDevice.vue";
-import moment from "moment/moment";
-import {UtilsService} from "@/service/UtilsService.ts";
+import {useRoute} from 'vue-router'
+import {useDevicesStore} from '../../stores/devices'
+import {useFirmsStore} from '../../stores/firms'
+import {computed, onMounted, ref, watch} from 'vue'
+import OfficeButton from '../../components/OfficeButton.vue'
+import router from '../../router'
+import IconButton from '../../components/OfficeIconButton.vue'
+import {useToast} from 'primevue/usetoast'
+import AddDialog from '../../components/AddDialog.vue'
+import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import type {Device, DeviceType} from '../../types/Devices'
+import type {Firm} from '../../types/Firm'
+import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
+import moment from 'moment/moment'
+import {UtilsService} from '../../service/UtilsService'
+import type {AxiosError} from "axios";
 
-const deviceStore = useDevicesStore();
-const firmStore = useFirmsStore();
-const route = useRoute();
+const deviceStore = useDevicesStore()
+const firmStore = useFirmsStore()
+const route = useRoute()
 
-const toast = useToast();
-const selectedFirm = ref<Firm | undefined>();
-const selectedDeviceType = ref<DeviceType | undefined>();
+const toast = useToast()
+const selectedFirm = ref<Firm | null>(null)
+const selectedDeviceType = ref<DeviceType | null>(null)
 
 //
 //AUTO COMPLETE FIRM
 //
-const filteredFirms = ref<Firm[]>([]);
+const filteredFirms = ref<Firm[]>([])
 const searchFirm = (event: { query: string }) => {
-  filteredFirms.value = firmStore.firms.filter((firm) => {
-    return firm.name.toLowerCase().includes(event.query.toLowerCase());
-  });
-};
-watch(selectedFirm, (newFirm: Firm | undefined) => {
-  device.value.firm = newFirm;
-});
+  filteredFirms.value = firmStore.firms.filter((firm: Firm) => {
+    return firm.name.toLowerCase().includes(event.query.toLowerCase())
+  })
+}
+watch(selectedFirm, (newFirm: Firm | null) => {
+  if (newFirm) {
+    device.value.firm = newFirm
+  }
+})
 
 // PURCHASE DATE
-const purchaseDateTemp = ref<string>("");
-watch(purchaseDateTemp, (newDate: string) => {
-  device.value.purchaseDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+// const purchaseDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
+// watch(purchaseDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
+//   device.value.purchaseDate = newDate
+// })
 
 // SELL DATE
-const sellDateTemp = ref<string>("");
-watch(sellDateTemp, (newDate: string) => {
-  device.value.sellDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+// const sellDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
+// watch(sellDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
+//   device.value.sellDate = newDate
+// })
 
 // WARRANTY DATE
-const warrantyDateTemp = ref<string>("");
+// const warrantyDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
 const warrantyDateLeft = computed(() => {
-  if (warrantyDateTemp.value === "") {
-    return"Brak gwarancji.";
-  }
-  const today = moment(); // dzisiejsza data
-  const futureDate = moment(device.value.warrantyEndDate); // odległa data (w formacie 'YYYY-MM-DD')
-  const yearsRemaining = futureDate.diff(today, 'years');
-  const futureDateWithoutYears = today.add(yearsRemaining, 'years');
-  const daysRemaining = futureDate.diff(futureDateWithoutYears, 'days');
-  if (yearsRemaining < 0 || daysRemaining < 0) {
-    return ("Gwarancja się skończyła.");
-  }
-  if (yearsRemaining === 0){
-    return (`${daysRemaining} dni.`);
-  }
-  return (`${yearsRemaining} lat(a) i ${daysRemaining} dni.`);
+  // if (!device.value.warrantyEndDate) {
+  //   return 'Brak gwarancji.'
+  // }
 
+  if (device.value.warrantyEndDate instanceof Date) {
+    const today = moment() // dzisiejsza data
+    const futureDate = moment(device.value.warrantyEndDate) // odległa data (w formacie 'YYYY-MM-DD')
+    const yearsRemaining = futureDate.diff(today, 'years')
+    const futureDateWithoutYears = today.add(yearsRemaining, 'years')
+    const daysRemaining = futureDate.diff(futureDateWithoutYears, 'days')
+    if (yearsRemaining < 0 || daysRemaining < 0) {
+      return 'Gwarancja się skończyła.'
+    }
+    if (yearsRemaining === 0) {
+      return `${daysRemaining} dni.`
+    }
+    return `${yearsRemaining} lat(a) i ${daysRemaining} dni.`
+  }
+  return 'Brak gwarancji.'
 })
-watch(warrantyDateTemp, (newDate: string) => {
-  device.value.warrantyEndDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+// watch(warrantyDateTemp, (newDate: string) => {
+//   device.value.warrantyEndDate = moment(new Date(newDate)).format('YYYY-MM-DD')
+// })
 
 // INSURANCE DATE
-const insuranceDateTemp = ref<string>("");
+// const insuranceDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
 const insuranceDateLeft = computed(() => {
-  if (insuranceDateTemp.value === "") {
-    return"Brak ubezpieczenia.";
-  }
-  const today = moment(); // dzisiejsza data
-  const futureDate = moment(device.value.insuranceEndDate);
-  const yearsRemaining = futureDate.diff(today, 'years');
-  const futureDateWithoutYears = today.add(yearsRemaining, 'years');
-  const daysRemaining = futureDate.diff(futureDateWithoutYears, 'days');
-  if (yearsRemaining < 0 || daysRemaining < 0) {
-    return ("Ubezpieczenie się skończyło.");
-  }
-  if (yearsRemaining === 0){
-    return (`${daysRemaining} dni.`);
-  }
-  return (`${yearsRemaining} lat(a) i ${daysRemaining} dni.`);
+  // if (!device.value.insuranceEndDate) {
+  // }
 
+  const today = moment() // dzisiejsza data
+  if (device.value.insuranceEndDate instanceof Date) {
+    const futureDate = moment(device.value.insuranceEndDate)
+    const yearsRemaining = futureDate.diff(today, 'years')
+    const futureDateWithoutYears = today.add(yearsRemaining, 'years')
+    const daysRemaining = futureDate.diff(futureDateWithoutYears, 'days')
+    if (yearsRemaining < 0 || daysRemaining < 0) {
+      return 'Ubezpieczenie się skończyło.'
+    }
+    if (yearsRemaining === 0) {
+      return `${daysRemaining} dni.`
+    }
+    return `${yearsRemaining} lat(a) i ${daysRemaining} dni.`
+  }
+  return 'Brak ubezpieczenia.'
 })
-watch(insuranceDateTemp, (newDate: string) => {
-  device.value.insuranceEndDate = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+// watch(insuranceDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
+//   device.value.insuranceEndDate = newDate
+// })
 
 const device = ref<Device>({
   id: 0,
-  series: undefined,
-  deviceType: undefined,
-  firm: undefined,
-  name: "",
-  purchaseDate: undefined,
+  deviceType: null,
+  firm: null,
+  name: '',
+  purchaseDate: null,
   purchaseAmount: 0,
-  sellDate: undefined,
+  sellDate: null,
   sellAmount: 0,
-  warrantyEndDate: undefined,
-  insuranceEndDate: undefined,
-  otherInfo: "",
-  activeStatus: "ACTIVE",
-});
+  warrantyEndDate: null,
+  insuranceEndDate: null,
+  otherInfo: '',
+  activeStatus: 'ACTIVE',
+})
 
-const btnShowError = ref<boolean>(false);
-const btnShowBusy = ref<boolean>(false);
-const btnShowOk = ref<boolean>(false);
-const btnSaveDisabled = ref<boolean>(false);
+const btnShowError = ref<boolean>(false)
+const btnShowBusy = ref<boolean>(false)
+const btnShowOk = ref<boolean>(false)
+const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
   return (
@@ -123,18 +130,18 @@ const isSaveBtnDisabled = computed(() => {
       deviceStore.loadingDeviceTypes ||
       firmStore.loadingFirms ||
       btnSaveDisabled.value
-  );
-});
+  )
+})
 
 //
 //SAVE
 //
 function saveDevice() {
-  submitted.value = true;
+  submitted.value = true
   if (isEdit.value) {
-    editDevice();
+    editDevice()
   } else {
-    newDevice();
+    newDevice()
   }
 }
 
@@ -142,163 +149,164 @@ function saveDevice() {
 //---------------------------------------------------------NEW DEVICE----------------------------------------------
 //
 async function newDevice() {
-  console.log("newDevice()");
+  console.log('newDevice()')
   if (isNotValid()) {
-    showError("Uzupełnij brakujące elementy");
-    btnShowError.value = true;
-    setTimeout(() => (btnShowError.value = false), 5000);
+    showError('Uzupełnij brakujące elementy')
+    btnShowError.value = true
+    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
-    btnSaveDisabled.value = true;
-    btnShowBusy.value = true;
-    device.value.firm = selectedFirm.value;
-    device.value.deviceType = selectedDeviceType.value;
-    deviceStore.addDeviceDb(device.value).then(() => {
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Zapisano urządzenie: " + device.value?.name,
-        life: 3000,
-      });
-      btnShowBusy.value = false;
-      btnShowOk.value = true;
-      setTimeout(() => {
-        resetForm();
-      }, 1000);
-    }).catch(reason => {
-      console.log("reason", reason);
-        toast.add({
-          severity: "error",
-          summary: "Błąd",
-          detail: "Błąd podczas dodawania urządzenia.",
-          life: 3000,
-        });
-        btnShowError.value = true;
-    });
+    btnSaveDisabled.value = true
+    btnShowBusy.value = true
+    device.value.firm = selectedFirm.value
+    device.value.deviceType = selectedDeviceType.value
+    deviceStore
+        .addDeviceDb(device.value)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zapisano urządzenie: ' + device.value?.name,
+            life: 3000,
+          })
+          btnShowBusy.value = false
+          btnShowOk.value = true
+          setTimeout(() => {
+            resetForm()
+          }, 1000)
+        })
+        .catch((reason: AxiosError) => {
+          console.log('reason', reason)
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Błąd podczas dodawania urządzenia.',
+            life: 3000,
+          })
+          btnShowError.value = true
+        })
 
-    btnSaveDisabled.value = false;
-    btnShowBusy.value = false;
-    submitted.value = false;
+    btnSaveDisabled.value = false
+    btnShowBusy.value = false
+    submitted.value = false
     setTimeout(() => {
-      btnShowError.value = false;
-      btnShowOk.value = false;
-    }, 5000);
+      btnShowError.value = false
+      btnShowOk.value = false
+    }, 5000)
   }
 }
 
 //
 //-----------------------------------------------------EDIT DEVICE------------------------------------------------
 //
-const isEdit = ref<boolean>(false);
+const isEdit = ref<boolean>(false)
 
 async function editDevice() {
   if (isNotValid()) {
-    showError("Uzupełnij brakujące elementy");
-    btnShowError.value = true;
-    setTimeout(() => (btnShowError.value = false), 5000);
+    showError('Uzupełnij brakujące elementy')
+    btnShowError.value = true
+    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
-    btnSaveDisabled.value = true;
-    console.log("editDevice()");
-    device.value.firm = selectedFirm.value;
-    device.value.deviceType = selectedDeviceType.value;
-    await deviceStore.updateDeviceDb(device.value)
+    btnSaveDisabled.value = true
+    console.log('editDevice()')
+    device.value.firm = selectedFirm.value
+    device.value.deviceType = selectedDeviceType.value
+    await deviceStore
+        .updateDeviceDb(device.value)
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Zaaktualizowano urządzenie: " + device.value?.name,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zaaktualizowano urządzenie: ' + device.value?.name,
             life: 3000,
-          });
-          btnShowOk.value = true;
+          })
+          btnShowOk.value = true
           setTimeout(() => {
-            router.push({name: "Devices"});
-          }, 3000);
+            router.push({name: 'Devices'})
+          }, 3000)
         })
         .catch(() => {
           toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Błąd podczas edycji urządzenia.",
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Błąd podczas edycji urządzenia.',
             life: 3000,
-          });
-          btnShowError.value = true;
-          btnSaveDisabled.value = false;
+          })
+          btnShowError.value = true
+          btnSaveDisabled.value = false
           setTimeout(() => {
-                btnShowError.value = false;
-                btnShowOk.value = false;
-                btnShowError.value = false;
-              },
-              5000);
+            btnShowError.value = false
+            btnShowOk.value = false
+            btnShowError.value = false
+          }, 5000)
         })
   }
 }
 
 //---------------------------------------------MOUNTED--------------------------------------------
 onMounted(async () => {
-  console.log("onMounted GET");
-  btnSaveDisabled.value = true;
-  if (firmStore.firms.length === 0) await firmStore.getFirmsFromDb();
-  if (deviceStore.devicesTypes.length === 0) await deviceStore.getDeviceTypesFromDb();
-  btnSaveDisabled.value = false;
-});
+  console.log('onMounted GET')
+  btnSaveDisabled.value = true
+  if (firmStore.firms.length === 0) await firmStore.getFirmsFromDb()
+  if (deviceStore.devicesTypes.length === 0) await deviceStore.getDeviceTypesFromDb()
+  btnSaveDisabled.value = false
+})
 
 onMounted(async () => {
-  btnSaveDisabled.value = true;
-  isEdit.value = route.params.isEdit === "true";
-  const deviceId = Number(route.params.deviceId as string);
+  btnSaveDisabled.value = true
+  isEdit.value = route.params.isEdit === 'true'
+  const deviceId = Number(route.params.deviceId as string)
   if (!isEdit.value && deviceId === 0) {
-    console.log("onMounted NEW DEVICE");
+    console.log('onMounted NEW DEVICE')
   } else {
-    console.log("onMounted EDIT DEVICE");
+    console.log('onMounted EDIT DEVICE')
     deviceStore
         .getDeviceFromDb(deviceId)
-        .then((data) => {
+        .then((data: Device | null) => {
           if (data) {
-            device.value = data;
-            selectedFirm.value = device.value.firm;
-            selectedDeviceType.value = device.value.deviceType;
-            sellDateTemp.value = UtilsService.formatDateToString(device.value.sellDate);
-            insuranceDateTemp.value = UtilsService.formatDateToString(device.value.insuranceEndDate);
-            purchaseDateTemp.value = device.value.purchaseDate;
-            warrantyDateTemp.value = UtilsService.formatDateToString(device.value.warrantyEndDate);
+            device.value = data
+            selectedFirm.value = device.value.firm
+            selectedDeviceType.value = device.value.deviceType
+            // sellDateTemp.value = UtilsService.formatDateToString(device.value.sellDate)
+            // insuranceDateTemp.value = UtilsService.formatDateToString(device.value.insuranceEndDate)
+            // purchaseDateTemp.value = device.value.purchaseDate
+            // warrantyDateTemp.value = UtilsService.formatDateToString(device.value.warrantyEndDate)
           }
         })
-        .catch((error) => {
-          console.error("Błąd podczas pobierania urządzenia:", error);
-        });
+        .catch((error: AxiosError) => {
+          console.error('Błąd podczas pobierania urządzenia:', error)
+        })
   }
-  btnSaveDisabled.value = false;
-});
-
+  btnSaveDisabled.value = false
+})
 
 //
 //--------------------------------------------------DEVICE TYPE
 //
-const showAddDeviceTypeModal = ref(false);
+const showAddDeviceTypeModal = ref(false)
 
 async function saveDeviceType(name: string) {
-  console.log("in1: ", name);
-  showAddDeviceTypeModal.value = false;
+  console.log('in1: ', name)
+  showAddDeviceTypeModal.value = false
   if (name.length === 0) {
-    showError("Uzupełnij brakujące elementy");
+    showError('Uzupełnij brakujące elementy')
   } else {
-    deviceStore.addDeviceTypeDb({id: 0, name: name})
+    deviceStore
+        .addDeviceTypeDb({id: 0, name: name})
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Dodano rodzaj urządzenia: " + name,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano rodzaj urządzenia: ' + name,
             life: 3000,
-          });
-
+          })
         })
         .catch(() => {
           toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Nie dodano rodzaju urządzenia: " + name,
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie dodano rodzaju urządzenia: ' + name,
             life: 3000,
-          });
-
+          })
         })
   }
 }
@@ -306,16 +314,16 @@ async function saveDeviceType(name: string) {
 //
 //------------------------------------------------ERROR----------------------------------------------------------
 //
-const submitted = ref(false);
+const submitted = ref(false)
 
 const showError = (msg: string) => {
   toast.add({
-    severity: "error",
-    summary: "Error Message",
+    severity: 'error',
+    summary: 'Error Message',
     detail: msg,
     life: 3000,
-  });
-};
+  })
+}
 const isNotValid = () => {
   return (
       showErrorName() ||
@@ -323,50 +331,49 @@ const isNotValid = () => {
       showErrorPurchaseAmount() ||
       showErrorDeviceType() ||
       showErrorFirm()
-  );
-};
+  )
+}
 const showErrorName = () => {
-  return submitted.value && device.value.name.length === 0;
-};
+  return submitted.value && device.value.name.length === 0
+}
 const showErrorFirm = () => {
-  return submitted.value &&  (!device.value.firm || device.value.firm.id === 0);
-};
+  return submitted.value && (!device.value.firm || device.value.firm.id === 0)
+}
 const showErrorPurchaseDate = () => {
-  return submitted.value && purchaseDateTemp.value.length === 0;
-};
+  return submitted.value && !device.value.purchaseDate
+}
 const showErrorPurchaseAmount = () => {
-  return submitted.value && device.value.purchaseAmount <= 0;
-};
+  return submitted.value && device.value.purchaseAmount <= 0
+}
 const showErrorDeviceType = () => {
-  return submitted.value &&  !selectedDeviceType.value;
-};
+  return submitted.value && !device.value.deviceType
+}
 
 function resetForm() {
   device.value = {
     id: 0,
-    series: undefined,
-    deviceType: undefined,
-    firm: undefined,
-    name: "",
-    purchaseDate: undefined,
+    deviceType: null,
+    firm: null,
+    name: '',
+    purchaseDate: null,
     purchaseAmount: 0,
-    sellDate: undefined,
+    sellDate: null,
     sellAmount: 0,
-    warrantyEndDate: undefined,
-    insuranceEndDate: undefined,
-    otherInfo: "",
-    activeStatus: "ACTIVE",
-  };
-  selectedDeviceType.value = undefined;
-  selectedFirm.value = undefined;
-  submitted.value = false;
-  btnSaveDisabled.value = false;
+    warrantyEndDate: null,
+    insuranceEndDate: null,
+    otherInfo: '',
+    activeStatus: 'ACTIVE',
+  }
+  selectedDeviceType.value = null
+  selectedFirm.value = null
+  submitted.value = false
+  btnSaveDisabled.value = false
 }
 </script>
 
 <template>
   <Toast/>
-<TheMenuDevice/>
+  <TheMenuDevice/>
   <AddDialog
       v-model:visible="showAddDeviceTypeModal"
       msg="Dodaj rodzaj urządzenia"
@@ -385,17 +392,19 @@ function resetForm() {
           />
           <div class="w-full flex justify-center">
             <h2>
-              {{ isEdit ? `Edycja urzadzenia: ${device?.name.length > 30 ? device?.name.substring(0, 30) + '...' : device?.name}` : "Nowe urzadzenie" }}
+              {{
+                isEdit
+                    ? `Edycja urzadzenia: ${device?.name.length > 30 ? device?.name.substring(0, 30) + '...' : device?.name}`
+                    : 'Nowe urzadzenie'
+              }}
             </h2>
-
           </div>
         </template>
 
         <!--  --------------------------------------------------------DEVICE---------------------------------      -->
-        <Fieldset class="w-full " legend="Zakup">
+        <Fieldset class="w-full" legend="Zakup">
           <div class="grid grid-cols-6 gap-4">
             <div class="col-start-1 col-span-4">
-
               <!-- ROW-1   NAME -->
               <div class="flex flex-col">
                 <label class="ml-2 mb-1" for="title">Nazwa:</label>
@@ -406,7 +415,7 @@ function resetForm() {
                     :invalid="showErrorName()"
                 />
                 <small class="p-error">{{
-                    showErrorName() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorName() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
 
@@ -422,7 +431,7 @@ function resetForm() {
                       :invalid="showErrorDeviceType()"
                   />
                   <small class="p-error">
-                    {{ showErrorDeviceType() ? "Pole jest wymagane." : "&nbsp;" }}
+                    {{ showErrorDeviceType() ? 'Pole jest wymagane.' : '&nbsp;' }}
                   </small>
                 </div>
                 <OfficeIconButton
@@ -444,9 +453,7 @@ function resetForm() {
               <!-- ROW-3   FIRM -->
               <div class="flex flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="input-customer"
-                  >Wybierz firmę:</label
-                  >
+                  <label class="ml-1 mb-1" for="input-customer">Wybierz firmę:</label>
                   <AutoComplete
                       id="input-customer"
                       v-model="selectedFirm"
@@ -458,7 +465,7 @@ function resetForm() {
                       @complete="searchFirm"
                   />
                   <small class="p-error">
-                    {{ showErrorFirm() ? "Pole jest wymagane." : "&nbsp;" }}
+                    {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
                   </small>
                 </div>
                 <div v-if="firmStore.loadingFirms" class="content-center">
@@ -473,18 +480,16 @@ function resetForm() {
               <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="purchase-date"
-                  >Data zakupu:</label
-                  >
+                  <label class="ml-1 mb-1" for="purchase-date">Data zakupu:</label>
                   <DatePicker
                       id="purchase-date"
-                      v-model="purchaseDateTemp"
+                      v-model="device.purchaseDate"
                       show-icon
                       :invalid="showErrorPurchaseDate()"
                       date-format="yy-mm-dd"
                   />
                   <small class="p-error">{{
-                      showErrorPurchaseDate() ? "Pole jest wymagane." : "&nbsp;"
+                      showErrorPurchaseDate() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
                 </div>
                 <div class="flex flex-col w-full">
@@ -495,14 +500,14 @@ function resetForm() {
                       :class="{ 'p-invalid': showErrorPurchaseAmount() }"
                       :min-fraction-digits="2"
                       :max-fraction-digits="2"
-                      mode="currency" currency="PLN" locale="pl-PL"
+                      mode="currency"
+                      currency="PLN"
+                      locale="pl-PL"
                       :invalid="showErrorPurchaseAmount()"
                       @focus="UtilsService.selectText"
                   />
                   <small class="p-error">{{
-                      showErrorPurchaseAmount()
-                          ? "Pole jest wymagane."
-                          : "&nbsp;"
+                      showErrorPurchaseAmount() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
                 </div>
               </div>
@@ -510,12 +515,10 @@ function resetForm() {
               <!-- ROW-5  WARRANTY DATE  -->
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="warranty-date"
-                  >Gwarancja do::</label
-                  >
+                  <label class="ml-1 mb-1" for="warranty-date">Gwarancja do::</label>
                   <DatePicker
                       id="warranty-date"
-                      v-model="warrantyDateTemp"
+                      v-model="device.warrantyEndDate"
                       show-icon
                       date-format="yy-mm-dd"
                       show-button-bar
@@ -527,10 +530,12 @@ function resetForm() {
                       id="warranty-left"
                       v-model="warrantyDateLeft"
                       :class="{
-                          'overdue': warrantyDateLeft === 'Gwarancja się skończyła.',
-                          'valid':  warrantyDateLeft !== 'Gwarancja się skończyła.' &&  warrantyDateLeft !== 'Brak gwarancji.',
-                       }"
-                      :disabled="!warrantyDateTemp || warrantyDateTemp.length===0"
+                      overdue: warrantyDateLeft === 'Gwarancja się skończyła.',
+                      valid:
+                        warrantyDateLeft !== 'Gwarancja się skończyła.' &&
+                        warrantyDateLeft !== 'Brak gwarancji.',
+                    }"
+                      :disabled="!device.warrantyEndDate"
                       readonly
                       @focus="UtilsService.selectText"
                   />
@@ -540,12 +545,10 @@ function resetForm() {
               <!-- ROW-6  INSURANCE DATE  -->
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="warranty-date"
-                  >Ubezpieczenie do::</label
-                  >
+                  <label class="ml-1 mb-1" for="warranty-date">Ubezpieczenie do::</label>
                   <DatePicker
                       id="warranty-date"
-                      v-model="insuranceDateTemp"
+                      v-model="device.insuranceEndDate"
                       show-icon
                       date-format="yy-mm-dd"
                       show-button-bar
@@ -557,34 +560,31 @@ function resetForm() {
                       id="insurance-left"
                       v-model="insuranceDateLeft"
                       :class="{
-                          'overdue': insuranceDateLeft === 'Ubezpieczenie się skończyło.',
-                          'valid':  insuranceDateLeft !== 'Ubezpieczenie się skończyło.' &&  insuranceDateLeft !== 'Brak ubezpieczenia.',
-                       }"
-                      :disabled="!insuranceDateTemp || insuranceDateTemp.length===0"
+                      overdue: insuranceDateLeft === 'Ubezpieczenie się skończyło.',
+                      valid:
+                        insuranceDateLeft !== 'Ubezpieczenie się skończyło.' &&
+                        insuranceDateLeft !== 'Brak ubezpieczenia.',
+                    }"
+                      :disabled="!device.insuranceEndDate"
                       readonly
                       @focus="UtilsService.selectText"
                   />
                 </div>
               </div>
-
-
             </div>
           </div>
         </Fieldset>
 
-        <Fieldset class="w-full " legend="Sprzedaż">
+        <Fieldset class="w-full" legend="Sprzedaż">
           <div class="grid grid-cols-6 gap-4">
             <div class="col-start-1 col-span-4">
-
               <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="sell-date"
-                  >Data sprzedaży:</label
-                  >
+                  <label class="ml-1 mb-1" for="sell-date">Data sprzedaży:</label>
                   <DatePicker
                       id="sell-date"
-                      v-model="sellDateTemp"
+                      v-model="device.sellDate"
                       show-icon
                       date-format="yy-mm-dd"
                   />
@@ -596,7 +596,9 @@ function resetForm() {
                       v-model="device.sellAmount"
                       :min-fraction-digits="2"
                       :max-fraction-digits="2"
-                      mode="currency" currency="PLN" locale="pl-PL"
+                      mode="currency"
+                      currency="PLN"
+                      locale="pl-PL"
                       @focus="UtilsService.selectText"
                   />
                 </div>
@@ -607,13 +609,7 @@ function resetForm() {
 
         <!-- ROW-7  OTHER INFO  -->
         <Fieldset legend="Dodatkowe informacje">
-          <Textarea
-              id="description"
-              v-model="device.otherInfo"
-              fluid
-              rows="5"
-              cols="30"
-          />
+          <Textarea id="description" v-model="device.otherInfo" fluid rows="5" cols="30"/>
         </Fieldset>
 
         <!-- ROW-8  BTN SAVE -->
@@ -644,6 +640,7 @@ function resetForm() {
 .overdue {
   border: 1px solid red;
 }
+
 .valid {
   border: 1px solid green;
 }

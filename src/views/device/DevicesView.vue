@@ -1,201 +1,214 @@
 <script setup lang="ts">
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import OfficeIconButton from "@/components/OfficeIconButton.vue";
-import {computed, onMounted, ref} from "vue";
-import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import router from "@/router";
-import {useToast} from "primevue/usetoast";
-import OfficeButton from "@/components/OfficeButton.vue";
-import {useDevicesStore} from "@/stores/devices.ts";
-import {UtilsService} from "@/service/UtilsService.ts";
-import {DeviceDto} from "@/types/Devices.ts";
-import TheMenuDevice from "@/components/device/TheMenuDevice.vue";
-import {ActiveStatus} from "@/types/Bank.ts";
-import StatusButton from "@/components/StatusButton.vue";
+import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
+import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import {computed, type DefineComponent, onMounted, ref} from 'vue'
+import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
+import router from '../../router'
+import {useToast} from 'primevue/usetoast'
+import OfficeButton from '../../components/OfficeButton.vue'
+import {useDevicesStore} from '../../stores/devices'
+import {UtilsService} from '../../service/UtilsService'
+import type {Device, DeviceDto} from '../../types/Devices'
+import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
+import type {ActiveStatus} from '../../types/Bank'
+import StatusButton from '../../components/StatusButton.vue'
+import type {AxiosError} from "axios";
 
-
-const deviceStore = useDevicesStore();
-const toast = useToast();
+const deviceStore = useDevicesStore()
+const toast = useToast()
 
 onMounted(() => {
   if (deviceStore.devices.length === 0) {
-    deviceStore.refreshDevices();
+    deviceStore.refreshDevices()
   }
 })
 //filter
-const filters = ref();
+const filters = ref()
 const initFilters = () => {
   filters.value = {
     global: {value: null, matchMode: FilterMatchMode.CONTAINS},
     deviceType: {value: null, matchMode: FilterMatchMode.CONTAINS},
     firm: {value: null, matchMode: FilterMatchMode.CONTAINS},
     name: {value: null, matchMode: FilterMatchMode.CONTAINS},
-    purchaseDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-    purchaseAmount: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
-    sellDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-    sellAmount: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
-    warrantyEndDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-    insuranceEndDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-  };
+    purchaseDate: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+    },
+    purchaseAmount: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}],
+    },
+    sellDate: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+    },
+    sellAmount: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}],
+    },
+    warrantyEndDate: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+    },
+    insuranceEndDate: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+    },
+  }
 }
-initFilters();
+initFilters()
 const clearFilter = () => {
-  initFilters();
-};
+  initFilters()
+}
 
 const deviceTypeFilter = computed(() => {
-  return [...new Set(deviceStore.devices
-      .filter(dev => dev.deviceType)
-      .map(dev => dev.deviceType.name)
-  )].sort((a, b) => a.localeCompare(b));
-});
+  return [
+    ...new Set(
+        deviceStore.devices.filter((dev: Device) => dev.deviceType)
+            .map((dev: Device) => dev.deviceType?.name ?? ''),
+    ),
+  ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''))
+})
 
 const firmFilter = computed(() => {
-  return [...new Set(deviceStore.devices
-      .filter(dev => dev.firm)
-      .map(dev => dev.firm.name)
-  )].sort((a, b) => a.localeCompare(b));
-});
+  return [
+    ...new Set(deviceStore.devices.filter((dev: Device) => dev.firm)
+        .map((dev: Device) => dev.firm?.name ?? '')),
+  ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''))
+})
 
-const expandedRows = ref([]);
-const deviceTemp = ref<DeviceDto>();
+const expandedRows = ref([])
+const deviceTemp = ref<DeviceDto>()
 
-const dataTableRef = ref(null);
+const dataTableRef = ref<DefineComponent | null>(null)
 const selectedBooks = computed(() => {
-  const processedData = dataTableRef.value?.processedData;
+  const processedData = dataTableRef.value?.processedData
   if (processedData) {
-    return processedData.length;
+    return processedData.length
   }
-  return 0;
-});
+  return 0
+})
 
 //
 //-------------------------------------------------DELETE -------------------------------------------------
 //
-const showDeleteConfirmationDialog = ref<boolean>(false);
+const showDeleteConfirmationDialog = ref<boolean>(false)
 const confirmDelete = (device: DeviceDto) => {
-  deviceTemp.value = device;
-  showDeleteConfirmationDialog.value = true;
-};
+  deviceTemp.value = device
+  showDeleteConfirmationDialog.value = true
+}
 const deleteConfirmationMessage = computed(() => {
-  if (deviceTemp.value)
-    return `Czy chcesz usunąc urządzenie: <b>${deviceTemp.value?.name}</b>?`;
-  return "No message";
-});
+  if (deviceTemp.value) return `Czy chcesz usunąc urządzenie: <b>${deviceTemp.value?.name}</b>?`
+  return 'No message'
+})
 const submitDelete = async () => {
-  console.log("submitDelete()");
-  showDeleteConfirmationDialog.value = false;
+  console.log('submitDelete()')
+  showDeleteConfirmationDialog.value = false
   if (deviceTemp.value) {
-    deviceStore.deleteDeviceDb(deviceTemp.value.id)
+    deviceStore
+        .deleteDeviceDb(deviceTemp.value.id)
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Usunięto urządzenie: " + deviceTemp.value?.name,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto urządzenie: ' + deviceTemp.value?.name,
             life: 3000,
-          });
+          })
         })
-        .catch((reason) => {
+        .catch((reason: AxiosError) => {
           if (reason.request.status === 403) {
             toast.add({
-              severity: "warn",
-              summary: "Błąd",
-              detail: "Nie masz uprawnień do usuwania urządzeń.",
+              severity: 'warn',
+              summary: 'Błąd',
+              detail: 'Nie masz uprawnień do usuwania urządzeń.',
               life: 3000,
-            });
-          }else
-          toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Nie usunięto urządzenia: " + deviceTemp.value?.name,
-            life: 3000,
-          });
+            })
+          } else
+            toast.add({
+              severity: 'error',
+              summary: 'Błąd',
+              detail: 'Nie usunięto urządzenia: ' + deviceTemp.value?.name,
+              life: 3000,
+            })
         })
   }
-};
+}
 
 //
 //-------------------------------------------------EDIT -------------------------------------------------
 //
 const editItem = (item: DeviceDto) => {
-  const deviceItem: DeviceDto = JSON.parse(JSON.stringify(item));
+  const deviceItem: DeviceDto = JSON.parse(JSON.stringify(item))
   router.push({
-    name: "Device",
-    params: {isEdit: "true", deviceId: deviceItem.id},
-  });
-};
-
+    name: 'Device',
+    params: {isEdit: 'true', deviceId: deviceItem.id},
+  })
+}
 
 //
 //--------------------------------DISPLAY FILTER
 //
-const filter = ref<ActiveStatus>("ALL");
+const filter = ref<ActiveStatus>('ALL')
 const setFilter = (selectedFilter: ActiveStatus) => {
-  filter.value = selectedFilter;
-  localStorage.setItem("selectedFilterDevices", selectedFilter);
-};
-const savedFilter = localStorage.getItem("selectedFilterDevices");
+  filter.value = selectedFilter
+  localStorage.setItem('selectedFilterDevices', selectedFilter)
+}
+const savedFilter = localStorage.getItem('selectedFilterDevices')
 if (savedFilter) {
-  filter.value = savedFilter as ActiveStatus;
+  filter.value = savedFilter as ActiveStatus
 }
 const filteredData = computed(() => {
-  console.log("FILRER", filter.value);
-  console.log("FILRER", deviceStore.getDevicesDtos);
   switch (filter.value) {
-    case "ACTIVE":
-      return deviceStore.getDevicesDtos
-          .filter( (item) => item.activeStatus === "ACTIVE");
-    case "INACTIVE":
-      return deviceStore.getDevicesDtos
-          .filter( (item) => item.activeStatus === "INACTIVE");
-    case "ALL":
+    case 'ACTIVE':
+      return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'ACTIVE')
+    case 'INACTIVE':
+      return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'INACTIVE')
+    case 'ALL':
     default:
-      return deviceStore.getDevicesDtos;
+      return deviceStore.getDevicesDtos
   }
-});
+})
 
 //
 //---------------------------------------------STATUS CHANGE--------------------------------------------------
 //
-const showStatusChangeConfirmationDialog = ref<boolean>(false);
+const showStatusChangeConfirmationDialog = ref<boolean>(false)
 const confirmStatusChange = (deviceDto: DeviceDto) => {
-  deviceTemp.value = deviceDto;
-  showStatusChangeConfirmationDialog.value = true;
-};
+  deviceTemp.value = deviceDto
+  showStatusChangeConfirmationDialog.value = true
+}
 const changeStatusConfirmationMessage = computed(() => {
   if (deviceTemp.value)
-    return `Czy chcesz zmienić status urządzenia: <b>${
-        deviceTemp.value?.name
-    }</b> na <b>${
-        deviceTemp.value?.activeStatus === "ACTIVE" ? "Nie aktywny" : "Aktywny"
-    }</b>?`;
-  return "No message";
-});
+    return `Czy chcesz zmienić status urządzenia: <b>${deviceTemp.value?.name}</b> na <b>${
+        deviceTemp.value?.activeStatus === 'ACTIVE' ? 'Nie aktywny' : 'Aktywny'
+    }</b>?`
+  return 'No message'
+})
 const submitChangeStatus = async () => {
-  console.log("submitChangeStatus()");
+  console.log('submitChangeStatus()')
   if (deviceTemp.value) {
-    let newStatus: ActiveStatus = deviceTemp.value.activeStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    deviceStore.updateStatusDb(deviceTemp.value.id, newStatus)
+    let newStatus: ActiveStatus = deviceTemp.value.activeStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+    deviceStore
+        .updateStatusDb(deviceTemp.value.id, newStatus)
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Zmieniono status urządzenia: " + deviceTemp.value?.name,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zmieniono status urządzenia: ' + deviceTemp.value?.name,
             life: 3000,
           })
         })
         .catch(() => {
           toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Nie zmieniono statusu urządzenia: " + deviceTemp.value?.name,
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie zmieniono statusu urządzenia: ' + deviceTemp.value?.name,
             life: 3000,
-          });
-
+          })
         })
   }
-  showStatusChangeConfirmationDialog.value = false;
-};
+  showStatusChangeConfirmationDialog.value = false
+}
 </script>
 
 <template>
@@ -219,11 +232,7 @@ const submitChangeStatus = async () => {
       <div class="w-full flex justify-center gap-3">
         <h2>LISTA URZĄDZEŃ</h2>
         <div v-if="deviceStore.loadingDevices" class="flex">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-          />
+          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
         </div>
       </div>
     </template>
@@ -252,26 +261,31 @@ const submitChangeStatus = async () => {
               :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }"
               style="text-decoration: none"
           >
-            <OfficeButton text="Nowe urządzenie" btn-type="office-regular" title="Dodaj nowe urządzenie"/>
+            <OfficeButton
+                text="Nowe urządzenie"
+                btn-type="office-regular"
+                title="Dodaj nowe urządzenie"
+            />
           </router-link>
-          <Button type="button" icon="pi pi-filter-slash" label="Wyczyść" outlined title="Wyczyść wszystkie filtry"
-                  @click="clearFilter()"/>
+          <Button
+              type="button"
+              icon="pi pi-filter-slash"
+              label="Wyczyść"
+              outlined
+              title="Wyczyść wszystkie filtry"
+              @click="clearFilter()"
+          />
           <IconField icon-position="left">
             <InputIcon>
               <i class="pi pi-search"/>
             </InputIcon>
-            <InputText
-                v-model="filters['global'].value"
-                placeholder="wpisz tutaj..."
-            />
+            <InputText v-model="filters['global'].value" placeholder="wpisz tutaj..."/>
           </IconField>
         </div>
       </template>
 
       <template #empty>
-        <h4 v-if="!deviceStore.loadingDevices" class="color-red">
-          Nie znaleziono urządzeń...
-        </h4>
+        <h4 v-if="!deviceStore.loadingDevices" class="color-red">Nie znaleziono urządzeń...</h4>
       </template>
 
       <Column expander style="width: 5rem"/>
@@ -282,7 +296,8 @@ const submitChangeStatus = async () => {
           style="max-width: 220px"
           filter-field="deviceType"
           :sortable="true"
-          :show-filter-match-modes="false">
+          :show-filter-match-modes="false"
+      >
         <template #body="slotProps">
           {{ slotProps.data[slotProps.field] }}
         </template>
@@ -311,7 +326,8 @@ const submitChangeStatus = async () => {
           style="max-width: 220px"
           filter-field="firm"
           :sortable="true"
-          :show-filter-match-modes="false">
+          :show-filter-match-modes="false"
+      >
         <template #body="slotProps">
           {{ slotProps.data[slotProps.field] }}
         </template>
@@ -327,7 +343,13 @@ const submitChangeStatus = async () => {
       </Column>
 
       <!--PURCHASE DATA-->
-      <Column field="purchaseDate" header="Data zakupu" :sortable="true" data-type="date" filter-field="purchaseDate">
+      <Column
+          field="purchaseDate"
+          header="Data zakupu"
+          :sortable="true"
+          data-type="date"
+          filter-field="purchaseDate"
+      >
         <template #body="{ data }">
           <!--          {{ formatDate(data.purchaseDate) }}-->
           {{ UtilsService.formatDateToString(data.purchaseDate) }}
@@ -353,10 +375,14 @@ const submitChangeStatus = async () => {
         </template>
       </Column>
 
-
       <!-- WARRANTY END DATE-->
-      <Column field="warrantyEndDate" header="Data gwarancji" :sortable="true" data-type="date"
-              filter-field="warrantyEndDate">
+      <Column
+          field="warrantyEndDate"
+          header="Data gwarancji"
+          :sortable="true"
+          data-type="date"
+          filter-field="warrantyEndDate"
+      >
         <template #body="{ data }">
           {{ UtilsService.formatDateToString(data.warrantyEndDate) }}
         </template>
@@ -365,14 +391,14 @@ const submitChangeStatus = async () => {
         </template>
       </Column>
 
-
       <!-- INSURRANCE END DATE-->
       <Column
           field="insuranceEndDate"
           header="Data ubezpieczenia"
           :sortable="true"
           data-type="date"
-          filter-field="insuranceEndDate">
+          filter-field="insuranceEndDate"
+      >
         <template #body="{ data }">
           {{ UtilsService.formatDateToString(data.insuranceEndDate) }}
         </template>
@@ -380,7 +406,6 @@ const submitChangeStatus = async () => {
           <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm"/>
         </template>
       </Column>
-
 
       <!-- SELL DATA-->
       <Column field="sellDate" header="Data sprzedaży" :sortable="true" data-type="date">
@@ -441,15 +466,10 @@ const submitChangeStatus = async () => {
       </Column>
 
       <template #expansion="slotProps">
-        <div class="flex ">
+        <div class="flex">
           <div class="flex flex-col p-3 col-9 w-full">
             <label class="text-left">Opis:</label>
-            <Textarea
-                v-model="slotProps.data.otherInfo"
-                rows="7"
-                auto-resize fluid
-                readonly
-            />
+            <Textarea v-model="slotProps.data.otherInfo" rows="7" auto-resize fluid readonly/>
           </div>
         </div>
       </template>

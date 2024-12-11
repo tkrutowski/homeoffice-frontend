@@ -1,152 +1,154 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from "vue";
-import {useToast} from "primevue/usetoast";
-import {useCardsStore} from "@/stores/cards.ts";
-import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
-import OfficeIconButton from "@/components/OfficeIconButton.vue";
-import OfficeButton from "@/components/OfficeButton.vue";
-import {useBanksStore} from "@/stores/banks.ts";
-import StatusType from "@/types/StatusType.ts";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {Card} from "@/types/Bank.ts";
-import {UtilsService} from "@/service/UtilsService.ts";
-import router from "@/router";
+import {computed, onMounted, ref} from 'vue'
+import {useToast} from 'primevue/usetoast'
+import {useCardsStore} from '../../stores/cards'
+import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
+import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import OfficeButton from '../../components/OfficeButton.vue'
+import {useBanksStore} from '../../stores/banks'
+import type {StatusType} from '../../types/StatusType'
+import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
+import type {Card} from '../../types/Bank'
+import {UtilsService} from '../../service/UtilsService'
+import router from '../../router'
+import type {AxiosError} from "axios";
+import type {ResponseData} from "../../types/User.ts";
 
-const toast = useToast();
-const cardStore = useCardsStore();
-const bankStore = useBanksStore();
-
+const toast = useToast()
+const cardStore = useCardsStore()
+const bankStore = useBanksStore()
 
 onMounted(() => {
-  bankStore.getBanksFromDb();
-  cardStore.getCardsFromDb("ALL");
+  bankStore.getBanksFromDb()
+  cardStore.getCardsFromDb('ALL')
 })
 
 //
 //--------------------------------DISPLAY FILTER
 //
-const filter = ref<StatusType>("ALL");
+const filter = ref<StatusType>('ALL')
 const setFilter = (selectedFilter: StatusType) => {
-  filter.value = selectedFilter;
-  localStorage.setItem("selectedFilterCards", selectedFilter);
-};
-
-const savedFilter = localStorage.getItem("selectedFilterCards");
-if (savedFilter) {
-  filter.value = savedFilter as StatusType;
+  filter.value = selectedFilter
+  localStorage.setItem('selectedFilterCards', selectedFilter)
 }
 
-const filteredData = computed(() => {
-  switch (filter.value) {
-    case "INACTIVE":
-      return cardStore.getCardsInactive;
-    case "ACTIVE":
-      return cardStore.getCardsActive;
-    case "ALL":
-    default:
-      return cardStore.cards;
-  }
-});
+const savedFilter = localStorage.getItem('selectedFilterCards')
+if (savedFilter) {
+  filter.value = savedFilter as StatusType
+}
 
+const filteredData = computed((): Card[] => {
+  switch (filter.value) {
+    case 'INACTIVE':
+      return cardStore.getCardsInactive
+    case 'ACTIVE':
+      return cardStore.getCardsActive
+    case 'ALL':
+    default:
+      return cardStore.cards
+  }
+})
 
 //
 //---------------------------------------------STATUS CHANGE--------------------------------------------------
 //
-const cardTemp = ref<Card>();
-const showStatusChangeConfirmationDialog = ref<boolean>(false);
+const cardTemp = ref<Card>()
+const showStatusChangeConfirmationDialog = ref<boolean>(false)
 const confirmStatusChange = (card: Card) => {
   console.log('card', card)
 
-  cardTemp.value = card;
-  showStatusChangeConfirmationDialog.value = true;
-};
+  cardTemp.value = card
+  showStatusChangeConfirmationDialog.value = true
+}
 const changeStatusConfirmationMessage = computed(() => {
   console.log('temp', cardTemp.value)
 
   if (cardTemp.value)
-    return `Czy chcesz zmienić status karty: <b>${
-        cardTemp.value?.name
-    }</b> na <b>${
-        cardTemp.value?.activeStatus === "ACTIVE" ? "Nieaktywna" : "Aktywna"
-    }</b>?`;
-  return "No message";
-});
+    return `Czy chcesz zmienić status karty: <b>${cardTemp.value?.name}</b> na <b>${
+        cardTemp.value?.activeStatus === 'ACTIVE' ? 'Nieaktywna' : 'Aktywna'
+    }</b>?`
+  return 'No message'
+})
 const submitChangeStatus = async () => {
-  console.log("submitChangeStatus()");
+  console.log('submitChangeStatus()')
   if (cardTemp.value) {
-    cardTemp.value.activeStatus = cardTemp.value.activeStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    cardStore.updateCardDb(cardTemp.value).then(() => {
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Zmieniono status karty: " + cardTemp.value?.name,
-        life: 3000,
-      });
-    }).catch(() => {
-      toast.add({
-        severity: "error",
-        summary: "Błąd",
-        detail: "Nie zmieniono statusu karty: " + cardTemp.value?.name,
-        life: 3000,
-      });
-    })
+    cardTemp.value.activeStatus = cardTemp.value.activeStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+    cardStore
+        .updateCardDb(cardTemp.value)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zmieniono status karty: ' + cardTemp.value?.name,
+            life: 3000,
+          })
+        })
+        .catch(() => {
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie zmieniono statusu karty: ' + cardTemp.value?.name,
+            life: 3000,
+          })
+        })
   }
-  showStatusChangeConfirmationDialog.value = false;
-};
+  showStatusChangeConfirmationDialog.value = false
+}
 //
 //-------------------------------------------------DELETE LOAN-------------------------------------------------
 //
-const showDeleteConfirmationDialog = ref<boolean>(false);
+const showDeleteConfirmationDialog = ref<boolean>(false)
 const confirmDeleteCard = (card: Card) => {
-  cardTemp.value = card;
-  showDeleteConfirmationDialog.value = true;
-};
+  cardTemp.value = card
+  showDeleteConfirmationDialog.value = true
+}
 const deleteConfirmationMessage = computed(() => {
-  if (cardTemp.value)
-    return `Czy chcesz usunąc kartę: <b>${cardTemp.value?.name}</b>?`;
-  return "No message";
-});
+  if (cardTemp.value) return `Czy chcesz usunąc kartę: <b>${cardTemp.value?.name}</b>?`
+  return 'No message'
+})
 const submitDelete = async () => {
-  console.log("submitDelete()");
+  console.log('submitDelete()')
   if (cardTemp.value) {
-    cardStore.deleteCardDb(cardTemp.value.id).then(() => {
-      toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Usunięto kartę: " + cardTemp.value?.name,
-        life: 3000,
-      });
-    }).catch((reason) => {
-      console.log('reasennnnnnnnnn',reason)
-      console.log('reasennnnnnnnnn',reason.response.data)
-      if (reason.response.status === 423) {
-        toast.add({
-          severity: "warn",
-          summary: "Informacja",
-          detail: reason.response.data.message,
-          life: 5000,
-        });
-      }else {
-        toast.add({
-          severity: "error",
-          summary: "Błąd",
-          detail: "Nie usunięto karty: " + cardTemp.value?.name,
-          life: 3000,
-        });
-      }
-    })
+    cardStore
+        .deleteCardDb(cardTemp.value.id)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto kartę: ' + cardTemp.value?.name,
+            life: 3000,
+          })
+        })
+        .catch((reason: AxiosError) => {
+          if (reason.response && reason.response.status === 423) {
+            const data = reason.response?.data as ResponseData;
+            toast.add({
+              severity: 'warn',
+              summary: 'Informacja',
+              detail: data?.message,
+              life: 5000,
+            })
+          } else {
+            toast.add({
+              severity: 'error',
+              summary: 'Błąd',
+              detail: 'Nie usunięto karty: ' + cardTemp.value?.name,
+              life: 3000,
+            })
+          }
+        })
   }
-  showDeleteConfirmationDialog.value = false;
-};
+  showDeleteConfirmationDialog.value = false
+}
 //
 //-------------------------------------------------EDIT CARD-------------------------------------------------
 //
 const editCard = (item: Card) => {
   router.push({
-    name: "Card",
-    params: {isEdit: "true", cardId: item.id},
-  });
-};
+    name: 'Card',
+    params: {isEdit: 'true', cardId: item.id},
+  })
+}
 </script>
 
 <template>
@@ -165,67 +167,115 @@ const editCard = (item: Card) => {
       @save="submitDelete"
       @cancel="showDeleteConfirmationDialog = false"
   />
-  <Panel class=" max-w-screen-xl m-auto mt-5">
+  <Panel class="max-w-screen-xl m-auto mt-5">
     <template #header>
       <div class="w-full flex justify-center gap-4">
         <h3 class="color-green">LISTA KART</h3>
         <div v-if="cardStore.loadingCards">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-          />
+          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
         </div>
       </div>
     </template>
-    <DataView :value="filteredData">
+    <DataView :value="filteredData" dataKey="id">
       <template #list="slotProps">
         <div class="flex flex-col">
           <div v-for="(item, index) in slotProps.items" :key="index">
-            <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4 "
-                 :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0,
-                  'inactive': item.activeStatus=='INACTIVE',
-                  'active': item.activeStatus=='ACTIVE'}">
+            <div
+                class="flex flex-col sm:flex-row sm:items-center p-6 gap-4"
+                :class="{
+                'border-t border-surface-200 dark:border-surface-700': index !== 0,
+                inactive: item.activeStatus == 'INACTIVE',
+                active: item.activeStatus == 'ACTIVE',
+              }"
+            >
               <div class="md:w-40 relative">
-                <img class="block xl:block mx-auto rounded w-full" :src="item.imageUrl" :alt="item.name"/>
+                <img
+                    class="block xl:block mx-auto rounded w-full"
+                    :src="item.imageUrl"
+                    :alt="item.name"
+                />
               </div>
               <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
                   <div class="w-full">
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ item.name }}</span>
+                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{
+                        item.name
+                      }}</span>
                     <div class="text-sm font-medium mt-2">{{ item.cardNumber }}</div>
                     <div class="text-sm font-medium mt-2">{{ item.otherInfo }}</div>
                   </div>
                 </div>
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
                   <div>
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ bankStore.getBank(item.idBank)?.name }}</span>
-                    <div class="text-sm font-medium mt-2">{{ UtilsService.formatDateToString(item.expirationDate) }}</div>
-                    <div class="text-sm font-medium mt-2">Dzień spłaty: {{ item.repaymentDay }}</div>
+                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{
+                        bankStore.getBank(item.idBank)?.name
+                      }}</span>
+                    <div class="text-sm font-medium mt-2">
+                      {{ UtilsService.formatDateToString(item.expirationDate) }}
+                    </div>
+                    <div class="text-sm font-medium mt-2">
+                      Dzień spłaty: {{ item.repaymentDay }}
+                    </div>
                   </div>
                 </div>
                 <div class="flex flex-col md:items-end gap-8 w-1/3">
-                  <span class="text-xl font-semibold text-surface-500 dark:text-surface-400">{{ UtilsService.formatCurrency(item.limit) }}</span>
+                  <span class="text-xl font-semibold text-surface-500 dark:text-surface-400">{{
+                      UtilsService.formatCurrency(item.limit)
+                    }}</span>
                   <div class="flex flex-row-reverse md:flex-row gap-2">
-                    <OfficeIconButton v-if="item.activeStatus=='INACTIVE'"
-                                      v-tooltip.top="{ value: 'Zmień status na AKTYWNY',showDelay: 1000, hideDelay: 300 }"
-                                      icon="pi pi-times-circle" :rounded="false" severity="danger"
-                                      @click="confirmStatusChange(item)"/>
-                    <OfficeIconButton v-else
-                                      v-tooltip.top="{ value: 'Zmień status na NIEAKTYWNY',showDelay: 1000, hideDelay: 300 }"
-                                      icon="pi pi-check-circle" :rounded="false" severity="secondary"
-                                      @click="confirmStatusChange(item)"/>
-                    <OfficeIconButton icon="pi pi-file-edit"
-                                      v-tooltip.top="{ value: `Edytuj kartę: ${item.name}`,showDelay: 1000, hideDelay: 300 }"
-                                      :rounded="false" severity="primary"
-                                      @click="editCard(item)"/>
-                    <OfficeIconButton icon="pi pi-trash"
-                                      v-tooltip.top="{ value: `Usuń kartę: ${item.name}`,showDelay: 1000, hideDelay: 300 }"
-                                      :rounded="false" severity="danger"
-                                      @click="confirmDeleteCard(item)"/>
-                    <OfficeButton btn-type="office-regular" icon="pi pi-shopping-cart"
-                                      v-tooltip.top="{ value: `Nowy zakup.`,showDelay: 1000, hideDelay: 300 }"
-                                  class="flex-auto md:flex-initial whitespace-nowrap" text=""></OfficeButton>
+                    <OfficeIconButton
+                        v-if="item.activeStatus == 'INACTIVE'"
+                        v-tooltip.top="{
+                        value: 'Zmień status na AKTYWNY',
+                        showDelay: 1000,
+                        hideDelay: 300,
+                      }"
+                        icon="pi pi-times-circle"
+                        :rounded="false"
+                        severity="danger"
+                        @click="confirmStatusChange(item)"
+                    />
+                    <OfficeIconButton
+                        v-else
+                        v-tooltip.top="{
+                        value: 'Zmień status na NIEAKTYWNY',
+                        showDelay: 1000,
+                        hideDelay: 300,
+                      }"
+                        icon="pi pi-check-circle"
+                        :rounded="false"
+                        severity="secondary"
+                        @click="confirmStatusChange(item)"
+                    />
+                    <OfficeIconButton
+                        icon="pi pi-file-edit"
+                        v-tooltip.top="{
+                        value: `Edytuj kartę: ${item.name}`,
+                        showDelay: 1000,
+                        hideDelay: 300,
+                      }"
+                        :rounded="false"
+                        severity="primary"
+                        @click="editCard(item)"
+                    />
+                    <OfficeIconButton
+                        icon="pi pi-trash"
+                        v-tooltip.top="{
+                        value: `Usuń kartę: ${item.name}`,
+                        showDelay: 1000,
+                        hideDelay: 300,
+                      }"
+                        :rounded="false"
+                        severity="danger"
+                        @click="confirmDeleteCard(item)"
+                    />
+                    <OfficeButton
+                        btn-type="office-regular"
+                        icon="pi pi-shopping-cart"
+                        v-tooltip.top="{ value: `Nowy zakup.`, showDelay: 1000, hideDelay: 300 }"
+                        class="flex-auto md:flex-initial whitespace-nowrap"
+                        text=""
+                    ></OfficeButton>
                   </div>
                 </div>
               </div>
@@ -243,7 +293,11 @@ const editCard = (item: Card) => {
           showDelay: 500,
           hideDelay: 300,
         }"
-          :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+          :icon="
+          bankStore.loadingBanks || cardStore.loadingCards
+            ? 'pi pi-spin pi-spinner'
+            : 'pi pi-refresh'
+        "
           class="mr-2"
           @click=""
       />
@@ -255,7 +309,11 @@ const editCard = (item: Card) => {
           showDelay: 500,
           hideDelay: 300,
         }"
-          :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+          :icon="
+          bankStore.loadingBanks || cardStore.loadingCards
+            ? 'pi pi-spin pi-spinner'
+            : 'pi pi-times-circle'
+        "
           class="mr-2"
           :active="filter === 'INACTIVE'"
           @click="setFilter('INACTIVE')"
@@ -267,7 +325,9 @@ const editCard = (item: Card) => {
           hideDelay: 300,
         }"
           :icon="
-          bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'
+          bankStore.loadingBanks || cardStore.loadingCards
+            ? 'pi pi-spin pi-spinner'
+            : 'pi pi-check-circle'
         "
           class="mr-2"
           :active="filter === 'ACTIVE'"
@@ -279,23 +339,24 @@ const editCard = (item: Card) => {
           showDelay: 500,
           hideDelay: 300,
         }"
-          :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+          :icon="
+          bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-list'
+        "
           class="mr-2"
           :active="filter === 'ALL'"
           @click="setFilter('ALL')"
       />
     </template>
-    <template #end>
-
-    </template>
+    <template #end></template>
   </Toolbar>
 </template>
 
 <style scoped>
-.p-dataview >>> .p-dataview-content .inactive{
+.p-dataview >>> .p-dataview-content .inactive {
   background: rgba(255, 26, 26, 0.03);
 }
-.p-dataview >>> .p-dataview-content .active{
+
+.p-dataview >>> .p-dataview-content .active {
   background: rgba(0, 204, 68, 0.03);
 }
 </style>

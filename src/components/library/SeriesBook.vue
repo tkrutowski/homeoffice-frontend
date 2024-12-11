@@ -1,180 +1,289 @@
 <script setup lang="ts">
-import {computed, onMounted, PropType, ref} from "vue";
-import {Book, UserBook} from "@/types/Book";
-import ImageButton from "@/components/ImageButton.vue";
-import {useUserbooksStore} from "@/stores/userbooks";
-import router from "@/router";
-import {useBooksStore} from "@/stores/books";
+import {computed, onMounted, ref} from 'vue'
+import type {PropType} from 'vue'
+import type {Book, UserBook} from '../../types/Book'
+import ImageButton from '../../components/ImageButton.vue'
+import {useUserbooksStore} from '../../stores/userbooks'
 
-const userbookStore = useUserbooksStore();
-const booksStore = useBooksStore();
+const userbookStore = useUserbooksStore()
 const props = defineProps({
   book: {
     type: Object as PropType<Book>,
     required: true,
   },
-});
+})
 const emit = defineEmits<{
-  (e: "newUserbook", book: Book): void;
-  (e: "newBook", book: Book): void;
-}>();
-const existedUserbooks = ref<UserBook[]>([]);
+  (e: 'newUserbook', book: Book): void
+  (e: 'existUserbook', book: Book): void
+  (e: 'newBook', book: Book): void
+}>()
+const existedUserbooks = ref<UserBook[]>([])
 
 onMounted(async () => {
-  console.log("SeriesBookNEW ONMOUNTED", props?.book)
-  const userbooks = await userbookStore.getUserbooksByBookIdFromDb(
-      props.book?.id
-  );
-  if (userbooks && userbooks.length > 0) existedUserbooks.value = userbooks;
-});
+  refreshUserbooks()
+})
 
+const refreshUserbooks = async () => {
+  const userbooks = await userbookStore.getUserbooksByBookIdFromDb(props.book?.id)
+  if (userbooks && userbooks.length > 0) existedUserbooks.value = userbooks
+}
 
 const newUserbook = () => {
-  emit("newUserbook", props.book);
-};
+  emit('newUserbook', props.book)
+}
 
+const existUserbook = () => {
+  emit('existUserbook', props.book)
+}
 
-const addToLibrary = () => {
-  booksStore.tempBook = props.book;
-  router.push({
-    name: "Book",
-    params: {isEdit: "false", bookId: -1},
-  });
-};
-
+const newBook = () => {
+  emit('newBook', props.book)
+}
 
 const ifExistsMsg = computed(() => {
-  if (existedUserbooks.value.length > 0) {
-    let msg = "";
-    existedUserbooks.value.forEach((book) => {
-      if (book.readingStatus.name === "READ") {
-        msg += "\nPrzeczytana (" + book.readFrom + " - " + book.readTo + ")";
-      } else if (book.readingStatus.name === "NOT_READ") {
-        msg += "Nie przeczytana";
-      } else if (book.readingStatus.name === "READ_NOW") {
-        msg += "Czytam (" + book.readFrom + " - ... )";
-      }
-    });
-    return msg;
-  } else {
-    return "Brak książki na mojej półce";
+  if (props.book.id === 0) {
+    return 'Brak książki w biblotece.'
   }
-});
-
+  if (existedUserbooks.value.length > 0) {
+    let msg = ''
+    existedUserbooks.value.forEach((book) => {
+      if (book.readingStatus.name === 'READ') {
+        msg += '\nPrzeczytana (' + book.readFrom + ' - ' + book.readTo + ')'
+      } else if (book.readingStatus.name === 'NOT_READ') {
+        msg += 'Nie przeczytana'
+      } else if (book.readingStatus.name === 'READ_NOW') {
+        msg += 'Czytam (' + book.readFrom + ' - ... )'
+      }
+    })
+    return msg
+  } else {
+    return 'Brak książki na mojej półce.'
+  }
+})
 
 const checkStatus = computed(() => {
   if (existedUserbooks.value.length === 0) {
-    return "Brak na półce";
+    return null
   }
   if (existedUserbooks.value.length > 1) {
     // Sprawdzenie, czy któraś książka ma status "READ"
-    const readBook = existedUserbooks.value.find(book => book.readingStatus.name === "READ");
+    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
     if (readBook) {
-      return readBook.readingStatus.viewName;
+      return readBook.readingStatus
     }
     // Sprawdzenie, czy któraś książka ma status "READ_NOW"
-    const readNowBook = existedUserbooks.value.find(book => book.readingStatus.name === "READ_NOW");
+    const readNowBook = existedUserbooks.value.find(
+        (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+    )
     if (readNowBook) {
-      return readNowBook.readingStatus.viewName;
+      return readNowBook.readingStatus
     }
     // Sprawdzenie, czy któraś książka ma status "NOT_READ"
-    const notReadBook = existedUserbooks.value.find(book => book.readingStatus.name === "NOT_READ");
+    const notReadBook = existedUserbooks.value.find(
+        (book: UserBook) => book.readingStatus.name === 'NOT_READ',
+    )
     if (notReadBook) {
-      return notReadBook.readingStatus.viewName;
+      return notReadBook.readingStatus
     }
-    return "Brak danych";
+    return null
   }
   // Jeżeli jest tylko jedna książka, zwróć jej status
-  return existedUserbooks.value[0].readingStatus.viewName;
-});
+  return existedUserbooks.value[0].readingStatus
+})
 
+const getStatusMsg = computed(() => {
+  if (existedUserbooks.value.length === 0) {
+    return ''
+  }
+  if (existedUserbooks.value.length > 1) {
+    // Sprawdzenie, czy któraś książka ma status "READ"
+    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
+    if (readBook) {
+      return readBook.readingStatus.viewName
+    }
+    // Sprawdzenie, czy któraś książka ma status "READ_NOW"
+    const readNowBook = existedUserbooks.value.find(
+        (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+    )
+    if (readNowBook) {
+      return readNowBook.readingStatus.viewName
+    }
+    // Sprawdzenie, czy któraś książka ma status "NOT_READ"
+    const notReadBook = existedUserbooks.value.find(
+        (book: UserBook) => book.readingStatus.name === 'NOT_READ',
+    )
+    if (notReadBook) {
+      return notReadBook.readingStatus.viewName
+    }
+    return 'Brak danych'
+  }
+  // Jeżeli jest tylko jedna książka, zwróć jej status
+  return existedUserbooks.value[0].readingStatus.viewName
+})
 
 const getSeverity = () => {
-  console.log("getSeverity");
   if (existedUserbooks.value.length === 0) {
-    return 'danger';
+    return 'danger'
   }
-  const readBook = existedUserbooks.value.find(book => book.readingStatus.name === "READ");
+  const readNowBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ_NOW')
+  if (readNowBook) {
+    return 'warn'
+  }
+  const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
   if (readBook) {
     return 'success'
   }
-  const readNowBook = existedUserbooks.value.find(book => book.readingStatus.name === "READ_NOW");
-  if (readNowBook) {
-    return 'warn';
-  }
-  const notReadBook = existedUserbooks.value.find(book => book.readingStatus.name === "NOT_READ");
+  const notReadBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'NOT_READ')
   if (notReadBook) {
     return 'danger'
   }
-  return 'danger';
-};
+  return 'danger'
+}
 
 const getLatestReadStatus = computed(() => {
   if (existedUserbooks.value.length === 0) {
-    return "Brak na półce";
+    return 'Brak na półce'
   }
-  const readingNowBooks = existedUserbooks.value
-      .filter(book => book.readingStatus.name === 'READ_NOW')
-      .sort((a, b) => new Date(b.readFrom).getTime() - new Date(a.readFrom).getTime());
+  const readingNowBooks = existedUserbooks.value.filter(
+      (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+  )
   if (readingNowBooks.length > 0) {
-    return "Czytana od: " + readingNowBooks[0].readFrom; // Zwraca książkę z najpóźniejszą datą
+    return 'Czytana od: '
   }
 
   const readBooks = existedUserbooks.value
-      .filter(book => book.readingStatus.name === 'READ')
-      .sort((a, b) => new Date(b.readFrom).getTime() - new Date(a.readFrom).getTime());
+      .filter((book: UserBook) => book.readingStatus.name === 'READ')
+      .sort((a: UserBook, b: UserBook) => {
+        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
+        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
+
+        const aTime = aDate instanceof Date ? aDate.getTime() : 0
+        const bTime = bDate instanceof Date ? bDate.getTime() : 0
+
+        return bTime - aTime
+      })
 
   if (readBooks.length > 0) {
-    return "Przeczytana: " + readBooks[0].readFrom + "-" + readBooks[0].readTo; // Zwraca książkę z najpóźniejszą datą
+    return 'Przeczytana: '
   }
 
-  return "Nieprzeczytana";
+  return 'Nieprzeczytana'
+})
 
-});
+const getLatestReadTime = computed(() => {
+  if (existedUserbooks.value.length === 0) {
+    return null
+  }
+  const readingNowBooks = existedUserbooks.value
+      .filter((book: UserBook) => book.readingStatus.name === 'READ_NOW')
+      .sort((a: UserBook, b: UserBook) => {
+        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
+        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
 
+        const aTime = aDate instanceof Date ? aDate.getTime() : 0
+        const bTime = bDate instanceof Date ? bDate.getTime() : 0
+
+        return bTime - aTime
+      })
+  if (readingNowBooks.length > 0) {
+    return readingNowBooks[0].readFrom // Zwraca książkę z najpóźniejszą datą
+  }
+
+  const readBooks = existedUserbooks.value
+      .filter((book: UserBook) => book.readingStatus.name === 'READ')
+      .sort((a: UserBook, b: UserBook) => {
+        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
+        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
+
+        const aTime = aDate instanceof Date ? aDate.getTime() : 0
+        const bTime = bDate instanceof Date ? bDate.getTime() : 0
+
+        return bTime - aTime
+      })
+
+  if (readBooks.length > 0) {
+    return readBooks[0].readFrom + '-' + readBooks[0].readTo // Zwraca książkę z najpóźniejszą datą
+  }
+
+  return null
+})
+
+const titleCal = computed(() => {
+  const org = props.book?.title
+  if (org && org.length > 25) {
+    return org.slice(0, 24) + '...'
+  }
+  return org
+})
 </script>
 
 <template>
-  <div class="border border-surface-200 dark:border-surface-700 rounded m-2  p-4" style="width: 300px">
-    <div class="flex mb-4 font-medium text-xl justify-center">{{ props.book.title }}</div>
+  <div
+      class="border border-surface-200 dark:border-surface-700 shadow-xl rounded m-2 p-4"
+      style="width: 300px"
+  >
+    <div
+        class="flex mb-4 font-medium text-xl justify-center text-primary"
+        :title="props.book.title"
+    >
+      {{ titleCal }}
+    </div>
     <div class="mb-4 flex justify-center">
       <div class="relative mx-auto">
         <img
             v-if="props.book?.cover != 'https://focikhome.synology.me/covers/'"
             :src="props.book.cover"
-            :alt="props.book.title" class="w-full rounded cover"/>
-        <img v-else src="../../assets/images/no_cover.png" :alt="props.book.title" class="w-full rounded cover "/>
-        <Tag :value="checkStatus" :severity="getSeverity()" class="absolute larger-tag" style="left:5px; top: 5px"/>
+            :alt="props.book.title"
+            class="w-full rounded cover"
+        />
+        <img
+            v-else
+            src="../../assets/images/no_cover.png"
+            :alt="props.book.title"
+            class="w-full rounded cover"
+        />
+        <Tag
+            :value="getStatusMsg"
+            :severity="getSeverity()"
+            class="absolute left-2 top-2 text-lg font-bold rounded p-1"
+        />
       </div>
     </div>
-    <div class="flex mb-0 font-medium justify-center">{{ getLatestReadStatus }}</div>
+    <div class="flex mb-0 font-medium justify-center items-end gap-2">
+      <span class="text-lg">{{ getLatestReadStatus }} </span>
+      <span class="text-sm pb-0.5">{{ getLatestReadTime }}</span>
+    </div>
     <div class="flex justify-between items-center">
       <div class="mt-0 font-semibold text-3xl">#{{ props.book.bookInSeriesNo }}</div>
       <span :title="ifExistsMsg">
-        <ImageButton
-            v-if="props.book?.id === 0"
-            img-src="add-to-library"
-            @click="addToLibrary"
+        <ImageButton v-if="props.book?.id === 0" img-src="add-to-library" @click="newBook"/>
+        <img
+            v-else-if="checkStatus?.name === 'READ_NOW'"
+            class="w-10 h-10 mb-2 mt-1 mr-1"
+            src="@/assets/images/reading-book.png"
+            alt="Czytana"
         />
         <ImageButton
-          v-else-if="existedUserbooks.length > 0"
-          img-src="onShell"
+            v-else-if="checkStatus?.name === 'READ'"
+            img-src="read"
+            @click="existUserbook"
         />
-        <ImageButton v-else img-src="add-to-shell" @click="newUserbook"/>
+        <ImageButton
+            v-else-if="existedUserbooks.length === 0"
+            img-src="add-to-shell"
+            @click="newUserbook"
+        />
+        <ImageButton
+            v-else-if="existedUserbooks.length > 0"
+            img-src="onShell"
+            @click="existUserbook"
+        />
       </span>
     </div>
   </div>
 </template>
 
 <style scoped>
-
-.larger-tag {
-  font-size: 1.3em; /* Zwiększenie rozmiaru tekstu */
-  padding: 5px; /* Zwiększenie wewnętrznego marginesu */
-  font-weight: bold; /* Pogrubienie tekstu */
-  border-radius: 5px; /* Zaokrąglenie rogów */
-}
-
 .cover {
   height: 400px;
   width: 250px;

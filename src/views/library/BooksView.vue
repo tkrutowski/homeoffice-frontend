@@ -1,70 +1,68 @@
 <script setup lang="ts">
-import TheMenuLibrary from "@/components/library/TheMenuLibrary.vue";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import OfficeIconButton from "@/components/OfficeIconButton.vue";
-import {useBooksStore} from "@/stores/books";
-import {useUserbooksStore} from "@/stores/userbooks";
-import {computed, ref} from "vue";
-import {FilterMatchMode, FilterOperator, FilterService} from '@primevue/core/api';
-import {Author, Book, Category, UserBook} from "@/types/Book";
-import router from "@/router";
-import {useToast} from "primevue/usetoast";
-import AddBookToShellDialog from "@/components/library/AddEditUserBookDialog.vue";
-import {BookDto} from "@/types/Book.ts";
-import OfficeButton from "@/components/OfficeButton.vue";
+import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
+import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
+import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import {useBooksStore} from '../../stores/books'
+import {useUserbooksStore} from '../../stores/userbooks'
+import {computed, type DefineComponent, ref} from 'vue'
+import {FilterMatchMode, FilterOperator, FilterService} from '@primevue/core/api'
+import type {Author, Book, Category, UserBook} from '../../types/Book'
+import router from '../../router'
+import {useToast} from 'primevue/usetoast'
+import AddBookToShellDialog from '../../components/library/AddEditUserBookDialog.vue'
+import type {BookDto} from '../../types/Book'
 
-
-const bookStore = useBooksStore();
-const userbookStore = useUserbooksStore();
-const toast = useToast();
+const bookStore = useBooksStore()
+const userbookStore = useUserbooksStore()
+const toast = useToast()
 
 FilterService.register('filterByAuthor', (authorsFilter: Author[], filterValue: string) => {
-  if (!authorsFilter || authorsFilter.length === 0) return false;
+  if (!authorsFilter || authorsFilter.length === 0) return false
 
-  const displayAuthors = authorsFilter.map(author => `${author.lastName} ${author.firstName}`).join(", ");
-  return displayAuthors.toLowerCase().includes(filterValue.toLowerCase());
-});
-
+  const displayAuthors = authorsFilter
+      .map((author) => `${author.lastName} ${author.firstName}`)
+      .join(', ')
+  return displayAuthors.toLowerCase().includes(filterValue.toLowerCase())
+})
 
 //filter
-const filters = ref();
+const filters = ref()
 const initFilters = () => {
   filters.value = {
-  global: {value: null, matchMode: FilterMatchMode.CONTAINS},
-  title: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  categories: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  // 'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  series: { value: null, matchMode: FilterMatchMode.IN },
-  authors: {
-    operator: FilterOperator.AND,
-    constraints: [
+    global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    title: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    categories: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    // 'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+    series: {value: null, matchMode: FilterMatchMode.IN},
+    authors: {
+      operator: FilterOperator.AND,
+      constraints: [
         {
           value: null,
-          matchMode: FilterMatchMode.CONTAINS
-        }
-    ]
-  },
-};
+          matchMode: FilterMatchMode.CONTAINS,
+        },
+      ],
+    },
+  }
 }
-initFilters();
+initFilters()
 const clearFilter = () => {
-  initFilters();
-};
+  initFilters()
+}
 
 const seriesFilter = computed(() => {
-  return [...new Set(bookStore.books
-      .filter(book => book.series)
-      .map(book => book.series.title)
-  )].sort((a, b) => a.localeCompare(b));
-});
+  return [
+    ...new Set(bookStore.books.filter((book: Book) => book.series !== null)
+        .map((book: Book) => book.series!.title)),
+  ].sort((a: string, b: string) => a.localeCompare(b))
+})
 
-bookStore.getBooks();
+bookStore.getBooks()
 const booksDto = computed(() => {
-  return bookStore.books
-      .map(mapBookToBookDto)
-});
-const expandedRows = ref([]);
-const bookTemp = ref<Book>();
+  return bookStore.books.map(mapBookToBookDto)
+})
+const expandedRows = ref([])
+const bookTemp = ref<Book>()
 const mapBookToBookDto = (book: Book): BookDto => {
   return {
     id: book.id,
@@ -74,105 +72,102 @@ const mapBookToBookDto = (book: Book): BookDto => {
     title: book.title,
     description: book.description,
     cover: book.cover,
-    bookInSeriesNo: book.bookInSeriesNo
-  };
-};
-const displayAuthors = (authors: Author[]) => {
-  return authors
-      .map((author) => author.lastName + " " + author.firstName)
-      .join(", ");
-};
-const displayCategory = (categories: Category[]) => {
-  return categories.map((category) => category.name).join(", ");
-};
-
-const dataTableRef = ref(null);
-const selectedBooks = computed(() => {
-  const processedData = dataTableRef.value?.processedData;
-  if (processedData) {
-    return processedData.length;
+    bookInSeriesNo: book.bookInSeriesNo,
   }
-  return 0;
-});
+}
+const displayAuthors = (authors: Author[]) => {
+  return authors.map((author) => author.lastName + ' ' + author.firstName).join(', ')
+}
+const displayCategory = (categories: Category[]) => {
+  return categories.map((category) => category.name).join(', ')
+}
+
+const dataTableRef = ref<DefineComponent | null>(null)
+const selectedBooks = computed(() => {
+  const processedData = dataTableRef.value?.processedData
+  if (processedData) {
+    return processedData.length
+  }
+  return 0
+})
 //
 //-------------------------------------------------DELETE -------------------------------------------------
 //
-const showDeleteConfirmationDialog = ref<boolean>(false);
+const showDeleteConfirmationDialog = ref<boolean>(false)
 const confirmDelete = (book: Book) => {
-  bookTemp.value = book;
-  showDeleteConfirmationDialog.value = true;
-};
+  bookTemp.value = book
+  showDeleteConfirmationDialog.value = true
+}
 const deleteConfirmationMessage = computed(() => {
-  if (bookTemp.value)
-    return `Czy chcesz usunąc książkę: <b>${bookTemp.value?.title}</b>?`;
-  return "No message";
-});
+  if (bookTemp.value) return `Czy chcesz usunąc książkę: <b>${bookTemp.value?.title}</b>?`
+  return 'No message'
+})
 const submitDelete = async () => {
-  console.log("submitDelete()");
-  showDeleteConfirmationDialog.value = false;
+  console.log('submitDelete()')
+  showDeleteConfirmationDialog.value = false
   if (bookTemp.value) {
-    await bookStore.deleteBookDb(bookTemp.value.id)
+    await bookStore
+        .deleteBookDb(bookTemp.value.id)
         .then(() => {
           toast.add({
-            severity: "success",
-            summary: "Potwierdzenie",
-            detail: "Usunięto książkę: " + bookTemp.value?.title,
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto książkę: ' + bookTemp.value?.title,
             life: 3000,
-          });
+          })
         })
         .catch(() => {
           toast.add({
-            severity: "error",
-            summary: "Błąd",
-            detail: "Nie usunięto książki: " + bookTemp.value?.title,
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie usunięto książki: ' + bookTemp.value?.title,
             life: 3000,
-          });
+          })
         })
   }
-};
+}
 //
 //-------------------------------------------------EDIT -------------------------------------------------
 //
 const editItem = (item: Book) => {
-  const bookItem: Book = JSON.parse(JSON.stringify(item));
+  const bookItem: Book = JSON.parse(JSON.stringify(item))
   router.push({
-    name: "Book",
-    params: {isEdit: "true", bookId: bookItem.id},
-  });
-};
+    name: 'Book',
+    params: {isEdit: 'true', bookId: bookItem.id},
+  })
+}
 
 //
 //-------------------------------------------------USERBOOK-------------------------------------------------
 //
-const showUserbookDialog = ref<boolean>(false);
-const tempIdBook = ref<number>(0);
+const showUserbookDialog = ref<boolean>(false)
+const tempIdBook = ref<number>(0)
 const addUserbook = (idBook: number) => {
-  tempIdBook.value = idBook;
-  showUserbookDialog.value = true;
-};
+  tempIdBook.value = idBook
+  showUserbookDialog.value = true
+}
 const submitAddUserbook = async (newUserbook: UserBook) => {
-  console.log("submitAddUserbook()", newUserbook);
-  showUserbookDialog.value = false;
+  console.log('submitAddUserbook()', newUserbook)
+  showUserbookDialog.value = false
   if (newUserbook) {
-    const result = await userbookStore.addUserbookDb(newUserbook);
+    const result = await userbookStore.addUserbookDb(newUserbook)
     if (result) {
       toast.add({
-        severity: "success",
-        summary: "Potwierdzenie",
-        detail: "Dodano książkę na półkę: " + newUserbook.book?.title,
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
         life: 3000,
-      });
+      })
     } else {
       toast.add({
-        severity: "error",
-        summary: "Potwierdzenie",
-        detail:
-            "Nie udało się dodać książki na półkę: " + newUserbook.book?.title,
+        severity: 'error',
+        summary: 'Potwierdzenie',
+        detail: 'Nie udało się dodać książki na półkę: ' + newUserbook.book?.title,
         life: 3000,
-      });
+      })
     }
   }
-};
+}
 </script>
 
 <template>
@@ -196,11 +191,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
       <div class="w-full flex justify-center gap-3">
         <h2>LISTA KSIĄŻEK</h2>
         <div v-if="bookStore.loadingBooks" class="flex">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-          />
+          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
         </div>
       </div>
     </template>
@@ -211,7 +202,6 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
         v-model:filters="filters"
         :value="booksDto"
         :loading="bookStore.loadingBooks"
-        striped-rows
         removable-sort
         paginator
         :rows="20"
@@ -222,68 +212,72 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
         sort-field="date"
         :sort-order="-1"
         row-hover
+        size="small"
     >
       <template #header>
         <div class="flex justify-between">
-                    <router-link
-                      :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }"
-                      style="text-decoration: none"
-                    >
-                      <OfficeButton text="Nowa książka" btn-type="office-regular" />
-                    </router-link>
-          <Button type="button" icon="pi pi-filter-slash" label="Wyczyść" outlined @click="clearFilter()"/>
+          <router-link
+              :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }"
+              style="text-decoration: none"
+          >
+            <Button outlined>Nowa książka</Button>
+          </router-link>
+          <Button
+              type="button"
+              icon="pi pi-filter-slash"
+              label="Wyczyść"
+              outlined
+              @click="clearFilter()"
+          />
           <IconField icon-position="left">
             <InputIcon>
               <i class="pi pi-search"/>
             </InputIcon>
-            <InputText
-                v-model="filters['global'].value"
-                placeholder="wpisz tutaj..."
-            />
+            <InputText v-model="filters['global'].value" placeholder="wpisz tutaj..."/>
           </IconField>
         </div>
       </template>
 
       <template #empty>
-        <h4 v-if="!bookStore.loadingBooks" class="color-red">
-          Nie znaleziono książek...
-        </h4>
+        <h4 v-if="!bookStore.loadingBooks" class="color-red">Nie znaleziono książek...</h4>
       </template>
 
-<!--      AUTHOR        -->
+      <!--      AUTHOR        -->
       <Column expander style="width: 5rem"/>
       <Column
           field="authors"
           header="Autor"
           style="max-width: 120px"
           :sortable="true"
-          :show-filter-match-modes="false">
-        <template #filter="{ filterModel }">
-            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-<!--      TITLE     -->
-      <Column field="title" header="Tytuł" sortable >
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-<!--  CATEGORY  -->
-      <Column
-          field="categories"
-          header="Kategoria"
-          style="max-width: 120px"
-          :sortable="true"
+          :show-filter-match-modes="false"
       >
         <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
         </template>
       </Column>
 
-<!--      SERIES    -->
-      <Column field="series"  filter-field="series" header="Cykl" sortable  :show-filter-match-modes="false">
+      <!--      TITLE     -->
+      <Column field="title" header="Tytuł" sortable>
+        <template #filter="{ filterModel }">
+          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
+        </template>
+      </Column>
+
+      <!--  CATEGORY  -->
+      <Column field="categories" header="Kategoria" style="max-width: 120px" :sortable="true">
+        <template #filter="{ filterModel }">
+          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
+        </template>
+      </Column>
+
+      <!--      SERIES    -->
+      <Column
+          field="series"
+          filter-field="series"
+          header="Cykl"
+          sortable
+          :show-filter-match-modes="false"
+      >
         <template #body="slotProps">
           {{ slotProps.data[slotProps.field] }}
         </template>
@@ -298,18 +292,10 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
         </template>
       </Column>
 
-<!--      BOOK IN SERIES  -->
-      <Column
-          field="bookInSeriesNo"
-          header="Część"
-          style="max-width: 20px"
-      >
+      <!--      BOOK IN SERIES  -->
+      <Column field="bookInSeriesNo" header="Część" style="max-width: 20px">
         <template #body="slotProps">
-          {{
-            slotProps.data[slotProps.field] === 0
-                ? "-"
-                : slotProps.data[slotProps.field]
-          }}
+          {{ slotProps.data[slotProps.field] === 0 ? '-' : slotProps.data[slotProps.field] }}
         </template>
       </Column>
 
@@ -318,29 +304,17 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
         <template #body="slotProps">
           <div class="flex flex-row justify-between">
             <OfficeIconButton
-                v-tooltip.top="{
-                value: 'Dodaj książkę na półkę',
-                showDelay: 1000,
-                hideDelay: 300,
-              }"
+                title="Dodaj książkę na półkę"
                 icon="pi pi-file-plus"
                 @click="addUserbook(slotProps.data.id)"
             />
             <OfficeIconButton
-                v-tooltip.top="{
-                value: 'Edytuj książkę',
-                showDelay: 1000,
-                hideDelay: 300,
-              }"
+                title="Edytuj książkę"
                 icon="pi pi-file-edit"
                 @click="editItem(slotProps.data)"
             />
             <OfficeIconButton
-                v-tooltip.top="{
-                value: 'Usuń książkę',
-                showDelay: 1000,
-                hideDelay: 300,
-              }"
+                title="Usuń książkę"
                 icon="pi pi-trash"
                 severity="danger"
                 class=""
@@ -351,26 +325,21 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
       </Column>
 
       <template #expansion="slotProps">
-        <div class="flex ">
-          <div class="flex flex-col p-3 col-9 w-full">
+        <div class="flex">
+          <div class="flex flex-col p-3 w-full">
             <label class="text-left">Opis:</label>
-            <Textarea
-                v-model="slotProps.data.description"
-                rows="13"
-                auto-resize fluid
-                readonly
-            />
+            <Textarea v-model="slotProps.data.description" rows="11" auto-resize fluid readonly/>
           </div>
           <Image
               v-if="slotProps.data.cover"
-              class="col-3 mt-2"
+              class="mt-2"
               :src="slotProps.data.cover"
               alt="Okładka do książki"
               width="250"
           />
           <Image
               v-else
-              class="col-4"
+              class=""
               src="../../assets/HomeOffice.png"
               height="250"
               width="250"
@@ -384,11 +353,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
   <Toolbar class="sticky-toolbar p-2 m-2">
     <template #start>
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Odświerz listę książek',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Odświerz listę książek"
           :icon="bookStore.loadingBooks ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
           class="mr-2"
           @click="bookStore.refreshBooks()"
@@ -408,14 +373,3 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
     </template>
   </Toolbar>
 </template>
-
-<style scoped>
-.p-datatable >>> .p-datatable-tbody > tr > td {
-  /*text-align: left;*/
-  /*border: 1px solid #383838;*/
-  /*border-width: 0 0 1px 0;*/
-
-  padding: 0 !important;
-  /*padding: .3rem .3rem !important;*/
-}
-</style>

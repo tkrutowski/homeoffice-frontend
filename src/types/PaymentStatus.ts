@@ -1,5 +1,5 @@
-type Status = "PAID" | "TO_PAY" | "OVER_DUE";
+type Status = 'PAID' | 'TO_PAY' | 'OVER_DUE'
 export interface PaymentStatus {
-  name: Status;
-  viewName: string;
+  name: Status
+  viewName: string
 }

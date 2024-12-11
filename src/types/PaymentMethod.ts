@@ -1,4 +1,4 @@
 export interface PaymentMethod {
-  name: string;
-  viewName: string;
+  name: string
+  viewName: string
 }

@@ -1,20 +1,5 @@
-<template>
-  <Button
-    type="button"
-    :class="{
-      'office-regular': btnType === 'office-regular',
-      'office-save': btnType === 'office-save',
-    }"
-    :disabled="btnDisabled"
-    :loading="loading"
-    icon-pos="right"
-    :label="text"
-  >
-  </Button>
-</template>
-
 <script setup lang="ts">
-import ButtonType from "@/types/ButtonType";
+import type {ButtonType} from '../types/ButtonType'
 
 defineProps({
   btnType: {
@@ -34,12 +19,25 @@ defineProps({
     type: Boolean,
     required: false,
   },
-});
+})
 </script>
-
+<template>
+  <Button
+      type="button"
+      :class="{
+      'font-bold uppercase tracking-widest border bg-primary hover:!bg-primary-700 border-primary-900 hover:!border-primary-900':
+        btnType === 'office-regular',
+      'font-bold uppercase tracking-widest border bg-red-600 hover:!bg-red-800 border-red-900 hover:!border-red-900':
+        btnType === 'office-save',
+    }"
+      :disabled="btnDisabled"
+      :loading="loading"
+      icon-pos="right"
+      :label="text"
+  >
+  </Button>
+</template>
 <style scoped>
-
-
 .office-regular {
   background-color: var(--office-color);
   color: #332600 !important;
@@ -50,7 +48,7 @@ defineProps({
 }
 
 .office-regular:hover {
-  background-color: var(--office-color-hoover)!important;
+  background-color: var(--office-color-hoover) !important;
 }
 
 .office-regular:disabled {

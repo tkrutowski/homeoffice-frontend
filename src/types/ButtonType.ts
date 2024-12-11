@@ -1,2 +1,1 @@
-type ButtonType = "office-regular" | "office-save";
-export default ButtonType;
+export type ButtonType = 'office-regular' | 'office-save'

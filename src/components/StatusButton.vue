@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StatusType from "@/types/StatusType";
+import type {StatusType} from '../types/StatusType'
 
 defineProps({
   btnType: {
@@ -10,18 +10,12 @@ defineProps({
   colorIcon: {
     type: String,
     required: false,
-    default: "#2da687",
+    default: '#2da687',
   },
-});
+})
 </script>
 <template>
-  <Button
-      text
-      rounded
-      size="small"
-      class="my-button"
-      :style="{ color: colorIcon }"
-  >
+  <Button text rounded size="small" class="my-button" :style="{ color: colorIcon }">
     <i
         :class="{
         'pi pi-times-circle': btnType === 'TO_PAY' || btnType === 'INACTIVE',

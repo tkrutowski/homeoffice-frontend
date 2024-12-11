@@ -1,15 +1,15 @@
-import { PaymentStatus } from "@/types/PaymentStatus";
+import type { PaymentStatus } from './PaymentStatus'
 export interface Purchase {
-  id: number;
-  idCard: number;
-  idFirm: number;
-  idUser: number;
-  name: string;
-  purchaseDate: string;
-  amount: number;
-  paymentDeadline: string;
-  paymentDate: string;
-  otherInfo: string;
-  paymentStatus: PaymentStatus;
-  isInstallment: boolean;
+  id: number
+  idCard: number
+  idFirm: number
+  idUser: number
+  name: string
+  purchaseDate: Date | null
+  amount: number
+  paymentDeadline: Date | null
+  paymentDate: Date | null
+  otherInfo: string
+  paymentStatus: PaymentStatus
+  isInstallment: boolean
 }

@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import OfficeButton from "@/components/OfficeButton.vue";
-import Calendar from "primevue/calendar";
-import moment from "moment";
+import { ref, watch } from 'vue'
+import OfficeButton from '../../components/OfficeButton.vue'
+import moment from 'moment'
+import { UtilsService } from '../../service/UtilsService'
 
 const emit = defineEmits<{
-  (e: "save", date: string, amount: number): void;
-  (e: "cancel"): void;
-}>();
+  (e: 'save', date: Date, amount: number): void
+  (e: 'cancel'): void
+}>()
 const props = defineProps({
   date: {
-    type: String,
+    type: Date,
     require: false,
-    default: "",
+    default: '',
   },
   amount: {
     type: Number,
@@ -24,50 +24,50 @@ const props = defineProps({
     require: false,
     default: false,
   },
-});
-const newDate = ref<Date>(moment(props.date).toDate());
-const newAmount = ref<number>(props.amount);
-const submitted = ref(false);
+})
+const newDate = ref<Date>(props.date)
+const newAmount = ref<number>(props.amount)
+const submitted = ref(false)
 
 watch(
   () => props.amount,
   (newValue) => {
-    newAmount.value = newValue;
+    newAmount.value = newValue
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 watch(
   () => props.date,
   (newValue) => {
-    newDate.value = moment(newValue).toDate();
+    newDate.value = moment(newValue).toDate()
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 const isValid = () => {
-  return newAmount.value > 0;
-};
+  return newAmount.value > 0
+}
 const showErrorAmount = () => {
-  return submitted.value && newAmount.value > 0;
-};
+  return submitted.value && newAmount.value > 0
+}
 const submit = () => {
-  submitted.value = true;
+  submitted.value = true
   if (isValid()) {
-    emit("save", newDate.value, newAmount.value);
-    submitted.value = false;
+    emit('save', newDate.value, newAmount.value)
+    submitted.value = false
   }
-};
+}
 const cancel = () => {
-  emit("cancel");
-};
+  emit('cancel')
+}
 </script>
 
 <template>
   <Dialog modal class="p-fluid min-w-50vw" close-on-escape @abort="cancel">
     <template #header>
       <h3 class="">
-        {{ $props.isEdit ? "Edytuj wpłatę" : "Dodaj wpłatę" }}
+        {{ $props.isEdit ? 'Edytuj wpłatę' : 'Dodaj wpłatę' }}
       </h3>
     </template>
     <!-- DATE -->
@@ -86,10 +86,12 @@ const cancel = () => {
         required="true"
         :min-fraction-digits="0"
         :max-fraction-digits="2"
+        mode="currency"
+        currency="PLN"
+        locale="pl-PL"
+        @focus="UtilsService.selectText"
       />
-      <small class="p-error">{{
-        showErrorAmount() ? "Pole jest wymagane." : "&nbsp;"
-      }}</small>
+      <small class="p-error">{{ showErrorAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
     </div>
     <template #footer>
       <div class="flex flex-row justify-content-end gap-2">

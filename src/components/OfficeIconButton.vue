@@ -3,7 +3,7 @@ const props = defineProps({
   icon: {
     type: String,
     required: false,
-    default: "pi pi-file",
+    default: 'pi pi-file',
   },
   btnDisabled: {
     type: Boolean,
@@ -17,39 +17,44 @@ const props = defineProps({
   severity: {
     type: String,
     required: false,
-    default: "warn",
+    default: 'warn',
   },
   rounded: {
     type: Boolean,
     required: false,
     default: true,
   },
-});
+})
 </script>
 <template>
-  <Button class="icon-only" :icon="props.icon" :rounded="props.rounded" outlined :class="{ isActive: active }" :severity="props.severity">
+  <Button
+    class="icon-only"
+    :icon="props.icon"
+    :rounded="props.rounded"
+    outlined
+    :class="{ isActive: active }"
+    :severity="props.severity"
+  >
   </Button>
 </template>
 <!--    <i class="pi" :class="props.icon" :style="{ fontWeight: 'bold' }"></i>-->
 
-//.icon-only:hover {
-//  color: white !important;
-//  background-color: rgba(153, 82, 0) !important;
+//.icon-only:hover { // color: white !important; // background-color: rgba(153, 82, 0) !important;
 //}
 <style scoped>
-  //background-color: rgb(238, 127, 0);
-  //display: block;
-  //color: #332600 !important;
-  //border-color: rgb(238, 127, 0) !important;
+//background-color: rgb(238, 127, 0);
+//display: block;
+//color: #332600 !important;
+//border-color: rgb(238, 127, 0) !important;
 .icon-only {
-
   outline: none; /* Brak zarysu po kliknięciu */
   padding: 10px 20px; /* Padding wewnątrz przycisku */
   border-radius: 4px; /* Zaokrąglenie rogów przycisku */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Cień zewnętrzny dla efektu głębi */
-  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Animacja dla płynności */
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease; /* Animacja dla płynności */
 }
-
 
 .icon-only:disabled {
   color: white !important;

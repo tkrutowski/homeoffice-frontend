@@ -1,70 +1,81 @@
 <script setup lang="ts">
-import {useLogsStore} from "@/stores/logs.ts";
-import TheMenu from "@/components/TheMenu.vue";
-import {onMounted, ref} from "vue";
-import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import moment from "moment";
-import {useToast} from "primevue/usetoast";
+import {useLogsStore} from '../stores/logs'
+import TheMenu from '../components/TheMenu.vue'
+import {onMounted, ref} from 'vue'
+import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
+import moment from 'moment'
+import {useToast} from 'primevue/usetoast'
+import type {DataTablePageEvent} from 'primevue/datatable'
 
-const toast = useToast();
-const logStore = useLogsStore();
+const toast = useToast()
+const logStore = useLogsStore()
 
 //filter
-const filters = ref();
+const filters = ref()
 const initFilters = () => {
   filters.value = {
     global: {value: null, matchMode: FilterMatchMode.CONTAINS},
     level: {value: null, matchMode: FilterMatchMode.CONTAINS},
-    timestamp: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
+    timestamp: {
+      operator: FilterOperator.AND,
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+    },
     message: {value: null, matchMode: FilterMatchMode.CONTAINS},
     logger: {value: null, matchMode: FilterMatchMode.CONTAINS},
-
-  };
+  }
 }
-initFilters();
+initFilters()
 const clearFilter = () => {
-  initFilters();
-};
+  initFilters()
+}
 
-const formatDate = (value) => {
-  return moment(value).format("YYYY-MM-DD HH:mm:ss.SSS");
-};
-const expandedRows = ref([]);
-const logLevels = ref<string[]>(['INFO','DEBUG','WARN', 'ERROR']);
-const title = ref<string>("")
-const dateFrom = ref<string>(moment().format("YYYY-MM-DD"));
-const dateTo = ref<string>(moment().format("YYYY-MM-DD"))
-const selectedLevel = ref<string>("")
+const formatDate = (value: Date) => {
+  return moment(value).format('YYYY-MM-DD HH:mm:ss.SSS')
+}
+const expandedRows = ref([])
+const logLevels = ref<string[]>(['INFO', 'DEBUG', 'WARN', 'ERROR'])
+const title = ref<string>('')
+const dateFrom = ref<Date>(new Date())
+const dateTo = ref<Date>(new Date())
+const selectedLevel = ref<string>('')
 const searchLogs = () => {
-  logStore.getLogsFromDb(moment(dateFrom.value).format("YYYY-MM-DD") ,  moment(dateTo.value).format("YYYY-MM-DD"),selectedLevel.value)
-      .then(()=>{
+  logStore
+      .getLogsFromDb(
+          moment(dateFrom.value).format('YYYY-MM-DD'),
+          moment(dateTo.value).format('YYYY-MM-DD'),
+          selectedLevel.value,
+      )
+      .then(() => {
         toast.add({
-          severity: "success",
-          summary: "Potwierdzenie",
-          detail: "Pobrano logi.",
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Pobrano logi.',
           life: 3000,
-        });
-        title.value=": " + moment(dateFrom.value).format("YYYY-MM-DD") + " - " + moment(dateTo.value).format("YYYY-MM-DD");
-        if(selectedLevel.value && selectedLevel.value !== "") {
-          title.value += ", " + selectedLevel.value;
+        })
+        title.value =
+            ': ' +
+            moment(dateFrom.value).format('YYYY-MM-DD') +
+            ' - ' +
+            moment(dateTo.value).format('YYYY-MM-DD')
+        if (selectedLevel.value && selectedLevel.value !== '') {
+          title.value += ', ' + selectedLevel.value
         }
       })
       .catch(() => {
         toast.add({
-          severity: "error",
-          summary: "Błąd",
-          detail: "Nie udało się pobrać logów.",
+          severity: 'error',
+          summary: 'Błąd',
+          detail: 'Nie udało się pobrać logów.',
           life: 3000,
-        });
-      });
-
-};
-const handleRowsPerPageChange = (event) => {
-  localStorage.setItem("rowsPerPageLogs", event.rows);
-};
+        })
+      })
+}
+const handleRowsPerPageChange = (event: DataTablePageEvent) => {
+  localStorage.setItem('rowsPerPageLogs', event.rows.toString())
+}
 onMounted(() => {
-  logStore.getTodayLogsFromDb();
-  title.value=" - DZISIEJSZE"
+  logStore.getTodayLogsFromDb()
+  title.value = ' - DZISIEJSZE'
 })
 </script>
 
@@ -74,13 +85,9 @@ onMounted(() => {
   <Panel>
     <template #header>
       <div class="w-full flex justify-center gap-4">
-        <h3 class="color-green">LISTA LOGÓW {{title}}</h3>
+        <h3 class="color-green">LISTA LOGÓW {{ title }}</h3>
         <div v-if="logStore.loadingLogs">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-          />
+          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
         </div>
       </div>
     </template>
@@ -102,10 +109,28 @@ onMounted(() => {
     >
       <template #header>
         <div class="flex justify-between">
-          <Button type="button" icon="pi pi-filter-slash" label="Wyczyść" outlined @click="clearFilter()"/>
+          <Button
+              type="button"
+              icon="pi pi-filter-slash"
+              label="Wyczyść"
+              outlined
+              @click="clearFilter()"
+          />
           <div class="flex gap-2">
-            <DatePicker v-model="dateFrom" showIcon  iconDisplay="input" class="w-36" dateFormat="yy-mm-dd"/>
-            <DatePicker v-model="dateTo" showIcon  iconDisplay="input" class="w-36" dateFormat="yy-mm-dd"/>
+            <DatePicker
+                v-model="dateFrom"
+                showIcon
+                iconDisplay="input"
+                class="w-36"
+                dateFormat="yy-mm-dd"
+            />
+            <DatePicker
+                v-model="dateTo"
+                showIcon
+                iconDisplay="input"
+                class="w-36"
+                dateFormat="yy-mm-dd"
+            />
             <MultiSelect
                 v-model="selectedLevel"
                 :options="logLevels"
@@ -113,24 +138,25 @@ onMounted(() => {
                 :show-clear="true"
                 style="min-width: 10rem; width: 10rem"
             />
-            <Button type="button" icon="pi pi-search" label="Szukaj" outlined @click="searchLogs()"/>
+            <Button
+                type="button"
+                icon="pi pi-search"
+                label="Szukaj"
+                outlined
+                @click="searchLogs()"
+            />
           </div>
           <IconField icon-position="left">
             <InputIcon>
               <i class="pi pi-search"/>
             </InputIcon>
-            <InputText
-                v-model="filters['global'].value"
-                placeholder="wpisz tutaj..."
-            />
+            <InputText v-model="filters['global'].value" placeholder="wpisz tutaj..."/>
           </IconField>
         </div>
       </template>
 
       <template #empty>
-        <h4 class="color-red" v-if="!logStore.loadingLogs">
-          Nie znaleziono logów...
-        </h4>
+        <h4 class="color-red" v-if="!logStore.loadingLogs">Nie znaleziono logów...</h4>
       </template>
 
       <template #loading>
@@ -145,7 +171,7 @@ onMounted(() => {
           {{ formatDate(data.timestamp) }}
         </template>
         <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" dateFormat="yy-mm-dd" placeholder="yyyy-dd-mm" />
+          <DatePicker v-model="filterModel.value" dateFormat="yy-mm-dd" placeholder="yyyy-dd-mm"/>
         </template>
       </Column>
 
@@ -201,9 +227,6 @@ onMounted(() => {
       </template>
     </DataTable>
   </Panel>
-
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

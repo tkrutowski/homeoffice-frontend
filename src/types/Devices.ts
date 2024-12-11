@@ -1,38 +1,37 @@
-import {Firm} from "@/types/Firm.ts";
-import {ActiveStatus} from "@/types/Bank.ts";
-
+import type { Firm } from './Firm.ts'
+import type { ActiveStatus } from './Bank.ts'
 
 export interface Device {
-  id: number;
-  deviceType: DeviceType;
-  firm: Firm;
-  name: string;
-  purchaseDate: Date | undefined;
-  purchaseAmount: number;
-  sellDate: Date | undefined;
-  sellAmount: number;
-  warrantyEndDate: Date | undefined;
-  insuranceEndDate: Date | undefined;
-  otherInfo: string;
-  activeStatus: ActiveStatus;
+  id: number
+  deviceType: DeviceType | null
+  firm: Firm | null
+  name: string
+  purchaseDate:  Date | null
+  purchaseAmount: number
+  sellDate: Date | null
+  sellAmount: number
+  warrantyEndDate:  Date | null
+  insuranceEndDate:  Date | null
+  otherInfo: string
+  activeStatus: ActiveStatus
 }
 
 export interface DeviceType {
-  id: number;
-  name: string;
+  id: number
+  name: string
 }
 
 export interface DeviceDto {
-  id: number;
-  deviceType: string;
-  firm: string;
-  name: string;
-  purchaseDate: Date | undefined;
-  purchaseAmount: number;
-  sellDate: Date | undefined;
-  sellAmount: number;
-  warrantyEndDate: Date | undefined;
-  insuranceEndDate: Date | undefined;
-  otherInfo: string;
-  activeStatus: ActiveStatus;
+  id: number
+  deviceType: string | undefined
+  firm: string | null
+  name: string
+  purchaseDate:  Date | null
+  purchaseAmount: number
+  sellDate:  Date | null
+  sellAmount: number
+  warrantyEndDate:  Date | null
+  insuranceEndDate:  Date | null
+  otherInfo: string
+  activeStatus: ActiveStatus
 }

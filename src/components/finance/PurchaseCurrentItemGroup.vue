@@ -1,81 +1,76 @@
 2
 <script setup lang="ts">
-import PurchaseCurrentItem from "@/components/finance/PurchaseCurrentItem.vue";
-import moment from "moment";
-import { computed, ref, watch } from "vue";
-import { UtilsService } from "@/service/UtilsService";
-import { useCardsStore } from "@/stores/cards";
-import { usePurchasesStore } from "@/stores/purchases";
+import PurchaseCurrentItem from '../../components/finance/PurchaseCurrentItem.vue'
+import moment from 'moment'
+import { computed, ref, watch } from 'vue'
+import { UtilsService } from '../../service/UtilsService'
+import { useCardsStore } from '../../stores/cards'
+import { usePurchasesStore } from '../../stores/purchases'
+import type {Purchase} from "../../types/Purchase.ts";
 
-const cardStore = useCardsStore();
-const purchasesStore = usePurchasesStore();
-const paid = ref<number>(0);
-const toPay = ref<number>(0);
+const cardStore = useCardsStore()
+const purchasesStore = usePurchasesStore()
+const paid = ref<number>(0)
+const toPay = ref<number>(0)
 const props = defineProps({
   deadlineDate: {
     type: String,
     required: true,
   },
-});
-const deadlineDate = ref(props.deadlineDate);
-const cardLogo = ref<string>("");
+})
+const deadlineDate = ref(props.deadlineDate)
+const cardLogo = ref<string | undefined>('')
 const purchases = computed(() => {
-  return purchasesStore.getPurchasesByDate(deadlineDate.value);
-});
+  return purchasesStore.getPurchasesByDate(deadlineDate.value)
+})
 
 // Watch to handle changes in purchases
 watch(
   purchases,
   (newPurchases) => {
     if (newPurchases && newPurchases.length > 0) {
-    calculate();
+      calculate()
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 const calculateToPay = computed(() => {
-  return UtilsService.formatCurrency(toPay.value);
-});
+  return UtilsService.formatCurrency(toPay.value)
+})
 
 const isExpired = () => {
-  return moment(props.deadlineDate).isBefore(moment());
-};
+  return moment(props.deadlineDate).isBefore(moment())
+}
 
 function calculate() {
-  console.log("calculate START");
+  console.log('calculate START')
   if (purchases.value && purchases.value.length > 0) {
-    paid.value = 0;
-    toPay.value = 0;
-    purchases.value.forEach((p) => {
-      if (p.paymentStatus.name === "PAID") paid.value += Number(p.amount);
-      else toPay.value += Number(p.amount);
+    paid.value = 0
+    toPay.value = 0
+    purchases.value.forEach((p:Purchase) => {
+      if (p.paymentStatus.name === 'PAID') paid.value += Number(p.amount)
+      else toPay.value += Number(p.amount)
       // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
-    });
-    console.log("calculate paid: ", paid.value);
-    console.log("calculate topay: ", toPay.value);
-    cardLogo.value = cardStore.getCardLogo(purchases.value[0].idCard);
+    })
+    console.log('calculate paid: ', paid.value)
+    console.log('calculate topay: ', toPay.value)
+    cardLogo.value = cardStore.getCardLogo(purchases.value[0].idCard)
   }
 }
 watch(
   () => purchasesStore.purchases,
   () => {
-    calculate();
+    calculate()
   },
-  { deep: true }
-);
+  { deep: true },
+)
 </script>
 
 <template>
-  <Card
-    class="item-group"
-    :class="isExpired() ? 'expired' : 'paid'"
-  >
+  <Card class="item-group" :class="isExpired() ? 'expired' : 'paid'">
     <template #header>
-      <div
-        class="purchase-header mb-3"
-        :class="isExpired() ? 'expired' : 'paid'"
-      >
+      <div class="purchase-header mb-3" :class="isExpired() ? 'expired' : 'paid'">
         <img :src="cardLogo" alt="Card logo" class="image-card ml-4 p-1" />
         <span class="text-4xl" title="Termin spłaty">{{ props.deadlineDate }} </span>
 
@@ -88,11 +83,7 @@ watch(
       </div>
     </template>
     <template #content>
-      <PurchaseCurrentItem
-        v-for="purchase in purchases"
-        :key="purchase.id"
-        :purchase="purchase"
-      />
+      <PurchaseCurrentItem v-for="purchase in purchases" :key="purchase.id" :purchase="purchase" />
       <br />
     </template>
   </Card>

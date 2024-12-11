@@ -1,77 +1,69 @@
 <script setup lang="ts">
-import { Purchase } from "@/types/Purchase";
-import { computed, onMounted, ref, watch } from "vue";
-import { UtilsService } from "@/service/UtilsService";
-import moment from "moment";
-import { useCardsStore } from "@/stores/cards";
-import { usePurchasesStore } from "@/stores/purchases";
-import PurchaseCurrentItem from "@/components/finance/PurchaseCurrentItem.vue";
+import type { Purchase } from '../../types/Purchase'
+import { computed, onMounted, ref, watch } from 'vue'
+import { UtilsService } from '../../service/UtilsService'
+import moment from 'moment'
+import { useCardsStore } from '../../stores/cards'
+import { usePurchasesStore } from '../../stores/purchases'
+import PurchaseCurrentItem from '../../components/finance/PurchaseCurrentItem.vue'
 
-const cardStore = useCardsStore();
-const purchasesStore = usePurchasesStore();
-const paid = ref<number>(0);
-const toPay = ref<number>(0);
-const idCard = ref<number>(0);
+const cardStore = useCardsStore()
+const purchasesStore = usePurchasesStore()
+const paid = ref<number>(0)
+const toPay = ref<number>(0)
+const idCard = ref<number>(0)
 const props = defineProps({
   deadlineDate: {
     type: String,
     required: true,
   },
-});
-const purchases = ref<Purchase[] | undefined>(
-  purchasesStore.getPurchasesByDate(props.deadlineDate)
-);
+})
+const purchases = ref<Purchase[] | undefined>(purchasesStore.getPurchasesByDate(props.deadlineDate))
 
 const calculateTotal = computed(() => {
-  return UtilsService.formatCurrency(paid.value + toPay.value);
-});
+  return UtilsService.formatCurrency(paid.value + toPay.value)
+})
 const calculatePaid = computed(() => {
-  return UtilsService.formatCurrency(paid.value);
-});
+  return UtilsService.formatCurrency(paid.value)
+})
 const calculateToPay = computed(() => {
-  return UtilsService.formatCurrency(toPay.value);
-});
+  return UtilsService.formatCurrency(toPay.value)
+})
 
 const isExpired = () => {
-  return moment(props.deadlineDate).isBefore(moment());
-};
+  return moment(props.deadlineDate).isBefore(moment())
+}
 
 function calculate() {
   if (purchases.value) {
-    paid.value = 0;
-    toPay.value = 0;
-    purchases.value.forEach((p) => {
-      if (p.paymentStatus.name === "PAID") paid.value += Number(p.amount);
-      else toPay.value += Number(p.amount);
+    paid.value = 0
+    toPay.value = 0
+    purchases.value.forEach((p:Purchase) => {
+      if (p.paymentStatus.name === 'PAID') paid.value += Number(p.amount)
+      else toPay.value += Number(p.amount)
       // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
-    });
-    idCard.value = purchases.value[0].idCard;
+    })
+    idCard.value = purchases.value[0].idCard
   }
 }
 onMounted(async () => {
   // console.log("PurchaseItemGroup - MOUNTED");
   // purchases.value = purchasesStore.getPurchasesByDate(props.deadlineDate);
-  calculate();
-});
+  calculate()
+})
 watch(
   () => purchasesStore.purchases,
   () => {
-    calculate();
+    calculate()
   },
-  { deep: true }
-);
+  { deep: true },
+)
 </script>
 
 <template>
-  <Card
-    class="item-group"
-    :class="isExpired ? 'bg-office-expired01' : 'bg-office-dark1'"
-  >
+  <Card class="item-group" :class="isExpired() ? 'bg-office-expired01' : 'bg-office-dark1'">
     <template #header>
-      <div
-        class="purchase-header mb-3"
-        :class="isExpired ? 'bg-office-expired03' : null"
-      >
+      <div class="purchase-header mb-3" :class="isExpired() ? 'bg-office-expired03' : null">
         <img
           :src="cardStore.getCardLogo(idCard)"
           alt="Card logo"
@@ -91,15 +83,11 @@ watch(
         <div class="purchase-header-item mr-5">
           <div>
             <span class="item-title" title="Nazwa firmy">Zapłacono:</span>
-            <span class="pl-2 color-green" title="Nazwa firmy">{{
-              calculatePaid
-            }}</span>
+            <span class="pl-2 color-green" title="Nazwa firmy">{{ calculatePaid }}</span>
           </div>
           <div>
             <span class="item-title" title="Nazwa firmy">Do zapłaty:</span>
-            <span class="pl-2 color-red" title="Nazwa firmy">{{
-              calculateToPay
-            }}</span>
+            <span class="pl-2 color-red" title="Nazwa firmy">{{ calculateToPay }}</span>
           </div>
           <div>
             <span class="item-title" title="Nazwa firmy">RAZEM:</span>
@@ -109,11 +97,7 @@ watch(
       </div>
     </template>
     <template #content>
-      <PurchaseCurrentItem
-        v-for="purchase in purchases"
-        :key="purchase.id"
-        :purchase="purchase"
-      />
+      <PurchaseCurrentItem v-for="purchase in purchases" :key="purchase.id" :purchase="purchase" />
       <br />
     </template>
   </Card>

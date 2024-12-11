@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import {ref, watch} from "vue";
-import OfficeButton from "@/components/OfficeButton.vue";
-import {useBookstoreStore} from "@/stores/bookstores";
-import {useUserbooksStore} from "@/stores/userbooks";
-import {useBooksStore} from "@/stores/books";
-import {Bookstore, UserBook} from "@/types/Book";
-import moment from "moment/moment";
-import {UtilsService} from "@/service/UtilsService";
+import {ref, watch} from 'vue'
+import OfficeButton from '../../components/OfficeButton.vue'
+import {useBookstoreStore} from '../../stores/bookstores'
+import {useUserbooksStore} from '../../stores/userbooks'
+import {useBooksStore} from '../../stores/books'
+import type {Bookstore, UserBook} from '../../types/Book'
+import {UtilsService} from '../../service/UtilsService'
 
-UtilsService.getTypesForLibrary();
+UtilsService.getTypesForLibrary()
 
-const bookstoreStore = useBookstoreStore();
-const userbookStore = useUserbooksStore();
-const bookStore = useBooksStore();
+const bookstoreStore = useBookstoreStore()
+const userbookStore = useUserbooksStore()
+const bookStore = useBooksStore()
 // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
 const emit = defineEmits<{
-  (e: "save", userbook: UserBook): void;
-  (e: "cancel"): void;
-}>();
+  (e: 'save', userbook: UserBook): void
+  (e: 'cancel'): void
+}>()
 const props = defineProps({
   idBook: {
     type: Number,
@@ -29,58 +28,54 @@ const props = defineProps({
     require: false,
     default: false,
   },
-});
-const submitted = ref(false);
-const selectedBookstore = ref<Bookstore | undefined>();
+})
+const submitted = ref<boolean>(false)
+const selectedBookstore = ref<Bookstore | null>()
 const userbook = ref<UserBook>({
   id: 0,
   idUser: 0,
-  book: undefined,
+  book: null,
   idBookstore: 0,
-  editionType: {name: "BOOK", viewName: ""},
-  readingStatus: {name: "NOT_READ", viewName: ""},
-  ownershipStatus: {name: "READ_ONLY", viewName: ""},
-  readFrom: "",
-  readTo: "",
-  info: "",
-});
+  editionType: {name: 'BOOK', viewName: ''},
+  readingStatus: {name: 'NOT_READ', viewName: ''},
+  ownershipStatus: {name: 'READ_ONLY', viewName: ''},
+  readFrom: null,
+  readTo: null,
+  info: '',
+})
 
 watch(
     () => props.idBook,
     async (id: number) => {
-      console.log("WATCH");
+      console.log('WATCH')
       if (!props.isEdit && id > 0) {
-        console.log("NEW USERBOOK");
-        userbook.value.book = await bookStore.getBookFromDb(id);
+        console.log('NEW USERBOOK')
+        userbook.value.book = await bookStore.getBookFromDb(id)
       }
       if (props.isEdit && id > 0) {
-        console.log("EDIT USERBOOK");
-        const result = await userbookStore.getUserbookFromDb(id);
+        console.log('EDIT USERBOOK')
+        const result = await userbookStore.getUserbookFromDb(id)
         if (result) {
-          userbook.value = result;
-          selectedBookstore.value = bookstoreStore.getBookstore(
-              userbook.value.idBookstore
-          );
-          readingDateFrom.value = userbook.value.readFrom;
-          readingDateTo.value = userbook.value.readTo;
-          console.log("userbook: ", result);
+          userbook.value = result
+          selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore)
+          readingDateFrom.value = userbook.value.readFrom
+          readingDateTo.value = userbook.value.readTo
+          console.log('userbook: ', result)
         }
       }
-    }
-);
-const readingDateFrom = ref<string>("");
-watch(readingDateFrom, (newDate: string) => {
-  console.log("date from ", newDate);
-  if (userbook.value)
-    userbook.value.readFrom = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
-const readingDateTo = ref<string>("");
-watch(readingDateTo, (newDate: string) => {
-  if (userbook.value)
-    userbook.value.readTo = moment(new Date(newDate)).format("YYYY-MM-DD");
-});
+    },
+)
+const readingDateFrom = ref<Date | null>(null)
+watch(readingDateFrom, (newDate: Date | null) => {
+  console.log('date from ', newDate)
+  if (userbook.value) userbook.value.readFrom = newDate
+})
+const readingDateTo = ref<Date | null>(null)
+watch(readingDateTo, (newDate: Date | null) => {
+  if (userbook.value) userbook.value.readTo = newDate
+})
 const isValid = () => {
-  console.log("valid ", showErrorBookstore());
+  console.log('valid ', showErrorBookstore())
   return (
       showErrorBookstore() ||
       showErrorOwnership() ||
@@ -88,104 +83,88 @@ const isValid = () => {
       showErrorDateTo() ||
       showErrorReadingStatus() ||
       showErrorEditionType()
-  );
-};
+  )
+}
 const showErrorBookstore = () => {
-  return submitted.value && userbook.value.idBookstore === 0;
-};
+  return submitted.value && userbook.value.idBookstore === 0
+}
 const showErrorOwnership = () => {
-  return (
-      submitted.value && userbook.value.ownershipStatus.viewName.length === 0
-  );
-};
+  return submitted.value && userbook.value.ownershipStatus.viewName.length === 0
+}
 const showErrorEditionType = () => {
-  return submitted.value && userbook.value.editionType.viewName.length === 0;
-};
+  return submitted.value && userbook.value.editionType.viewName.length === 0
+}
 const showErrorReadingStatus = () => {
-  return submitted.value && userbook.value.readingStatus.viewName.length === 0;
-};
+  return submitted.value && userbook.value.readingStatus.viewName.length === 0
+}
 const showErrorDateFrom = () => {
   return (
       submitted.value &&
-      (userbook.value.readingStatus.name === "READ_NOW" ||
-          userbook.value.readingStatus.name === "READ") &&
-      (!userbook.value.readFrom || userbook.value.readFrom.length === 0)
-  );
-};
+      (userbook.value.readingStatus.name === 'READ_NOW' ||
+          userbook.value.readingStatus.name === 'READ') &&
+      !userbook.value.readFrom
+  )
+}
 const showErrorDateTo = () => {
-  return (
-      submitted.value &&
-      userbook.value.readingStatus.name === "READ" &&
-      (!userbook.value.readTo || userbook.value.readFrom.length === 0)
-  );
-};
+  return submitted.value && userbook.value.readingStatus.name === 'READ' && !userbook.value.readTo
+}
 const submit = () => {
-  submitted.value = true;
+  submitted.value = true
   if (!isValid()) {
-    emit("save", userbook.value);
-    submitted.value = false;
-    reset();
+    emit('save', userbook.value)
+    submitted.value = false
+    reset()
   }
-};
+}
 
 function reset() {
   userbook.value = {
     id: 0,
     idUser: 0,
-    book: undefined,
+    book: null,
     idBookstore: 0,
-    editionType: {name: "BOOK", viewName: ""},
-    readingStatus: {name: "NOT_READ", viewName: ""},
-    ownershipStatus: {name: "READ_ONLY", viewName: ""},
-    readFrom: "",
-    readTo: "",
-    info: "",
-  };
-  selectedBookstore.value = undefined;
-  readingDateFrom.value = "";
-  readingDateTo.value = "";
+    editionType: {name: 'BOOK', viewName: ''},
+    readingStatus: {name: 'NOT_READ', viewName: ''},
+    ownershipStatus: {name: 'READ_ONLY', viewName: ''},
+    readFrom: null,
+    readTo: null,
+    info: '',
+  }
+  selectedBookstore.value = null
+  readingDateFrom.value = null
+  readingDateTo.value = null
 }
 
 const cancel = () => {
-  reset();
-  emit("cancel");
-};
+  reset()
+  emit('cancel')
+}
 </script>
 
 <template>
   <Dialog modal class="max-w-5xl mx-auto" close-on-escape @abort="cancel">
     <template #header>
-      <h2>
-        {{
-          $props.isEdit
-              ? "Edytuj książkę na półce"
-              : "Dodaj nową książkę na półkę"
-        }}
-      </h2>
+      <p class="text-2xl mx-auto">
+        {{ $props.isEdit ? 'Edytuj książkę na półce' : 'Dodaj nową książkę na półkę' }}
+      </p>
     </template>
-    <Fieldset class="w-full " legend="Książka">
+    <Fieldset class="w-full" legend="Książka">
       <div class="grid grid-cols-6 gap-4">
         <div class="col-start-1 col-span-4">
           <!-- ROW-1   BOOKSTORE -->
           <div class="flex flex-row">
             <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-bookstore"
-              >Wybierz księgarnię:</label
-              >
+              <label class="ml-2 mb-1" for="input-bookstore">Wybierz księgarnię:</label>
               <Select
                   id="input-bookstore"
                   v-model="selectedBookstore"
                   :class="{ 'p-invalid': showErrorBookstore() }"
                   :options="bookstoreStore.bookstores"
                   option-label="name"
-                  @change="
-                (userbook.idBookstore = selectedBookstore
-                  ? selectedBookstore.id
-                  : 0)
-              "
+                  @change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
               />
               <small class="p-error">{{
-                  showErrorBookstore() ? "Pole jest wymagane." : "&nbsp;"
+                  showErrorBookstore() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
             <div v-if="bookstoreStore.loadingBookstore" class="mt-4">
@@ -200,9 +179,7 @@ const cancel = () => {
           <!-- ROW-2 OWNERSHIP -->
           <div class="flex flex-row">
             <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-ownership"
-              >Wybierz własność:</label
-              >
+              <label class="ml-2 mb-1" for="input-ownership">Wybierz własność:</label>
               <Select
                   id="input-ownership"
                   v-model="userbook.ownershipStatus"
@@ -211,7 +188,7 @@ const cancel = () => {
                   option-label="viewName"
               />
               <small class="p-error">{{
-                  showErrorOwnership() ? "Pole jest wymagane." : "&nbsp;"
+                  showErrorOwnership() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
             <div v-if="userbookStore.loadingOwnership" class="mt-4">
@@ -226,9 +203,7 @@ const cancel = () => {
           <!-- ROW-3 EDITION -->
           <div class="flex flex-row">
             <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-edition"
-              >Wybierz rodzaj:</label
-              >
+              <label class="ml-2 mb-1" for="input-edition">Wybierz rodzaj:</label>
               <Select
                   id="input-edition"
                   v-model="userbook.editionType"
@@ -237,7 +212,7 @@ const cancel = () => {
                   option-label="viewName"
               />
               <small class="p-error">{{
-                  showErrorEditionType() ? "Pole jest wymagane." : "&nbsp;"
+                  showErrorEditionType() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
             <div v-if="userbookStore.loadingEditionType" class="mt-4">
@@ -261,7 +236,7 @@ const cancel = () => {
                   option-label="viewName"
               />
               <small class="p-error">{{
-                  showErrorReadingStatus() ? "Pole jest wymagane." : "&nbsp;"
+                  showErrorReadingStatus() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
             <div v-if="userbookStore.loadingReadingStatus" class="mt-4">
@@ -278,7 +253,7 @@ const cancel = () => {
             <div class="flex-row flex w-full">
               <div class="flex flex-col w-full">
                 <label class="ml-2 mb-1" for="date-from">Czytana od:</label>
-                <Calendar
+                <DatePicker
                     id="date-from"
                     v-model="readingDateFrom"
                     show-icon
@@ -286,7 +261,7 @@ const cancel = () => {
                     :invalid="showErrorDateFrom()"
                 />
                 <small class="p-error">{{
-                    showErrorDateFrom() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorDateFrom() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
@@ -294,7 +269,7 @@ const cancel = () => {
             <div class="flex-row flex w-full">
               <div class="flex flex-col w-full">
                 <label class="ml-2 mb-1" for="date-to">Czytana do:</label>
-                <Calendar
+                <DatePicker
                     id="date-to"
                     v-model="readingDateTo"
                     show-icon
@@ -302,7 +277,7 @@ const cancel = () => {
                     :invalid="showErrorDateTo()"
                 />
                 <small class="p-error">{{
-                    showErrorDateTo() ? "Pole jest wymagane." : "&nbsp;"
+                    showErrorDateTo() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
               </div>
             </div>
@@ -318,11 +293,7 @@ const cancel = () => {
               width="333"
               alt="Okładka do książki"
           />
-          <img
-              v-else
-              src="@/assets/images/no_cover.jpg"
-              alt="Okładka do książki"
-          />
+          <img v-else src="@/assets/images/no_cover.jpg" alt="Okładka do książki"/>
         </div>
       </div>
     </Fieldset>
