@@ -1,27 +1,31 @@
 <template>
   <div class="card flex justify-end p-2">
     <Button
-      class="inline-flex w-8 h-8 p-0 items-center justify-center surface-0 dark:surface-500 border border-primary rounded"
-      @click="onThemeToggle"
-      outlined
-      :icon="`dark:text-white pi ${iconClass}`"
+        class="inline-flex w-8 h-8 p-0 items-center justify-center surface-0 dark:surface-500 border border-primary rounded"
+        @click="onThemeToggle"
+        outlined
+        :icon="`dark:text-white pi ${iconClass}`"
     >
     </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import {onMounted, ref} from 'vue'
 
 const iconClass = ref<string>('pi-sun')
 
 const onThemeToggle = () => {
   const root = document.getElementsByTagName('html')[0]
-  root.classList.toggle('dark')
+  // root.classList.toggle('dark')
   iconClass.value = iconClass.value === 'pi-moon' ? 'pi-sun' : 'pi-moon'
   if (iconClass.value !== 'pi-moon') {
+    root.classList.remove('dark')
+    root.classList.add('light')
     localStorage.setItem('theme', 'light')
   } else {
+    root.classList.remove('light')
+    root.classList.add('dark')
     localStorage.setItem('theme', 'dark')
   }
 }
