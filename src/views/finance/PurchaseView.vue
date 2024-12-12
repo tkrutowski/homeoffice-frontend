@@ -43,7 +43,7 @@ const purchase = ref<Purchase>({
   paymentDeadline: null,
   paymentDate: null,
   paymentStatus: {name: 'TO_PAY', viewName: 'Do spłaty'},
-  isInstallment: false,
+  installment: false,
   otherInfo: '',
 })
 

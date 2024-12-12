@@ -44,7 +44,7 @@ const purchase = ref<Purchase>({
   paymentDate: null,
   otherInfo: '',
   paymentStatus: { name: 'TO_PAY', viewName: 'Do spłaty' },
-  isInstallment: false,
+  installment: false,
 })
 
 const btnShowError = ref<boolean>(false)

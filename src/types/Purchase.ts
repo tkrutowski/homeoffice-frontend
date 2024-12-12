@@ -11,5 +11,5 @@ export interface Purchase {
   paymentDate: Date | null
   otherInfo: string
   paymentStatus: PaymentStatus
-  isInstallment: boolean
+  installment: boolean
 }
