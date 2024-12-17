@@ -6,6 +6,7 @@ import {useUserbooksStore} from '../../stores/userbooks'
 import {useBooksStore} from '../../stores/books'
 import type {Bookstore, UserBook} from '../../types/Book'
 import {UtilsService} from '../../service/UtilsService'
+import type {AxiosError} from "axios";
 
 UtilsService.getTypesForLibrary()
 
@@ -54,14 +55,16 @@ watch(
       }
       if (props.isEdit && id > 0) {
         console.log('EDIT USERBOOK')
-        const result = await userbookStore.getUserbookFromDb(id)
-        if (result) {
-          userbook.value = result
-          selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore)
-          readingDateFrom.value = userbook.value.readFrom
-          readingDateTo.value = userbook.value.readTo
-          console.log('userbook: ', result)
-        }
+        await userbookStore.getUserbookFromDb(id).then((result: UserBook | null) => {
+          if (result) {
+            userbook.value = result
+            selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore)
+            readingDateFrom.value = userbook.value.readFrom
+            readingDateTo.value = userbook.value.readTo
+          }
+        }).catch((reason: AxiosError) => {
+          console.log('ERROR: ', reason)
+        })
       }
     },
 )
@@ -75,7 +78,6 @@ watch(readingDateTo, (newDate: Date | null) => {
   if (userbook.value) userbook.value.readTo = newDate
 })
 const isValid = () => {
-  console.log('valid ', showErrorBookstore())
   return (
       showErrorBookstore() ||
       showErrorOwnership() ||
@@ -256,7 +258,7 @@ const cancel = () => {
                 <DatePicker
                     id="date-from"
                     v-model="readingDateFrom"
-                    show-icon
+                    show-icon showButtonBar
                     date-format="yy-mm-dd"
                     :invalid="showErrorDateFrom()"
                 />
@@ -272,7 +274,7 @@ const cancel = () => {
                 <DatePicker
                     id="date-to"
                     v-model="readingDateTo"
-                    show-icon
+                    show-icon showButtonBar
                     date-format="yy-mm-dd"
                     :invalid="showErrorDateTo()"
                 />

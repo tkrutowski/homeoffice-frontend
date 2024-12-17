@@ -83,10 +83,10 @@ const submitChangeStatus = async () => {
             life: 3000,
           })
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason.message,
             detail: 'Nie zmieniono statusu karty: ' + cardTemp.value?.name,
             life: 3000,
           })
@@ -131,7 +131,7 @@ const submitDelete = async () => {
           } else {
             toast.add({
               severity: 'error',
-              summary: 'Błąd',
+              summary: reason.message,
               detail: 'Nie usunięto karty: ' + cardTemp.value?.name,
               life: 3000,
             })

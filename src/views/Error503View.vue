@@ -4,9 +4,9 @@ import TheMenu from '../components/TheMenu.vue'
 
 <template>
   <TheMenu/>
-  <div class="flex flex-col justify-center items-center w-full mt-10">
-    <h2>Serwis chwilowo niedostępny</h2>
-    <h3 class="mt-3">Proszę spróbować za chwilę...</h3>
+  <div class="flex flex-col justify-center items-center w-full mt-10 text-primary">
+    <p class="text-3xl">Serwis chwilowo niedostępny</p>
+    <p class="text-lg mt-3">Proszę spróbować za chwilę...</p>
   </div>
 </template>
 

@@ -11,6 +11,7 @@ import router from '../../router'
 import {useToast} from 'primevue/usetoast'
 import AddBookToShellDialog from '../../components/library/AddEditUserBookDialog.vue'
 import type {BookDto} from '../../types/Book'
+import type {AxiosError} from "axios";
 
 const bookStore = useBooksStore()
 const userbookStore = useUserbooksStore()
@@ -116,10 +117,10 @@ const submitDelete = async () => {
             life: 3000,
           })
         })
-        .catch(() => {
+        .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason?.message,
             detail: 'Nie usunięto książki: ' + bookTemp.value?.title,
             life: 3000,
           })
@@ -150,22 +151,21 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
   console.log('submitAddUserbook()', newUserbook)
   showUserbookDialog.value = false
   if (newUserbook) {
-    const result = await userbookStore.addUserbookDb(newUserbook)
-    if (result) {
+    await userbookStore.addUserbookDb(newUserbook).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
         life: 3000,
       })
-    } else {
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Potwierdzenie',
+        summary: reason?.message,
         detail: 'Nie udało się dodać książki na półkę: ' + newUserbook.book?.title,
         life: 3000,
       })
-    }
+    })
   }
 }
 </script>

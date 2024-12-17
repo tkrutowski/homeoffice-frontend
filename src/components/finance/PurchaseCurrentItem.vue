@@ -19,7 +19,7 @@ const props = defineProps({
     required: true,
   },
 })
-const tempPurchase = ref<Purchase | undefined>(purchaseStore.getPurchaseById(props.purchase.id))
+const tempPurchase = ref<Purchase | null>(purchaseStore.getPurchaseById(props.purchase.id))
 const getFirmName = () => {
   const result = firmStore.getFirm(props.purchase?.idFirm)
   return result !== null ? result.name : 'Brak firmy'

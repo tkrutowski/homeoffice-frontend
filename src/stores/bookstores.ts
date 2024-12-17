@@ -1,6 +1,5 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {ErrorService} from '../service/ErrorService'
 import type {Bookstore} from '../types/Book'
 
 export const useBookstoreStore = defineStore('bookstore', {
@@ -36,21 +35,11 @@ export const useBookstoreStore = defineStore('bookstore', {
             console.log('START - getBookstoreFromDb()')
             this.loadingBookstore = true
 
-            try {
-                const response = await httpCommon.get(`/v1/library/bookstore`)
-                console.log('getBookstoreFromDb() - Ilosc[]: ' + response.data.length)
-                this.bookstores = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getBookstoreFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingBookstore = false
-                console.log('END - getBookstoreFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/library/bookstore`)
+            console.log('getBookstoreFromDb() - Ilosc[]: ' + response.data.length)
+            this.bookstores = response.data
+            this.loadingBookstore = false
+            console.log('END - getBookstoreFromDb()')
         },
         //
         //GET  BOOKSTORE FROM DB BY ID
@@ -59,20 +48,10 @@ export const useBookstoreStore = defineStore('bookstore', {
             console.log('START - getBookstoreFromDb(' + bookstoreId + ')')
             this.loadingBookstore = true
 
-            try {
-                const response = await httpCommon.get(`/v1/library/bookstore/` + bookstoreId)
-                return response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getBookstoreFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingBookstore = false
-                console.log('END - getBookstoreFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/library/bookstore/` + bookstoreId)
+            this.loadingBookstore = false
+            console.log('END - getBookstoreFromDb()')
+            return response.data
         },
 
         //
@@ -80,21 +59,9 @@ export const useBookstoreStore = defineStore('bookstore', {
         //
         async addBookstoreDb(bookstore: Bookstore) {
             console.log('START - addBankDb()')
-            try {
-                const response = await httpCommon.post(`/v1/library/bookstore`, bookstore)
-                this.bookstores.push(response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR addBookstoreDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - addBookstoreDb()')
-            }
+            const response = await httpCommon.post(`/v1/library/bookstore`, bookstore)
+            this.bookstores.push(response.data)
+            console.log('END - addBookstoreDb()')
         },
         //
         //UPDATE BOOKSTORE
@@ -102,44 +69,20 @@ export const useBookstoreStore = defineStore('bookstore', {
         async updateBookstoreDb(bookstore: Bookstore) {
             console.log('START - updateBookstoreDb()')
 
-            try {
-                const response = await httpCommon.put(`/v1/library/bookstore`, bookstore)
-                const index = this.bookstores.findIndex((b: Bookstore) => b.id === bookstore.id)
-                if (index !== -1) this.bookstores.splice(index, 1, response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateBookstoreDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateBookstoreDb()')
-            }
+            const response = await httpCommon.put(`/v1/library/bookstore`, bookstore)
+            const index = this.bookstores.findIndex((b: Bookstore) => b.id === bookstore.id)
+            if (index !== -1) this.bookstores.splice(index, 1, response.data)
+            console.log('END - updateBookstoreDb()')
         },
         //
         //DELETE BOOKSTORE
         //
         async deleteBookstoreDb(bookstoreId: number) {
             console.log('START - deleteBookstoreDb()')
-            try {
-                await httpCommon.delete(`/v1/library/bookstore/` + bookstoreId)
-                const index = this.bookstores.findIndex((b: Bookstore) => b.id === bookstoreId)
-                if (index !== -1) this.bookstores.splice(index, 1)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR deleteBookstoreDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - deleteBookstoreDb()')
-            }
+            await httpCommon.delete(`/v1/library/bookstore/` + bookstoreId)
+            const index = this.bookstores.findIndex((b: Bookstore) => b.id === bookstoreId)
+            if (index !== -1) this.bookstores.splice(index, 1)
+            console.log('END - deleteBookstoreDb()')
         },
     },
 })

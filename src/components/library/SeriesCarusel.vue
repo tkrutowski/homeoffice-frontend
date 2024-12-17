@@ -15,6 +15,7 @@ import SeriesBook from '../../components/library/SeriesBook.vue'
 import {UtilsService} from '../../service/UtilsService'
 import AddEditSeriesDialog from '../../components/library/AddEditSeriesDialog.vue'
 import NewBookDialog from '../../components/library/NewBookDialog.vue'
+import type {AxiosError} from "axios";
 
 const booksStore = useBooksStore()
 const userbookStore = useUserbooksStore()
@@ -84,10 +85,10 @@ async function findNewBookInSeries(url: string) {
           if (series) tempSeries.value = series
         })
       })
-      .catch(() => {
+      .catch((reason: AxiosError) => {
         toast.add({
           severity: 'error',
-          summary: 'Błąd',
+          summary: reason?.message,
           detail: 'Wystąpił błąd',
           life: 3000,
         })
@@ -109,24 +110,22 @@ const addUserbook = (book: Book) => {
 const submitAddUserbook = async (newUserbook: UserBook) => {
   showUserbookDialog.value = false
   if (newUserbook) {
-    const result = await userbookStore.addUserbookDb(newUserbook)
-    if (result) {
-      //update payment
+    await userbookStore.addUserbookDb(newUserbook).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
         life: 3000,
       })
-      await refresh()
-    } else {
+      refresh()
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Błąd',
+        summary: reason?.message,
         detail: 'Błąd podczas dodawania książki na półkę.',
         life: 3000,
       })
-    }
+    })
   }
 }
 
@@ -156,10 +155,10 @@ const submitSeries = async (series: Series) => {
             life: 3000,
           })
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason?.message,
             detail: 'Błąd podczas aktualizacji cyklu: ' + series.title,
             life: 3000,
           })

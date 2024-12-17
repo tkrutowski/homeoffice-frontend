@@ -7,6 +7,7 @@ import TheMenu from '../components/TheMenu.vue'
 import OfficeButton from '../components/OfficeButton.vue'
 import type {SelectChangeEvent} from 'primevue/select'
 import type {DataTableRowEditSaveEvent} from 'primevue/datatable'
+import type {AxiosError} from "axios";
 
 const userStore = useUsersStore()
 const selectedUser = ref<User | null>(null)
@@ -64,28 +65,29 @@ const addExistingRole = async () => {
 const saveRole = async () => {
   submitted.value = true
   if (selectedRole.value && selectedUser.value) {
-    const result = await userStore.addPrivilegesToUserFromDb(
+    await userStore.addPrivilegesToUserFromDb(
         selectedUser.value.id,
         selectedRole.value.id,
-    )
-    if (result) {
+    ).then(() => {
+      if (selectedUser.value && selectedRole.value) {
       toast.add({
         severity: 'info',
         summary: 'Informacja',
         detail: `Dodano uprawnienie: ${selectedRole.value.name}`,
         life: 3500,
       })
-      userStore
-          .getPrivilegesByUserFromDb(selectedUser.value.id)
-          .then((privilegeList: Privilege[]) => (privileges.value = privilegeList))
-    } else {
+        userStore
+            .getPrivilegesByUserFromDb(selectedUser.value.id)
+            .then((privilegeList: Privilege[]) => (privileges.value = privilegeList))
+      }
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Informacja',
-        detail: `Błąd podczas dodawania upawnień: ${selectedRole.value.name}`,
-        life: 3500,
+        summary: reason?.message,
+        detail: 'Błąd podczas dodawania upawnień.',
+        life: 3000,
       })
-    }
+    })
     addExistingRoleToUserDialog.value = false
   }
 }
@@ -100,28 +102,29 @@ const confirmDeletePrivilege = () => {
 }
 const deletePrivilege = async () => {
   if (selectedPrivilege.value && selectedUser.value) {
-    const result = await userStore.deletePrivilegesFromUserFromDb(
+    await userStore.deletePrivilegesFromUserFromDb(
         selectedUser.value.id,
         selectedPrivilege.value.role.id,
-    )
-    if (result) {
+    ).then(() => {
       toast.add({
         severity: 'info',
         summary: 'Informacja',
         detail: 'Uprawnienie usunięte.',
         life: 3500,
       })
-      userStore
-          .getPrivilegesByUserFromDb(selectedUser.value.id)
-          .then((privilegeList: Privilege[]) => (privileges.value = privilegeList))
-    } else {
+      if (selectedUser.value) {
+        userStore
+            .getPrivilegesByUserFromDb(selectedUser.value.id)
+            .then((privilegeList: Privilege[]) => (privileges.value = privilegeList))
+      }
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Informacja',
+        summary: reason?.message,
         detail: `Błąd podczas usuwanie upawnienia: ${selectedRole.value?.name}`,
-        life: 3500,
+        life: 3000,
       })
-    }
+    })
     deletePrivilegeDialog.value = false
     selectedPrivilege.value = null
   }

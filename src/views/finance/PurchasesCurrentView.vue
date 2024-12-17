@@ -48,7 +48,7 @@ const changeStatusConfirmationMessage = computed(() => {
   return 'No message'
 })
 const submitMultiChangeStatus = async () => {
-  console.log('submitMultiChangeStatus()')
+  console.log('START - submitMultiChangeStatus()')
   let newStatus: PaymentStatus = {
     name: 'PAID',
     viewName: 'Spłacony',
@@ -80,6 +80,7 @@ const submitMultiChangeStatus = async () => {
     }
   })
   showStatusChangeConfirmationDialog.value = false
+  console.log('END - submitMultiChangeStatus()')
 }
 </script>
 

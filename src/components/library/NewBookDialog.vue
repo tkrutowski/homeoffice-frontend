@@ -42,9 +42,7 @@ watchEffect(async () => {
   selectedSeries.value = props.bookToAdd.series
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -106,8 +104,6 @@ async function newBook() {
   console.log('newBook()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     btnShowBusy.value = true
@@ -124,7 +120,6 @@ async function newBook() {
             life: 3000,
           })
           btnShowBusy.value = false
-          btnShowOk.value = true
           emit('close')
         })
         .catch((reason: AxiosError) => {
@@ -143,17 +138,12 @@ async function newBook() {
               detail: 'Błąd podczas dodawania książki.',
               life: 3000,
             })
-            btnShowError.value = true
           }
         })
 
     btnSaveDisabled.value = false
     btnShowBusy.value = false
     submitted.value = false
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
   }
 }
 
@@ -339,9 +329,7 @@ const showErrorCover = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

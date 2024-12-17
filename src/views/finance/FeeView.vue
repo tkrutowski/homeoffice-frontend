@@ -41,9 +41,7 @@ const fee = ref<Fee>({
   installmentList: [],
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -94,14 +92,11 @@ async function newFee() {
   console.log('newFee()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     // btnSaveDisabled.value = true;
     btnShowBusy.value = true
-    const result = await feeStore.addFeeDb(fee.value)
-
-    if (result) {
+    btnSaveDisabled.value = true
+    await feeStore.addFeeDb(fee.value).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
@@ -109,16 +104,20 @@ async function newFee() {
         life: 3000,
       })
       btnShowBusy.value = false
-      btnShowOk.value = true
       setTimeout(() => {
         router.push({name: 'Fees'})
       }, 3000)
-    } else btnShowError.value = true
-
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas zapisywania opłaty: ' + fee.value?.name,
+        life: 3000,
+      })
+    }).finally(() => {
+      btnSaveDisabled.value = false
+      btnShowBusy.value = false;
+    })
   }
 }
 
@@ -130,32 +129,30 @@ const isEdit = ref<boolean>(false)
 async function editFee() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     console.log('editFee()')
-    const result = await feeStore.updateFeeDb(fee.value)
-
-    if (result) {
+    await feeStore.updateFeeDb(fee.value).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zaaktualizowano opłatę: ' + fee.value?.name,
         life: 3000,
       })
-      btnShowOk.value = true
       setTimeout(() => {
         router.push({name: 'Fees'})
       }, 3000)
-    } else btnShowError.value = true
-
-    // btnSaveDisabled.value = false;
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-      btnShowError.value = false
-    }, 5000)
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas aktualizowania opłaty: ' + fee.value?.name,
+        life: 3000,
+      })
+    }).finally(() => {
+      btnSaveDisabled.value = false
+      btnShowBusy.value = false;
+    })
   }
 }
 
@@ -165,7 +162,7 @@ onMounted(() => {
   btnSaveDisabled.value = true
   if (userStore.users.length === 0) userStore.getUsersFromDb()
   if (firmStore.firms.length === 0) firmStore.getFirmsFromDb()
-  feeStore.getFeeFrequencyType()
+  if (feeStore.feeFrequencyTypes.length === 0) feeStore.getFeeFrequencyType()
   btnSaveDisabled.value = false
   if (feeStore.fees.length === 0) feeStore.getFeesFromDb('ALL', true)
 })
@@ -184,13 +181,9 @@ onMounted(async () => {
         .then((data: Fee | null) => {
           if (data) {
             fee.value = data
-            console.log('onMounted FEE', fee.value)
             selectedFirm.value = fee.value.firm
             selectedUser.value = userStore.getUser(fee.value.idUser)
             selectedFeeFrequency.value = fee.value.feeFrequency
-            console.log('onMounted FEE', selectedFeeFrequency.value)
-            // feeDateTemp.value = fee.value.date
-            // firstPaymentDateTemp.value = fee.value.firstPaymentDate
           }
         })
         .catch((error: AxiosError) => {
@@ -320,9 +313,9 @@ const showErrorFirstDate = () => {
                   v-model="selectedFirm"
                   dropdown
                   force-selection
-                  :class="{ 'p-invalid': showErrorFirm() }"
+                  :invalid="showErrorFirm()"
                   :suggestions="filteredFirms"
-                  field="name"
+                  option-label="name"
                   @complete="searchFirm"
               />
               <small class="text-red-500">
@@ -377,9 +370,7 @@ const showErrorFirstDate = () => {
                   :invalid="showErrorFeeFrequency()"
                   :options="feeStore.feeFrequencyTypes"
                   option-label="viewName"
-                  :onchange="
-                  (fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null)
-                "
+                  :onchange="(fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null)"
                   :disabled="isEdit"
               />
               <small class="text-red-500">{{
@@ -424,7 +415,6 @@ const showErrorFirstDate = () => {
                 }}</small>
             </div>
           </div>
-
           <!-- ROW-6  ACCOUNT NR / FIRST PAYMENT DATE  -->
           <div class="flex flex-row gap-4">
             <div class="flex flex-col w-full">
@@ -468,9 +458,7 @@ const showErrorFirstDate = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

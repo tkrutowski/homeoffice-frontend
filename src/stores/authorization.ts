@@ -1,6 +1,5 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {ErrorService} from '../service/ErrorService'
 import jwt_decode from 'jwt-decode'
 import moment from 'moment'
 import {useFeeStore} from './fee'
@@ -235,43 +234,18 @@ export const useAuthorizationStore = defineStore('authorization', {
             console.log('START - login()')
             this.loading = true
             this.btnDisabled = true
-            try {
-                const res = await httpCommon.post('/v1/auth/login', {
-                    username: username,
-                    password: password,
-                })
+            const res = await httpCommon.post('/v1/auth/login', {
+                username: username,
+                password: password,
+            })
 
-                console.log('LOGIN', res)
-                if (!res.data.accessToken && res.status != 200) {
-                    console.log('START - loginFailed()')
-                    this.loginError = true
-                    this.$reset()
+            this.logUser(res.data.accessToken, res.data.refreshToken)
 
-                    this.loading = false
-                    this.btnDisabled = false
-                    return false
-                }
-
-                this.logUser(res.data.accessToken, res.data.refreshToken)
-
-                this.loading = false
-                this.btnDisabled = false
-                this.loginError = false
-
-                return true
-            } catch (e) {
-                console.log('ERROR login(): ', e)
-                this.$reset()
-                if (ErrorService.isAxiosError(e)) {
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loading = false
-                this.btnDisabled = false
-                console.log('END - login()')
-            }
+            this.loading = false
+            this.btnDisabled = false
+            this.loginError = false
+            console.log('END - login()')
+            return true
         },
         //
         //LOGOUT
@@ -300,20 +274,15 @@ export const useAuthorizationStore = defineStore('authorization', {
         async refresh() {
             console.log('START - refresh()')
             const refreshToken = localStorage.getItem('refreshToken') || null
-            try {
-                const response = await httpCommon.post('/v1/auth/refresh', {
-                    refreshToken: refreshToken,
-                })
-                if (response.status === 200) {
-                    console.log('refresh() - success - update tokens')
-                    this.logUser(response.data.accessToken, response.data.refreshToken)
-                }
-                return response
-            } catch (e) {
-                console.log('ERROR refresh(): ', e)
-                this.logout()
-                throw e
+            const response = await httpCommon.post('/v1/auth/refresh', {
+                refreshToken: refreshToken,
+            })
+            if (response.status === 200) {
+                console.log('refresh() - success - update tokens')
+                this.logUser(response.data.accessToken, response.data.refreshToken)
             }
+            console.log('END - refresh()')
+            return response
         },
 
         //

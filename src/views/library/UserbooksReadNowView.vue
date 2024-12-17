@@ -6,9 +6,10 @@ import AddEditUserBookDialog from '../../components/library/AddEditUserBookDialo
 import {computed, ref} from 'vue'
 import type {UserBook} from '../../types/Book'
 
-const userbookStore = useUserbooksStore()
 import {useToast} from 'primevue/usetoast'
 import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
+import type {AxiosError} from "axios";
+const userbookStore = useUserbooksStore()
 
 const toast = useToast()
 if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
@@ -25,15 +26,21 @@ const editUserbook = (newUserbook: UserBook) => {
 const submitEditUserbook = async (newUserbook: UserBook) => {
   showUserbookDialog.value = false
   if (newUserbook) {
-    const result = await userbookStore.updateUserbookDb(newUserbook)
-    if (result) {
+    await userbookStore.updateUserbookDb(newUserbook).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
         life: 3000,
       })
-    }
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas aktualizacji książki.',
+        life: 3000,
+      })
+    })
   }
 }
 //
@@ -53,16 +60,21 @@ const submitDelete = async () => {
   console.log('submitDelete()')
   showDeleteConfirmationDialog.value = false
   if (tempUserbook.value) {
-    const result = await userbookStore.deleteUserbookDb(tempUserbook.value.id)
-    if (result) {
-      //update payment
+    await userbookStore.deleteUserbookDb(tempUserbook.value.id).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
         life: 3000,
       })
-    }
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
+        life: 3000,
+      })
+    })
   }
 }
 </script>

@@ -13,12 +13,13 @@ import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
 import type {ActiveStatus} from '../../types/Bank'
 import StatusButton from '../../components/StatusButton.vue'
 import type {AxiosError} from "axios";
+import type {DataTablePageEvent} from "primevue/datatable";
 
 const deviceStore = useDevicesStore()
 const toast = useToast()
 
 onMounted(() => {
-  if (deviceStore.devices.length === 0) {
+  if (deviceStore.devices.length <= 1) {
     deviceStore.refreshDevices()
   }
 })
@@ -198,16 +199,20 @@ const submitChangeStatus = async () => {
             life: 3000,
           })
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason.message,
             detail: 'Nie zmieniono statusu urządzenia: ' + deviceTemp.value?.name,
             life: 3000,
           })
         })
   }
   showStatusChangeConfirmationDialog.value = false
+}
+
+const handleRowsPerPageChange = (event: DataTablePageEvent) => {
+  localStorage.setItem('rowsPerPageDevices', event.rows.toString())
 }
 </script>
 
@@ -230,7 +235,7 @@ const submitChangeStatus = async () => {
   <Panel class="mt-5 ml-2 mr-2">
     <template #header>
       <div class="w-full flex justify-center gap-3">
-        <h2>LISTA URZĄDZEŃ</h2>
+        <span class="m-0 text-3xl">LISTA URZĄDZEŃ</span>
         <div v-if="deviceStore.loadingDevices" class="flex">
           <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
         </div>
@@ -246,7 +251,7 @@ const submitChangeStatus = async () => {
         striped-rows
         removable-sort
         paginator
-        :rows="20"
+        :rows="deviceStore.rowsPerPage"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"
@@ -254,6 +259,7 @@ const submitChangeStatus = async () => {
         sort-field="date"
         :sort-order="-1"
         row-hover
+        @page="handleRowsPerPageChange"
     >
       <template #header>
         <div class="flex justify-between">

@@ -12,6 +12,7 @@ import {useFeeStore} from '../../stores/fee'
 import {usePaymentStore} from '../../stores/payments'
 import {useToast} from 'primevue/usetoast'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import type {AxiosError} from "axios";
 
 const feeStore = useFeeStore()
 const paymentStore = usePaymentStore()
@@ -82,25 +83,25 @@ async function savePayment(date: Date, amount: number) {
     installment.value.installmentAmountPaid = amount
     installment.value.paymentStatus = {name: 'PAID', viewName: 'Spłacony'}
     showPaymentModal.value = false
-    const savedFee = await feeStore.updateFeeInstallmentDb(installment.value)
-    //update views
-    if (savedFee) {
-      installments.value = savedFee.installmentList
-      paymentStore.updatePayment(savedFee, 'FEE')
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Zaktualizowano płatność.',
-        life: 3000,
-      })
-    } else {
+    await feeStore.updateFeeInstallmentDb(installment.value).then((savedFee: Fee | null) => {
+      if (savedFee) {
+        installments.value = savedFee.installmentList
+        paymentStore.updatePayment(savedFee, 'FEE')
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaktualizowano płatność.',
+          life: 3000,
+        })
+      }
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Potwierdzenie',
-        detail: 'Błąd podczas płatność.',
+        summary: reason?.message,
+        detail: 'Błąd podczas zapisywania płatności',
         life: 3000,
       })
-    }
+    })
   }
   isBusy.value = false
 }
@@ -129,18 +130,25 @@ const submitDelete = async () => {
     installment.value.paymentDate = null
     installment.value.installmentAmountPaid = 0
     showDeleteConfirmationDialog.value = false
-    const savedFee = await feeStore.updateFeeInstallmentDb(installment.value)
-    //update views
-    if (savedFee) {
-      installments.value = savedFee.installmentList
-      paymentStore.updatePayment(savedFee, 'FEE')
+    await feeStore.updateFeeInstallmentDb(installment.value).then((savedFee: Fee | null) => {
+      if (savedFee) {
+        installments.value = savedFee.installmentList
+        paymentStore.updatePayment(savedFee, 'FEE')
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Usunięto płatność.',
+          life: 3000,
+        })
+      }
+    }).catch((reason: AxiosError) => {
       toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Usunięto płatność.',
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas usuwania płatności',
         life: 3000,
       })
-    }
+    })
   }
   await refresh()
   isBusy.value = false
@@ -274,7 +282,7 @@ const refresh = async () => {
             <Column field="paymentDate" header="Data płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
-                  {{ data[field].startsWith('+') ? '' : data[field] }}
+                  {{ data[field] }}
                 </div>
               </template>
             </Column>
@@ -323,7 +331,7 @@ const refresh = async () => {
             text="zamknij"
             btn-type="office-regular"
             :btn-disabled="isBusy"
-            :is-busy-icon="isBusy"
+            :loading="isBusy"
             @click="() => router.back()"
         />
       </div>

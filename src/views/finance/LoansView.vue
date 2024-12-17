@@ -17,6 +17,7 @@ import {usePaymentStore} from '../../stores/payments'
 import type {StatusType} from '../../types/StatusType'
 import type {DataTablePageEvent} from 'primevue/datatable'
 import moment from "moment/moment";
+import type {AxiosError} from "axios";
 
 const toast = useToast()
 const loansStore = useLoansStore()
@@ -47,18 +48,17 @@ const bankFilter = computed(() => {
   return [
     ...new Set(loansStore.loans.filter((loan: Loan) => loan.bank)
         .map((loan: Loan) => loan.bank?.name || '')),
-  ].sort((a: string, b: string) =>  (a ?? '').localeCompare(b ?? ''))
+  ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''))
 })
 const formatDate = (value: Date) => {
   return moment(value).format("YYYY-MM-DD")
 }
 
 const expandedRows = ref([])
-const loanTemp = ref<Loan>()
+const loanTemp = ref<Loan | null>(null)
 loansStore.getLoans('ALL')
 
 const calculateInstallmentToPayAmount = (installments: LoanInstallment[]): number => {
-  console.log('LIST: ', installments)
   return installments
       .filter((value) => value.paymentStatus.name === 'TO_PAY')
       .map((value) => value.installmentAmountToPay)
@@ -75,7 +75,6 @@ const calculateActualInterest = (loan: Loan): number => {
       loan.installmentList
           .filter((installment: LoanInstallment) => installment.paymentStatus.name === 'PAID')
           .map((installment: LoanInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
-          // .map(value => parseFloat(value))
           .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
   )
 }
@@ -152,14 +151,21 @@ const submitChangeStatus = async () => {
       name: loanTemp.value.loanStatus.name === 'PAID' ? 'TO_PAY' : 'PAID',
       viewName: loanTemp.value?.loanStatus.viewName !== 'PAID' ? 'Spłacony' : 'Do spłaty',
     }
-    const result = await loansStore.updateLoanStatusDb(loanTemp.value.id, newStatus)
-    if (result)
+    await loansStore.updateLoanStatusDb(loanTemp.value.id, newStatus).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zmieniono status kredytu: ' + loanTemp.value?.name,
         life: 3000,
       })
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas zmiany statusu: ' + loanTemp.value?.name,
+        life: 3000,
+      })
+    })
   }
   showStatusChangeConfirmationDialog.value = false
 }
@@ -179,17 +185,25 @@ const deleteConfirmationMessage = computed(() => {
 const submitDelete = async () => {
   console.log('submitDelete()')
   if (loanTemp.value) {
-    const result = await loansStore.deleteLoanDb(loanTemp.value.id)
-    if (result) {
+    await loansStore.deleteLoanDb(loanTemp.value.id).then(() => {
       //update payment
-      paymentStore.deletePayment(loanTemp.value, 'FEE')
+      if (loanTemp.value) {
+        paymentStore.deletePayment(loanTemp.value, 'FEE')
+      }
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Usunięto kredyt: ' + loanTemp.value?.name,
         life: 3000,
       })
-    }
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas usuwania kredytu: ' + loanTemp.value?.name,
+        life: 3000,
+      })
+    })
   }
   showDeleteConfirmationDialog.value = false
 }
@@ -211,7 +225,6 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
 }
 </script>
 <template>
-  <Toast/>
   <TheMenuFinance/>
   <ConfirmationDialog
       v-model:visible="showStatusChangeConfirmationDialog"
@@ -232,14 +245,17 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
     <template #header>
       <div class="w-full flex justify-center gap-4">
         <span class="m-0 text-4xl">LISTA KREDYTÓW</span>
+        <div v-if="loansStore.loadingLoans">
+          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
+        </div>
       </div>
     </template>
     <DataTable
+        v-if="!loansStore.loadingLoans"
         ref="dataTableRef"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
         :value="filteredData"
-        :loading="loansStore.loadingLoans"
         removable-sort
         paginator
         :rows="loansStore.rowsPerPage"
@@ -517,7 +533,7 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
                   <Column field="paymentDate" header="Data płatności">
                     <template #body="{ data, field }">
                       <div>
-                        {{ data[field].startsWith('+') ? '' : data[field] }}
+                        {{ data[field] }}
                       </div>
                     </template>
                   </Column>

@@ -37,9 +37,7 @@ const card = ref<Card>({
   imageUrl: '',
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 
@@ -96,8 +94,6 @@ async function newCard() {
   console.log('newCard()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     btnShowBusy.value = true
@@ -111,7 +107,6 @@ async function newCard() {
             life: 3000,
           })
           btnShowBusy.value = false
-          btnShowOk.value = true
           setTimeout(() => {
             resetForm()
           }, 1000)
@@ -132,17 +127,12 @@ async function newCard() {
               detail: 'Błąd podczas dodawania książki.',
               life: 3000,
             })
-            btnShowError.value = true
           }
         })
 
     btnSaveDisabled.value = false
     btnShowBusy.value = false
     submitted.value = false
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
   }
 }
 
@@ -154,8 +144,6 @@ const isEdit = ref<boolean>(false)
 async function editCard() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     console.log('editCard()')
@@ -168,25 +156,18 @@ async function editCard() {
             detail: 'Zaaktualizowano kartę: ' + card.value?.name,
             life: 3000,
           })
-          btnShowOk.value = true
           setTimeout(() => {
             router.push({name: 'Cards'})
           }, 3000)
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason.message,
             detail: 'Błąd podczas edycji karty.',
             life: 3000,
           })
-          btnShowError.value = true
           btnSaveDisabled.value = false
-          setTimeout(() => {
-            btnShowError.value = false
-            btnShowOk.value = false
-            btnShowError.value = false
-          }, 5000)
         })
   }
 }
@@ -521,9 +502,7 @@ const showErrorActivationDate = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
           />
         </div>
       </Panel>

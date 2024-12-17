@@ -1,6 +1,5 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {ErrorService} from '../service/ErrorService'
 import type {ActiveStatus, Card} from '../types/Bank'
 
 export const useCardsStore = defineStore('card', {
@@ -59,21 +58,11 @@ export const useCardsStore = defineStore('card', {
             console.log('START - getCardsFromDb(', status, ')')
             this.loadingCards = true
 
-            try {
-                const response = await httpCommon.get(`/v1/finance/card?status=` + status)
-                console.log('getCardsFromDb() - Ilosc[]: ' + response.data.length)
-                this.cards = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getBanksFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingCards = false
-                console.log('END - getCardsFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/finance/card?status=` + status)
+            console.log('getCardsFromDb() - Ilosc[]: ' + response.data.length)
+            this.cards = response.data
+            this.loadingCards = false
+            console.log('END - getCardsFromDb()')
         },
 
         //
@@ -83,23 +72,13 @@ export const useCardsStore = defineStore('card', {
             console.log('START - getCardsByUserFromDb(', userId, ', ', status, ')')
             this.loadingCards = true
 
-            try {
-                const response = await httpCommon.get(
-                    `/v1/finance/card/user/` + userId + `?status=` + status,
-                )
-                console.log('getCardsByUserFromDb() - Ilosc[]: ' + response.data.length)
-                this.cards = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getCardsByUserFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingCards = false
-                console.log('END - getCardsFromDb()')
-            }
+            const response = await httpCommon.get(
+                `/v1/finance/card/user/` + userId + `?status=` + status,
+            )
+            console.log('getCardsByUserFromDb() - Ilosc[]: ' + response.data.length)
+            this.cards = response.data
+            this.loadingCards = false
+            console.log('END - getCardsFromDb()')
         },
 
         //
@@ -109,44 +88,21 @@ export const useCardsStore = defineStore('card', {
             console.log('START - getCardFromDb(' + cardId + ')')
             this.loadingCards = true
 
-            try {
-                const response = await httpCommon.get(`/v1/finance/card/` + cardId)
-                if (response.data)
-                    return response.data
-                else return null
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getCardFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return null
-            } finally {
-                this.loadingCards = false
-                console.log('END - getCardFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/finance/card/` + cardId)
+            this.loadingCards = false
+            console.log('END - getCardFromDb()')
+            if (response.data)
+                return response.data
+            else return null
         },
         //
         //ADD CARD
         //
         async addCardDb(card: Card) {
             console.log('START - addCardDb()')
-            try {
-                const response = await httpCommon.post(`/v1/finance/card`, card)
-                this.cards.push(response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR addCardDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - addCardDb()')
-            }
+            const response = await httpCommon.post(`/v1/finance/card`, card)
+            this.cards.push(response.data)
+            console.log('END - addCardDb()')
         },
         //
         //UPDATE CARD
@@ -154,44 +110,20 @@ export const useCardsStore = defineStore('card', {
         async updateCardDb(card: Card) {
             console.log('START - updateCardDb()', card)
 
-            try {
-                const response = await httpCommon.put(`/v1/finance/card`, card)
-                const index = this.cards.findIndex((c: Card) => c.id === card.id)
-                if (index !== -1) this.cards.splice(index, 1, response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateCardDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateCardDb()')
-            }
+            const response = await httpCommon.put(`/v1/finance/card`, card)
+            const index = this.cards.findIndex((c: Card) => c.id === card.id)
+            if (index !== -1) this.cards.splice(index, 1, response.data)
+            console.log('END - updateCardDb()')
         },
         //
         //DELETE CARD
         //
         async deleteCardDb(cardId: number) {
             console.log('START - deleteCardDb()')
-            try {
-                await httpCommon.delete(`/v1/finance/card/` + cardId)
-                const index = this.cards.findIndex((c: Card) => c.id === cardId)
-                if (index !== -1) this.cards.splice(index, 1)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR deleteCardDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - deleteCardDb()')
-            }
+            await httpCommon.delete(`/v1/finance/card/` + cardId)
+            const index = this.cards.findIndex((c: Card) => c.id === cardId)
+            if (index !== -1) this.cards.splice(index, 1)
+            console.log('END - deleteCardDb()')
         },
     },
 })

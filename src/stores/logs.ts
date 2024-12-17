@@ -1,6 +1,5 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {ErrorService} from '../service/ErrorService'
 import type {Log} from '../types/Log.ts'
 
 export const useLogsStore = defineStore('log', {
@@ -28,21 +27,11 @@ export const useLogsStore = defineStore('log', {
             console.log('START - getTodayLogsFromDb()')
             this.loadingLogs = true
 
-            try {
-                const response = await httpCommon.get(`/v1/logs`)
-                console.log('getTodayLogsFromDb() - Ilosc[]: ' + response.data.length)
-                this.logs = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getTodayLogsFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingLogs = false
-                console.log('END - getTodayLogsFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/logs`)
+            console.log('getTodayLogsFromDb() - Ilosc[]: ' + response.data.length)
+            this.logs = response.data
+            this.loadingLogs = false
+            console.log('END - getTodayLogsFromDb()')
         },
         //
         //GET LOGS BY DATE AND LEVEL
@@ -51,23 +40,13 @@ export const useLogsStore = defineStore('log', {
             console.log(`START - getLogsFromDb(${dateFrom}, ${dateTo}, ${level})`)
             this.loadingLogs = true
 
-            try {
-                const response = await httpCommon.get(
-                    `/v1/logs/date?from=${dateFrom}T00:00:00&to=${dateTo}T00:00:00&levels=${level}`,
-                )
-                console.log('getLogsFromDb() - Ilosc[]: ' + response.data.length)
-                this.logs = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getLogsFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingLogs = false
-                console.log('END - getLogsFromDb()')
-            }
+            const response = await httpCommon.get(
+                `/v1/logs/date?from=${dateFrom}T00:00:00&to=${dateTo}T00:00:00&levels=${level}`,
+            )
+            console.log('getLogsFromDb() - Ilosc[]: ' + response.data.length)
+            this.logs = response.data
+            this.loadingLogs = false
+            console.log('END - getLogsFromDb()')
         },
     },
 })

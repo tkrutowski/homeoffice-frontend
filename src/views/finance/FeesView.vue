@@ -16,6 +16,8 @@ import {useFeeStore} from '../../stores/fee'
 import {usePaymentStore} from '../../stores/payments'
 import type {StatusType} from '../../types/StatusType'
 import moment from "moment";
+import type {AxiosError} from "axios";
+import type {DataTablePageEvent} from "primevue/datatable";
 
 const toast = useToast()
 const feeStore = useFeeStore()
@@ -53,10 +55,9 @@ const formatDate = (value: Date) => {
 }
 
 const expandedRows = ref([])
-const feeTemp = ref<Fee>()
+const feeTemp = ref<Fee | null>(null)
 feeStore.getFees('ALL')
 const calculatePlannedCost = (installments: FeeInstallment[]): number => {
-  console.log('XXX', installments)
   return installments
       .map((installment) => installment.installmentAmountToPay)
       .reduce((accumulator, currentValue) => accumulator + currentValue, 0)
@@ -117,14 +118,22 @@ const submitChangeStatus = async () => {
       name: feeTemp.value.feeStatus.name === 'PAID' ? 'TO_PAY' : 'PAID',
       viewName: feeTemp.value?.feeStatus.viewName !== 'PAID' ? 'Spłacony' : 'Do spłaty',
     }
-    const result = await feeStore.updateFeeStatusDb(feeTemp.value.id, newStatus)
-    if (result)
+    await feeStore.updateFeeStatusDb(feeTemp.value.id, newStatus).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zmieniono status opłaty: ' + feeTemp.value?.name,
         life: 3000,
       })
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas zmiany statusu opłaty: ' + feeTemp.value?.name,
+        life: 3000,
+      })
+    })
+
   }
   showStatusChangeConfirmationDialog.value = false
 }
@@ -145,17 +154,25 @@ const submitDelete = async () => {
   console.log('submitDelete()')
   showDeleteConfirmationDialog.value = false
   if (feeTemp.value) {
-    const result = await feeStore.deleteFeeDb(feeTemp.value.id)
-    if (result) {
+    await feeStore.deleteFeeDb(feeTemp.value.id).then(() => {
       //update payment
-      paymentStore.deletePayment(feeTemp.value, 'FEE')
+      if (feeTemp.value) {
+        paymentStore.deletePayment(feeTemp.value, 'FEE')
+      }
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Usunięto opłatę: ' + feeTemp.value?.name,
         life: 3000,
       })
-    }
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas usuwania opłaty: ' + feeTemp.value?.name,
+        life: 3000,
+      })
+    })
   }
 }
 
@@ -169,9 +186,13 @@ const editItem = (item: Fee) => {
     params: {isEdit: 'true', feeId: feeItem.id},
   })
 }
+
+
+const handleRowsPerPageChange = (event: DataTablePageEvent) => {
+  localStorage.setItem('rowsPerPageLoans', event.rows.toString())
+}
 </script>
 <template>
-  <Toast/>
   <TheMenuFinance/>
   <ConfirmationDialog
       v-model:visible="showStatusChangeConfirmationDialog"
@@ -192,16 +213,19 @@ const editItem = (item: Fee) => {
     <template #header>
       <div class="w-full flex justify-center">
         <span class="m-0 text-4xl">LISTA OPŁAT</span>
+        <div v-if="feeStore.loadingFees">
+          <ProgressSpinner class="ml-3" style="width: 40px; height: 40px" stroke-width="5"/>
+        </div>
       </div>
     </template>
     <DataTable
+        v-if="!feeStore.loadingFees"
         v-model:expandedRows="expandedRows"
         v-model:filters="filters"
         :value="filteredData"
-        :loading="feeStore.loadingFees"
         removable-sort
         paginator
-        :rows="10"
+        :rows="feeStore.rowsPerPage"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"
@@ -210,6 +234,7 @@ const editItem = (item: Fee) => {
         :sort-order="-1"
         row-hover
         size="small"
+        @page="handleRowsPerPageChange"
     >
       <template #header>
         <div class="flex justify-between">
@@ -420,7 +445,7 @@ const editItem = (item: Fee) => {
                   <Column field="paymentDate" header="Data płatności">
                     <template #body="{ data, field }">
                       <div class="" style="text-align: center">
-                        {{ data[field].startsWith('+') ? '' : data[field] }}
+                        {{ data[field] }}
                       </div>
                     </template>
                   </Column>

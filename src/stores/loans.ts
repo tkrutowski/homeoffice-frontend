@@ -3,9 +3,9 @@ import httpCommon from '../config/http-common'
 import type {Loan, LoanInstallment} from '../types/Loan'
 import type {PaymentStatus} from '../types/PaymentStatus'
 import type {PaymentMethod} from '../types/PaymentMethod'
-import {ErrorService} from '../service/ErrorService'
 import type {StatusType} from '../types/StatusType'
 import type {Installment} from "../types/Payment.ts";
+import moment from "moment/moment";
 
 export const useLoansStore = defineStore('loan', {
     state: () => ({
@@ -76,7 +76,6 @@ export const useLoansStore = defineStore('loan', {
             }
         },
         getLoan(idLoan: number) {
-            console.log('getLoan START ', idLoan)
             return this.loans.find((item: Loan) => item.id === idLoan)
         },
         //------------------------------------------------DATABASE--------------------------------
@@ -86,24 +85,13 @@ export const useLoansStore = defineStore('loan', {
         async getLoansFromDb(paymentStatus: string, installment: boolean): Promise<void> {
             console.log('START - getLoansFromDb(' + paymentStatus + ', ' + installment + ')')
             this.loadingLoans = true
-
-            try {
-                const response = await httpCommon.get(
-                    `/v1/finance/loan/status?status=` + paymentStatus + '&installment=' + installment,
-                )
-                console.log('getLoansFromDb() - Ilosc[]: ' + response.data.length)
-                this.loans = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getLoansFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingLoans = false
-                console.log('END - etLoansFromDb(' + paymentStatus + ', ' + installment + ')')
-            }
+            const response = await httpCommon.get(
+                `/v1/finance/loan/status?status=` + paymentStatus + '&installment=' + installment,
+            )
+            console.log('getLoansFromDb() - Ilosc[]: ' + response.data.length)
+            this.loans = response.data
+            this.loadingLoans = false
+            console.log('END - etLoansFromDb(' + paymentStatus + ', ' + installment + ')')
         },
         //
         //GET  LOAN FROM DB BY ID
@@ -112,23 +100,14 @@ export const useLoansStore = defineStore('loan', {
             console.log('START - getLoanFromDb(' + loanId + ')')
             this.loadingLoans = true
 
-            try {
-                const response = await httpCommon.get(`/v1/finance/loan/` + loanId)
-                if (response.data)
-                    return response.data
-                else
-                    return null
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getLoanFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return null
-            } finally {
-                this.loadingLoans = false
+            const response = await httpCommon.get(`/v1/finance/loan/` + loanId)
+            this.loadingLoans = false
+            if (response.data) {
                 console.log('END - getLoansFromDb()')
+                return response.data
+            } else {
+                console.log('END - getLoansFromDb()')
+                return null
             }
         },
         //
@@ -137,146 +116,75 @@ export const useLoansStore = defineStore('loan', {
         async updateLoanStatusDb(loanId: number, status: PaymentStatus) {
             console.log('START - updateLoanStatusDb()')
 
-            try {
-                await httpCommon.put(`/v1/finance/loan/status/` + loanId, {value: status.name})
-                const loan = this.loans.find((l: Loan) => l.id === loanId)
-                if (loan) {
-                    loan.loanStatus = status
-                }
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateLoanStatusDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateLoanStatusDb()')
+            await httpCommon.put(`/v1/finance/loan/status/` + loanId, {value: status.name})
+            const loan = this.loans.find((l: Loan) => l.id === loanId)
+            if (loan) {
+                loan.loanStatus = status
             }
+            console.log('END - updateLoanStatusDb()')
+            return true
         },
         //
         //ADD Loan
         //
         async addLoanDb(loan: Loan) {
             console.log('START - addLoanDb()')
-            try {
-                const response = await httpCommon.post(`/v1/finance/loan`, loan)
-                this.loans.push(response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR: ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - addLoanDb()')
-            }
+            const transformedLoan = {
+                ...loan,
+                date: loan.date ? moment(loan.date).format("YYYY-MM-DD") : null,
+                firstPaymentDate: loan.firstPaymentDate ? moment(loan.firstPaymentDate).format("YYYY-MM-DD") : null,
+            };
+            const response = await httpCommon.post(`/v1/finance/loan`, transformedLoan)
+            this.loans.push(response.data)
+            console.log('END - addLoanDb()')
         },
         //
         //UPDATE LOAN
         //
         async updateLoanDb(loan: Loan) {
             console.log('START - updateLoanDb()')
-
-            try {
-                const response = await httpCommon.put(`/v1/finance/loan`, loan)
-                const index = this.loans.findIndex((l: Loan) => l.id === loan.id)
-                if (index !== -1) this.loans.splice(index, 1, response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateLoanDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateLoanDb()')
-            }
+            const response = await httpCommon.put(`/v1/finance/loan`, loan)
+            const index = this.loans.findIndex((l: Loan) => l.id === loan.id)
+            if (index !== -1) this.loans.splice(index, 1, response.data)
+            console.log('END - updateLoanDb()')
         },
         //
         //DELETE LOAN
         //
         async deleteLoanDb(loanId: number) {
             console.log('START - deleteLoanDb()')
-            try {
-                await httpCommon.delete(`/v1/finance/loan/` + loanId)
-                const index = this.loans.findIndex((l: Loan) => l.id === loanId)
-                if (index !== -1) this.loans.splice(index, 1)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR deleteLoanDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - deleteLoanDb()')
-            }
+            await httpCommon.delete(`/v1/finance/loan/` + loanId)
+            const index = this.loans.findIndex((l: Loan) => l.id === loanId)
+            if (index !== -1) this.loans.splice(index, 1)
+            console.log('END - deleteLoanDb()')
+            return true
         },
 
-        //
-        //GET PAYMENT TYPE
-        //
-        async getPaymentType() {
-            console.log('START - getPaymentType()')
-            this.loadingPaymentType = true
-            try {
-                if (this.paymentTypes.length === 0) {
-                    const response = await httpCommon.get(`/v1/goahead/invoice/paymenttype`)
-                    this.paymentTypes = response.data
-                } else {
-                    console.log('getPaymentType() - BEZ GET')
-                }
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getPaymentType(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingPaymentType = false
-                console.log('END - getPaymentType()')
-            }
-        },
         //
         //UPDATE LOAN_INSTALLMENT (PAYMENT)
         //
         async updateLoanInstallmentDb(installment: LoanInstallment) {
             console.log('START - updateLoanInstallmentDb()')
 
-            try {
-                const response = await httpCommon.put(`/v1/finance/loan/installment`, installment)
-                console.log('loan store ', this.loans)
-                const loan = this.loans.find((l: Loan) => l.id === installment.idLoan)
-                console.log('loan store ', loan)
-                if (loan) {
-                    const index = loan.installmentList.findIndex(
-                        (l: LoanInstallment) => l.idLoanInstallment === installment.idLoanInstallment,
-                    )
-                    console.log('index ', index)
-                    if (index !== -1) loan.installmentList.splice(index, 1, response.data)
-                }
-                return loan
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateLoanInstallmentDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - updateLoanInstallmentDb()')
+            const transformedLoanInstallment = {
+                ...installment,
+                paymentDeadline: installment.paymentDeadline ? moment(installment.paymentDeadline).format("YYYY-MM-DD") : null,
+                paymentDate: installment.paymentDate ? moment(installment.paymentDate).format("YYYY-MM-DD") : null,
+            };
+
+            const response = await httpCommon.put(`/v1/finance/loan/installment`, transformedLoanInstallment)
+            console.log('loan store ', this.loans)
+            const loan = this.loans.find((l: Loan) => l.id === installment.idLoan)
+            console.log('loan store ', loan)
+            if (loan) {
+                const index = loan.installmentList.findIndex(
+                    (l: LoanInstallment) => l.idLoanInstallment === installment.idLoanInstallment,
+                )
+                console.log('index ', index)
+                if (index !== -1) loan.installmentList.splice(index, 1, response.data)
             }
-        },
+            console.log('END - updateLoanInstallmentDb()')
+            return loan
+        }
     },
 })

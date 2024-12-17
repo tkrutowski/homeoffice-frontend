@@ -42,9 +42,7 @@ const loan = ref<Loan>({
   installmentList: [],
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -83,39 +81,32 @@ async function newLoan() {
   console.log('newLoan()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
-
-    const result = await loanStore.addLoanDb(loan.value)
-
-    if (result) {
+    btnShowBusy.value = true
+    loanStore.addLoanDb(loan.value).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zapisano kredyt: ' + loan.value?.name,
         life: 3000,
       })
-      btnShowOk.value = true
       setTimeout(() => {
         router.push({name: 'Loans'})
       }, 3000)
-    } else {
+
+    }).catch(() => {
       toast.add({
         severity: 'error',
         summary: 'Błąd',
         detail: 'Błąd podczas zapisywania kredytu',
         life: 3000,
       })
-    }
-    btnShowError.value = true
-    btnSaveDisabled.value = false
 
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
+    }).finally(() => {
+      btnSaveDisabled.value = false
+      btnShowBusy.value = false;
+    })
   }
 }
 
@@ -124,35 +115,34 @@ async function newLoan() {
 //
 const isEdit = ref<boolean>(false)
 
-async function editLoan() {
+function editLoan() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
+    btnShowBusy.value = true
     console.log('editLoan()')
-    const result = await loanStore.updateLoanDb(loan.value)
-
-    if (result) {
+    loanStore.updateLoanDb(loan.value).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zaaktualizowano kredyt: ' + loan.value?.name,
         life: 3000,
       })
-      btnShowOk.value = true
       setTimeout(() => {
         router.push({name: 'Loans'})
       }, 3000)
-    } else btnShowError.value = true
-
-    // btnSaveDisabled.value = false;
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-      btnShowError.value = false
-    }, 5000)
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas aktualizacji kredytu: ' + loan.value?.name,
+        life: 3000,
+      })
+    }).finally(() => {
+      btnSaveDisabled.value = false
+      btnShowBusy.value = false;
+    })
   }
 }
 
@@ -253,7 +243,6 @@ const showErrorFirstDate = () => {
 </script>
 
 <template>
-  <Toast/>
   <TheMenuFinance/>
 
   <div class="m-4 max-w-4xl mx-auto">
@@ -470,9 +459,7 @@ const showErrorFirstDate = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

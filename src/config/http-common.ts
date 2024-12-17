@@ -2,6 +2,7 @@
 import { useAuthorizationStore } from '../stores/authorization'
 import type { AxiosInstance } from 'axios'
 import axios from 'axios'
+import router from "../router";
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: "https://goahead.focikhome.synology.me/api",
@@ -38,20 +39,27 @@ apiClient.interceptors.response.use(
     return response
   },
   async (error) => {
+    console.log('ERROR interceptor: ', error)
     const refreshToken: string | null = localStorage.getItem('refreshToken') || null
     const authStore = useAuthorizationStore()
     if (!refreshing && error.response && error.response.status === 401 && refreshToken) {
+      console.log('ERROR refreshing token...')
       refreshing = true
       const response = await authStore.refresh()
       if (response.status === 200 && response.data.accessToken) {
         refreshing = false
         return apiClient(error.config)
       }
-    } else if (
-      error.response?.status === 401 &&
-      error.response?.data?.message === 'REFRESH TOKEN EXPIRED'
-    ) {
+      //TOKEN EXPIRED
+    } else if (error.response?.status === 401 && error.response?.data?.message === 'REFRESH TOKEN EXPIRED') {
       authStore.logout()
+    }
+    // SERWER OFFLINE
+    else if (error.code == 'ERR_NETWORK' || error.code == 'ERR_CONNECTION_REFUSED') {
+      console.log('NETWORK ERROR')
+      router.push({
+        name: 'Error503',
+      })
     }
     refreshing = false
     throw error

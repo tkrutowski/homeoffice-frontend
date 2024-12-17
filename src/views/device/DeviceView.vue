@@ -2,14 +2,14 @@
 import {useRoute} from 'vue-router'
 import {useDevicesStore} from '../../stores/devices'
 import {useFirmsStore} from '../../stores/firms'
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import OfficeButton from '../../components/OfficeButton.vue'
 import router from '../../router'
 import IconButton from '../../components/OfficeIconButton.vue'
 import {useToast} from 'primevue/usetoast'
 import AddDialog from '../../components/AddDialog.vue'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import type {Device, DeviceType} from '../../types/Devices'
+import type {Device} from '../../types/Devices'
 import type {Firm} from '../../types/Firm'
 import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
 import moment from 'moment/moment'
@@ -21,8 +21,6 @@ const firmStore = useFirmsStore()
 const route = useRoute()
 
 const toast = useToast()
-const selectedFirm = ref<Firm | null>(null)
-const selectedDeviceType = ref<DeviceType | null>(null)
 
 //
 //AUTO COMPLETE FIRM
@@ -33,32 +31,8 @@ const searchFirm = (event: { query: string }) => {
     return firm.name.toLowerCase().includes(event.query.toLowerCase())
   })
 }
-watch(selectedFirm, (newFirm: Firm | null) => {
-  if (newFirm) {
-    device.value.firm = newFirm
-  }
-})
-
-// PURCHASE DATE
-// const purchaseDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
-// watch(purchaseDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
-//   device.value.purchaseDate = newDate
-// })
-
-// SELL DATE
-// const sellDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
-// watch(sellDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
-//   device.value.sellDate = newDate
-// })
-
-// WARRANTY DATE
-// const warrantyDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
 const warrantyDateLeft = computed(() => {
-  // if (!device.value.warrantyEndDate) {
-  //   return 'Brak gwarancji.'
-  // }
-
-  if (device.value.warrantyEndDate instanceof Date) {
+  if (device.value.warrantyEndDate) {
     const today = moment() // dzisiejsza data
     const futureDate = moment(device.value.warrantyEndDate) // odległa data (w formacie 'YYYY-MM-DD')
     const yearsRemaining = futureDate.diff(today, 'years')
@@ -74,18 +48,10 @@ const warrantyDateLeft = computed(() => {
   }
   return 'Brak gwarancji.'
 })
-// watch(warrantyDateTemp, (newDate: string) => {
-//   device.value.warrantyEndDate = moment(new Date(newDate)).format('YYYY-MM-DD')
-// })
-
 // INSURANCE DATE
-// const insuranceDateTemp = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
 const insuranceDateLeft = computed(() => {
-  // if (!device.value.insuranceEndDate) {
-  // }
-
   const today = moment() // dzisiejsza data
-  if (device.value.insuranceEndDate instanceof Date) {
+  if (device.value.insuranceEndDate) {
     const futureDate = moment(device.value.insuranceEndDate)
     const yearsRemaining = futureDate.diff(today, 'years')
     const futureDateWithoutYears = today.add(yearsRemaining, 'years')
@@ -100,9 +66,6 @@ const insuranceDateLeft = computed(() => {
   }
   return 'Brak ubezpieczenia.'
 })
-// watch(insuranceDateTemp, (newDate: Date | Date[] | (Date | null)[] | null | undefined) => {
-//   device.value.insuranceEndDate = newDate
-// })
 
 const device = ref<Device>({
   id: 0,
@@ -119,9 +82,7 @@ const device = ref<Device>({
   activeStatus: 'ACTIVE',
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -152,13 +113,9 @@ async function newDevice() {
   console.log('newDevice()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     btnShowBusy.value = true
-    device.value.firm = selectedFirm.value
-    device.value.deviceType = selectedDeviceType.value
     deviceStore
         .addDeviceDb(device.value)
         .then(() => {
@@ -169,7 +126,6 @@ async function newDevice() {
             life: 3000,
           })
           btnShowBusy.value = false
-          btnShowOk.value = true
           setTimeout(() => {
             resetForm()
           }, 1000)
@@ -182,16 +138,11 @@ async function newDevice() {
             detail: 'Błąd podczas dodawania urządzenia.',
             life: 3000,
           })
-          btnShowError.value = true
         })
 
     btnSaveDisabled.value = false
     btnShowBusy.value = false
     submitted.value = false
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
   }
 }
 
@@ -203,13 +154,9 @@ const isEdit = ref<boolean>(false)
 async function editDevice() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     console.log('editDevice()')
-    device.value.firm = selectedFirm.value
-    device.value.deviceType = selectedDeviceType.value
     await deviceStore
         .updateDeviceDb(device.value)
         .then(() => {
@@ -219,7 +166,6 @@ async function editDevice() {
             detail: 'Zaaktualizowano urządzenie: ' + device.value?.name,
             life: 3000,
           })
-          btnShowOk.value = true
           setTimeout(() => {
             router.push({name: 'Devices'})
           }, 3000)
@@ -231,13 +177,7 @@ async function editDevice() {
             detail: 'Błąd podczas edycji urządzenia.',
             life: 3000,
           })
-          btnShowError.value = true
           btnSaveDisabled.value = false
-          setTimeout(() => {
-            btnShowError.value = false
-            btnShowOk.value = false
-            btnShowError.value = false
-          }, 5000)
         })
   }
 }
@@ -264,12 +204,6 @@ onMounted(async () => {
         .then((data: Device | null) => {
           if (data) {
             device.value = data
-            selectedFirm.value = device.value.firm
-            selectedDeviceType.value = device.value.deviceType
-            // sellDateTemp.value = UtilsService.formatDateToString(device.value.sellDate)
-            // insuranceDateTemp.value = UtilsService.formatDateToString(device.value.insuranceEndDate)
-            // purchaseDateTemp.value = device.value.purchaseDate
-            // warrantyDateTemp.value = UtilsService.formatDateToString(device.value.warrantyEndDate)
           }
         })
         .catch((error: AxiosError) => {
@@ -300,10 +234,10 @@ async function saveDeviceType(name: string) {
             life: 3000,
           })
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason.message,
             detail: 'Nie dodano rodzaju urządzenia: ' + name,
             life: 3000,
           })
@@ -364,15 +298,12 @@ function resetForm() {
     otherInfo: '',
     activeStatus: 'ACTIVE',
   }
-  selectedDeviceType.value = null
-  selectedFirm.value = null
   submitted.value = false
   btnSaveDisabled.value = false
 }
 </script>
 
 <template>
-  <Toast/>
   <TheMenuDevice/>
   <AddDialog
       v-model:visible="showAddDeviceTypeModal"
@@ -391,13 +322,13 @@ function resetForm() {
               @click="() => router.push({ name: 'Devices' })"
           />
           <div class="w-full flex justify-center">
-            <h2>
+            <span class="m-0 text-2xl">
               {{
                 isEdit
                     ? `Edycja urzadzenia: ${device?.name.length > 30 ? device?.name.substring(0, 30) + '...' : device?.name}`
                     : 'Nowe urzadzenie'
               }}
-            </h2>
+            </span>
           </div>
         </template>
 
@@ -425,7 +356,7 @@ function resetForm() {
                   <label class="ml-1 mb-1" for="deviceType">Rodzaj urządzenia:</label>
                   <Select
                       id="deviceType"
-                      v-model="selectedDeviceType"
+                      v-model="device.deviceType"
                       :options="deviceStore.devicesTypes"
                       option-label="name"
                       :invalid="showErrorDeviceType()"
@@ -456,7 +387,7 @@ function resetForm() {
                   <label class="ml-1 mb-1" for="input-customer">Wybierz firmę:</label>
                   <AutoComplete
                       id="input-customer"
-                      v-model="selectedFirm"
+                      v-model="device.firm"
                       dropdown
                       force-selection
                       :invalid="showErrorFirm()"
@@ -625,9 +556,7 @@ function resetForm() {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

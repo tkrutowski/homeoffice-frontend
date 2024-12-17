@@ -31,9 +31,7 @@ const book = ref<Book>({
   bookInSeriesNo: '',
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -99,8 +97,6 @@ async function newBook() {
   console.log('newBook()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     btnShowBusy.value = true
@@ -117,7 +113,6 @@ async function newBook() {
             life: 3000,
           })
           btnShowBusy.value = false
-          btnShowOk.value = true
           setTimeout(() => {
             resetForm()
           }, 1000)
@@ -134,21 +129,16 @@ async function newBook() {
           } else {
             toast.add({
               severity: 'error',
-              summary: 'Błąd',
+              summary: reason?.message,
               detail: 'Błąd podczas dodawania książki.',
               life: 3000,
             })
-            btnShowError.value = true
           }
         })
 
     btnSaveDisabled.value = false
     btnShowBusy.value = false
     submitted.value = false
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
   }
 }
 
@@ -160,8 +150,6 @@ const isEdit = ref<boolean>(false)
 async function editBook() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     console.log('editBook()')
@@ -177,25 +165,18 @@ async function editBook() {
             detail: 'Zaaktualizowano książkę: ' + book.value?.title,
             life: 3000,
           })
-          btnShowOk.value = true
           setTimeout(() => {
             router.push({name: 'Books'})
           }, 3000)
         })
-        .catch(() => {
+        .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason?.message,
             detail: 'Błąd podczas edycji książki.',
             life: 3000,
           })
-          btnShowError.value = true
           btnSaveDisabled.value = false
-          setTimeout(() => {
-            btnShowError.value = false
-            btnShowOk.value = false
-            btnShowError.value = false
-          }, 5000)
         })
   }
 }
@@ -251,26 +232,25 @@ async function saveAuthor(firstName: string, lastName: string) {
   if (firstName.length === 0 || lastName.length === 0) {
     showError('Uzupełnij brakujące elementy')
   } else {
-    const result: boolean = await bookStore.addAuthorDb({
+    await bookStore.addAuthorDb({
       id: 0,
       firstName: firstName,
       lastName: lastName,
-    })
-    if (result) {
+    }).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Dodano autora: ' + firstName + ' ' + lastName,
         life: 3000,
       })
-    } else {
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Błąd',
+        summary: reason?.message,
         detail: 'Nie dodano autora: ' + firstName + ' ' + lastName,
         life: 3000,
       })
-    }
+    })
   }
 }
 
@@ -285,25 +265,24 @@ async function saveCategory(name: string) {
   if (name.length === 0) {
     showError('Uzupełnij brakujące elementy')
   } else {
-    const result: boolean = await bookStore.addCategoryDb({
+    await bookStore.addCategoryDb({
       id: 0,
       name: name,
-    })
-    if (result) {
+    }).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Dodano kategorię: ' + name,
         life: 3000,
       })
-    } else {
+    }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: 'Błąd',
+        summary: reason?.message,
         detail: 'Nie dodano kategorii: ' + name,
         life: 3000,
       })
-    }
+    })
   }
 }
 
@@ -469,9 +448,7 @@ const showErrorCover = () => {
                 text="wyszukaj"
                 type="button"
                 btn-type="office-regular"
-                :is-busy-icon="btnSearchShowBusy"
-                :is-error-icon="btnSearchShowError"
-                :is-ok-icon="btnSearchShowOk"
+                :loading="btnSearchShowBusy"
                 :btn-disabled="btnSearchDisabled"
                 @click="findBook()"
             />
@@ -648,9 +625,7 @@ const showErrorCover = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

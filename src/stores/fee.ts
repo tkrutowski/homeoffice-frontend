@@ -1,9 +1,9 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
 import type {PaymentStatus} from '../types/PaymentStatus'
-import {ErrorService} from '../service/ErrorService'
 import type {Fee, FeeFrequency, FeeInstallment} from '../types/Fee'
 import type {StatusType} from '../types/StatusType'
+import moment from "moment";
 
 export const useFeeStore = defineStore('fee', {
     state: () => ({
@@ -11,6 +11,7 @@ export const useFeeStore = defineStore('fee', {
         btnDisabled: false,
         busyIcon: false,
         loadingFees: false,
+        rowsPerPage: parseInt(localStorage.getItem('rowsPerPageFees') || '20', 10),
         loadingFeeFrequencyType: false,
         feeFrequencyTypes: [] as FeeFrequency[],
 
@@ -66,23 +67,13 @@ export const useFeeStore = defineStore('fee', {
             console.log('START - getFeesFromDb(' + paymentStatus + ', ' + installment + ')')
             this.loadingFees = true
 
-            try {
-                const response = await httpCommon.get(
-                    `/v1/finance/fee/status?status=` + paymentStatus + '&installment=' + installment,
-                )
-                console.log('getFeesFromDb() - Ilosc[]: ' + response.data.length)
-                this.fees = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getFeesFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingFees = false
-                console.log('END - getFeesFromDb(' + paymentStatus + ', ' + installment + ')')
-            }
+            const response = await httpCommon.get(
+                `/v1/finance/fee/status?status=` + paymentStatus + '&installment=' + installment,
+            )
+            console.log('getFeesFromDb() - Ilosc[]: ' + response.data.length)
+            this.fees = response.data
+            this.loadingFees = false
+            console.log('END - getFeesFromDb(' + paymentStatus + ', ' + installment + ')')
         },
         //
         //GET FEE FROM DB BY ID
@@ -91,24 +82,13 @@ export const useFeeStore = defineStore('fee', {
             console.log('START - getFeeFromDb(' + feeId + ')')
             this.loadingFees = true
 
-            try {
-                const response = await httpCommon.get(`/v1/finance/fee/` + feeId)
-                if (response.data) {
-                    return response.data
-                } else
-                    return null
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getFeeFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
+            const response = await httpCommon.get(`/v1/finance/fee/` + feeId)
+            this.loadingFees = false
+            console.log('END - getFeesFromDb()')
+            if (response.data) {
+                return response.data
+            } else
                 return null
-            } finally {
-                this.loadingFees = false
-                console.log('END - getFeesFromDb()')
-            }
         },
         //
         //CHANGE PAYMENT_STATUS
@@ -116,45 +96,27 @@ export const useFeeStore = defineStore('fee', {
         async updateFeeStatusDb(feeId: number, status: PaymentStatus) {
             console.log('START - updateFeeStatusDb()')
 
-            try {
-                await httpCommon.put(`/v1/finance/fee/status/` + feeId, {value: status.name})
-                const fee = this.fees.find((fee: Fee) => fee.id === feeId)
-                if (fee) {
-                    fee.feeStatus = status
-                }
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateFeeStatusDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateFeeStatusDb()')
+            await httpCommon.put(`/v1/finance/fee/status/` + feeId, {value: status.name})
+            const fee = this.fees.find((fee: Fee) => fee.id === feeId)
+            if (fee) {
+                fee.feeStatus = status
             }
+            console.log('END - updateFeeStatusDb()')
         },
         //
         //ADD Fee
         //
         async addFeeDb(fee: Fee) {
-            console.log('START - addFeeDb()')
-            try {
-                const response = await httpCommon.post(`/v1/finance/fee`, fee)
-                this.fees.push(response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR addFeeDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - addFeeDb()')
-            }
+            console.log('START - addFeeDb()',fee)
+            const transformedFee = {
+                ...fee,
+                date: fee.date ? moment(fee.date).format("YYYY-MM-DD") : null,
+                firstPaymentDate: fee.firstPaymentDate ? moment(fee.firstPaymentDate).format("YYYY-MM-DD") : null,
+            };
+            console.log('START - addFeeDb()',transformedFee)
+            const response = await httpCommon.post(`/v1/finance/fee`, transformedFee)
+            this.fees.push(response.data)
+            console.log('END - addFeeDb()')
         },
         //
         //UPDATE FEE
@@ -162,44 +124,20 @@ export const useFeeStore = defineStore('fee', {
         async updateFeeDb(fee: Fee) {
             console.log('START - updateFeeDb()')
 
-            try {
-                const response = await httpCommon.put(`/v1/finance/fee`, fee)
-                const index = this.fees.findIndex((f: Fee) => f.id === fee.id)
-                if (index !== -1) this.fees.splice(index, 1, response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateFeeDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - updateFeeDb()')
-            }
+            const response = await httpCommon.put(`/v1/finance/fee`, fee)
+            const index = this.fees.findIndex((f: Fee) => f.id === fee.id)
+            if (index !== -1) this.fees.splice(index, 1, response.data)
+            console.log('END - updateFeeDb()')
         },
         //
         //DELETE FEE
         //
         async deleteFeeDb(feeId: number) {
             console.log('START - deleteFeeDb()')
-            try {
-                await httpCommon.delete(`/v1/finance/fee/` + feeId)
-                const index = this.fees.findIndex((f: Fee) => f.id === feeId)
-                if (index !== -1) this.fees.splice(index, 1)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR deleteFeeDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-                return false
-            } finally {
-                console.log('END - deleteFeeDb()')
-            }
+            await httpCommon.delete(`/v1/finance/fee/` + feeId)
+            const index = this.fees.findIndex((f: Fee) => f.id === feeId)
+            if (index !== -1) this.fees.splice(index, 1)
+            console.log('END - deleteFeeDb()')
         },
         //
         //GET PAYMENT TYPE
@@ -207,24 +145,14 @@ export const useFeeStore = defineStore('fee', {
         async getFeeFrequencyType() {
             console.log('START - getFeeFrequencyType()')
             this.loadingFeeFrequencyType = true
-            try {
-                if (this.feeFrequencyTypes.length === 0) {
-                    const response = await httpCommon.get(`/v1/finance/fee/frequency`)
-                    this.feeFrequencyTypes = response.data
-                } else {
-                    console.log('getFeeFrequencyType() - BEZ GET')
-                }
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getFeeFrequencyType(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingFeeFrequencyType = false
-                console.log('END - getFeeFrequencyType()')
+            if (this.feeFrequencyTypes.length === 0) {
+                const response = await httpCommon.get(`/v1/finance/fee/frequency`)
+                this.feeFrequencyTypes = response.data
+            } else {
+                console.log('getFeeFrequencyType() - BEZ GET')
             }
+            this.loadingFeeFrequencyType = false
+            console.log('END - getFeeFrequencyType()')
         },
         //
         //UPDATE FEE_INSTALLMENT (PAYMENT)
@@ -232,29 +160,23 @@ export const useFeeStore = defineStore('fee', {
         async updateFeeInstallmentDb(installment: FeeInstallment) {
             console.log('START - updateFeeInstallmentDb()')
 
-            try {
-                const response = await httpCommon.put(`/v1/finance/fee/installment`, installment)
-                const fee: Fee | undefined = this.fees.find((fee: Fee) => fee.id === installment.idFee)
-                if (fee) {
-                    const index = fee.installmentList.findIndex(
-                        (f: FeeInstallment) => f.idFeeInstallment === installment.idFeeInstallment,
-                    )
-                    console.log('index ', index)
-                    if (index !== -1) fee.installmentList.splice(index, 1, response.data)
-                    return fee
-                } else
-                    return null
+            const transformedFeeInstallment = {
+                ...installment,
+                paymentDeadline: installment.paymentDeadline ? moment(installment.paymentDeadline).format("YYYY-MM-DD") : null,
+                paymentDate: installment.paymentDate ? moment(installment.paymentDate).format("YYYY-MM-DD") : null,
+            };
+            const response = await httpCommon.put(`/v1/finance/fee/installment`, transformedFeeInstallment)
+            const fee: Fee | undefined = this.fees.find((fee: Fee) => fee.id === installment.idFee)
+            console.log('END - updateFeeInstallmentDb()')
+            if (fee) {
+                const index = fee.installmentList.findIndex(
+                    (f: FeeInstallment) => f.idFeeInstallment === installment.idFeeInstallment,
+                )
+                if (index !== -1) fee.installmentList.splice(index, 1, response.data)
+                return fee
+            } else
+                return null
 
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateFeeInstallmentDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - updateFeeInstallmentDb()')
-            }
         },
     },
 })

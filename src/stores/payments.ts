@@ -1,5 +1,4 @@
 import {defineStore} from 'pinia'
-import {ErrorService} from '../service/ErrorService'
 import type {Payment, PaymentType} from '../types/Payment'
 import type {Fee} from '../types/Fee'
 import type {Loan} from '../types/Loan'
@@ -83,27 +82,17 @@ export const usePaymentStore = defineStore('payment', {
             )
             this.loadingPayments = true
 
-            try {
-                // if (this.payments.size === 0) {
-                const response = await httpCommon.get(
-                    `/v1/finance/payment?status=` + paymentStatus + '&date=' + this.paymentSelectedYear,
-                )
-                console.log('getPaymentsFromDb() - Ilosc[]: ' + response.data)
-                const paymentsTemp = new Map(Object.entries(response.data))
-                this.payments = paymentsTemp as Map<string, Payment[]>
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getPaymentsFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingPayments = false
-                console.log(
-                    'END - getPaymentsFromDb(' + paymentStatus + ', ' + this.paymentSelectedYear + ')',
-                )
-            }
+            // if (this.payments.size === 0) {
+            const response = await httpCommon.get(
+                `/v1/finance/payment?status=` + paymentStatus + '&date=' + this.paymentSelectedYear,
+            )
+            console.log('getPaymentsFromDb() - Ilosc[]: ' + response.data)
+            const paymentsTemp = new Map(Object.entries(response.data))
+            this.payments = paymentsTemp as Map<string, Payment[]>
+            this.loadingPayments = false
+            console.log(
+                'END - getPaymentsFromDb(' + paymentStatus + ', ' + this.paymentSelectedYear + ')',
+            )
         },
     },
 })

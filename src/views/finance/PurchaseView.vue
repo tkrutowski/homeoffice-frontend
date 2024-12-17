@@ -2,7 +2,7 @@
 import OfficeButton from '../../components/OfficeButton.vue'
 import type {User} from '../../types/User'
 import {computed, onMounted, ref, watch} from 'vue'
-import moment from 'moment'
+import moment, {type Moment} from 'moment'
 import router from '../../router'
 import {useToast} from 'primevue/usetoast'
 import type {Firm} from '../../types/Firm'
@@ -27,7 +27,7 @@ const cardStore = useCardsStore()
 
 
 const toast = useToast()
-const selectedUser = ref<User | null>()
+const selectedUser = ref<User | null>(null)
 const selectedFirm = ref<Firm | null>(null)
 const selectedCard = ref<Card | null>(null)
 const optionCard = ref<Card[]>()
@@ -47,9 +47,7 @@ const purchase = ref<Purchase>({
   otherInfo: '',
 })
 
-const btnShowError = ref<boolean>(false)
 const btnShowBusy = ref<boolean>(false)
-const btnShowOk = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
 
 const isSaveBtnDisabled = computed(() => {
@@ -95,24 +93,36 @@ watch(selectedUser, () => {
   }
 })
 
+const isCalculatePossible = (): boolean => {
+  return selectedUser.value !== null && selectedUser.value?.id > 0 &&
+      selectedCard.value !== null && selectedCard.value?.id > 0 &&
+      purchase.value.purchaseDate !== null
+}
+//purchase.value.purchaseDate doesn't work, another watch added
 watch([selectedCard, selectedUser, purchase.value.purchaseDate], () => {
-  if (
-      selectedUser.value &&
-      selectedUser.value?.id > 0 &&
-      selectedCard.value &&
-      selectedCard.value?.id > 0 &&
-      purchase.value.purchaseDate
-  ) {
-    calculateDeadline(selectedCard.value, purchase.value.purchaseDate)
-  }
-})
+      if (isCalculatePossible() && selectedCard.value && purchase.value.purchaseDate) {
+        calculateDeadline(selectedCard.value, purchase.value.purchaseDate)
+      }
+    }
+// , { deep: true }
+)
+
+watch(
+    () => purchase.value.purchaseDate,
+    () => {
+      if (isCalculatePossible() && selectedCard.value && purchase.value.purchaseDate) {
+        calculateDeadline(selectedCard.value, purchase.value?.purchaseDate)
+      }
+    }
+);
+
 
 function calculateDeadline(card: Card, date: Date) {
-  console.log('Calculate deadline...')
-  const purchaseDate = moment(date)
+  console.log('Calculating deadline...')
+  const purchaseDate: Moment = moment(date)
 
   // Ustawienie początkowej daty płatności na następny miesiąc
-  let deadlineDate = purchaseDate.add(1, 'months')
+  let deadlineDate: Moment = purchaseDate.add(1, 'months')
 
   // Jeśli dzień zakupu jest większy niż dzień zamknięcia karty, przesuń o kolejny miesiąc
   if (purchaseDate.date() > card.closingDay) {
@@ -150,14 +160,10 @@ async function newPurchase() {
   console.log('newPurchase()')
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     // btnSaveDisabled.value = true;
     btnShowBusy.value = true
-    const result = await purchaseStore.addPurchaseDb(purchase.value)
-
-    if (result) {
+    await purchaseStore.addPurchaseDb(purchase.value).then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
@@ -165,16 +171,17 @@ async function newPurchase() {
         life: 3000,
       })
       btnShowBusy.value = false
-      btnShowOk.value = true
       setTimeout(() => {
         router.push({name: 'PurchasesCurrent'})
       }, 3000)
-    } else btnShowError.value = true
-
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-    }, 5000)
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas zapisywania zakupu: ' + purchase.value?.name,
+        life: 3000,
+      })
+    })
   }
 }
 
@@ -186,16 +193,9 @@ const isEdit = ref<boolean>(false)
 async function editPurchase() {
   if (isNotValid()) {
     showError('Uzupełnij brakujące elementy')
-    btnShowError.value = true
-    setTimeout(() => (btnShowError.value = false), 5000)
   } else {
     btnSaveDisabled.value = true
     console.log('editPurchase()')
-    setTimeout(() => {
-      btnShowError.value = false
-      btnShowOk.value = false
-      btnShowError.value = false
-    }, 5000)
   }
 }
 
@@ -297,19 +297,16 @@ const showErrorDeadline = () => {
       <Panel>
         <template #header>
           <OfficeIconButton
-              v-tooltip.right="{
-              value: 'Powrót do listy zakupów',
-              showDelay: 500,
-              hideDelay: 300,
-            }"
+              title="Powrót do listy zakupów"
               icon="pi pi-fw pi-list"
               @click="() => router.push({ name: 'PurchasesCurrent' })"
           />
           <div class="w-full flex justify-center">
-            <h2>
+            <p class="text-2xl">
               {{ isEdit ? `Edycja zakupu: ${purchase?.name}` : 'Nowy zakup' }}
-            </h2>
+            </p>
           </div>
+          {{ purchase.purchaseDate }}
         </template>
         <div class="flex flex-col">
           <!-- ROW-1   NAME -->
@@ -474,9 +471,7 @@ const showErrorDeadline = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
-              :is-error-icon="btnShowError"
-              :is-ok-icon="btnShowOk"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

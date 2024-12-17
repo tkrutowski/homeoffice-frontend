@@ -1,13 +1,14 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {ErrorService} from '../service/ErrorService'
 import type {Device, DeviceDto, DeviceType} from '../types/Devices.ts'
 import type {ActiveStatus} from '../types/Bank.ts'
+import moment from "moment";
 
 export const useDevicesStore = defineStore('device', {
     state: () => ({
         loadingDevices: false,
         loadingDeviceTypes: false,
+        rowsPerPage: parseInt(localStorage.getItem('rowsPerPageDevices') || '20', 10),
 
         devicesTypes: [] as DeviceType[],
         devices: [] as Device[],
@@ -45,8 +46,8 @@ export const useDevicesStore = defineStore('device', {
         //
         //REFRESH BOOKS
         //
-        refreshDevices() {
-            this.getDevicesFromDB()
+        async refreshDevices() {
+            this.devices = await this.getDevicesFromDB()
         },
         //
         //GET DEVICES
@@ -64,25 +65,15 @@ export const useDevicesStore = defineStore('device', {
         //
         //GET DEVICES FROM DB
         //
-        async getDevicesFromDB(): Promise<void> {
+        async getDevicesFromDB(): Promise<Device[]> {
             console.log('START - getDevicesFromDB()')
             this.loadingDevices = true
 
-            try {
-                const response = await httpCommon.get(`/v1/devices`)
-                console.log('getDevices() - Ilosc[]: ' + response.data.length)
-                this.devices = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getDevicesFromDB(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingDevices = false
-                console.log('END - getDevicesFromDB()')
-            }
+            const response = await httpCommon.get(`/v1/devices`)
+            console.log('getDevices() - Ilosc[]: ' + response.data.length)
+            this.loadingDevices = false
+            console.log('END - getDevicesFromDB()')
+            return response.data
         },
         //
         //GET  DEVICE FROM DB BY ID
@@ -91,84 +82,60 @@ export const useDevicesStore = defineStore('device', {
             console.log('START - getDeviceFromDb(' + deviceId + ')')
             this.loadingDevices = true
 
-            try {
-                const response = await httpCommon.get(`/v1/devices/` + deviceId)
-                if (response.data)
-                    return response.data
-                else
-                    return null
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getDeviceFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
+            const response = await httpCommon.get(`/v1/devices/` + deviceId)
+            this.loadingDevices = false
+            console.log('END - getDeviceFromDb()')
+            if (response.data)
+                return response.data
+            else
                 return null
-            } finally {
-                this.loadingDevices = false
-                console.log('END - getDeviceFromDb()')
-            }
         },
         //
         //DELETE DEVICE
         //
         async deleteDeviceDb(deviceId: number) {
             console.log('START - deleteDeviceDb()')
-            try {
-                await httpCommon.delete(`/v1/devices/` + deviceId)
-                const index = this.devices.findIndex((dev: Device) => dev.id === deviceId)
-                if (index !== -1) this.devices.splice(index, 1)
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR deleteDeviceDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - deleteDeviceDb()')
-            }
+            await httpCommon.delete(`/v1/devices/` + deviceId)
+            const index = this.devices.findIndex((dev: Device) => dev.id === deviceId)
+            if (index !== -1) this.devices.splice(index, 1)
+            console.log('END - deleteDeviceDb()')
         },
 
         //ADD DEVICE
         //
         async addDeviceDb(device: Device) {
             console.log('START - addDeviceDb()')
-            try {
-                const response = await httpCommon.post(`/v1/devices`, device)
-                this.devices.push(response.data)
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR addDeviceDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - addDeviceDb()')
-            }
+            const transformedDevice = {
+                ...device,
+                purchaseDate: device.purchaseDate ? moment(device.purchaseDate).format("YYYY-MM-DD") : null,
+                sellDate: device.sellDate ? moment(device.sellDate).format("YYYY-MM-DD") : null,
+                warrantyEndDate: device.warrantyEndDate ? moment(device.warrantyEndDate).format("YYYY-MM-DD") : null,
+                insuranceEndDate: device.insuranceEndDate ? moment(device.insuranceEndDate).format("YYYY-MM-DD") : null,
+            };
+            console.log('addDeviceDb',transformedDevice)
+
+            const response = await httpCommon.post(`/v1/devices`, transformedDevice)
+            this.devices.push(response.data)
+            console.log('END - addDeviceDb()')
         },
 
         //
         //UPDATE DEVICE
-        //
+        //down
         async updateDeviceDb(device: Device) {
             console.log('START - updateDeviceDb()', device)
-            try {
-                const response = await httpCommon.put(`/v1/devices`, device)
-                const index = this.devices.findIndex((dev: Device) => dev.id === device.id)
-                if (index !== -1) this.devices.splice(index, 1, response.data)
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateDeviceDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - updateDeviceDb()')
-            }
+            const transformedDevice = {
+                ...device,
+                purchaseDate: device.purchaseDate ? moment(device.purchaseDate).format("YYYY-MM-DD") : null,
+                sellDate: device.sellDate ? moment(device.sellDate).format("YYYY-MM-DD") : null,
+                warrantyEndDate: device.warrantyEndDate ? moment(device.warrantyEndDate).format("YYYY-MM-DD") : null,
+                insuranceEndDate: device.insuranceEndDate ? moment(device.insuranceEndDate).format("YYYY-MM-DD") : null,
+            };
+            console.log('updateDeviceDb',transformedDevice)
+            const response = await httpCommon.put(`/v1/devices`, transformedDevice)
+            const index = this.devices.findIndex((dev: Device) => dev.id === device.id)
+            if (index !== -1) this.devices.splice(index, 1, response.data)
+            console.log('END - updateDeviceDb()')
         },
 
         //
@@ -176,22 +143,12 @@ export const useDevicesStore = defineStore('device', {
         //
         async updateStatusDb(deviceId: number, status: ActiveStatus) {
             console.log('START - updateStatusDb()')
-            try {
-                await httpCommon.put(`/v1/devices/status/${deviceId}?status=${status}`)
-                const device = this.devices.find((dev: Device) => dev.id === deviceId)
-                if (device) {
-                    device.activeStatus = status
-                }
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateStatusDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - updateStatusDb()')
+            await httpCommon.put(`/v1/devices/status/${deviceId}?status=${status}`)
+            const device = this.devices.find((dev: Device) => dev.id === deviceId)
+            if (device) {
+                device.activeStatus = status
             }
+            console.log('END - updateStatusDb()')
         },
 
         //-------------------------------------------------------DEVICE TYPE---------------------------------------
@@ -201,85 +158,44 @@ export const useDevicesStore = defineStore('device', {
         async getDeviceTypesFromDb(): Promise<void> {
             console.log('START - getDeviceTypesFromDb()')
             this.loadingDeviceTypes = true
-            try {
-                const response = await httpCommon.get(`/v1/devices/type`)
-                console.log('getDeviceTypesFromDb() - Ilosc[]: ' + response.data.length)
-                this.devicesTypes = response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getDeviceTypesFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingDeviceTypes = false
-                console.log('END - getDeviceTypesFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/devices/type`)
+            console.log('getDeviceTypesFromDb() - Ilosc[]: ' + response.data.length)
+            this.devicesTypes = response.data
+            this.loadingDeviceTypes = false
+            console.log('END - getDeviceTypesFromDb()')
         },
         //
-        //GET SERIES FROM DB
+        //GET  DEVICE TYPE FROM DB
         //
-        async getDevicesTypeByIdFromDb(id: number): Promise<DeviceType | undefined> {
+        async getDevicesTypeByIdFromDb(id: number): Promise<DeviceType | null> {
             console.log('START - getSeriesFromDb()')
             this.loadingDeviceTypes = true
-            try {
-                const response = await httpCommon.get(`/v1/devices/type/${id}`)
-                console.log('getDevicesTypeByIdFromDb() - Ilosc[]: ' + response.data.length)
-                return response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR getDevicesTypeByIdFromDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                this.loadingDeviceTypes = false
-                console.log('END - getDevicesTypeByIdFromDb()')
-            }
+            const response = await httpCommon.get(`/v1/devices/type/${id}`)
+            console.log('getDevicesTypeByIdFromDb() - Ilosc[]: ' + response.data.length)
+            this.loadingDeviceTypes = false
+            console.log('END - getDevicesTypeByIdFromDb()')
+            return response.data
         },
 
         //
-        //UPDATE SERIES
+        //UPDATE DEVICE TYPE
         //
-        async updateDeviceTypeDb(deviceType: DeviceType) {
+        async updateDeviceTypeDb(deviceType: DeviceType): Promise<DeviceType> {
             console.log('START - updateDeviceTypeDb()')
-            try {
-                const response = await httpCommon.put(`/v1/devices/type`, deviceType)
+            const response = await httpCommon.put(`/v1/devices/type`, deviceType)
 
-                const index = this.devicesTypes.findIndex((dev: DeviceType) => dev.id === deviceType.id)
-                if (index !== -1) this.devicesTypes.splice(index, 1, response.data)
-                return response.data
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR updateDeviceTypeDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - updateDeviceTypeDb()')
-            }
+            const index = this.devicesTypes.findIndex((dev: DeviceType) => dev.id === deviceType.id)
+            if (index !== -1) this.devicesTypes.splice(index, 1, response.data)
+            console.log('END - updateDeviceTypeDb()')
+            return response.data
         },
         //ADD DEVICE TYPE
         //
         async addDeviceTypeDb(dev: DeviceType) {
             console.log('START - addDeviceTypeDb()')
-            try {
-                const response = await httpCommon.post(`/v1/devices/type`, dev)
-                this.devicesTypes.push(response.data)
-                return true
-            } catch (e) {
-                if (ErrorService.isAxiosError(e)) {
-                    console.log('ERROR addDeviceTypeDb(): ', e)
-                    ErrorService.validateError(e)
-                } else {
-                    console.log('An unexpected error occurred: ', e)
-                }
-            } finally {
-                console.log('END - addDeviceTypeDb()')
-            }
+            const response = await httpCommon.post(`/v1/devices/type`, dev)
+            this.devicesTypes.push(response.data)
+            console.log('END - addDeviceTypeDb()')
         },
     },
 })

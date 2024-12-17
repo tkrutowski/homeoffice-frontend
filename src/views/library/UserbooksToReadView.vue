@@ -6,6 +6,7 @@ import {useToast} from 'primevue/usetoast'
 import {ref} from 'vue'
 import type {UserBook} from '../../types/Book'
 import AddEditUserBookDialog from '../../components/library/AddEditUserBookDialog.vue'
+import type {AxiosError} from "axios";
 
 const toast = useToast()
 const userbookStore = useUserbooksStore()
@@ -23,15 +24,21 @@ const editUserbook = (newUserbook: UserBook) => {
 const submitEditUserbook = async (newUserbook: UserBook) => {
   showUserbookDialog.value = false
   if (newUserbook) {
-    const result = await userbookStore.updateUserbookDb(newUserbook)
-    if (result) {
+    await userbookStore.updateUserbookDb(newUserbook)  .then(() => {
       toast.add({
         severity: 'success',
         summary: 'Potwierdzenie',
         detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
         life: 3000,
       })
-    }
+    }).catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Błąd podczas aktualizacji książki na półkę.',
+        life: 3000,
+      })
+    })
   }
 }
 </script>
