@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import OfficeButton from '../components/OfficeButton.vue'
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 
-defineProps({
+const props = defineProps({
   msg: {
     type: String,
     required: true,
@@ -18,14 +18,39 @@ defineProps({
     required: false,
     default: 'label2',
   },
+  value1: {
+    type: String,
+    required: false,
+    default: '',
+  },
+  value2: {
+    type: String,
+    required: false,
+    default: '',
+  },
 })
 const emit = defineEmits<{
   (e: 'save', in1: string, in2: string): void
   (e: 'cancel'): void
 }>()
 
-const input1 = ref<string>('')
-const input2 = ref<string>('')
+const input1 = ref<string>(props.value1)
+const input2 = ref<string>(props.value2)
+
+watch(
+    () => props.value1,
+    (newValue) => {
+      input1.value = newValue
+    },
+    { immediate: true },
+)
+watch(
+    () => props.value2,
+    (newValue) => {
+      input2.value = newValue
+    },
+    { immediate: true },
+)
 
 const save = () => {
   emit('save', input1.value, input2.value)

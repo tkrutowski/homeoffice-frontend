@@ -36,6 +36,7 @@ import LogsView from '../views/LogsView.vue'
 import DevicesHomeView from '../views/device/DeviceHomeView.vue'
 import DevicesView from '../views/device/DevicesView.vue'
 import DeviceView from '../views/device/DeviceView.vue'
+import ComputersView from "../views/device/ComputersView.vue";
 
 const routes = [
   {
@@ -198,6 +199,11 @@ const routes = [
     name: 'Device',
     component: DeviceView,
     props: true,
+  },
+  {
+    path: '/devices/computer/all',
+    name: 'Computers',
+    component: ComputersView,
   },
 ]
 

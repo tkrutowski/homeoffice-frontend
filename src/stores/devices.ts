@@ -55,11 +55,23 @@ export const useDevicesStore = defineStore('device', {
         async getDevices() {
             console.log('START - getDevices()')
             if (this.devices.length === 0 && !this.loadingDevices) {
-                // await this.getBooksFromDb()
+                 await this.refreshDevices()
             }
             console.log('END - getDevices()')
 
             return this.devices
+        },
+        async getDevice(idDevice:number) {
+            console.log('START - getDevice()',idDevice)
+            let dev = this.devices.find((dev: Device) => dev.id === idDevice);
+
+            if (!dev) {
+               dev = await this.getDeviceFromDb(idDevice)
+            }
+
+            console.log('END - getDevices()')
+
+            return dev || null
         },
         //-------------------------------------------------------DATABASE
         //

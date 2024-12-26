@@ -48,6 +48,14 @@ const items = ref([
           router.push({name: 'Devices'})
         },
       },
+      {
+        label: 'Komputery',
+        icon: 'pi pi-fw pi-list',
+        // to: { name: "Invoices" },
+        command: () => {
+          router.push({name: 'Computers'})
+        },
+      },
     ],
   },
 ])

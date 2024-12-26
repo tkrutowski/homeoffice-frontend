@@ -306,7 +306,6 @@ const showErrorDeadline = () => {
               {{ isEdit ? `Edycja zakupu: ${purchase?.name}` : 'Nowy zakup' }}
             </p>
           </div>
-          {{ purchase.purchaseDate }}
         </template>
         <div class="flex flex-col">
           <!-- ROW-1   NAME -->

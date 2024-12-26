@@ -38,11 +38,16 @@ export const useAuthorizationStore = defineStore('authorization', {
             }
         },
         isAuthenticatedOrToken(): boolean {
+            try {
             if (this.accessToken) {
                 const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
                 return this.isAuthenticated || moment.unix(decoded.exp).isAfter(moment())
             }
             return this.isAuthenticated
+            } catch (error) {
+                console.log('isAuthenticatedOrToken() ERROR', error)
+                return false
+            }
         },
         hasAccessGoAhead(): boolean {
             console.log('hasAccessGoAhead()')
@@ -216,6 +221,7 @@ export const useAuthorizationStore = defineStore('authorization', {
     //actions = metody w komponentach
     actions: {
         logUser(token: string, refreshToken: string) {
+            console.log("logUser: accessToken",token)
             this.accessToken = token
             localStorage.setItem('accessToken', token)
             this.isAuthenticated = true
@@ -278,7 +284,7 @@ export const useAuthorizationStore = defineStore('authorization', {
                 refreshToken: refreshToken,
             })
             if (response.status === 200) {
-                console.log('refresh() - success - update tokens')
+                console.log('refresh() - success - update tokens...', response)
                 this.logUser(response.data.accessToken, response.data.refreshToken)
             }
             console.log('END - refresh()')

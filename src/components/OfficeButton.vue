@@ -24,6 +24,7 @@ defineProps({
 <template>
   <Button
       type="button"
+      class="disabled:bg-surface-500 hover:disabled:!bg-surface-500"
       :class="{
       'font-bold uppercase tracking-widest border bg-primary hover:!bg-primary-700 border-primary-900 hover:!border-primary-900':
         btnType === 'office-regular',

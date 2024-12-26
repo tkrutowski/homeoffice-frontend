@@ -6,15 +6,17 @@ import {computed, onMounted, ref} from 'vue'
 import OfficeButton from '../../components/OfficeButton.vue'
 import router from '../../router'
 import IconButton from '../../components/OfficeIconButton.vue'
+import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import {useToast} from 'primevue/usetoast'
 import AddDialog from '../../components/AddDialog.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import type {Device} from '../../types/Devices'
 import type {Firm} from '../../types/Firm'
 import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
 import moment from 'moment/moment'
 import {UtilsService} from '../../service/UtilsService'
 import type {AxiosError} from "axios";
+import type {DataTableRowReorderEvent} from "primevue";
+import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
 
 const deviceStore = useDevicesStore()
 const firmStore = useFirmsStore()
@@ -80,6 +82,8 @@ const device = ref<Device>({
   insuranceEndDate: null,
   otherInfo: '',
   activeStatus: 'ACTIVE',
+  imageUrl:'',
+  details: new Map<string, string>()
 })
 
 const btnShowBusy = ref<boolean>(false)
@@ -234,7 +238,7 @@ async function saveDeviceType(name: string) {
             life: 3000,
           })
         })
-        .catch((reason:AxiosError) => {
+        .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
             summary: reason.message,
@@ -253,7 +257,7 @@ const submitted = ref(false)
 const showError = (msg: string) => {
   toast.add({
     severity: 'error',
-    summary: 'Error Message',
+    summary: 'Błąd',
     detail: msg,
     life: 3000,
   })
@@ -297,9 +301,85 @@ function resetForm() {
     insuranceEndDate: null,
     otherInfo: '',
     activeStatus: 'ACTIVE',
+    details: new Map<string, string>(),
+    imageUrl: ''
   }
   submitted.value = false
   btnSaveDisabled.value = false
+}
+
+//
+//--------------------------------------------------DETAILS
+//
+const showAddDetailsModal = ref<boolean>(false)
+
+
+const tempDetails = ref<Map<string, string>>(new Map<string, string>([
+  ['key1', 'value1'],
+  ['key2', 'value2'],
+  ['key3', 'value3']
+]))
+const onRowReorder = (event: DataTableRowReorderEvent) => {
+  console.log('onRowReorder', event)
+  tempDetails.value = new Map<string, string>(
+      [...event.value]
+  )
+};
+
+//DELETE
+const showDeleteConfirmationDialog = ref<boolean>(false)
+const tempDetail = ref<string[]>([]);
+const confirmDelete = (entry: string[]) => {
+  tempDetail.value = entry
+
+  showDeleteConfirmationDialog.value = true
+}
+const deleteConfirmationMessage = computed(() => {
+  if (tempDetail.value) return `Czy chcesz usunąc wpis: <b>${tempDetail.value[0]} : ${tempDetail.value[1]}</b>?`
+  return 'No message'
+})
+const submitDelete = async () => {
+  if (tempDetail.value) {
+    tempDetails.value.delete(tempDetail.value[0])
+  }
+  showDeleteConfirmationDialog.value = false
+}
+// ADD
+const openNew = () => {
+  tempDetail.value = [];
+  showAddDetailsModal.value = true;
+};
+//EDIT
+const editIndex = ref<number>(-1)
+const editDetails = (detail: string[], index: number) => {
+  tempDetail.value = detail
+  editIndex.value = index
+  showAddDetailsModal.value = true;
+};
+
+async function saveDetails(keyToAdd: string, valueToAdd: string) {
+  showAddDetailsModal.value = false
+  if (keyToAdd.length === 0 || valueToAdd.length === 0) {
+    showError('Klucz i wartość nie mogą być puste')
+  } else {
+    if (keyToAdd === tempDetail.value[0] || (keyToAdd !== tempDetail.value[0] && editIndex.value === -1)) {
+
+      tempDetails.value.set(keyToAdd, valueToAdd)
+    } else {
+      const newMap = new Map<string, string>()
+      let index = 0;
+      tempDetails.value.delete(tempDetail.value[0])
+      tempDetails.value.forEach((key, value) => {
+        if (index === editIndex.value) {
+          newMap.set(keyToAdd, valueToAdd)
+        }
+        newMap.set(key, value)
+        index++
+      })
+      tempDetails.value = newMap
+      editIndex.value = -1
+    }
+  }
 }
 </script>
 
@@ -312,7 +392,26 @@ function resetForm() {
       @save="saveDeviceType"
       @cancel="showAddDeviceTypeModal = false"
   />
-  <div class="m-4 max-w-6xl mx-auto">
+  <AddDialog
+      v-model:visible="showAddDetailsModal"
+      msg="Dodaj szczegóły produktu"
+      label1="Klucz:"
+      label2="Wartość:"
+      :value1="tempDetail.at(0)"
+      :value2="tempDetail.length > 0 ? tempDetail[1] : ''"
+      @save="saveDetails"
+      @cancel="showAddDetailsModal = false"
+  />
+
+
+  <ConfirmationDialog
+      v-model:visible="showDeleteConfirmationDialog"
+      :msg="deleteConfirmationMessage"
+      label="Usuń"
+      @save="submitDelete"
+      @cancel="showDeleteConfirmationDialog = false"
+  />
+  <div class="m-4 max-w-5xl mx-auto">
     <form @submit.stop.prevent="saveDevice">
       <Panel>
         <template #header>
@@ -334,7 +433,7 @@ function resetForm() {
 
         <!--  --------------------------------------------------------DEVICE---------------------------------      -->
         <Fieldset class="w-full" legend="Zakup">
-          <div class="grid grid-cols-6 gap-4">
+          <div class="grid  gap-4">
             <div class="col-start-1 col-span-4">
               <!-- ROW-1   NAME -->
               <div class="flex flex-col">
@@ -506,8 +605,31 @@ function resetForm() {
           </div>
         </Fieldset>
 
+        <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
+          <Toolbar class="mb-6">
+            <template #start>
+              <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" class="mr-2" size="small" @click="openNew"/>
+            </template>
+          </Toolbar>
+          <DataTable :value="[...tempDetails]" :reorderableColumns="true" @rowReorder="onRowReorder"
+                     tableStyle="min-width: 50rem" size="small">
+            <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false"/>
+            <Column field="0" header="Klucz" style="width: 40%;"></Column>
+            <Column field="1" header="Wartość" style="width:40%;"></Column>
+            <Column header="Akcje">
+              <template #body="slotProps">
+                <Button icon="pi pi-pencil" outlined rounded class="mr-2"
+                        @click="editDetails(slotProps.data, slotProps.index)"/>
+                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)"/>
+              </template>
+            </Column>
+          </DataTable>
+          <div class="flex flex-col gap-4">
+          </div>
+        </Fieldset>
+
         <Fieldset class="w-full" legend="Sprzedaż">
-          <div class="grid grid-cols-6 gap-4">
+          <div class="grid gap-4">
             <div class="col-start-1 col-span-4">
               <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
               <div class="flex flex-col md:flex-row gap-4">

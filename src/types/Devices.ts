@@ -14,6 +14,8 @@ export interface Device {
   insuranceEndDate:  Date | null
   otherInfo: string
   activeStatus: ActiveStatus
+  details: Map<string, string>
+  imageUrl: string
 }
 
 export interface DeviceType {
