@@ -41,6 +41,17 @@ const runDevice = () => {
     })
   }
 }
+
+const runRent = () => {
+  console.log('START - runRent()')
+  if (authorizationStore.hasAccessDevice) {
+    // if (deviceStore.devices.length === 0) deviceStore.getDevicesFromDB()
+    router.push({
+      name: 'Rooms',
+      // params: { idUser: 0, isEdit: "false" },
+    })
+  }
+}
 </script>
 
 <template>
@@ -51,7 +62,7 @@ const runDevice = () => {
   >
     Musisz się najpierw zalogować... ;)
   </h1>
-  <div v-else class="flex flex-row justify-center gap-4 mt-5">
+  <div v-else class="flex flex-row flex-wrap justify-center gap-4 mt-5">
     <AppCard
       text-content="Kredyty, płatności i zakupy"
       text-title="Finanse"
@@ -69,6 +80,13 @@ const runDevice = () => {
       text-title="Urządzenia"
       :disabled="!authorizationStore.hasAccessDevice"
       @clicked="runDevice"
+    />
+
+    <AppCard class="min-w-60"
+        text-content="Pokoje, rezerwacje"
+        text-title="Wynajem"
+        :disabled="!authorizationStore.hasAccessDevice"
+        @clicked="runRent"
     />
   </div>
 </template>

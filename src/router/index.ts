@@ -37,6 +37,9 @@ import DevicesHomeView from '../views/device/DeviceHomeView.vue'
 import DevicesView from '../views/device/DevicesView.vue'
 import DeviceView from '../views/device/DeviceView.vue'
 
+//RENT
+import RoomsView from "../views/rent/RoomsView.vue";
+
 const routes = [
   {
     path: '/',
@@ -198,6 +201,17 @@ const routes = [
     name: 'Device',
     component: DeviceView,
     props: true,
+  },
+  //----------------------------------------------RENT--------------------------------------------
+  // {
+    // path: '/homedevice',
+    // name: 'DevicesHome',
+    // component: DevicesHomeView,
+  // },
+  {
+    path: '/rent/room/all',
+    name: 'Rooms',
+    component: RoomsView,
   },
 ]
 
