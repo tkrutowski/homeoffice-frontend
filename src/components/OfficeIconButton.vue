@@ -28,7 +28,7 @@ const props = defineProps({
 </script>
 <template>
   <Button
-    class="icon-only"
+    class="icon-only border-0"
     :icon="props.icon"
     :rounded="props.rounded"
     outlined
@@ -64,6 +64,12 @@ const props = defineProps({
 .icon-only:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.icon-only:hover {
+  background-color: transparent !important;
+  transform: scale(1.4);
+  border: 0;
 }
 .isActive {
   /* Przykładowy styl dla efektu wciśniętego przycisku */

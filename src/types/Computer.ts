@@ -1,11 +1,13 @@
 import type {ActiveStatus} from "./Bank.ts";
 import type {Device} from "./Devices.ts";
 
+export type Component = 'PROCESSOR' | 'MOTHERBOARD' | 'NONE'
+
 export interface ComputerDto {
   id: number
   name: string
   processor:  Device | null
-  mainBoard:  Device | null
+  motherboard:  Device | null
   ram:  Device[]
   disk:  Device[]
   power:  Device | null
@@ -25,7 +27,7 @@ export interface Computer {
   id: number
   name: string
   processor:  number
-  mainBoard:  number
+  motherboard:  number
   ram:  number[]
   disk:  number[]
   power:  number
@@ -34,6 +36,9 @@ export interface Computer {
   keyboard: number
   mouse: number
   case: number
+  soundCard: number
+  graphicCard: number[]
+  usb: number[]
   otherInfo: string
   activeStatus: ActiveStatus
 }

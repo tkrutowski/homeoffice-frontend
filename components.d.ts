@@ -7,6 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddAutoComplete: typeof import('./src/components/AddAutoCompleteDialog.vue')['default']
+    AddAutoCompleteDialog: typeof import('./src/components/AddAutoCompleteDialog.vue')['default']
     AddDialog: typeof import('./src/components/AddDialog.vue')['default']
     AddEditSeriesDialog: typeof import('./src/components/library/AddEditSeriesDialog.vue')['default']
     AddEditUserBookDialog: typeof import('./src/components/library/AddEditUserBookDialog.vue')['default']
@@ -28,7 +30,6 @@ declare module 'vue' {
     Dialog: typeof import('primevue/dialog')['default']
     Divider: typeof import('primevue/divider')['default']
     Fieldset: typeof import('primevue/fieldset')['default']
-    FileUpload: typeof import('primevue/fileupload')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     IconField: typeof import('primevue/iconfield')['default']
     Image: typeof import('primevue/image')['default']
@@ -53,6 +54,7 @@ declare module 'vue' {
     PurchaseCurrentItemGroup: typeof import('./src/components/finance/PurchaseCurrentItemGroup.vue')['default']
     PurchaseItemGroup: typeof import('./src/components/finance/PurchaseItemGroup.vue')['default']
     RefreshComponent: typeof import('./src/components/RefreshComponent.vue')['default']
+    Room: typeof import('./src/components/rent/Room.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Row: typeof import('primevue/row')['default']
@@ -69,6 +71,7 @@ declare module 'vue' {
     TheMenuDevice: typeof import('./src/components/device/TheMenuDevice.vue')['default']
     TheMenuFinance: typeof import('./src/components/finance/TheMenuFinance.vue')['default']
     TheMenuLibrary: typeof import('./src/components/library/TheMenuLibrary.vue')['default']
+    TheMenuRent: typeof import('./src/components/rent/TheMenuRent.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
     Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']

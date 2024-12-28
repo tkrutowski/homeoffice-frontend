@@ -30,6 +30,7 @@ export const useComputerStore = defineStore('computer', {
         async getComputers() {
             console.log('START - getComputers()')
             if (this.computers.length === 0 && !this.loadingComputers) {
+                this.loadingComputers=true
                 // await this.refreshComputers()
                 this.computers.push({
                     name: 'Desktop-Tomek',
@@ -41,7 +42,7 @@ export const useComputerStore = defineStore('computer', {
                     monitor: [97,120],
                     id:1,
                     keyboard:-1,
-                    mainBoard:131,
+                    motherboard:131,
                     mouse:-1,
                     ram:[130],
                     otherInfo:'INFO',
@@ -60,7 +61,7 @@ export const useComputerStore = defineStore('computer', {
                     monitor: [134],
                     id:1,
                     keyboard:-1,
-                    mainBoard:-1,
+                    motherboard:-1,
                     mouse:-1,
                     ram:[],
                     otherInfo:'INFO',
@@ -71,7 +72,7 @@ export const useComputerStore = defineStore('computer', {
                 })
             }
             console.log('END - getComputers()')
-
+this.loadingComputers=false
             return this.computers
         },
         //-------------------------------------------------------DATABASE

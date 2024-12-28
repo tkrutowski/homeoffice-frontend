@@ -48,6 +48,7 @@ export const useDevicesStore = defineStore('device', {
         //
         async refreshDevices() {
             this.devices = await this.getDevicesFromDB()
+            await this.getDeviceTypesFromDb()
         },
         //
         //GET DEVICES
@@ -57,6 +58,7 @@ export const useDevicesStore = defineStore('device', {
             if (this.devices.length === 0 && !this.loadingDevices) {
                  await this.refreshDevices()
             }
+
             console.log('END - getDevices()')
 
             return this.devices

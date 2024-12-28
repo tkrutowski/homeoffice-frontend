@@ -58,13 +58,21 @@ watch(devDetailsRef.value, refs => {
   <TheMenuDevice/>
   <Toolbar class="m-6">
     <template #start>
-      <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" class="mr-2"
-                    @click="openNew"/>
+      <router-link
+          :to="{ name: 'Computer', params: { isEdit: 'false', compId: 0 } }"
+          style="text-decoration: none"
+      >
+        <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus"/>
+      </router-link>
+
     </template>
 
     <template #center>
       <Select v-model="selectedComputer" :options="computerStore.computers" optionLabel="name"
               placeholder="Wybierz komputer"/>
+      <div v-if="computerStore.loadingComputers">
+        <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5"/>
+      </div>
     </template>
 
     <template #end>
@@ -72,7 +80,7 @@ watch(devDetailsRef.value, refs => {
                     @click="openNew"/>
     </template>
   </Toolbar>
-  <div class="flex gap-4 m-6">
+  <div v-if="selectedComputer" class="flex gap-4 m-6">
     <Card class="flex-1 min-w-96 min-h-[calc(100vh-440px)]">
       <template #title>
         <div class="flex justify-center">
@@ -80,7 +88,7 @@ watch(devDetailsRef.value, refs => {
         </div>
       </template>
       <template #content>
-        <ScrollPanel v-if="selectedComputer" class=" overflow-y-auto min-h-[calc(100vh-440px)]"
+        <ScrollPanel class=" overflow-y-auto min-h-[calc(100vh-440px)]"
                      :style="{maxHeight: panelHeight + 'px'}">
           <ComputerPart category="Obudowa" :deviceIds="[selectedComputer.case]" :max-amount="1" @addView="addView"
                         @removeView="removeView"/>
