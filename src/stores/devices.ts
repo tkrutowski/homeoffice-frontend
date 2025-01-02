@@ -8,7 +8,8 @@ export const useDevicesStore = defineStore('device', {
     state: () => ({
         loadingDevices: false,
         loadingDeviceTypes: false,
-        rowsPerPage: parseInt(localStorage.getItem('rowsPerPageDevices') || '20', 10),
+        rowsPerPageGrid: parseInt(localStorage.getItem('rowsPerPageDevicesGrid') || '20', 10),
+        rowsPerPageList: parseInt(localStorage.getItem('rowsPerPageDevicesList') || '20', 10),
 
         devicesTypes: [] as DeviceType[],
         devices: [] as Device[],
@@ -35,6 +36,8 @@ export const useDevicesStore = defineStore('device', {
                     insuranceEndDate: dev.insuranceEndDate,
                     otherInfo: dev.otherInfo,
                     activeStatus: dev.activeStatus,
+                    details: new Map(Object.entries(dev.details)),
+                    imageUrl: dev.imageUrl
                 }
                 return dto
             })
@@ -56,24 +59,27 @@ export const useDevicesStore = defineStore('device', {
         async getDevices() {
             console.log('START - getDevices()')
             if (this.devices.length === 0 && !this.loadingDevices) {
-                 await this.refreshDevices()
+                await this.refreshDevices()
             }
-
             console.log('END - getDevices()')
-
             return this.devices
         },
-        async getDevice(idDevice:number) {
-            console.log('START - getDevice()',idDevice)
+        async getDevice(idDevice: number):Promise<Device | null> {
+            console.log('START - getDevice()', idDevice)
             let dev = this.devices.find((dev: Device) => dev.id === idDevice);
 
             if (!dev) {
-               dev = await this.getDeviceFromDb(idDevice)
+                const dev2 = await this.getDeviceFromDb(idDevice)
+                return dev2 ? {
+                    ...dev2,
+                    details: new Map(Object.entries(dev2.details)),
+                } : null
             }
-
             console.log('END - getDevices()')
-
-            return dev || null
+            return dev ? {
+                ...dev,
+                details: new Map(Object.entries(dev.details)),
+            } : null
         },
         //-------------------------------------------------------DATABASE
         //
@@ -98,10 +104,13 @@ export const useDevicesStore = defineStore('device', {
 
             const response = await httpCommon.get(`/v1/devices/` + deviceId)
             this.loadingDevices = false
+
             console.log('END - getDeviceFromDb()')
-            if (response.data)
-                return response.data
-            else
+            if (response.data) {
+                let dev = response.data
+                dev.details = new Map(Object.entries(dev.details))
+                return dev
+            } else
                 return null
         },
         //
@@ -125,8 +134,9 @@ export const useDevicesStore = defineStore('device', {
                 sellDate: device.sellDate ? moment(device.sellDate).format("YYYY-MM-DD") : null,
                 warrantyEndDate: device.warrantyEndDate ? moment(device.warrantyEndDate).format("YYYY-MM-DD") : null,
                 insuranceEndDate: device.insuranceEndDate ? moment(device.insuranceEndDate).format("YYYY-MM-DD") : null,
+                details: Object.fromEntries(device.details),
             };
-            console.log('addDeviceDb',transformedDevice)
+            console.log('addDeviceDb', transformedDevice)
 
             const response = await httpCommon.post(`/v1/devices`, transformedDevice)
             this.devices.push(response.data)
@@ -144,8 +154,9 @@ export const useDevicesStore = defineStore('device', {
                 sellDate: device.sellDate ? moment(device.sellDate).format("YYYY-MM-DD") : null,
                 warrantyEndDate: device.warrantyEndDate ? moment(device.warrantyEndDate).format("YYYY-MM-DD") : null,
                 insuranceEndDate: device.insuranceEndDate ? moment(device.insuranceEndDate).format("YYYY-MM-DD") : null,
+                details: Object.fromEntries(device.details),
             };
-            console.log('updateDeviceDb',transformedDevice)
+            console.log('updateDeviceDb', transformedDevice)
             const response = await httpCommon.put(`/v1/devices`, transformedDevice)
             const index = this.devices.findIndex((dev: Device) => dev.id === device.id)
             if (index !== -1) this.devices.splice(index, 1, response.data)

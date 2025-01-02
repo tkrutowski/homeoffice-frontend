@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
 import type {ActiveStatus} from '../types/Bank.ts'
-import type {Computer} from "../types/Computer.ts";
+import type {ComponentType, Computer} from "../types/Computer.ts";
 
 export const useComputerStore = defineStore('computer', {
     state: () => ({
@@ -14,6 +14,88 @@ export const useComputerStore = defineStore('computer', {
         // getSortedSeries: (state) =>
         //     state.series.filter(serie => serie.id != 2)
         //         .sort((a, b) => a.title.localeCompare(b.title)),
+        componentTypes: () => {
+            let components: ComponentType[] = []
+            components.push({
+                name: "COMPUTER_CASE",
+                max: 1,
+                viewName: "Obudowa",
+                column: "computerCase"
+            })
+            components.push({
+                name: "PROCESSOR",
+                max: 1,
+                viewName: "Procesor",
+                column: "processor"
+            })
+            components.push({
+                name: "MOTHERBOARD",
+                max: 1,
+                viewName: "Płyta główna",
+                column: "motherboard"
+            })
+            components.push({
+                name: "RAM",
+                max: 4,
+                viewName: "Pamięć RAM",
+                column: "ram"
+            })
+            components.push({
+                name: "GRAPHICS_CARD",
+                max: 2,
+                viewName: "Karta graficzna",
+                column: "graphicCard"
+            })
+            components.push({
+                name: "POWER",
+                max: 1,
+                viewName: "Zasilacz",
+                column: "power"
+            })
+            components.push({
+                name: "DISK",
+                max: 10,
+                viewName: "Dysk",
+                column: "disk"
+            })
+            components.push({
+                name: "COOLER",
+                max: 10,
+                viewName: "Chłodzenie",
+                column: "cooling"
+            })
+            components.push({
+                name: "SOUND_CARD",
+                max: 1,
+                viewName: "Karta muzyczna",
+                column: "soundCard"
+            })
+            components.push({
+                name: "KEYBOARD",
+                max: 1,
+                viewName: "Klawiatura",
+                column: "keyboard"
+            })
+            components.push({
+                name: "MOUSE",
+                max: 1,
+                viewName: "Mysz",
+                column: "mouse"
+            })
+            components.push({
+                name: "USB",
+                max: 20,
+                viewName: "Urządzenia USB",
+                column: "usb"
+            })
+            components.push({
+                name: "DISPLAY",
+                max: 4,
+                viewName: "Monitor",
+                column: "display"
+            })
+            return components
+        }
     },
 
     //actions = metody w komponentach
@@ -30,49 +112,11 @@ export const useComputerStore = defineStore('computer', {
         async getComputers() {
             console.log('START - getComputers()')
             if (this.computers.length === 0 && !this.loadingComputers) {
-                this.loadingComputers=true
-                // await this.refreshComputers()
-                this.computers.push({
-                    name: 'Desktop-Tomek',
-                    activeStatus: 'ACTIVE',
-                    case: 105,
-                    cooling: [132],
-                    power: 137,
-                    disk: [109,133],
-                    monitor: [97,120],
-                    id:1,
-                    keyboard:-1,
-                    motherboard:131,
-                    mouse:-1,
-                    ram:[130],
-                    otherInfo:'INFO',
-                    processor:129,
-                    soundCard:-1,
-                    graphicCard: [103],
-                    usb: []
-                })
-                this.computers.push({
-                    name: 'Desktop-Stasiu',
-                    activeStatus: 'ACTIVE',
-                    case: -1,
-                    cooling: [-1],
-                    power: 137,
-                    disk: [],
-                    monitor: [134],
-                    id:1,
-                    keyboard:-1,
-                    motherboard:-1,
-                    mouse:-1,
-                    ram:[],
-                    otherInfo:'INFO',
-                    processor:-1,
-                    soundCard:-1,
-                    graphicCard: [],
-                    usb: []
-                })
+                this.loadingComputers = true
+                await this.refreshComputers()
             }
             console.log('END - getComputers()')
-this.loadingComputers=false
+            this.loadingComputers = false
             return this.computers
         },
         //-------------------------------------------------------DATABASE

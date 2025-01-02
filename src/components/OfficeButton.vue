@@ -9,7 +9,7 @@ defineProps({
   },
   text: {
     type: String,
-    required: true,
+    required: false,
   },
   btnDisabled: {
     type: Boolean,
@@ -35,6 +35,7 @@ defineProps({
       :loading="loading"
       icon-pos="right"
       :label="text"
+      size="small"
   >
   </Button>
 </template>

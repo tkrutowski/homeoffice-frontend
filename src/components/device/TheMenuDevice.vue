@@ -41,16 +41,28 @@ const items = ref([
         },
       },
       {
-        label: 'Spis urządzeń',
+        label: 'Spis urządzeń - siatka',
+        icon: 'pi pi-fw pi-th-large',
+        // to: { name: "Invoices" },
+        command: () => {
+          router.push({name: 'DevicesGrid'})
+        },
+      },
+      {
+        label: 'Spis urządzeń - lista',
         icon: 'pi pi-fw pi-list',
         // to: { name: "Invoices" },
         command: () => {
-          router.push({name: 'Devices'})
+          router.push({name: 'DevicesList'})
         },
+      },
+      {
+        separator: true
       },
       {
         label: 'Komputery',
         icon: 'pi pi-fw pi-list',
+        disabled: !authorizationStore.hasAccessComputer,
         // to: { name: "Invoices" },
         command: () => {
           router.push({name: 'Computers'})

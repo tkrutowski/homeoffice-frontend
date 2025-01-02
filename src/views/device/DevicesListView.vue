@@ -212,7 +212,7 @@ const submitChangeStatus = async () => {
 }
 
 const handleRowsPerPageChange = (event: DataTablePageEvent) => {
-  localStorage.setItem('rowsPerPageDevices', event.rows.toString())
+  localStorage.setItem('rowsPerPageDevicesList', event.rows.toString())
 }
 </script>
 
@@ -251,7 +251,7 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
         striped-rows
         removable-sort
         paginator
-        :rows="deviceStore.rowsPerPage"
+        :rows="deviceStore.rowsPerPageList"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"

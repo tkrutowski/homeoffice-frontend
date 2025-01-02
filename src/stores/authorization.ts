@@ -100,12 +100,12 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessFinance() ERROR', error)
+                console.log('hasAccessFinancePurchase() ERROR', error)
                 return false
             }
         },
         hasAccessFinancePurchaseWriteAll(): boolean {
-            console.log('hasAccessFinancePurchase()')
+            console.log('hasAccessFinancePurchaseWriteAll()')
             try {
                 if (this.accessToken) {
                     // console.log("token : ", this.token);
@@ -119,7 +119,7 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessFinance() ERROR', error)
+                console.log('hasAccessFinancePurchaseWriteAll() ERROR', error)
                 return false
             }
         },
@@ -138,7 +138,7 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessFinance() ERROR', error)
+                console.log('hasAccessFinancePayment() ERROR', error)
                 return false
             }
         },
@@ -157,7 +157,7 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessFinance() ERROR', error)
+                console.log('hasAccessFinanceLoan() ERROR', error)
                 return false
             }
         },
@@ -176,12 +176,12 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessFinance() ERROR', error)
+                console.log('hasAccessFinanceFee() ERROR', error)
                 return false
             }
         },
         hasAccessLibrary(): boolean {
-            console.log('hasAccessFinance()')
+            console.log('hasAccessLibrary()')
             try {
                 if (this.accessToken) {
                     // console.log("token : ", this.token);
@@ -212,7 +212,44 @@ export const useAuthorizationStore = defineStore('authorization', {
                     return false
                 }
             } catch (error) {
-                console.log('hasAccessLibrary() ERROR', error)
+                console.log('hasAccessDevices() ERROR', error)
+                return false
+            }
+        },
+        hasAccessComputer(): boolean {
+            console.log('hasAccessComputer()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_COMPUTER') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessComputer() ERROR', error)
+                return false
+            }
+        },
+        hasAccessComputerWriteAll(): boolean {
+            console.log('hasAccessComputerWriteAll()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('COMPUTER_WRITE_ALL') ||
+                        decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessComputerWriteAll() ERROR', error)
                 return false
             }
         },
@@ -221,7 +258,7 @@ export const useAuthorizationStore = defineStore('authorization', {
     //actions = metody w komponentach
     actions: {
         logUser(token: string, refreshToken: string) {
-            console.log("logUser: accessToken",token)
+            console.log("logUser: accessToken: ",token, ", refresh token: ", refreshToken)
             this.accessToken = token
             localStorage.setItem('accessToken', token)
             this.isAuthenticated = true
@@ -245,7 +282,9 @@ export const useAuthorizationStore = defineStore('authorization', {
                 password: password,
             })
 
+            console.log("login res: ", res)
             this.logUser(res.data.accessToken, res.data.refreshToken)
+
 
             this.loading = false
             this.btnDisabled = false
@@ -280,6 +319,7 @@ export const useAuthorizationStore = defineStore('authorization', {
         async refresh() {
             console.log('START - refresh()')
             const refreshToken = localStorage.getItem('refreshToken') || null
+            console.log('refreshToken', refreshToken)
             const response = await httpCommon.post('/v1/auth/refresh', {
                 refreshToken: refreshToken,
             })

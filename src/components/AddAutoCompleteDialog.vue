@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import OfficeButton from '../components/OfficeButton.vue'
-import {ref, watch} from 'vue'
+import {ref} from 'vue'
 type  T = {
   id: number
   name: string
@@ -16,24 +16,13 @@ const emit = defineEmits<{
 
 const selected = ref<T | null>(null)
 const filtered = ref<T[]>([])
-
-
-
-
-
-
+const inputRef = ref(null);
 
 const search = (event: { query: string }) => {
   filtered.value = props.objectList.filter((item: T) => {
     return item.name.toLowerCase().includes(event.query.toLowerCase())
   })
 }
-// watch(selectedFirm, (newFirm: Firm | null) => {
-//   fee.value.firm = newFirm
-// })
-
-
-const id = ref<number>(-1)
 
 const save = () => {
   emit('save', selected.value?.id || 0)
@@ -42,17 +31,17 @@ const save = () => {
 const cancel = () => {
   emit('cancel')
 }
-
 </script>
 
 <template>
   <Dialog :style="{ width: '550px' }" :modal="true">
     <template #header>
-      <h4>Dodaj...</h4>
+      <p class="text-2xl">Wybierz</p>
     </template>
     <div class="flex flex-col w-full">
       <label for="input-customer">{{msg}}</label>
       <AutoComplete
+          ref="inputRef"
           id="input-customer"
           v-model="selected"
           dropdown
@@ -60,6 +49,7 @@ const cancel = () => {
           :suggestions="filtered"
           option-label="name"
           @complete="search"
+
       />
     </div>
     <template #footer>
@@ -75,5 +65,3 @@ const cancel = () => {
     </template>
   </Dialog>
 </template>
-
-<style scoped></style>

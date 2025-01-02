@@ -171,7 +171,7 @@ async function editDevice() {
             life: 3000,
           })
           setTimeout(() => {
-            router.push({name: 'Devices'})
+            router.go(-1)
           }, 3000)
         })
         .catch(() => {
@@ -192,11 +192,6 @@ onMounted(async () => {
   btnSaveDisabled.value = true
   if (firmStore.firms.length === 0) await firmStore.getFirmsFromDb()
   if (deviceStore.devicesTypes.length === 0) await deviceStore.getDeviceTypesFromDb()
-  btnSaveDisabled.value = false
-})
-
-onMounted(async () => {
-  btnSaveDisabled.value = true
   isEdit.value = route.params.isEdit === 'true'
   const deviceId = Number(route.params.deviceId as string)
   if (!isEdit.value && deviceId === 0) {
@@ -313,15 +308,9 @@ function resetForm() {
 //
 const showAddDetailsModal = ref<boolean>(false)
 
-
-const tempDetails = ref<Map<string, string>>(new Map<string, string>([
-  ['key1', 'value1'],
-  ['key2', 'value2'],
-  ['key3', 'value3']
-]))
 const onRowReorder = (event: DataTableRowReorderEvent) => {
   console.log('onRowReorder', event)
-  tempDetails.value = new Map<string, string>(
+  device.value.details = new Map<string, string>(
       [...event.value]
   )
 };
@@ -340,7 +329,7 @@ const deleteConfirmationMessage = computed(() => {
 })
 const submitDelete = async () => {
   if (tempDetail.value) {
-    tempDetails.value.delete(tempDetail.value[0])
+    device.value.details.delete(tempDetail.value[0])
   }
   showDeleteConfirmationDialog.value = false
 }
@@ -358,25 +347,25 @@ const editDetails = (detail: string[], index: number) => {
 };
 
 async function saveDetails(keyToAdd: string, valueToAdd: string) {
+  console.log("keyToAdd, value", keyToAdd, valueToAdd)
   showAddDetailsModal.value = false
   if (keyToAdd.length === 0 || valueToAdd.length === 0) {
     showError('Klucz i wartość nie mogą być puste')
   } else {
     if (keyToAdd === tempDetail.value[0] || (keyToAdd !== tempDetail.value[0] && editIndex.value === -1)) {
-
-      tempDetails.value.set(keyToAdd, valueToAdd)
+      device.value.details.set(keyToAdd, valueToAdd)
     } else {
       const newMap = new Map<string, string>()
       let index = 0;
-      tempDetails.value.delete(tempDetail.value[0])
-      tempDetails.value.forEach((key, value) => {
+      device.value.details.delete(tempDetail.value[0])
+      device.value.details.forEach((key, value) => {
         if (index === editIndex.value) {
           newMap.set(keyToAdd, valueToAdd)
         }
         newMap.set(key, value)
         index++
       })
-      tempDetails.value = newMap
+      device.value.details = newMap
       editIndex.value = -1
     }
   }
@@ -417,14 +406,19 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
         <template #header>
           <IconButton
               title="Powrót do listy urządzeń"
-              icon="pi pi-fw pi-list"
-              @click="() => router.push({ name: 'Devices' })"
+              icon="pi pi-fw pi-bars"
+              @click="() => router.push({ name: 'DevicesList' })"
+          />
+          <IconButton
+              title="Powrót do listy urządzeń"
+              icon="pi pi-fw pi-th-large"
+              @click="() => router.push({ name: 'DevicesGrid' })"
           />
           <div class="w-full flex justify-center">
-            <span class="m-0 text-2xl">
+            <span class="m-0 text-2xl" :title="device?.name">
               {{
                 isEdit
-                    ? `Edycja urzadzenia: ${device?.name.length > 30 ? device?.name.substring(0, 30) + '...' : device?.name}`
+                    ? `Edycja: ${device?.name.length > 50 ? device?.name.substring(0, 50) + '...' : device?.name}`
                     : 'Nowe urzadzenie'
               }}
             </span>
@@ -573,7 +567,7 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
               </div>
 
               <!-- ROW-6  INSURANCE DATE  -->
-              <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex flex-col md:flex-row gap-4 mt-5">
                 <div class="flex flex-col w-full">
                   <label class="ml-1 mb-1" for="warranty-date">Ubezpieczenie do::</label>
                   <DatePicker
@@ -601,6 +595,16 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
                   />
                 </div>
               </div>
+
+              <!-- ROW-7   IMAGE URL -->
+              <div class="flex flex-col mt-5">
+                <label class="ml-2 mb-1" for="image">URL obrazka:</label>
+                <InputText
+                    id="image"
+                    v-model="device.imageUrl"
+                    maxlength="2000"
+                />
+              </div>
             </div>
           </div>
         </Fieldset>
@@ -611,16 +615,16 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
               <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" class="mr-2" size="small" @click="openNew"/>
             </template>
           </Toolbar>
-          <DataTable :value="[...tempDetails]" :reorderableColumns="true" @rowReorder="onRowReorder"
+          <DataTable :value="Array.from(device.details)" :reorderableColumns="true" @rowReorder="onRowReorder"
                      tableStyle="min-width: 50rem" size="small">
             <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false"/>
             <Column field="0" header="Klucz" style="width: 40%;"></Column>
             <Column field="1" header="Wartość" style="width:40%;"></Column>
             <Column header="Akcje">
               <template #body="slotProps">
-                <Button icon="pi pi-pencil" outlined rounded class="mr-2"
+                <OfficeIconButton icon="pi pi-pencil" class="mr-2"
                         @click="editDetails(slotProps.data, slotProps.index)"/>
-                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)"/>
+                <OfficeIconButton icon="pi pi-trash"  severity="danger" @click="confirmDelete(slotProps.data)"/>
               </template>
             </Column>
           </DataTable>

@@ -7,7 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AddAutoComplete: typeof import('./src/components/AddAutoCompleteDialog.vue')['default']
     AddAutoCompleteDialog: typeof import('./src/components/AddAutoCompleteDialog.vue')['default']
     AddDialog: typeof import('./src/components/AddDialog.vue')['default']
     AddEditSeriesDialog: typeof import('./src/components/library/AddEditSeriesDialog.vue')['default']
@@ -20,7 +19,7 @@ declare module 'vue' {
     Checkbox: typeof import('primevue/checkbox')['default']
     Column: typeof import('primevue/column')['default']
     ColumnGroup: typeof import('primevue/columngroup')['default']
-    ComputerPart: typeof import('./src/components/device/ComputerPart.vue')['default']
+    ComponentCategory: typeof import('./src/components/device/ComponentCategory.vue')['default']
     ConfirmationDialog: typeof import('./src/components/ConfirmationDialog.vue')['default']
     CustomDatePicker: typeof import('./src/components/CustomDatePicker.vue')['default']
     DataTable: typeof import('primevue/datatable')['default']
@@ -54,12 +53,12 @@ declare module 'vue' {
     PurchaseCurrentItemGroup: typeof import('./src/components/finance/PurchaseCurrentItemGroup.vue')['default']
     PurchaseItemGroup: typeof import('./src/components/finance/PurchaseItemGroup.vue')['default']
     RefreshComponent: typeof import('./src/components/RefreshComponent.vue')['default']
-    Room: typeof import('./src/components/rent/Room.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Row: typeof import('primevue/row')['default']
     ScrollPanel: typeof import('primevue/scrollpanel')['default']
     Select: typeof import('primevue/select')['default']
+    SelectButton: typeof import('primevue/selectbutton')['default']
     SeriesBook: typeof import('./src/components/library/SeriesBook.vue')['default']
     SeriesCarouselInfoDialog: typeof import('./src/components/library/SeriesCarouselInfoDialog.vue')['default']
     SeriesCarusel: typeof import('./src/components/library/SeriesCarusel.vue')['default']
@@ -71,7 +70,6 @@ declare module 'vue' {
     TheMenuDevice: typeof import('./src/components/device/TheMenuDevice.vue')['default']
     TheMenuFinance: typeof import('./src/components/finance/TheMenuFinance.vue')['default']
     TheMenuLibrary: typeof import('./src/components/library/TheMenuLibrary.vue')['default']
-    TheMenuRent: typeof import('./src/components/rent/TheMenuRent.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
     Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']

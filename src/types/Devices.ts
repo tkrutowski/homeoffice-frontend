@@ -36,4 +36,6 @@ export interface DeviceDto {
   insuranceEndDate:  Date | null
   otherInfo: string
   activeStatus: ActiveStatus
+  details: Map<string, string>
+  imageUrl: string
 }
