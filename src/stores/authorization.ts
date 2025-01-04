@@ -8,6 +8,7 @@ import {usePaymentStore} from './payments'
 import {usePurchasesStore} from './purchases'
 import {useUserbooksStore} from './userbooks.ts'
 import type {CustomJwtPayload} from "../types/User.ts";
+import router from '../router'
 
 export const useAuthorizationStore = defineStore('authorization', {
     state: () => ({
@@ -311,7 +312,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             paymentStore.payments.clear()
             purchaseStore.purchases.clear()
             userbookStore.userbooks = []
-            this.router.replace({name: 'login'})
+            router.replace({name: 'login'})
         },
         //
         //REFRESH
