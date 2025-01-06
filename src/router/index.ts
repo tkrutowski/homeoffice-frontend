@@ -51,8 +51,13 @@ const routes = [
     component: LoginView,
   },
   {
-    path: '/error',
+    path: '/error503',
     name: 'Error503',
+    component: Error503View,
+  },
+  {
+    path: '/error403',
+    name: 'Error403',
     component: Error503View,
   },
   {
