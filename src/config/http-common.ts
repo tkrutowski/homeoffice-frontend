@@ -54,11 +54,18 @@ apiClient.interceptors.response.use(
     } else if (error.response?.status === 401 && error.response?.data?.message === 'REFRESH TOKEN EXPIRED') {
       authStore.logout()
     }
-    // SERWER OFFLINE
+    // SERVER OFFLINE
     else if (error.code == 'ERR_NETWORK' || error.code == 'ERR_CONNECTION_REFUSED') {
       console.log('NETWORK ERROR')
       router.push({
         name: 'Error503',
+      })
+    }
+    //FORBIDDEN
+    else if (error.code == 'ERR_BAD_REQUEST' && error.message.toString().includes('403')) {
+      console.log('ERR_BAD_REQUEST', error)
+      router.push({
+        name: 'Error403',
       })
     }
     refreshing = false

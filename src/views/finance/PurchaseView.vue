@@ -359,7 +359,7 @@ const showErrorDeadline = () => {
                   @change="purchase.idCard = selectedCard ? selectedCard.id : 0"
               />
               <small class="p-error">{{
-                  showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
+                  showErrorCard() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
             <div v-if="cardStore.loadingCards" class="content-center">

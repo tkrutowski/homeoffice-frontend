@@ -135,10 +135,9 @@ async function newDevice() {
           }, 1000)
         })
         .catch((reason: AxiosError) => {
-          console.log('reason', reason)
           toast.add({
             severity: 'error',
-            summary: 'Błąd',
+            summary: reason.message,
             detail: 'Błąd podczas dodawania urządzenia.',
             life: 3000,
           })
