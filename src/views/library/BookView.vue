@@ -188,6 +188,7 @@ onMounted(() => {
   if (bookStore.authors.length === 0) bookStore.getAuthorsFromDb()
   if (bookStore.series.length === 0) bookStore.getSeriesFromDb()
   if (bookStore.categories.length === 0) bookStore.getCategoriesFromDb()
+  if(bookStore.books.length === 0) bookStore.getBooksFromDb()
   btnSaveDisabled.value = false
 })
 
