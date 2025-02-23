@@ -300,12 +300,12 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
       </Column>
 
       <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="max-width: 70px">
+      <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
         <template #body="slotProps">
           <div class="flex flex-row justify-between">
             <OfficeIconButton
                 title="Dodaj książkę na półkę"
-                icon="pi pi-file-plus"
+                icon="pi pi-book"
                 @click="addUserbook(slotProps.data.id)"
             />
             <OfficeIconButton
