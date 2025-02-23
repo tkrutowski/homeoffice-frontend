@@ -49,7 +49,7 @@ const isSaveBtnDisabled = computed(() => {
 const filteredAuthors = ref<Author[]>()
 const searchAuthor = (event: { query: string }) => {
   filteredAuthors.value = bookStore.authors.filter((author: Author) => {
-    return author.lastName.toLowerCase().includes(event.query.toLowerCase())
+    return author.lastName.toLowerCase().includes(event.query.toLowerCase()) || author.firstName.toLowerCase().includes(event.query.toLowerCase())
   })
 }
 watch(selectedAuthors, (newAuthors: Author[] | []) => {
@@ -499,13 +499,13 @@ const showErrorCover = () => {
                     class="mt-1 self-center"
                     @click="showAddModal = true"
                 />
-                <div v-if="bookStore.loadingAuthors" class="mt-4">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 40px; height: 40px"
-                      stroke-width="5"
-                  />
-                </div>
+<!--                <div v-if="bookStore.loadingAuthors" class="mt-4">-->
+<!--                  <ProgressSpinner-->
+<!--                      class="ml-2 mt-1"-->
+<!--                      style="width: 40px; height: 40px"-->
+<!--                      stroke-width="5"-->
+<!--                  />-->
+<!--                </div>-->
               </div>
 
               <!-- ROW-3  SERIES / NUMBER  -->
