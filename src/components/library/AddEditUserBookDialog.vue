@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch} from 'vue'
+import {computed, ref, watch} from 'vue'
 import OfficeButton from '../../components/OfficeButton.vue'
 import {useBookstoreStore} from '../../stores/bookstores'
 import {useUserbooksStore} from '../../stores/userbooks'
@@ -108,8 +108,25 @@ const showErrorDateFrom = () => {
   )
 }
 const showErrorDateTo = () => {
-  return submitted.value && userbook.value.readingStatus.name === 'READ' && !userbook.value.readTo
+  return (
+      submitted.value &&
+      userbook.value.readingStatus.name === 'READ' &&
+      (!userbook.value.readFrom || // Sprawdzenie, czy readFrom istnieje
+          !userbook.value.readTo ||  // Sprawdzenie, czy readTo istnieje
+          new Date(userbook.value.readTo) <= new Date(userbook.value.readFrom)) // Sprawdzenie kolejności dat
+  );
 }
+
+const getReadToMessage = computed(() =>{
+  if(!userbook.value.readFrom && userbook.value.readTo){
+      return "Brak daty rozpoczęcia."
+  }
+  if((userbook.value.readFrom && userbook.value.readTo) && (new Date(userbook.value.readTo) <= new Date(userbook.value.readFrom))){
+      return "Data zakończenia musi być późniejsza niż data rozpoczęcia"
+  }
+  return "Pole jest wymagane."
+})
+
 const submit = () => {
   submitted.value = true
   if (!isValid()) {
@@ -279,7 +296,7 @@ const cancel = () => {
                     :invalid="showErrorDateTo()"
                 />
                 <small class="p-error">{{
-                    showErrorDateTo() ? 'Pole jest wymagane.' : '&nbsp;'
+                    showErrorDateTo() ? getReadToMessage : '&nbsp;'
                   }}</small>
               </div>
             </div>
