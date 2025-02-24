@@ -13,6 +13,7 @@ import {usePaymentStore} from '../../stores/payments'
 import {useToast} from 'primevue/usetoast'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import type {AxiosError} from "axios";
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const feeStore = useFeeStore()
 const paymentStore = usePaymentStore()
@@ -50,7 +51,7 @@ const plannedInterest = computed(() => {
 const currentInterest = computed(() => {
   if (fee.value)
     return fee.value.installmentList
-        .filter((l: FeeInstallment) => l.paymentStatus.name === 'PAID')
+        .filter((l: FeeInstallment) => l.paymentStatus === PaymentStatus.PAID)
         .map((installment: FeeInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
         .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
   return 0
@@ -81,7 +82,7 @@ async function savePayment(date: Date, amount: number) {
     isBusy.value = true
     installment.value.paymentDate = new Date(date)
     installment.value.installmentAmountPaid = amount
-    installment.value.paymentStatus = {name: 'PAID', viewName: 'Spłacony'}
+    installment.value.paymentStatus = PaymentStatus.PAID
     showPaymentModal.value = false
     await feeStore.updateFeeInstallmentDb(installment.value).then((savedFee: Fee | null) => {
       if (savedFee) {
@@ -123,10 +124,7 @@ const submitDelete = async () => {
   console.log('submitDelete()', installment.value)
   isBusy.value = true
   if (installment.value) {
-    installment.value.paymentStatus = {
-      name: 'TO_PAY',
-      viewName: 'Do zapłaty',
-    }
+    installment.value.paymentStatus = PaymentStatus.TO_PAY
     installment.value.paymentDate = null
     installment.value.installmentAmountPaid = 0
     showDeleteConfirmationDialog.value = false

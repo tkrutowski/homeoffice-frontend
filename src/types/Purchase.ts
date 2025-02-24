@@ -1,4 +1,5 @@
-import type { PaymentStatus } from './PaymentStatus'
+import type {PaymentStatus} from "./Payment.ts";
+
 export interface Purchase {
   id: number
   idCard: number

@@ -4,12 +4,11 @@ import PurchaseCurrentItemGroup from '../../components/finance/PurchaseCurrentIt
 import {UtilsService} from '../../service/UtilsService'
 import {usePurchasesStore} from '../../stores/purchases'
 import {computed, onMounted, ref} from 'vue'
-import type {PaymentStatus} from '../../types/PaymentStatus'
+import {PaymentStatus} from '../../types/Payment'
 import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
 import {useToast} from 'primevue/usetoast'
-import router from '../../router'
 import type {Purchase} from "../../types/Purchase.ts";
-
+import router from "../../router";
 const purchasesStore = usePurchasesStore()
 const toast = useToast()
 
@@ -49,10 +48,7 @@ const changeStatusConfirmationMessage = computed(() => {
 })
 const submitMultiChangeStatus = async () => {
   console.log('START - submitMultiChangeStatus()')
-  let newStatus: PaymentStatus = {
-    name: 'PAID',
-    viewName: 'Spłacony',
-  }
+  let newStatus: PaymentStatus = PaymentStatus.PAID
   const purchasesToPay: Purchase[] = Array.of(...purchasesStore.purchasesToPay)
 
   const results: Awaited<true | false>[] = await Promise.all(
@@ -109,7 +105,7 @@ const submitMultiChangeStatus = async () => {
           () => {
             router.push({
               name: 'Purchase',
-              params: { isEdit: 'false', purchaseId: 0 },
+              params: { isEdit: 'false', purchaseId: 0 }
             })
           }
         "

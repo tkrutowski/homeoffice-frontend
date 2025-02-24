@@ -11,14 +11,13 @@ import moment from 'moment'
 import OfficeButton from '../../components/OfficeButton.vue'
 import {useToast} from 'primevue/usetoast'
 import TheMenu from '../../components/TheMenu.vue'
-import router from '../../router'
 import type {Card} from '../../types/Bank'
 import type {User} from '../../types/User'
 import type {Purchase} from '../../types/Purchase'
 import type {Firm} from '../../types/Firm'
 import type {Loan} from "../../types/Loan.ts";
 import type {AxiosError} from "axios";
-
+import {PaymentStatus} from "../../types/Payment.ts";
 const userStore = useUsersStore()
 const loanStore = useLoansStore()
 const bankStore = useBanksStore()
@@ -26,7 +25,7 @@ const firmStore = useFirmsStore()
 const purchaseStore = usePurchasesStore()
 const cardStore = useCardsStore()
 const route = useRoute()
-
+import router from '../../router'
 const toast = useToast()
 const selectedUser = ref<User | undefined>()
 const selectedCard = ref<Card | undefined>()
@@ -43,7 +42,7 @@ const purchase = ref<Purchase>({
   paymentDeadline: null,
   paymentDate: null,
   otherInfo: '',
-  paymentStatus: {name: 'TO_PAY', viewName: 'Do spłaty'},
+  paymentStatus: PaymentStatus.TO_PAY,
   installment: false,
 })
 

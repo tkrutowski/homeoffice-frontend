@@ -22,7 +22,7 @@ async function getUserbooks() {
 }
 
 function getTotalAudiobook(edition: string): number {
-  return userbooks.value.filter((ub: UserBook) => ub.editionType.name === edition).length
+  return userbooks.value.filter((ub: UserBook) => ub.editionType === edition).length
 }
 
 //

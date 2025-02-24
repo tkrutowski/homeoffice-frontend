@@ -18,6 +18,7 @@ import {useRoute} from 'vue-router'
 import {useFirmsStore} from '../../stores/firms'
 import {usePurchasesStore} from '../../stores/purchases'
 import {useCardsStore} from '../../stores/cards'
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const userStore = useUsersStore()
 const purchaseStore = usePurchasesStore()
@@ -42,7 +43,7 @@ const purchase = ref<Purchase>({
   amount: 0,
   paymentDeadline: null,
   paymentDate: null,
-  paymentStatus: {name: 'TO_PAY', viewName: 'Do spłaty'},
+  paymentStatus: PaymentStatus.TO_PAY,
   installment: false,
   otherInfo: '',
 })

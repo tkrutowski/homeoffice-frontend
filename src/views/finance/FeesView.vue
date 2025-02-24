@@ -4,7 +4,7 @@ import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
 import router from '../../router'
 import {UtilsService} from '../../service/UtilsService'
 
-import type {PaymentStatus} from '../../types/PaymentStatus'
+import {PaymentStatus} from '../../types/Payment'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import StatusButton from '../../components/StatusButton.vue'
 import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
@@ -107,17 +107,14 @@ const confirmStatusChange = (fee: Fee) => {
 const changeStatusConfirmationMessage = computed(() => {
   if (feeTemp.value)
     return `Czy chcesz zmienić status opłaty: <b>${feeTemp.value?.name}</b> na <b>${
-        feeTemp.value?.feeStatus.name === 'PAID' ? 'Do spłaty' : 'Spłacony'
+        feeTemp.value?.feeStatus === PaymentStatus.PAID ? 'Do spłaty' : 'Spłacony'
     }</b>?`
   return 'No message'
 })
 const submitChangeStatus = async () => {
   console.log('submitChangeStatus()')
   if (feeTemp.value) {
-    const newStatus: PaymentStatus = {
-      name: feeTemp.value.feeStatus.name === 'PAID' ? 'TO_PAY' : 'PAID',
-      viewName: feeTemp.value?.feeStatus.viewName !== 'PAID' ? 'Spłacony' : 'Do spłaty',
-    }
+    const newStatus: PaymentStatus = feeTemp.value.feeStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID
     await feeStore.updateFeeStatusDb(feeTemp.value.id, newStatus).then(() => {
       toast.add({
         severity: 'success',
@@ -323,8 +320,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
         <template #body="{ data, field }">
           <StatusButton
               title="Zmień status opłaty"
-              :btn-type="data[field].name"
-              :color-icon="data[field].name === 'PAID' ? '#2da687' : '#dc3545'"
+              :btn-type="data[field]"
+              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
               @click="confirmStatusChange(data)"
           />
         </template>

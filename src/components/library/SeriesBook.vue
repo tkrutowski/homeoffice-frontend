@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
 import type {PropType} from 'vue'
-import type {Book, UserBook} from '../../types/Book'
+import {computed, onMounted, ref} from 'vue'
+import {type Book, ReadingStatus, type UserBook} from '../../types/Book'
 import ImageButton from '../../components/ImageButton.vue'
 import {useUserbooksStore} from '../../stores/userbooks'
+import {TranslationService} from "../../service/TranslationService.ts";
 
 const userbookStore = useUserbooksStore()
 const props = defineProps({
@@ -47,11 +48,11 @@ const ifExistsMsg = computed(() => {
   if (existedUserbooks.value.length > 0) {
     let msg = ''
     existedUserbooks.value.forEach((book) => {
-      if (book.readingStatus.name === 'READ') {
+      if (book.readingStatus === ReadingStatus.READ) {
         msg += '\nPrzeczytana (' + book.readFrom + ' - ' + book.readTo + ')'
-      } else if (book.readingStatus.name === 'NOT_READ') {
+      } else if (book.readingStatus === ReadingStatus.NOT_READ) {
         msg += 'Nie przeczytana'
-      } else if (book.readingStatus.name === 'READ_NOW') {
+      } else if (book.readingStatus === ReadingStatus.READ_NOW) {
         msg += 'Czytam (' + book.readFrom + ' - ... )'
       }
     })
@@ -67,20 +68,20 @@ const checkStatus = computed(() => {
   }
   if (existedUserbooks.value.length > 1) {
     // Sprawdzenie, czy któraś książka ma status "READ"
-    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
+    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus === ReadingStatus.READ)
     if (readBook) {
       return readBook.readingStatus
     }
     // Sprawdzenie, czy któraś książka ma status "READ_NOW"
     const readNowBook = existedUserbooks.value.find(
-        (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+        (book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW,
     )
     if (readNowBook) {
       return readNowBook.readingStatus
     }
     // Sprawdzenie, czy któraś książka ma status "NOT_READ"
     const notReadBook = existedUserbooks.value.find(
-        (book: UserBook) => book.readingStatus.name === 'NOT_READ',
+        (book: UserBook) => book.readingStatus === ReadingStatus.NOT_READ,
     )
     if (notReadBook) {
       return notReadBook.readingStatus
@@ -97,43 +98,43 @@ const getStatusMsg = computed(() => {
   }
   if (existedUserbooks.value.length > 1) {
     // Sprawdzenie, czy któraś książka ma status "READ"
-    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
+    const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus === ReadingStatus.READ)
     if (readBook) {
-      return readBook.readingStatus.viewName
+      return TranslationService.translateEnum("ReadingStatus", readBook.readingStatus)
     }
     // Sprawdzenie, czy któraś książka ma status "READ_NOW"
     const readNowBook = existedUserbooks.value.find(
-        (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+        (book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW,
     )
     if (readNowBook) {
-      return readNowBook.readingStatus.viewName
+      return TranslationService.translateEnum("ReadingStatus", readNowBook.readingStatus)
     }
     // Sprawdzenie, czy któraś książka ma status "NOT_READ"
     const notReadBook = existedUserbooks.value.find(
-        (book: UserBook) => book.readingStatus.name === 'NOT_READ',
+        (book: UserBook) => book.readingStatus === ReadingStatus.NOT_READ,
     )
     if (notReadBook) {
-      return notReadBook.readingStatus.viewName
+      return TranslationService.translateEnum("ReadingStatus",notReadBook.readingStatus)
     }
     return 'Brak danych'
   }
   // Jeżeli jest tylko jedna książka, zwróć jej status
-  return existedUserbooks.value[0].readingStatus.viewName
+  return TranslationService.translateEnum("ReadingStatus", existedUserbooks.value[0].readingStatus)
 })
 
 const getSeverity = () => {
   if (existedUserbooks.value.length === 0) {
     return 'danger'
   }
-  const readNowBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ_NOW')
+  const readNowBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW)
   if (readNowBook) {
     return 'warn'
   }
-  const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'READ')
+  const readBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus === ReadingStatus.READ)
   if (readBook) {
     return 'success'
   }
-  const notReadBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus.name === 'NOT_READ')
+  const notReadBook = existedUserbooks.value.find((book: UserBook) => book.readingStatus === ReadingStatus.NOT_READ)
   if (notReadBook) {
     return 'danger'
   }
@@ -145,14 +146,14 @@ const getLatestReadStatus = computed(() => {
     return 'Brak na półce'
   }
   const readingNowBooks = existedUserbooks.value.filter(
-      (book: UserBook) => book.readingStatus.name === 'READ_NOW',
+      (book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW,
   )
   if (readingNowBooks.length > 0) {
     return 'Czytana od: '
   }
 
   const readBooks = existedUserbooks.value
-      .filter((book: UserBook) => book.readingStatus.name === 'READ')
+      .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ)
       .sort((a: UserBook, b: UserBook) => {
         const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
         const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
@@ -175,7 +176,7 @@ const getLatestReadTime = computed(() => {
     return null
   }
   const readingNowBooks = existedUserbooks.value
-      .filter((book: UserBook) => book.readingStatus.name === 'READ_NOW')
+      .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW)
       .sort((a: UserBook, b: UserBook) => {
         const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
         const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
@@ -190,7 +191,7 @@ const getLatestReadTime = computed(() => {
   }
 
   const readBooks = existedUserbooks.value
-      .filter((book: UserBook) => book.readingStatus.name === 'READ')
+      .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ)
       .sort((a: UserBook, b: UserBook) => {
         const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom
         const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom
@@ -258,13 +259,13 @@ const titleCal = computed(() => {
       <span :title="ifExistsMsg">
         <ImageButton v-if="props.book?.id === 0" img-src="add-to-library" @click="newBook"/>
         <img
-            v-else-if="checkStatus?.name === 'READ_NOW'"
+            v-else-if="checkStatus === ReadingStatus.READ_NOW"
             class="w-10 h-10 mb-2 mt-1 mr-1"
             src="@/assets/images/reading-book.png"
             alt="Czytana"
         />
         <ImageButton
-            v-else-if="checkStatus?.name === 'READ'"
+            v-else-if="checkStatus === ReadingStatus.READ"
             img-src="read"
             @click="existUserbook"
         />

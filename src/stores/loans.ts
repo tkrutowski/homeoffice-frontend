@@ -1,10 +1,8 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
 import type {Loan, LoanInstallment} from '../types/Loan'
-import type {PaymentStatus} from '../types/PaymentStatus'
-import type {PaymentMethod} from '../types/PaymentMethod'
 import type {StatusType} from '../types/StatusType'
-import type {Installment} from "../types/Payment.ts";
+import {type Installment, PaymentStatus, PaymentMethod} from "../types/Payment.ts";
 import moment from "moment/moment";
 
 export const useLoansStore = defineStore('loan', {
@@ -26,17 +24,17 @@ export const useLoansStore = defineStore('loan', {
     //getters = computed
     getters: {
         getLoansPaid: (state) => {
-            return state.loans.filter((item: Loan) => item.loanStatus.name === 'PAID')
+            return state.loans.filter((item: Loan) => item.loanStatus === PaymentStatus.PAID)
         },
         getLoansToPay: (state) => {
-            return state.loans.filter((item: Loan) => item.loanStatus.name === 'TO_PAY')
+            return state.loans.filter((item: Loan) => item.loanStatus === PaymentStatus.TO_PAY)
         },
         loansSumToPay: (state) => {
-            const loans: Loan[] = state.loans.filter((item: Loan) => item.loanStatus.name === 'TO_PAY')
+            const loans: Loan[] = state.loans.filter((item: Loan) => item.loanStatus === PaymentStatus.TO_PAY)
             let sum = 0
             loans.forEach((loan: Loan) => {
                 const installmentSum = loan.installmentList
-                    .filter((value: Installment) => value.paymentStatus.name === 'TO_PAY')
+                    .filter((value: Installment) => value.paymentStatus === PaymentStatus.TO_PAY)
                     .map((value: Installment) => value.installmentAmountToPay)
                     .reduce((acc: number, currentValue: number) => acc + currentValue, 0)
 
@@ -67,9 +65,9 @@ export const useLoansStore = defineStore('loan', {
 
             switch (status) {
                 case 'TO_PAY':
-                    return this.loans.filter((item: Loan) => item.loanStatus.name === 'TO_PAY')
+                    return this.loans.filter((item: Loan) => item.loanStatus === PaymentStatus.TO_PAY)
                 case 'PAID':
-                    return this.loans.filter((item: Loan) => item.loanStatus.name === 'PAID')
+                    return this.loans.filter((item: Loan) => item.loanStatus === PaymentStatus.PAID)
                 case 'ALL':
                 default:
                     return this.loans
@@ -116,7 +114,7 @@ export const useLoansStore = defineStore('loan', {
         async updateLoanStatusDb(loanId: number, status: PaymentStatus) {
             console.log('START - updateLoanStatusDb()')
 
-            await httpCommon.put(`/v1/finance/loan/status/` + loanId, {value: status.name})
+            await httpCommon.put(`/v1/finance/loan/status/` + loanId, {value: status})
             const loan = this.loans.find((l: Loan) => l.id === loanId)
             if (loan) {
                 loan.loanStatus = status

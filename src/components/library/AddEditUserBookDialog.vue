@@ -4,7 +4,7 @@ import OfficeButton from '../../components/OfficeButton.vue'
 import {useBookstoreStore} from '../../stores/bookstores'
 import {useUserbooksStore} from '../../stores/userbooks'
 import {useBooksStore} from '../../stores/books'
-import type {Bookstore, UserBook} from '../../types/Book'
+import {type Bookstore, EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '../../types/Book'
 import {UtilsService} from '../../service/UtilsService'
 import type {AxiosError} from "axios";
 
@@ -37,9 +37,9 @@ const userbook = ref<UserBook>({
   idUser: 0,
   book: null,
   idBookstore: 0,
-  editionType: {name: 'BOOK', viewName: ''},
-  readingStatus: {name: 'NOT_READ', viewName: ''},
-  ownershipStatus: {name: 'READ_ONLY', viewName: ''},
+  editionType: EditionType.BOOK,
+  readingStatus: ReadingStatus.NOT_READ,
+  ownershipStatus: OwnershipStatus.READ_ONLY,
   readFrom: null,
   readTo: null,
   info: '',
@@ -91,26 +91,26 @@ const showErrorBookstore = () => {
   return submitted.value && userbook.value.idBookstore === 0
 }
 const showErrorOwnership = () => {
-  return submitted.value && userbook.value.ownershipStatus.viewName.length === 0
+  return submitted.value && userbook.value.ownershipStatus.length === 0
 }
 const showErrorEditionType = () => {
-  return submitted.value && userbook.value.editionType.viewName.length === 0
+  return submitted.value && userbook.value.editionType.length === 0
 }
 const showErrorReadingStatus = () => {
-  return submitted.value && userbook.value.readingStatus.viewName.length === 0
+  return submitted.value && userbook.value.readingStatus.length === 0
 }
 const showErrorDateFrom = () => {
   return (
       submitted.value &&
-      (userbook.value.readingStatus.name === 'READ_NOW' ||
-          userbook.value.readingStatus.name === 'READ') &&
+      (userbook.value.readingStatus === ReadingStatus.READ_NOW ||
+          userbook.value.readingStatus === ReadingStatus.READ) &&
       !userbook.value.readFrom
   )
 }
 const showErrorDateTo = () => {
   return (
       submitted.value &&
-      userbook.value.readingStatus.name === 'READ' &&
+      userbook.value.readingStatus === ReadingStatus.READ &&
       (!userbook.value.readFrom || // Sprawdzenie, czy readFrom istnieje
           !userbook.value.readTo ||  // Sprawdzenie, czy readTo istnieje
           new Date(userbook.value.readTo) <= new Date(userbook.value.readFrom)) // Sprawdzenie kolejności dat
@@ -142,9 +142,9 @@ function reset() {
     idUser: 0,
     book: null,
     idBookstore: 0,
-    editionType: {name: 'BOOK', viewName: ''},
-    readingStatus: {name: 'NOT_READ', viewName: ''},
-    ownershipStatus: {name: 'READ_ONLY', viewName: ''},
+    editionType: EditionType.BOOK,
+    readingStatus: ReadingStatus.NOT_READ,
+    ownershipStatus: OwnershipStatus.READ_ONLY,
     readFrom: null,
     readTo: null,
     info: '',

@@ -14,6 +14,7 @@ import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import {UtilsService} from '../../service/UtilsService'
 import type {AxiosError} from "axios";
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const userStore = useUsersStore()
 const loanStore = useLoansStore()
@@ -36,7 +37,7 @@ const loan = ref<Loan>({
   firstPaymentDate: null,
   numberOfInstallments: 1,
   installmentAmount: 0,
-  loanStatus: {name: 'TO_PAY', viewName: 'Do spłaty'},
+  loanStatus: PaymentStatus.TO_PAY,
   loanCost: 0,
   otherInfo: '',
   installmentList: [],

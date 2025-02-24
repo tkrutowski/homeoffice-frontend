@@ -1,5 +1,5 @@
-import type { PaymentStatus } from './PaymentStatus'
 import type { Bank } from './Bank'
+import type {PaymentStatus} from "./Payment.ts";
 
 export interface Loan {
   id: number

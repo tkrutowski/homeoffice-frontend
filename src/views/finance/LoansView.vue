@@ -5,7 +5,6 @@ import router from '../../router'
 import {UtilsService} from '../../service/UtilsService'
 import StatusButton from '../../components/StatusButton.vue'
 import type {Loan, LoanInstallment} from '../../types/Loan'
-import type {PaymentStatus} from '../../types/PaymentStatus'
 import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
 import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
@@ -18,6 +17,7 @@ import type {StatusType} from '../../types/StatusType'
 import type {DataTablePageEvent} from 'primevue/datatable'
 import moment from "moment/moment";
 import type {AxiosError} from "axios";
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const toast = useToast()
 const loansStore = useLoansStore()
@@ -60,7 +60,7 @@ loansStore.getLoans('ALL')
 
 const calculateInstallmentToPayAmount = (installments: LoanInstallment[]): number => {
   return installments
-      .filter((value) => value.paymentStatus.name === 'TO_PAY')
+      .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
       .map((value) => value.installmentAmountToPay)
       .reduce((acc, currentValue) => acc + currentValue, 0)
 }
@@ -73,7 +73,7 @@ const calculatePlannedInterest = (loan: Loan): number => {
 const calculateActualInterest = (loan: Loan): number => {
   return (
       loan.installmentList
-          .filter((installment: LoanInstallment) => installment.paymentStatus.name === 'PAID')
+          .filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
           .map((installment: LoanInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
           .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
   )
@@ -82,11 +82,11 @@ const calculateTotalCost = (loan: Loan): number => {
   return (loan.amount - loan.loanCost - loan.numberOfInstallments * loan.installmentAmount) * -1
 }
 const calculateInstallmentPaid = (loan: Loan): number => {
-  return loan.installmentList.filter((installment: LoanInstallment) => installment.paymentStatus.name === 'PAID')
+  return loan.installmentList.filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
       .length
 }
 const calculateInstallmentToPayNumber = (installments: LoanInstallment[]): number => {
-  return installments.filter((value: LoanInstallment) => value.paymentStatus.name === 'TO_PAY').length
+  return installments.filter((value: LoanInstallment) => value.paymentStatus === PaymentStatus.TO_PAY).length
 }
 //
 //--------------------------------DISPLAY FILTER
@@ -119,7 +119,7 @@ const selectedLoanAmount = computed(() => {
   let sum = 0
   processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
     const installmentSum = loan.installmentList
-        .filter((value) => value.paymentStatus.name === 'TO_PAY')
+        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
         .map((value) => value.installmentAmountToPay)
         .reduce((acc, currentValue) => acc + currentValue, 0)
     sum += installmentSum
@@ -140,17 +140,14 @@ const changeStatusConfirmationMessage = computed(() => {
 
   if (loanTemp.value)
     return `Czy chcesz zmienić status kredytu: <b>${loanTemp.value?.name}</b> na <b>${
-        loanTemp.value?.loanStatus.name === 'PAID' ? 'Do spłaty' : 'Spłacony'
+        loanTemp.value?.loanStatus === PaymentStatus.PAID ? 'Do spłaty' : 'Spłacony'
     }</b>?`
   return 'No message'
 })
 const submitChangeStatus = async () => {
   console.log('submitChangeStatus()')
   if (loanTemp.value) {
-    const newStatus: PaymentStatus = {
-      name: loanTemp.value.loanStatus.name === 'PAID' ? 'TO_PAY' : 'PAID',
-      viewName: loanTemp.value?.loanStatus.viewName !== 'PAID' ? 'Spłacony' : 'Do spłaty',
-    }
+    const newStatus: PaymentStatus = loanTemp.value.loanStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID
     await loansStore.updateLoanStatusDb(loanTemp.value.id, newStatus).then(() => {
       toast.add({
         severity: 'success',
@@ -379,8 +376,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
         <template #body="{ data, field }">
           <StatusButton
               title="Zmień status kredytu"
-              :btn-type="data[field].name"
-              :color-icon="data[field].name === 'PAID' ? '#2da687' : '#dc3545'"
+              :btn-type="data[field]"
+              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
               @click="confirmStatusChange(data)"
           />
         </template>

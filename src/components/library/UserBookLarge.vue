@@ -5,6 +5,7 @@ import type {PropType} from 'vue'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import SeriesCarouselInfoDialog from '../../components/library/SeriesCarouselInfoDialog.vue'
 import {useBookstoreStore} from '../../stores/bookstores'
+import {TranslationService} from "../../service/TranslationService.ts";
 
 const bookstoreStore = useBookstoreStore()
 const props = defineProps({
@@ -42,7 +43,7 @@ const showSeriesInfoDialog = ref<boolean>(false)
   <Card class="book_large">
     <template #header>
       <div class="flex flex-row justify-between dark:bg-surface-700 bg-surface-100 rounded-t-2xl">
-        <h3 class="p-3">{{ userbook.editionType.name }}</h3>
+        <h3 class="p-3">{{ TranslationService.translateEnum("EditionType", userbook.editionType) }}</h3>
 
         <div class="flex flex-row items-center">
           <OfficeIconButton
@@ -95,11 +96,11 @@ const showSeriesInfoDialog = ref<boolean>(false)
           </p>
           <p class="pb-2">
             Stan posiadania:
-            <span class="text-xl font-bold">{{ userbook.ownershipStatus.viewName }}</span>
+            <span class="text-xl font-bold">{{ TranslationService.translateEnum("OwnershipStatus", userbook.ownershipStatus) }}</span>
           </p>
           <p class="pb-2">
             Stan czytania:
-            <span class="text-xl font-bold">{{ userbook.readingStatus.viewName }}</span>
+            <span class="text-xl font-bold">{{ TranslationService.translateEnum("ReadingStatus", userbook.readingStatus) }}</span>
           </p>
           <p class="pb-2">
             Czytana/Słuchana:

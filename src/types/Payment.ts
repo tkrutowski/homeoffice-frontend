@@ -11,3 +11,16 @@ export interface Payment {
   installments: Installment[]
   paymentType: PaymentType
 }
+
+export enum PaymentStatus {
+  PAID = "PAID",
+  TO_PAY = "TO_PAY",
+  OVER_DUE = "OVER_DUE",
+  ALL = "ALL"
+}
+
+export enum PaymentMethod {
+  CASH = "CASH",
+  CASH_LATE = "CASH_LATE",
+  TRANSFER = "TRANSFER",
+}

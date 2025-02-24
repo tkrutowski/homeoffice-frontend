@@ -1,20 +1,21 @@
-export type Website = 'UPOLUJ_EBOOKA' | 'EMPIK'
-type ReadingType = 'NOT_READ' | 'READ_NOW' | 'READ' | 'ALL'
-type OwnershipType = 'HAVE' | 'WANT' | 'READ_ONLY' | 'ALL'
-type Edition = 'BOOK' | 'AUDIOBOOK' | 'EBOOK' | 'ALL'
-export interface ReadingStatus {
-  name: ReadingType
-  viewName: string
+export enum ReadingStatus {
+  NOT_READ ='NOT_READ',
+  READ_NOW = 'READ_NOW',
+  READ = 'READ',
+  ALL = 'ALL'
 }
-export interface OwnershipStatus {
-  name: OwnershipType
-  viewName: string
+export enum OwnershipStatus {
+  HAVE = 'HAVE',
+  WANT = 'WANT',
+  READ_ONLY = 'READ_ONLY',
+  ALL = 'ALL'
 }
-export interface EditionType {
-  name: Edition
-  viewName: string
+export enum EditionType {
+ BOOK ='BOOK',
+ AUDIOBOOK = 'AUDIOBOOK',
+ EBOOK = 'EBOOK',
+ ALL = 'ALL'
 }
-
 
 export interface BookDto {
   id: number

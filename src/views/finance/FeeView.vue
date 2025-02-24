@@ -14,6 +14,7 @@ import type {Fee, FeeFrequency} from '../../types/Fee'
 import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
 import {UtilsService} from '../../service/UtilsService'
 import type {AxiosError} from "axios";
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const userStore = useUsersStore()
 const feeStore = useFeeStore()
@@ -35,7 +36,7 @@ const fee = ref<Fee>({
   accountNumber: '',
   firstPaymentDate: null,
   numberOfPayments: 1,
-  feeStatus: {name: 'TO_PAY', viewName: 'Do spłaty'},
+  feeStatus: PaymentStatus.TO_PAY,
   feeFrequency: null,
   otherInfo: '',
   installmentList: [],

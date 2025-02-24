@@ -2,11 +2,12 @@
 <script setup lang="ts">
 import PurchaseCurrentItem from '../../components/finance/PurchaseCurrentItem.vue'
 import moment from 'moment'
-import { computed, ref, watch } from 'vue'
-import { UtilsService } from '../../service/UtilsService'
-import { useCardsStore } from '../../stores/cards'
-import { usePurchasesStore } from '../../stores/purchases'
+import {computed, ref, watch} from 'vue'
+import {UtilsService} from '../../service/UtilsService'
+import {useCardsStore} from '../../stores/cards'
+import {usePurchasesStore} from '../../stores/purchases'
 import type {Purchase} from "../../types/Purchase.ts";
+import {PaymentStatus} from "../../types/Payment.ts";
 
 const cardStore = useCardsStore()
 const purchasesStore = usePurchasesStore()
@@ -49,7 +50,7 @@ function calculate() {
     paid.value = 0
     toPay.value = 0
     purchases.value.forEach((p:Purchase) => {
-      if (p.paymentStatus.name === 'PAID') paid.value += Number(p.amount)
+      if (p.paymentStatus === PaymentStatus.PAID) paid.value += Number(p.amount)
       else toPay.value += Number(p.amount)
       // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
     })

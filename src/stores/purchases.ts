@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import type {PaymentStatus} from '../types/PaymentStatus'
+import type {PaymentStatus} from '../types/Payment'
 import type {Purchase} from '../types/Purchase'
 import moment from 'moment'
 
@@ -136,7 +136,7 @@ export const usePurchasesStore = defineStore('purchase', {
         async payForPurchaseDb(purchaseId: number, status: PaymentStatus) {
             console.log('START - payForPurchaseDb()')
 
-                await httpCommon.put(`/v1/finance/purchase/status/` + purchaseId, {value: status.name})
+                await httpCommon.put(`/v1/finance/purchase/status/` + purchaseId, {value: status})
 
                 for (const [deadline, purchases] of this.purchases.entries()) {
                     const index = purchases.findIndex((purchase: Purchase) => purchase.id === purchaseId)

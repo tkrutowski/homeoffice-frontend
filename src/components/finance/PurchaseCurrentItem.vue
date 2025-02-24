@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import type { PropType } from 'vue'
-import type { Purchase } from '../../types/Purchase'
-import { UtilsService } from '../../service/UtilsService'
-import { useFirmsStore } from '../../stores/firms'
+import type {PropType} from 'vue'
+import {computed, ref, watch} from 'vue'
+import type {Purchase} from '../../types/Purchase'
+import {UtilsService} from '../../service/UtilsService'
+import {useFirmsStore} from '../../stores/firms'
 import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import type { PaymentStatus } from '../../types/PaymentStatus'
-import { useToast } from 'primevue/usetoast'
+import {PaymentStatus} from '../../types/Payment'
+import {useToast} from 'primevue/usetoast'
+import {usePurchasesStore} from '../../stores/purchases'
 
 const firmStore = useFirmsStore()
-import { usePurchasesStore } from '../../stores/purchases'
 
 const purchaseStore = usePurchasesStore()
 const toast = useToast()
@@ -36,10 +36,7 @@ const changeStatusConfirmationMessage = computed(() => {
 })
 const submitChangeStatus = async () => {
   console.log('submitChangeStatus()')
-  const newStatus: PaymentStatus = {
-    name: 'PAID',
-    viewName: 'Spłacony',
-  }
+  const newStatus: PaymentStatus = PaymentStatus.PAID
   purchaseStore
     .payForPurchaseDb(props.purchase.id, newStatus)
     .then(() => {
@@ -83,8 +80,8 @@ watch(
   <Card
     class="mb-3"
     :class="{
-      paid: tempPurchase?.paymentStatus.name === 'PAID',
-      'to-pay': tempPurchase?.paymentStatus.name === 'TO_PAY',
+      'paid': tempPurchase?.paymentStatus === PaymentStatus.PAID,
+      'to-pay': tempPurchase?.paymentStatus === PaymentStatus.TO_PAY,
     }"
   >
     <template #header>

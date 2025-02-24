@@ -3,6 +3,7 @@ import type {Author, UserBook} from '../../types/Book'
 import {computed, type PropType, ref} from 'vue'
 import OfficeIconButton from '../../components/OfficeIconButton.vue'
 import SeriesCarouselInfoDialog from '../../components/library/SeriesCarouselInfoDialog.vue'
+import {TranslationService} from "../../service/TranslationService.ts";
 
 const props = defineProps({
   userbook: {
@@ -45,7 +46,7 @@ const showSeriesInfoDialog = ref<boolean>(false)
   <Card class="w-[300px] m-4 shadow-2xl text-color">
     <template #header>
       <div class="flex flex-row justify-between dark:bg-surface-700 bg-surface-200 rounded-t-2xl">
-        <p class="p-3 text-primary text-2xl font-medium">{{ userbook.editionType.name }}</p>
+        <p class="p-3 text-primary text-2xl font-medium">{{ TranslationService.translateEnum("EditionType", userbook.editionType) }}</p>
 
         <div class="flex flex-row items-center gap-2">
           <OfficeIconButton

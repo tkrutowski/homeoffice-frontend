@@ -1,9 +1,9 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import type {PaymentStatus} from '../types/PaymentStatus'
 import type {Fee, FeeFrequency, FeeInstallment} from '../types/Fee'
 import type {StatusType} from '../types/StatusType'
 import moment from "moment";
+import {PaymentStatus} from "../types/Payment.ts";
 
 export const useFeeStore = defineStore('fee', {
     state: () => ({
@@ -21,10 +21,10 @@ export const useFeeStore = defineStore('fee', {
     //getters = computed
     getters: {
         getFeesPaid: (state) => {
-            return state.fees.filter((item: Fee) => item.feeStatus.name === 'PAID')
+            return state.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.PAID)
         },
         getFeesToPay: (state) => {
-            return state.fees.filter((item: Fee) => item.feeStatus.name === 'TO_PAY')
+            return state.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.TO_PAY)
         },
     },
 
@@ -48,9 +48,9 @@ export const useFeeStore = defineStore('fee', {
             console.log('END - getFees(' + status + ')')
             switch (status) {
                 case 'TO_PAY':
-                    return this.fees.filter((item: Fee) => item.feeStatus.name === 'TO_PAY')
+                    return this.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.TO_PAY)
                 case 'PAID':
-                    return this.fees.filter((item: Fee) => item.feeStatus.name === 'PAID')
+                    return this.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.PAID)
                 case 'ALL':
                 default:
                     return this.fees
@@ -96,7 +96,7 @@ export const useFeeStore = defineStore('fee', {
         async updateFeeStatusDb(feeId: number, status: PaymentStatus) {
             console.log('START - updateFeeStatusDb()')
 
-            await httpCommon.put(`/v1/finance/fee/status/` + feeId, {value: status.name})
+            await httpCommon.put(`/v1/finance/fee/status/` + feeId, {value: status})
             const fee = this.fees.find((fee: Fee) => fee.id === feeId)
             if (fee) {
                 fee.feeStatus = status

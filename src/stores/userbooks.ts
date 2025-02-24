@@ -24,10 +24,10 @@ export const useUserbooksStore = defineStore('userbook', {
         // getSortedInvoices: (state) =>
         //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
         getBooksReadNow: (state) => {
-            return state.userbooks.filter((ub: UserBook) => ub.readingStatus.name === 'READ_NOW')
+            return state.userbooks.filter((ub: UserBook) => ub.readingStatus === 'READ_NOW')
         },
         getBooksToRead: (state) => {
-            return state.userbooks.filter((ub: UserBook) => ub.readingStatus.name === 'NOT_READ')
+            return state.userbooks.filter((ub: UserBook) => ub.readingStatus === 'NOT_READ')
         },
     },
 
@@ -39,7 +39,7 @@ export const useUserbooksStore = defineStore('userbook', {
         getUserbooksByDate(year: number) {
             console.log('START - getUserbooksByDate()', year)
             return this.userbooks
-                .filter((ub: UserBook) => ub.readingStatus.name === 'READ')
+                .filter((ub: UserBook) => ub.readingStatus === 'READ')
                 .filter((ub: UserBook) => {
                         return moment(ub.readTo).year() === year;
                 })
@@ -61,7 +61,7 @@ export const useUserbooksStore = defineStore('userbook', {
             console.log('START - getUserbooksFromDb()')
             this.loadingUserbooks = true
 
-            const response = await httpCommon.get(`/v1/library/userbook/status?status=` + status.name)
+            const response = await httpCommon.get(`/v1/library/userbook/status?status=` + status)
             console.log('getBanksFromDb() - Ilosc[]: ' + response.data.length)
             this.userbooks = response.data
             this.loadingUserbooks = false

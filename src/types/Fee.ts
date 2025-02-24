@@ -1,5 +1,5 @@
-import type { PaymentStatus } from './PaymentStatus'
 import type { Firm } from './Firm'
+import type {PaymentStatus} from "./Payment.ts";
 
 export interface Fee {
   id: number
