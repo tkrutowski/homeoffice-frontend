@@ -82,6 +82,14 @@ const items = ref([
       },
     ],
   },
+  {
+    label: 'Statystyki',
+    icon: 'pi pi-fw pi-chart-line',
+    disabled: !authorizationStore.hasAccessLibrary,
+    command: () => {
+      router.push({name: 'Statistics'})
+    },
+  },
 ])
 </script>
 

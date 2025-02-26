@@ -27,6 +27,7 @@ import UserbooksReadNowView from '../views/library/UserbooksReadNowView.vue'
 import UserbooksToReadView from '../views/library/UserbooksToReadView.vue'
 import UserbooksReadView from '../views/library/UserbooksReadView.vue'
 import SeriesSearchView from '../views/library/SeriesSearchView.vue'
+import StatisticsView from "../views/library/StatisticsView.vue";
 
 //ADMIN
 import PrivilegesView from '../views/PrivilegesView.vue'
@@ -113,6 +114,11 @@ const routes = [
     path: '/library/book/series',
     name: 'SeriesSearch',
     component: SeriesSearchView,
+  },
+  {
+    path: '/library/statistics',
+    name: 'Statistics',
+    component: StatisticsView,
   },
   //----------------------------------------------FINANCE--------------------------------------------
   {
