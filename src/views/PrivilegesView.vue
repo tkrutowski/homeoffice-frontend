@@ -182,17 +182,17 @@ onMounted(async () => {
       <Column field="role.name" header="Rola" style="width: 30%"></Column>
       <Column field="read" header="Odczyt" style="width: 20%">
         <template #editor="{ data, field }">
-          <Select v-model="data[field]" :options="statuses" placeholder="Wybierz..." fluid/>
+          <Select v-model="data[field]" :options="statuses.filter((s:string) => s === 'NULL' || s.startsWith('READ'))" placeholder="Wybierz..." fluid/>
         </template>
       </Column>
       <Column field="write" header="Zapis" style="width: 20%">
         <template #editor="{ data, field }">
-          <Select v-model="data[field]" :options="statuses" placeholder="Wybierz..." fluid/>
+          <Select v-model="data[field]" :options="statuses.filter((s:string) => s === 'NULL' || s.startsWith('WRITE'))" placeholder="Wybierz..." fluid/>
         </template>
       </Column>
       <Column field="delete" header="Usuwanie" style="width: 20%">
         <template #editor="{ data, field }">
-          <Select v-model="data[field]" :options="statuses" placeholder="Wybierz..." fluid/>
+          <Select v-model="data[field]" :options="statuses.filter((s:string) => s === 'NULL' || s.startsWith('DELETE'))" placeholder="Wybierz..." fluid/>
         </template>
       </Column>
       <Column
