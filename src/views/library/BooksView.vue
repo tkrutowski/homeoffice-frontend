@@ -187,14 +187,6 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
   />
 
   <Panel class="mt-5 ml-2 mr-2">
-    <template #header>
-      <div class="w-full flex justify-center gap-3">
-        <h2>LISTA KSIĄŻEK</h2>
-        <div v-if="bookStore.loadingBooks" class="flex">
-          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
-        </div>
-      </div>
-    </template>
     <DataTable
         v-if="!bookStore.loadingBooks"
         ref="dataTableRef"
@@ -373,3 +365,8 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
     </template>
   </Toolbar>
 </template>
+<style scoped>
+::v-deep(.p-panel-header) {
+  padding: 0.25rem !important;
+}
+</style>

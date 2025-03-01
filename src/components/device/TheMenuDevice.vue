@@ -1,10 +1,29 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {useAuthorizationStore} from '../../stores/authorization'
-import OfficeButton from '../../components/OfficeButton.vue'
 import router from '../../router'
+import {useRoute} from 'vue-router';
+import {useComputerStore} from "../../stores/computers.ts";
+import {useDevicesStore} from "../../stores/devices.ts";
+import OfficeIconButton from "../../components/OfficeIconButton.vue";
 
+const computerStore = useComputerStore()
+const deviceStore = useDevicesStore()
 const authorizationStore = useAuthorizationStore()
+const route = useRoute();
+
+const activeMenu = computed(() => {
+  console.log('activeMenu', route.path)
+  if (route.path.includes('/homedevice')) return 'dashboard';
+  if (route.path.includes('/devices/device')) return 'device';
+  if (route.path.includes('/devices/computer')) return 'computer';
+  return null; // Jeśli nie pasuje do żadnego menu
+});
+
+const allLoading = computed(() => {
+  return computerStore.loadingComputers || deviceStore.loadingDevices
+});
+
 const items = ref([
   {
     label: 'Home',
@@ -18,6 +37,7 @@ const items = ref([
   {
     label: 'Tablica',
     icon: 'pi pi-fw pi-clipboard',
+    class: `${activeMenu.value === 'dashboard' ? 'active' : ''}`,
     // disabled: !authorizationStore.hasAccessLibrary,
     // to: { name: "Home" },
     command: () => {
@@ -27,12 +47,12 @@ const items = ref([
   {
     label: 'Urządzenia',
     icon: 'pi pi-desktop',
+    class: `${activeMenu.value === 'device' ? 'active' : ''}`,
     disabled: !authorizationStore.hasAccessDevice,
     items: [
       {
         label: 'Nowe urządzenie',
         icon: 'pi pi-plus',
-        // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
         command: () => {
           router.push({
             name: 'Device',
@@ -43,17 +63,25 @@ const items = ref([
       {
         label: 'Spis urządzeń - siatka',
         icon: 'pi pi-fw pi-th-large',
-        // to: { name: "Invoices" },
         command: () => {
-          router.push({name: 'DevicesGrid'})
+          if (window.location.href.includes(router.resolve({name: 'DevicesGrid'}).href)) {
+            const redirect = JSON.stringify({name: 'DevicesGrid'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          } else {
+            router.push({name: 'DevicesGrid'})
+          }
         },
       },
       {
         label: 'Spis urządzeń - lista',
         icon: 'pi pi-fw pi-list',
-        // to: { name: "Invoices" },
         command: () => {
-          router.push({name: 'DevicesList'})
+          if (window.location.href.includes(router.resolve({name: 'DevicesList'}).href)) {
+            const redirect = JSON.stringify({name: 'DevicesList'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          } else {
+            router.push({name: 'DevicesList'})
+          }
         },
       },
       {
@@ -62,8 +90,8 @@ const items = ref([
       {
         label: 'Komputery',
         icon: 'pi pi-fw pi-list',
+        class: `${activeMenu.value === 'computer' ? 'active' : ''}`,
         disabled: !authorizationStore.hasAccessComputer,
-        // to: { name: "Invoices" },
         command: () => {
           router.push({name: 'Computers'})
         },
@@ -79,26 +107,25 @@ const items = ref([
       <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2"/>
     </template>
     <template #end>
-      <div v-if="!authorizationStore.isAuthenticatedOrToken">
-        <router-link :to="{ name: 'login' }" style="text-decoration: none">
-          <OfficeButton
-              size="sm"
-              class="my-2 ml-2 my-sm-0"
-              btn-type="office-regular"
-              text="zaloguj się"
+      <div class="flex flex-row gap-4">
+        <OfficeIconButton class="cursor-default" icon="pi pi-check-square" severity="success" :loading="allLoading"
+                          title="Określa, czy wyświetlane dane są aktualne."/>
+        <div v-if="!authorizationStore.isAuthenticatedOrToken">
+          <router-link :to="{ name: 'login' }" style="text-decoration: none">
+            <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
+          </router-link>
+        </div>
+        <div v-else>
+          <Button
+              class="font-bold uppercase tracking-wider"
+              icon="pi pi-power-off"
+              outlined
+              label="wyloguj"
+              icon-pos="right"
+              :onclick="authorizationStore.logout"
           />
-        </router-link>
-      </div>
-      <div v-else>
-        <OfficeButton
-            size="sm"
-            class="my-2 ml-2 my-sm-0"
-            btn-type="office-regular"
-            text="wyloguj"
-            :onclick="authorizationStore.logout"
-        />
+        </div>
       </div>
     </template>
   </Menubar>
 </template>
-<style scoped></style>

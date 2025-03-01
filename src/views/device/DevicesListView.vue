@@ -233,14 +233,6 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
   />
 
   <Panel class="mt-5 ml-2 mr-2">
-    <template #header>
-      <div class="w-full flex justify-center gap-3">
-        <span class="m-0 text-3xl">LISTA URZĄDZEŃ</span>
-        <div v-if="deviceStore.loadingDevices" class="flex">
-          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
-        </div>
-      </div>
-    </template>
     <DataTable
         v-if="!deviceStore.loadingDevices"
         ref="dataTableRef"
@@ -533,4 +525,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
 .p-datatable >>> .p-datatable-tbody > tr > td {
   padding: 0 !important;
 }
+
+ ::v-deep(.p-panel-header) {
+   padding: 0.25rem !important;
+ }
 </style>

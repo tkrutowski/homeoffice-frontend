@@ -4,7 +4,6 @@ import type {Author, Book, Category, Series} from '../types/Book'
 
 export const useBooksStore = defineStore('book', {
     state: () => ({
-        loginError: false,
         btnDisabled: false,
         busyIcon: false,
         loadingBooks: false,

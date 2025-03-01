@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAuthorizationStore } from '../stores/authorization'
+import {ref} from 'vue'
+import {useAuthorizationStore} from '../stores/authorization'
 import router from '../router'
 
 const authorizationStore = useAuthorizationStore()
@@ -10,7 +10,7 @@ const items = ref([
     icon: 'pi pi-fw pi-home',
     // to: { name: "Home" },
     command: () => {
-      router.push({ name: 'Home' })
+      router.push({name: 'Home'})
     },
   },
   {
@@ -26,7 +26,7 @@ const items = ref([
         command: () => {
           router.push({
             name: 'Book',
-            params: { isEdit: 'false', bookId: 0 },
+            params: {isEdit: 'false', bookId: 0},
           })
         },
       },
@@ -35,11 +35,11 @@ const items = ref([
         icon: 'pi pi-fw pi-folder-open',
         disabled: !authorizationStore.hasAccessAdmin,
         command: () => {
-          if (window.location.href.includes(router.resolve({ name: 'Privileges' }).href)) {
-            const redirect = JSON.stringify({ name: 'Privileges' })
-            router.push({ path: '/refresh', query: { redirect: redirect } })
+          if (window.location.href.includes(router.resolve({name: 'Privileges'}).href)) {
+            const redirect = JSON.stringify({name: 'Privileges'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
           } else {
-            router.push({ name: 'Privileges' })
+            router.push({name: 'Privileges'})
           }
         },
       },
@@ -48,11 +48,11 @@ const items = ref([
         icon: 'pi pi-fw pi-chart-bar',
         disabled: !authorizationStore.hasAccessAdmin,
         command: () => {
-          if (window.location.href.includes(router.resolve({ name: 'Logs' }).href)) {
-            const redirect = JSON.stringify({ name: 'Logs' })
-            router.push({ path: '/refresh', query: { redirect: redirect } })
+          if (window.location.href.includes(router.resolve({name: 'Logs'}).href)) {
+            const redirect = JSON.stringify({name: 'Logs'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
           } else {
-            router.push({ name: 'Logs' })
+            router.push({name: 'Logs'})
           }
         },
       },
@@ -64,7 +64,7 @@ const items = ref([
 <template>
   <Menubar :model="items">
     <template #start>
-      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
+      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2"/>
     </template>
     <template #end>
       <div v-if="!authorizationStore.isAuthenticatedOrToken">
@@ -74,11 +74,13 @@ const items = ref([
       </div>
       <div v-else>
         <Button
-          class="font-bold uppercase tracking-wider"
-          outlined
-          :onclick="authorizationStore.logout"
-          >wyloguj</Button
-        >
+            class="font-bold uppercase tracking-wider"
+            icon="pi pi-power-off"
+            outlined
+            label="wyloguj"
+            icon-pos="right"
+            :onclick="authorizationStore.logout"
+        />
       </div>
     </template>
   </Menubar>
