@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import router from '../router'
 import {useAuthorizationStore} from '../stores/authorization'
 import {useToast} from 'primevue/usetoast'
@@ -12,24 +12,30 @@ const toast = useToast()
 
 onMounted(() => {
   console.log('MOUNTED')
-  authorizationStore.loginError = false
+  authorizationStore.loginError = null
 })
 
 async function login() {
   const result = await authorizationStore.login(username.value, password.value)
-
   if (result) {
-    // router.back();
     goBack()
-  } else {
-    toast.add({
-      severity: 'error',
-      summary: 'Logowanie',
-      detail: 'Niepoprawne dane logowania',
-      life: 5000,
-    })
   }
 }
+
+watch(
+    () => authorizationStore.loginError,
+    (newValue) => {
+      if (newValue) {
+        toast.add({
+          severity: 'error',
+          summary: 'Logowanie',
+          detail: newValue,
+          life: 5000,
+        })
+      }
+    },
+    { immediate: true },
+)
 
 function goBack(): void {
   let history: string[] | [] = JSON.parse(localStorage.getItem('navigationHistory') || '[]')
@@ -45,8 +51,9 @@ function goBack(): void {
 }
 </script>
 <template>
-  <form class="login-form mt-1 mt-md-5" @submit.prevent="login()">
+  <form class="max-w-96 mx-auto mt-48" @submit.prevent="login()">
     <p class="mb-5 mt-5 text-center text-3xl font-bold text-primary">Logowanie</p>
+
     <!-- USERNAME -->
     <FloatLabel class="">
       <InputText id="username" v-model="username" class="w-full" autocomplete="username" required/>
@@ -74,35 +81,7 @@ function goBack(): void {
     </Button
     >
     <p class="text-right mb-4">
-      <router-link class="color-gray link" to="/forgot-password">Nie pamiętam hasła</router-link>
+      <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
     </p>
   </form>
 </template>
-
-<style scoped>
-#error {
-  color: red;
-}
-
-/* unvisited link */
-.link:link {
-  color: var(--text-color);
-}
-
-/* visited link */
-.link:visited {
-  color: var(--text-color);
-}
-
-/* mouse over link */
-.link:hover {
-  color: var(--body-text-color) !important;
-  text-decoration: none;
-}
-
-.login-form {
-  max-width: 400px;
-  margin: auto;
-  margin-top: 200px;
-}
-</style>

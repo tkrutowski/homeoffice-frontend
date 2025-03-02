@@ -34,43 +34,57 @@ apiClient.interceptors.request.use(
 let refreshing = false
 
 apiClient.interceptors.response.use(
-  (response) => {
-    // console.log("response: ", response);
-    return response
-  },
-  async (error) => {
-    console.log('ERROR interceptor: ', error)
-    const refreshToken: string | null = localStorage.getItem('refreshToken') || null
-    const authStore = useAuthorizationStore()
-    if (!refreshing && error.response && error.response.status === 401 && refreshToken) {
-      console.log('ERROR refreshing token...')
-      refreshing = true
-      const response = await authStore.refresh()
-      if (response.status === 200 && response.data.accessToken) {
-        refreshing = false
-        return apiClient(error.config)
-      }
-      //TOKEN EXPIRED
-    } else if (error.response?.status === 401 && error.response?.data?.message === 'REFRESH TOKEN EXPIRED') {
-      authStore.logout()
-    }
-    // SERVER OFFLINE
-    else if (error.code == 'ERR_NETWORK' || error.code == 'ERR_CONNECTION_REFUSED') {
-      console.log('NETWORK ERROR')
-      router.push({
-        name: 'Error503',
-      })
-    }
-    //FORBIDDEN
-    else if (error.code == 'ERR_BAD_REQUEST' && error.message.toString().includes('403')) {
-      console.log('ERR_BAD_REQUEST', error)
-      router.push({
-        name: 'Error403',
-      })
-    }
-    refreshing = false
-    throw error
-  },
-)
+    (response) => response,
+    async (error) => {
+      console.log('ERROR interceptor: ', error);
+      const authStore = useAuthorizationStore()
 
+      if (error.response && error.response.status === 401) {
+        console.log("Unauthorized - Sprawdzam refresh token...");
+      const status = error.response.status;
+      const message = error.response.data?.message;
+
+        // 🛑 Obsługa błędnego logowania (niepoprawne dane logowania)
+        if (status === 401 && message === "INVALID_CREDENTIALS") {
+          console.log("Niepoprawne dane logowania!");
+          authStore.setLoginError("Niepoprawny login lub hasło.");
+          return Promise.reject(error);
+        }
+
+        // 🔄 Obsługa wygaśnięcia tokena
+        if (error.response.data?.message === "REFRESH TOKEN EXPIRED") {
+          console.log("Refresh token wygasł - wylogowanie...");
+          authStore.logout();
+          return Promise.reject(error);
+        }
+
+        try {
+          const response = await authStore.refresh();
+          if (response.status === 200) {
+            return apiClient(error.config); // Ponowne wysłanie oryginalnego żądania
+          }
+        } catch (err) {
+          console.log("Błąd odświeżania tokena", err);
+          authStore.logout();
+        }
+      }
+
+      // SERVER OFFLINE
+      else if (error.code == 'ERR_NETWORK' || error.code == 'ERR_CONNECTION_REFUSED') {
+        console.log('NETWORK ERROR')
+        router.push({
+          name: 'Error503',
+        })
+      }
+      //FORBIDDEN
+      else if (error.code == 'ERR_BAD_REQUEST' && error.message.toString().includes('403')) {
+        console.log('ERR_BAD_REQUEST', error)
+        router.push({
+          name: 'Error403',
+        })
+      }
+
+      return Promise.reject(error);
+    }
+);
 export default apiClient

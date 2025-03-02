@@ -14,12 +14,12 @@ export const useAuthorizationStore = defineStore('authorization', {
     state: () => ({
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
-        loginError: false,
         btnDisabled: false,
         isAuthenticated: false,
         loading: false,
         username: localStorage.getItem('username') || '',
         userPrivileges: [] as string[],
+        loginError: null,
     }),
 
     //getters = computed
@@ -258,6 +258,12 @@ export const useAuthorizationStore = defineStore('authorization', {
 
     //actions = metody w komponentach
     actions: {
+        setLoginError(message: string) {
+            this.loginError = message;
+        },
+        clearLoginError() {
+            this.loginError = null;
+        },
         logUser(token: string, refreshToken: string) {
             console.log("logUser: accessToken: ",token, ", refresh token: ", refreshToken)
             this.accessToken = token
@@ -270,6 +276,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             }
             this.refreshToken = refreshToken
             localStorage.setItem('refreshToken', refreshToken)
+            this.clearLoginError()
         },
         //
         //LOGIN
@@ -289,7 +296,7 @@ export const useAuthorizationStore = defineStore('authorization', {
 
             this.loading = false
             this.btnDisabled = false
-            this.loginError = false
+            this.clearLoginError()
             console.log('END - login()')
             return true
         },
@@ -306,6 +313,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('username')
+            this.clearLoginError()
             this.$reset() //store reset
             feeStore.fees = []
             loanStore.loans = []
