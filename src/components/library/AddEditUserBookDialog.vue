@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {computed, ref, watch} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import {useBookstoreStore} from '../../stores/bookstores'
-import {useUserbooksStore} from '../../stores/userbooks'
-import {useBooksStore} from '../../stores/books'
-import {type Bookstore, EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '../../types/Book'
-import {UtilsService} from '../../service/UtilsService'
+import OfficeButton from '@/components/OfficeButton.vue'
+import {useBookstoreStore} from '@/stores/bookstores.ts'
+import {useUserbooksStore} from '@/stores/userbooks.ts'
+import {useBooksStore} from '@/stores/books.ts'
+import {type Bookstore, EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '@/types/Book.ts'
+import {UtilsService} from '@/service/UtilsService.ts'
 import type {AxiosError} from "axios";
 
 UtilsService.getTypesForLibrary()

@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import OfficeButton from '../../components/OfficeButton.vue'
-import type {User} from '../../types/User'
+import OfficeButton from '@/components/OfficeButton.vue'
+import type {User} from '@/types/User'
 import {computed, onMounted, ref, watch} from 'vue'
 import moment, {type Moment} from 'moment'
-import router from '../../router'
+import router from '@/router'
 import {useToast} from 'primevue/usetoast'
-import type {Firm} from '../../types/Firm'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import type {Purchase} from '../..//types/Purchase'
-import type {Card} from '../../types/Bank'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import {UtilsService} from '../../service/UtilsService'
+import type {Firm} from '@/types/Firm'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import type {Purchase} from '@//types/Purchase'
+import type {Card} from '@/types/Bank'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
 
-import {useUsersStore} from '../../stores/users'
+import {useUsersStore} from '@/stores/users'
 import {useRoute} from 'vue-router'
-import {useFirmsStore} from '../../stores/firms'
-import {usePurchasesStore} from '../../stores/purchases'
-import {useCardsStore} from '../../stores/cards'
-import {PaymentStatus} from "../../types/Payment.ts";
+import {useFirmsStore} from '@/stores/firms'
+import {usePurchasesStore} from '@/stores/purchases'
+import {useCardsStore} from '@/stores/cards'
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const userStore = useUsersStore()
 const purchaseStore = usePurchasesStore()

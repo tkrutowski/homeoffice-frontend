@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type {Author, Category, UserBook} from '../../types/Book'
+import type {Author, Category, UserBook} from '@/types/Book.ts'
 import {computed, ref} from 'vue'
 import type {PropType} from 'vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import SeriesCarouselInfoDialog from '../../components/library/SeriesCarouselInfoDialog.vue'
-import {useBookstoreStore} from '../../stores/bookstores'
-import {TranslationService} from "../../service/TranslationService.ts";
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import SeriesCarouselInfoDialog from '@/components/library/SeriesCarouselInfoDialog.vue'
+import {useBookstoreStore} from '@/stores/bookstores.ts'
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const bookstoreStore = useBookstoreStore()
 const props = defineProps({

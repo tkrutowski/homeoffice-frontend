@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import TheMenu from '../components/TheMenu.vue'
-import { useAuthorizationStore } from '../stores/authorization'
+import TheMenu from '@/components/TheMenu.vue'
+import { useAuthorizationStore } from '@/stores/authorization'
 // import { useBooksStore } from '@/stores/books'
 // import { useDevicesStore } from '@/stores/devices'
-import AppCard from '../components/AppCard.vue'
-import router from '../router'
+import AppCard from '@/components/AppCard.vue'
+import router from '@/router'
 
 const authorizationStore = useAuthorizationStore()
 // const booksStore = useBooksStore()

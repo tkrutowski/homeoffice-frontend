@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import moment from 'moment'
 import {onMounted, ref} from 'vue'
-import {UtilsService} from '../../service/UtilsService'
-import router from '../../router'
-import type {Installment, Payment} from '../../types/Payment'
+import {UtilsService} from '@/service/UtilsService.ts'
+import router from '@/router'
+import type {Installment, Payment} from '@/types/Payment.ts'
 
-import {usePaymentStore} from '../../stores/payments'
-import {useUsersStore} from '../../stores/users'
-import {useLoansStore} from '../../stores/loans'
-import {useFeeStore} from '../../stores/fee.ts'
-import {TranslationService} from "../../service/TranslationService.ts";
+import {usePaymentStore} from '@/stores/payments.ts'
+import {useUsersStore} from '@/stores/users.ts'
+import {useLoansStore} from '@/stores/loans.ts'
+import {useFeeStore} from '@/stores/fee.ts'
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const paymentStore = usePaymentStore()
 const userStore = useUsersStore()

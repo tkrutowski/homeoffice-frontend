@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import {useBooksStore} from '../../stores/books'
-import {useUserbooksStore} from '../../stores/userbooks'
+import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import {useBooksStore} from '@/stores/books'
+import {useUserbooksStore} from '@/stores/userbooks'
 import {computed, type DefineComponent, ref} from 'vue'
 import {FilterMatchMode, FilterOperator, FilterService} from '@primevue/core/api'
-import type {Author, Book, Category, UserBook} from '../../types/Book'
-import router from '../../router'
+import type {Author, Book, Category, UserBook} from '@/types/Book'
+import router from '@/router'
 import {useToast} from 'primevue/usetoast'
-import AddBookToShellDialog from '../../components/library/AddEditUserBookDialog.vue'
-import type {BookDto} from '../../types/Book'
+import AddBookToShellDialog from '@/components/library/AddEditUserBookDialog.vue'
+import type {BookDto} from '@/types/Book'
 import type {AxiosError} from "axios";
 
 const bookStore = useBooksStore()

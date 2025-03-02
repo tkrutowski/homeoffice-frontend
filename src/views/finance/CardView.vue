@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import {useRoute} from 'vue-router'
 import {onMounted, ref} from 'vue'
-import {useCardsStore} from '../../stores/cards'
-import {useBanksStore} from '../../stores/banks'
-import {useUsersStore} from '../../stores/users'
+import {useCardsStore} from '@/stores/cards'
+import {useBanksStore} from '@/stores/banks'
+import {useUsersStore} from '@/stores/users'
 import {useToast} from 'primevue/usetoast'
-import OfficeButton from '../../components/OfficeButton.vue'
-import router from '../../router'
-import IconButton from '../../components/OfficeIconButton.vue'
-import type {User} from '../../types/User'
-import type {Bank, Card} from '../../types/Bank'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import {UtilsService} from '../../service/UtilsService'
+import OfficeButton from '@/components/OfficeButton.vue'
+import router from '@/router'
+import IconButton from '@/components/OfficeIconButton.vue'
+import type {User} from '@/types/User'
+import type {Bank, Card} from '@/types/Bank'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
 
 const route = useRoute()

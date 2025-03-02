@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useAuthorizationStore } from '../stores/authorization'
+import { useAuthorizationStore } from '@/stores/authorization'
 import ThemeSwitcher from './ThemeSwitcher.vue'
 
 const authStore = useAuthorizationStore()

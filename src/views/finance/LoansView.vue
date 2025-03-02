@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
 import {computed, type DefineComponent, ref} from 'vue'
-import router from '../../router'
-import {UtilsService} from '../../service/UtilsService'
-import StatusButton from '../../components/StatusButton.vue'
-import type {Loan, LoanInstallment} from '../../types/Loan'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import router from '@/router'
+import {UtilsService} from '@/service/UtilsService'
+import StatusButton from '@/components/StatusButton.vue'
+import type {Loan, LoanInstallment} from '@/types/Loan'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
 
 import {useToast} from 'primevue/usetoast'
-import {useLoansStore} from '../../stores/loans'
-import {usePaymentStore} from '../../stores/payments'
+import {useLoansStore} from '@/stores/loans'
+import {usePaymentStore} from '@/stores/payments'
 
-import type {StatusType} from '../../types/StatusType'
+import type {StatusType} from '@/types/StatusType'
 import type {DataTablePageEvent} from 'primevue/datatable'
 import moment from "moment/moment";
 import type {AxiosError} from "axios";
-import {PaymentStatus} from "../../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const toast = useToast()
 const loansStore = useLoansStore()

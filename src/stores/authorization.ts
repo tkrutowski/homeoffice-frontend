@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
+import httpCommon from '@/config/http-common'
 import jwt_decode from 'jwt-decode'
 import moment from 'moment'
 import {useFeeStore} from './fee'
@@ -7,19 +7,19 @@ import {useLoansStore} from './loans'
 import {usePaymentStore} from './payments'
 import {usePurchasesStore} from './purchases'
 import {useUserbooksStore} from './userbooks.ts'
-import type {CustomJwtPayload} from "../types/User.ts";
+import type {CustomJwtPayload} from "@/types/User.ts";
 import router from '../router'
 
 export const useAuthorizationStore = defineStore('authorization', {
     state: () => ({
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
+        loginError:  null as string | null,
         btnDisabled: false,
         isAuthenticated: false,
         loading: false,
         username: localStorage.getItem('username') || '',
         userPrivileges: [] as string[],
-        loginError: null,
     }),
 
     //getters = computed

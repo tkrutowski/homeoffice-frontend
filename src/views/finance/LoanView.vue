@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import {useLoansStore} from '../../stores/loans'
-import {useBanksStore} from '../../stores/banks'
-import {useUsersStore} from '../../stores/users'
+import {useLoansStore} from '@/stores/loans'
+import {useBanksStore} from '@/stores/banks'
+import {useUsersStore} from '@/stores/users'
 import {useRoute} from 'vue-router'
 import {computed, onMounted, ref} from 'vue'
-import type {Loan} from '../../types/Loan'
-import OfficeButton from '../../components/OfficeButton.vue'
+import type {Loan} from '@/types/Loan'
+import OfficeButton from '@/components/OfficeButton.vue'
 import {useToast} from 'primevue/usetoast'
-import router from '../../router'
-import type {Bank} from '../../types/Bank'
-import type {User} from '../../types/User'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import {UtilsService} from '../../service/UtilsService'
+import router from '@/router'
+import type {Bank} from '@/types/Bank'
+import type {User} from '@/types/User'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
-import {PaymentStatus} from "../../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const userStore = useUsersStore()
 const loanStore = useLoansStore()

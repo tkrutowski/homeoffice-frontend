@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref} from 'vue'
-import {useAuthorizationStore} from '../stores/authorization'
+import {useAuthorizationStore} from '@/stores/authorization'
 import router from '../router'
 
 const authorizationStore = useAuthorizationStore()

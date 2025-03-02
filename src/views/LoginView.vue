@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {onMounted, ref, watch} from 'vue'
-import router from '../router'
-import {useAuthorizationStore} from '../stores/authorization'
+import router from '@/router'
+import {useAuthorizationStore} from '@/stores/authorization'
 import {useToast} from 'primevue/usetoast'
 
 const authorizationStore = useAuthorizationStore()

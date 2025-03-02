@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {PaymentStatus} from '../types/Payment'
-import type {Purchase} from '../types/Purchase'
+import httpCommon from '@/config/http-common'
+import type {PaymentStatus} from '@/types/Payment'
+import type {Purchase} from '@/types/Purchase'
 import moment from 'moment'
 
 export const usePurchasesStore = defineStore('purchase', {

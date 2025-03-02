@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
-import {useUserbooksStore} from '../../stores/userbooks'
-import UserBookLarge from '../../components/library/UserBookLarge.vue'
-import {UtilsService} from '../../service/UtilsService'
+import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
+import {useUserbooksStore} from '@/stores/userbooks'
+import UserBookLarge from '@/components/library/UserBookLarge.vue'
+import {UtilsService} from '@/service/UtilsService'
 import {ref} from 'vue'
-import {useBooksStore} from '../../stores/books'
-import SeriesCarousel from '../../components/library/SeriesCarusel.vue'
-import type {Series} from '../../types/Book'
+import {useBooksStore} from '@/stores/books'
+import SeriesCarousel from '@/components/library/SeriesCarusel.vue'
+import type {Series} from '@/types/Book'
 
 const userbookStore = useUserbooksStore()
 const bookStore = useBooksStore()

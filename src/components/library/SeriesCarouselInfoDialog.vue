@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SeriesCarousel from '../../components/library/SeriesCarusel.vue'
+import SeriesCarousel from '@/components/library/SeriesCarusel.vue'
 import type {PropType} from 'vue'
-import type {Series} from '../../types/Book'
+import type {Series} from '@/types/Book.ts'
 
 const props = defineProps({
   series: {

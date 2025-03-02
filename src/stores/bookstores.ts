@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Bookstore} from '../types/Book'
+import httpCommon from '@/config/http-common'
+import type {Bookstore} from '@/types/Book'
 
 export const useBookstoreStore = defineStore('bookstore', {
     state: () => ({

@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Log} from '../types/Log.ts'
+import httpCommon from '@/config/http-common'
+import type {Log} from '@/types/Log.ts'
 
 export const useLogsStore = defineStore('log', {
     state: () => ({

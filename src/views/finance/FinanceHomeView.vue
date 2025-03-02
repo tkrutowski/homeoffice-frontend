@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import { UtilsService } from '../../service/UtilsService'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import { UtilsService } from '@/service/UtilsService'
 UtilsService.getTypesForFinance()
 </script>
 

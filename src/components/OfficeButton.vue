@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {ButtonType} from '../types/ButtonType'
+import type {ButtonType} from '@/types/ButtonType'
 
 defineProps({
   btnType: {

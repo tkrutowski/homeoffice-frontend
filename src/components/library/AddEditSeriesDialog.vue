@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {ref, watch} from 'vue'
 import type {Ref} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import {useBooksStore} from '../../stores/books'
-import type {Series} from '../../types/Book'
+import OfficeButton from '@/components/OfficeButton.vue'
+import {useBooksStore} from '@/stores/books.ts'
+import type {Series} from '@/types/Book.ts'
 
 const bookStore = useBooksStore()
 const emit = defineEmits<{

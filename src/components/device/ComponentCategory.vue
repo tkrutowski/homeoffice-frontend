@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, type PropType, ref} from "vue";
-import type {ComponentType, Computer} from "../../types/Computer.ts";
+import type {ComponentType, Computer} from "@/types/Computer.ts";
 
 const props = defineProps({
   componentType: {

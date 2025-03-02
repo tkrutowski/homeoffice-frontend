@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Bank} from '../types/Bank'
+import httpCommon from '@/config/http-common'
+import type {Bank} from '@/types/Bank'
 
 export const useBanksStore = defineStore('bank', {
     state: () => ({

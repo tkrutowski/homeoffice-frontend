@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import {useDevicesStore} from '../../stores/devices'
+import {useDevicesStore} from '@/stores/devices.ts'
 import {computed, onMounted, ref, watch} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 import {useToast} from 'primevue/usetoast'
-import type {Device} from '../../types/Devices'
-import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
-import {UtilsService} from '../../service/UtilsService'
-import {useComputerStore} from "../../stores/computers.ts";
-import type {ComponentType, Computer} from "../../types/Computer.ts";
-import ComponentCategory from "../../components/device/ComponentCategory.vue";
-import DeviceDetails from "../../components/device/DeviceDetails.vue";
-import AddAutoComplete from "../../components/AddAutoCompleteDialog.vue";
+import type {Device} from '@/types/Devices.ts'
+import TheMenuDevice from '@/components/device/TheMenuDevice.vue'
+import {UtilsService} from '@/service/UtilsService'
+import {useComputerStore} from "@/stores/computers.ts";
+import type {ComponentType, Computer} from "@/types/Computer.ts";
+import ComponentCategory from "@/components/device/ComponentCategory.vue";
+import DeviceDetails from "@/components/device/DeviceDetails.vue";
+import AddAutoComplete from "@/components/AddAutoCompleteDialog.vue";
 import type {SelectChangeEvent} from "primevue/select";
 import type {AxiosError} from "axios";
-import AddDialog from "../../components/AddDialog.vue";
+import AddDialog from "@/components/AddDialog.vue";
 
 const deviceStore = useDevicesStore()
 const computerStore = useComputerStore()

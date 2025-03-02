@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
-import {useAuthorizationStore} from '../../stores/authorization'
-import router from '../../router'
+import {useAuthorizationStore} from '@/stores/authorization.ts'
+import router from '@/router'
 import {useRoute} from 'vue-router';
-import {useLoansStore} from "../../stores/loans.ts";
-import {useFeeStore} from "../../stores/fee.ts";
-import {usePaymentStore} from "../../stores/payments.ts";
-import {useCardsStore} from "../../stores/cards.ts";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import {useLoansStore} from "@/stores/loans.ts";
+import {useFeeStore} from "@/stores/fee.ts";
+import {usePaymentStore} from "@/stores/payments.ts";
+import {useCardsStore} from "@/stores/cards.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
 const loansStore = useLoansStore()
 const feeStore = useFeeStore()

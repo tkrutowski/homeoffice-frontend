@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
 import {useToast} from 'primevue/usetoast'
-import {useCardsStore} from '../../stores/cards'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import {useBanksStore} from '../../stores/banks'
-import type {StatusType} from '../../types/StatusType'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import type {Card} from '../../types/Bank'
-import {UtilsService} from '../../service/UtilsService'
-import router from '../../router'
+import {useCardsStore} from '@/stores/cards'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
+import {useBanksStore} from '@/stores/banks'
+import type {StatusType} from '@/types/StatusType'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import type {Card} from '@/types/Bank'
+import {UtilsService} from '@/service/UtilsService'
+import router from '@/router'
 import type {AxiosError} from "axios";
-import type {ResponseData} from "../../types/User.ts";
+import type {ResponseData} from "@/types/User.ts";
 
 const toast = useToast()
 const cardStore = useCardsStore()

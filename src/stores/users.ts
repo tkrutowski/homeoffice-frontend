@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
+import httpCommon from '@/config/http-common'
 import {useAuthorizationStore} from './authorization.ts'
-import type {User, Role, Privilege} from '../types/User'
+import type {User, Role, Privilege} from '@/types/User'
 
 export const useUsersStore = defineStore('user', {
     state: () => ({

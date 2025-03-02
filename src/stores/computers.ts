@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {ActiveStatus} from '../types/Bank.ts'
-import type {ComponentType, Computer} from "../types/Computer.ts";
+import httpCommon from '@/config/http-common'
+import type {ActiveStatus} from '@/types/Bank.ts'
+import type {ComponentType, Computer} from "@/types/Computer.ts";
 
 export const useComputerStore = defineStore('computer', {
     state: () => ({

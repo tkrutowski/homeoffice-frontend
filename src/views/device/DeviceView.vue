@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import {useRoute} from 'vue-router'
-import {useDevicesStore} from '../../stores/devices'
-import {useFirmsStore} from '../../stores/firms'
+import {useDevicesStore} from '@/stores/devices'
+import {useFirmsStore} from '@/stores/firms'
 import {computed, onMounted, ref} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import router from '../../router'
-import IconButton from '../../components/OfficeIconButton.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
+import router from '@/router'
+import IconButton from '@/components/OfficeIconButton.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
 import {useToast} from 'primevue/usetoast'
-import AddDialog from '../../components/AddDialog.vue'
-import type {Device} from '../../types/Devices'
-import type {Firm} from '../../types/Firm'
-import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
+import AddDialog from '@/components/AddDialog.vue'
+import type {Device} from '@/types/Devices'
+import type {Firm} from '@/types/Firm'
+import TheMenuDevice from '@/components/device/TheMenuDevice.vue'
 import moment from 'moment/moment'
-import {UtilsService} from '../../service/UtilsService'
+import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
 import type {DataTableRowReorderEvent} from "primevue";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
-import AddMultipleDialog from "../../components/AddMultipleDialog.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import AddMultipleDialog from "@/components/AddMultipleDialog.vue";
 
 const deviceStore = useDevicesStore()
 const firmStore = useFirmsStore()

@@ -6,15 +6,15 @@ import {
   watchEffect,
 } from 'vue'
 import type {PropType} from 'vue'
-import {useUserbooksStore} from '../../stores/userbooks'
-import type {Book, Series, UserBook} from '../../types/Book'
-import {useBooksStore} from '../../stores/books'
+import {useUserbooksStore} from '@/stores/userbooks.ts'
+import type {Book, Series, UserBook} from '@/types/Book.ts'
+import {useBooksStore} from '@/stores/books.ts'
 import {useToast} from 'primevue/usetoast'
-import AddBookToShellDialog from '../../components/library/AddEditUserBookDialog.vue'
-import SeriesBook from '../../components/library/SeriesBook.vue'
-import {UtilsService} from '../../service/UtilsService'
-import AddEditSeriesDialog from '../../components/library/AddEditSeriesDialog.vue'
-import NewBookDialog from '../../components/library/NewBookDialog.vue'
+import AddBookToShellDialog from '@/components/library/AddEditUserBookDialog.vue'
+import SeriesBook from '@/components/library/SeriesBook.vue'
+import {UtilsService} from '@/service/UtilsService.ts'
+import AddEditSeriesDialog from '@/components/library/AddEditSeriesDialog.vue'
+import NewBookDialog from '@/components/library/NewBookDialog.vue'
 import type {AxiosError} from "axios";
 
 const booksStore = useBooksStore()

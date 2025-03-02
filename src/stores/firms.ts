@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Firm} from '../types/Firm'
+import httpCommon from '@/config/http-common'
+import type {Firm} from '@/types/Firm'
 
 export const useFirmsStore = defineStore('firm', {
     state: () => ({

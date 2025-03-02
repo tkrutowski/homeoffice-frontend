@@ -1,10 +1,9 @@
 <script setup lang="ts">
-
 import {computed, type PropType} from "vue";
-import type {Device} from "../../types/Devices.ts";
-import {UtilsService} from "../../service/UtilsService.ts";
-import type {ComponentType} from "../../types/Computer.ts";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import type {Device} from "@/types/Devices.ts";
+import {UtilsService} from "@/service/UtilsService.ts";
+import type {ComponentType} from "@/types/Computer.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
 
 const props = defineProps({

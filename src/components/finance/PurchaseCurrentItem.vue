@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type {PropType} from 'vue'
 import {computed, ref, watch} from 'vue'
-import type {Purchase} from '../../types/Purchase'
-import {UtilsService} from '../../service/UtilsService'
-import {useFirmsStore} from '../../stores/firms'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import {PaymentStatus} from '../../types/Payment'
+import type {Purchase} from '@/types/Purchase.ts'
+import {UtilsService} from '@/service/UtilsService.ts'
+import {useFirmsStore} from '@/stores/firms.ts'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import {PaymentStatus} from '@/types/Payment.ts'
 import {useToast} from 'primevue/usetoast'
-import {usePurchasesStore} from '../../stores/purchases'
+import {usePurchasesStore} from '@/stores/purchases.ts'
 
 const firmStore = useFirmsStore()
 

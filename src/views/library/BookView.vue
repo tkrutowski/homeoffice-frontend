@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import {useBooksStore} from '../../stores/books'
+import {useBooksStore} from '@/stores/books'
 import {useRoute} from 'vue-router'
 import {computed, onMounted, ref, watch} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import router from '../../router'
-import IconButton from '../../components/OfficeIconButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
+import router from '@/router'
+import IconButton from '@/components/OfficeIconButton.vue'
 import {useToast} from 'primevue/usetoast'
-import type {Author, Book, Category, Series} from '../../types/Book'
-import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
-import AddDialog from '../../components/AddDialog.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import type {Author, Book, Category, Series} from '@/types/Book'
+import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
+import AddDialog from '@/components/AddDialog.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
 import type {AxiosError} from "axios";
 
 const bookStore = useBooksStore()

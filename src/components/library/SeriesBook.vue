@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type {PropType} from 'vue'
 import {computed, onMounted, ref} from 'vue'
-import {type Book, ReadingStatus, type UserBook} from '../../types/Book'
-import ImageButton from '../../components/ImageButton.vue'
-import {useUserbooksStore} from '../../stores/userbooks'
-import {TranslationService} from "../../service/TranslationService.ts";
+import {type Book, ReadingStatus, type UserBook} from '@/types/Book.ts'
+import ImageButton from '@/components/ImageButton.vue'
+import {useUserbooksStore} from '@/stores/userbooks.ts'
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const userbookStore = useUserbooksStore()
 const props = defineProps({

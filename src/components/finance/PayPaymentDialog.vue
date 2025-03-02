@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 import moment from 'moment'
-import { UtilsService } from '../../service/UtilsService'
+import { UtilsService } from '@/service/UtilsService.ts'
 
 const emit = defineEmits<{
   (e: 'save', date: Date, amount: number): void

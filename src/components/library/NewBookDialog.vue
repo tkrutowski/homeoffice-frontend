@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {useBooksStore} from '../../stores/books'
+import {useBooksStore} from '@/stores/books.ts'
 import {computed, type PropType, ref, watch, watchEffect} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 import {useToast} from 'primevue/usetoast'
-import type {Author, Book, Category, Series} from '../../types/Book'
+import type {Author, Book, Category, Series} from '@/types/Book.ts'
 import type {AxiosError} from "axios";
 
 const bookStore = useBooksStore()

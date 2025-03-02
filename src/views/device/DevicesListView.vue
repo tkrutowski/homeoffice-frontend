@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
 import {computed, type DefineComponent, onMounted, ref} from 'vue'
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
-import router from '../../router'
+import router from '@/router'
 import {useToast} from 'primevue/usetoast'
-import OfficeButton from '../../components/OfficeButton.vue'
-import {useDevicesStore} from '../../stores/devices'
-import {UtilsService} from '../../service/UtilsService'
-import type {Device, DeviceDto} from '../../types/Devices'
-import TheMenuDevice from '../../components/device/TheMenuDevice.vue'
-import type {ActiveStatus} from '../../types/Bank'
-import StatusButton from '../../components/StatusButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
+import {useDevicesStore} from '@/stores/devices'
+import {UtilsService} from '@/service/UtilsService'
+import type {Device, DeviceDto} from '@/types/Devices'
+import TheMenuDevice from '@/components/device/TheMenuDevice.vue'
+import type {ActiveStatus} from '@/types/Bank'
+import StatusButton from '@/components/StatusButton.vue'
 import type {AxiosError} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
 

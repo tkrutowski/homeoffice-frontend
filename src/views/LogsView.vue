@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {useLogsStore} from '../stores/logs'
-import TheMenu from '../components/TheMenu.vue'
+import {useLogsStore} from '@/stores/logs'
+import TheMenu from '@/components/TheMenu.vue'
 import {onMounted, ref} from 'vue'
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
 import moment from 'moment'

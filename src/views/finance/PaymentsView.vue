@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import UserPayments from '../../components/finance/UserPayments.vue'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
+import UserPayments from '@/components/finance/UserPayments.vue'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
 import {onMounted, ref, watch} from 'vue'
 
-import {usePaymentStore} from '../../stores/payments'
-import {useUsersStore} from '../../stores/users'
-import {useLoansStore} from '../../stores/loans'
-import {useFeeStore} from '../../stores/fee'
+import {usePaymentStore} from '@/stores/payments'
+import {useUsersStore} from '@/stores/users'
+import {useLoansStore} from '@/stores/loans'
+import {useFeeStore} from '@/stores/fee'
 
 const loansStore = useLoansStore()
 const feeStore = useFeeStore()

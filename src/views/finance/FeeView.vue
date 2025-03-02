@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import {useUsersStore} from '../../stores/users'
+import {useUsersStore} from '@/stores/users'
 import {useRoute} from 'vue-router'
 import {computed, onMounted, ref, watch} from 'vue'
-import OfficeButton from '../../components/OfficeButton.vue'
-import router from '../../router'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import type {User} from '../../types/User'
-import {useFeeStore} from '../../stores/fee'
-import {useFirmsStore} from '../../stores/firms'
+import OfficeButton from '@/components/OfficeButton.vue'
+import router from '@/router'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import type {User} from '@/types/User'
+import {useFeeStore} from '@/stores/fee'
+import {useFirmsStore} from '@/stores/firms'
 import {useToast} from 'primevue/usetoast'
-import type {Firm} from '../../types/Firm'
-import type {Fee, FeeFrequency} from '../../types/Fee'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import {UtilsService} from '../../service/UtilsService'
+import type {Firm} from '@/types/Firm'
+import type {Fee, FeeFrequency} from '@/types/Fee'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
-import {PaymentStatus} from "../../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const userStore = useUsersStore()
 const feeStore = useFeeStore()

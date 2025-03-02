@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
-import type {Fee, FeeInstallment} from '../../types/Fee'
-import {UtilsService} from '../../service/UtilsService'
-import router from '../../router'
-import PayPaymentDialog from '../../components/finance/PayPaymentDialog.vue'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import OfficeButton from '../../components/OfficeButton.vue'
+import type {Fee, FeeInstallment} from '@/types/Fee'
+import {UtilsService} from '@/service/UtilsService'
+import router from '@/router'
+import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 
-import {useFeeStore} from '../../stores/fee'
-import {usePaymentStore} from '../../stores/payments'
+import {useFeeStore} from '@/stores/fee'
+import {usePaymentStore} from '@/stores/payments'
 import {useToast} from 'primevue/usetoast'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
 import type {AxiosError} from "axios";
-import {PaymentStatus} from "../../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const feeStore = useFeeStore()
 const paymentStore = usePaymentStore()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {StatusType} from '../types/StatusType'
+import type {StatusType} from '@/types/StatusType'
 
 defineProps({
   btnType: {

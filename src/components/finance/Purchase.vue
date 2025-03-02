@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import {useLoansStore} from '../../stores/loans'
-import {useBanksStore} from '../../stores/banks'
-import {useUsersStore} from '../../stores/users'
-import {useCardsStore} from '../../stores/cards'
-import {useFirmsStore} from '../../stores/firms'
-import {usePurchasesStore} from '../../stores/purchases'
+import {useLoansStore} from '@/stores/loans.ts'
+import {useBanksStore} from '@/stores/banks.ts'
+import {useUsersStore} from '@/stores/users.ts'
+import {useCardsStore} from '@/stores/cards.ts'
+import {useFirmsStore} from '@/stores/firms.ts'
+import {usePurchasesStore} from '@/stores/purchases.ts'
 import {useRoute} from 'vue-router'
 import {computed, onMounted, ref, watch} from 'vue'
 import moment from 'moment'
-import OfficeButton from '../../components/OfficeButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 import {useToast} from 'primevue/usetoast'
-import TheMenu from '../../components/TheMenu.vue'
-import type {Card} from '../../types/Bank'
-import type {User} from '../../types/User'
-import type {Purchase} from '../../types/Purchase'
-import type {Firm} from '../../types/Firm'
-import type {Loan} from "../../types/Loan.ts";
+import TheMenu from '@/components/TheMenu.vue'
+import type {Card} from '@/types/Bank.ts'
+import type {User} from '@/types/User.ts'
+import type {Purchase} from '@/types/Purchase.ts'
+import type {Firm} from '@/types/Firm.ts'
+import type {Loan} from "@/types/Loan.ts";
 import type {AxiosError} from "axios";
-import {PaymentStatus} from "../../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
+import router from '@/router'
 const userStore = useUsersStore()
 const loanStore = useLoansStore()
 const bankStore = useBanksStore()
@@ -25,7 +26,6 @@ const firmStore = useFirmsStore()
 const purchaseStore = usePurchasesStore()
 const cardStore = useCardsStore()
 const route = useRoute()
-import router from '../../router'
 const toast = useToast()
 const selectedUser = ref<User | undefined>()
 const selectedCard = ref<Card | undefined>()
@@ -315,7 +315,7 @@ const showErrorAmount = () => {
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
                 <label for="input-user">Wybierz użytkownika:</label>
-                <Dropdown
+                <MultiSelect
                     id="input-user"
                     v-model="selectedUser"
                     :class="{ 'p-invalid': showErrorUser() }"
@@ -341,7 +341,7 @@ const showErrorAmount = () => {
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
                 <label for="input-card">Wybierz kartę:</label>
-                <Dropdown
+                <MultiSelect
                     id="input-card"
                     v-model="selectedCard"
                     :class="{ 'p-invalid': showErrorCard() }"
@@ -366,7 +366,7 @@ const showErrorAmount = () => {
             <div class="flex flex-row">
               <div class="flex flex-column col-12">
                 <label for="input-customer">Wybierz sklep/firmę:</label>
-                <Dropdown
+                <MultiSelect
                     id="input-customer"
                     v-model="selectedFirm"
                     :class="{ 'p-invalid': showErrorFirm() }"

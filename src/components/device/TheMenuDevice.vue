@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
-import {useAuthorizationStore} from '../../stores/authorization'
-import router from '../../router'
+import {useAuthorizationStore} from '@/stores/authorization.ts'
+import router from '@/router'
 import {useRoute} from 'vue-router';
-import {useComputerStore} from "../../stores/computers.ts";
-import {useDevicesStore} from "../../stores/devices.ts";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import {useComputerStore} from "@/stores/computers.ts";
+import {useDevicesStore} from "@/stores/devices.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
 const computerStore = useComputerStore()
 const deviceStore = useDevicesStore()

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
-import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
-import type {Series} from '../../types/Book'
-import {useBooksStore} from '../../stores/books'
-import SeriesCarousel from '../../components/library/SeriesCarusel.vue'
+import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
+import type {Series} from '@/types/Book'
+import {useBooksStore} from '@/stores/books'
+import SeriesCarousel from '@/components/library/SeriesCarusel.vue'
 
 const booksStore = useBooksStore()
 

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
-import router from '../../router'
-import {UtilsService} from '../../service/UtilsService'
+import router from '@/router'
+import {UtilsService} from '@/service/UtilsService'
 
-import {PaymentStatus} from '../../types/Payment'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import StatusButton from '../../components/StatusButton.vue'
-import ConfirmationDialog from '../../components/ConfirmationDialog.vue'
-import TheMenuFinance from '../../components/finance/TheMenuFinance.vue'
-import type {Fee, FeeInstallment} from '../../types/Fee'
+import {PaymentStatus} from '@/types/Payment'
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import StatusButton from '@/components/StatusButton.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+import type {Fee, FeeInstallment} from '@/types/Fee'
 
 import {useToast} from 'primevue/usetoast'
-import {useFeeStore} from '../../stores/fee'
-import {usePaymentStore} from '../../stores/payments'
-import type {StatusType} from '../../types/StatusType'
+import {useFeeStore} from '@/stores/fee'
+import {usePaymentStore} from '@/stores/payments'
+import type {StatusType} from '@/types/StatusType'
 import moment from "moment";
 import type {AxiosError} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";

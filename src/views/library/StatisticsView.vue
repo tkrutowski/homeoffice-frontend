@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import {ref, computed, onMounted} from 'vue';
-import TheMenuLibrary from "../../components/library/TheMenuLibrary.vue";
-import type {UserBook} from "../../types/Book.ts";
-import {useUserbooksStore} from "../../stores/userbooks.ts";
+import TheMenuLibrary from "@/components/library/TheMenuLibrary.vue";
+import type {UserBook} from "@/types/Book.ts";
+import {useUserbooksStore} from "@/stores/userbooks.ts";
 import moment from "moment";
-import {TranslationService} from "../../service/TranslationService.ts";
+import {TranslationService} from "@/service/TranslationService.ts";
 const userbookStore = useUserbooksStore();
 
 const availableYears = computed(()=>{

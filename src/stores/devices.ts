@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Device, DeviceDto, DeviceType} from '../types/Devices.ts'
-import type {ActiveStatus} from '../types/Bank.ts'
+import httpCommon from '@/config/http-common'
+import type {Device, DeviceDto, DeviceType} from '@/types/Devices.ts'
+import type {ActiveStatus} from '@/types/Bank.ts'
 import moment from "moment";
 
 export const useDevicesStore = defineStore('device', {

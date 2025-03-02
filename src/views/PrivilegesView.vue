@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {useUsersStore} from '../stores/users'
+import {useUsersStore} from '@/stores/users'
 import {onMounted, ref} from 'vue'
 import {useToast} from 'primevue/usetoast'
-import type {Privilege, Role, User} from '../types/User'
-import TheMenu from '../components/TheMenu.vue'
-import OfficeButton from '../components/OfficeButton.vue'
+import type {Privilege, Role, User} from '@/types/User'
+import TheMenu from '@/components/TheMenu.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 import type {SelectChangeEvent} from 'primevue/select'
 import type {DataTableRowEditSaveEvent} from 'primevue/datatable'
 import type {AxiosError} from "axios";

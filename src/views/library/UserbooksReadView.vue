@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import TheMenuLibrary from '../../components/library/TheMenuLibrary.vue'
-import {useUserbooksStore} from '../../stores/userbooks'
-import UserBookSmall from '../../components/library/UserBookSmall.vue'
+import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
+import {useUserbooksStore} from '@/stores/userbooks'
+import UserBookSmall from '@/components/library/UserBookSmall.vue'
 import {computed, ref} from 'vue'
-import type {UserBook} from '../../types/Book'
-import AddEditUserBookDialog from '../../components/library/AddEditUserBookDialog.vue'
+import type {UserBook} from '@/types/Book'
+import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue'
 import {useToast} from 'primevue/usetoast'
 import type {AxiosError} from "axios";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const toast = useToast()
 const userbookStore = useUserbooksStore()

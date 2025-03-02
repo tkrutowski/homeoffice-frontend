@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TheMenu from '../components/TheMenu.vue'
+import TheMenu from '@/components/TheMenu.vue'
 import {useAuthorizationStore} from "@/stores/authorization.ts";
 import {onMounted, ref} from "vue";
 import router from "@/router";

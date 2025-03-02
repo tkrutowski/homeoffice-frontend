@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia'
-import type {Payment, PaymentType} from '../types/Payment'
-import type {Fee} from '../types/Fee'
-import type {Loan} from '../types/Loan'
-import httpCommon from '../config/http-common'
+import type {Payment, PaymentType} from '@/types/Payment'
+import type {Fee} from '@/types/Fee'
+import type {Loan} from '@/types/Loan'
+import httpCommon from '@/config/http-common'
 
 export const usePaymentStore = defineStore('payment', {
     state: () => ({

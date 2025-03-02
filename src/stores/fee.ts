@@ -1,9 +1,9 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Fee, FeeFrequency, FeeInstallment} from '../types/Fee'
-import type {StatusType} from '../types/StatusType'
+import httpCommon from '@/config/http-common'
+import type {Fee, FeeFrequency, FeeInstallment} from '@/types/Fee'
+import type {StatusType} from '@/types/StatusType'
 import moment from "moment";
-import {PaymentStatus} from "../types/Payment.ts";
+import {PaymentStatus} from "@/types/Payment.ts";
 
 export const useFeeStore = defineStore('fee', {
     state: () => ({

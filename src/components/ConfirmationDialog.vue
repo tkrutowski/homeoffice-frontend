@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import OfficeButton from '../components/OfficeButton.vue'
+import OfficeButton from '@/components/OfficeButton.vue'
 
 defineProps({
   msg: {

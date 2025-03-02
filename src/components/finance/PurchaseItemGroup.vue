@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type {Purchase} from '../../types/Purchase'
+import type {Purchase} from '@/types/Purchase.ts'
 import {computed, onMounted, ref, watch} from 'vue'
-import {UtilsService} from '../../service/UtilsService'
+import {UtilsService} from '@/service/UtilsService.ts'
 import moment from 'moment'
-import {useCardsStore} from '../../stores/cards'
-import {usePurchasesStore} from '../../stores/purchases'
-import PurchaseCurrentItem from '../../components/finance/PurchaseCurrentItem.vue'
-import {PaymentStatus} from "../../types/Payment.ts";
+import {useCardsStore} from '@/stores/cards.ts'
+import {usePurchasesStore} from '@/stores/purchases.ts'
+import PurchaseCurrentItem from '@/components/finance/PurchaseCurrentItem.vue'
+import {PaymentStatus} from "@/types/Payment.ts";
 
 const cardStore = useCardsStore()
 const purchasesStore = usePurchasesStore()

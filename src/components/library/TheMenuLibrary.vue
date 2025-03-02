@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
-import {useAuthorizationStore} from '../../stores/authorization'
-import router from '../../router'
+import {useAuthorizationStore} from '@/stores/authorization.ts'
+import router from '@/router'
 import {useRoute} from 'vue-router';
-import {useBooksStore} from "../../stores/books.ts";
-import {useUserbooksStore} from "../../stores/userbooks.ts";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import {useBooksStore} from "@/stores/books.ts";
+import {useUserbooksStore} from "@/stores/userbooks.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
 const userbooksStore = useUserbooksStore()
 const booksStore = useBooksStore()

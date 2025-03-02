@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia'
-import httpCommon from '../config/http-common'
-import type {Loan, LoanInstallment} from '../types/Loan'
-import type {StatusType} from '../types/StatusType'
-import {type Installment, PaymentStatus, PaymentMethod} from "../types/Payment.ts";
+import httpCommon from '@/config/http-common'
+import type {Loan, LoanInstallment} from '@/types/Loan'
+import type {StatusType} from '@/types/StatusType'
+import {type Installment, PaymentStatus, PaymentMethod} from "@/types/Payment.ts";
 import moment from "moment/moment";
 
 export const useLoansStore = defineStore('loan', {

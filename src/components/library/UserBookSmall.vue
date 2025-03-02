@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type {Author, UserBook} from '../../types/Book'
+import type {Author, UserBook} from '@/types/Book.ts'
 import {computed, type PropType, ref} from 'vue'
-import OfficeIconButton from '../../components/OfficeIconButton.vue'
-import SeriesCarouselInfoDialog from '../../components/library/SeriesCarouselInfoDialog.vue'
-import {TranslationService} from "../../service/TranslationService.ts";
+import OfficeIconButton from '@/components/OfficeIconButton.vue'
+import SeriesCarouselInfoDialog from '@/components/library/SeriesCarouselInfoDialog.vue'
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const props = defineProps({
   userbook: {
