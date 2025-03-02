@@ -17,6 +17,7 @@ import {UtilsService} from '../../service/UtilsService'
 import type {AxiosError} from "axios";
 import type {DataTableRowReorderEvent} from "primevue";
 import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
+import AddMultipleDialog from "../../components/AddMultipleDialog.vue";
 
 const deviceStore = useDevicesStore()
 const firmStore = useFirmsStore()
@@ -229,7 +230,7 @@ async function saveDeviceType(name: string) {
             severity: 'success',
             summary: 'Potwierdzenie',
             detail: 'Dodano rodzaj urządzenia: ' + name,
-            life: 3000,
+            life: 5000,
           })
         })
         .catch((reason: AxiosError) => {
@@ -237,7 +238,7 @@ async function saveDeviceType(name: string) {
             severity: 'error',
             summary: reason.message,
             detail: 'Nie dodano rodzaju urządzenia: ' + name,
-            life: 3000,
+            life: 5000,
           })
         })
   }
@@ -253,7 +254,7 @@ const showError = (msg: string) => {
     severity: 'error',
     summary: 'Błąd',
     detail: msg,
-    life: 3000,
+    life: 5000,
   })
 }
 const isNotValid = () => {
@@ -306,6 +307,7 @@ function resetForm() {
 //--------------------------------------------------DETAILS
 //
 const showAddDetailsModal = ref<boolean>(false)
+const showAddMultipleDetailsModal = ref<boolean>(false)
 
 const onRowReorder = (event: DataTableRowReorderEvent) => {
   console.log('onRowReorder', event)
@@ -335,8 +337,23 @@ const submitDelete = async () => {
 // ADD
 const openNew = () => {
   tempDetail.value = [];
-  showAddDetailsModal.value = true;
+  showAddMultipleDetailsModal.value = true;
 };
+async function saveMultipleDetails(keyToAdd: string, valueToAdd: string, close: boolean) {
+  // console.log("keyToAdd, valueToAdd, close", keyToAdd, valueToAdd, close)
+  if (device.value.details.has(keyToAdd)) {
+    toast.add({
+      severity: 'warn',
+      summary: "Ostrzeżenie",
+      detail: 'Podana watość klucza już istnieje: ' + keyToAdd,
+      life: 6000,
+    })
+  }else {
+    if(close) showAddMultipleDetailsModal.value = false
+    device.value.details.set(keyToAdd, valueToAdd)
+  }
+}
+
 //EDIT
 const editIndex = ref<number>(-1)
 const editDetails = (detail: string[], index: number) => {
@@ -346,7 +363,7 @@ const editDetails = (detail: string[], index: number) => {
 };
 
 async function saveDetails(keyToAdd: string, valueToAdd: string) {
-  console.log("keyToAdd, value", keyToAdd, valueToAdd)
+  // console.log("keyToAdd, valueToAdd", keyToAdd, valueToAdd)
   showAddDetailsModal.value = false
   if (keyToAdd.length === 0 || valueToAdd.length === 0) {
     showError('Klucz i wartość nie mogą być puste')
@@ -357,7 +374,7 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
       const newMap = new Map<string, string>()
       let index = 0;
       device.value.details.delete(tempDetail.value[0])
-      device.value.details.forEach((key, value) => {
+      device.value.details.forEach((value, key) => {
         if (index === editIndex.value) {
           newMap.set(keyToAdd, valueToAdd)
         }
@@ -390,8 +407,14 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
       @save="saveDetails"
       @cancel="showAddDetailsModal = false"
   />
-
-
+  <AddMultipleDialog
+      v-model:visible="showAddMultipleDetailsModal"
+      msg="Dodaj szczegóły produktu"
+      label1="Klucz:"
+      label2="Wartość:"
+      @save="saveMultipleDetails"
+      @cancel="showAddMultipleDetailsModal = false"
+  />
   <ConfirmationDialog
       v-model:visible="showDeleteConfirmationDialog"
       :msg="deleteConfirmationMessage"
