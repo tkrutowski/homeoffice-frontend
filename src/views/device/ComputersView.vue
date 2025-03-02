@@ -284,11 +284,12 @@ const devices = computed(() => {
     </template>
 
     <template #center>
-      <Select v-model="selectedComputer" :options="computerStore.computers" optionLabel="name"
-              placeholder="Wybierz komputer" @change="selectedComputerChanged"/>
-      <div v-if="computerStore.loadingComputers">
-        <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5"/>
-      </div>
+      <Select v-model="selectedComputer"
+              :options="computerStore.computers"
+              optionLabel="name"
+              placeholder="Wybierz komputer"
+              :loading="computerStore.loadingComputers"
+              @change="selectedComputerChanged"/>
     </template>
 
     <template #end>

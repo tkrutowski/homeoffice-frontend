@@ -38,10 +38,8 @@ const selectedSeries = ref<Series[]>([])
             placeholder="Wybierz..."
             :max-selected-labels="3"
             class="w-full md:w-80"
+            :loading="booksStore.loadingBooksInSeries"
         />
-      </div>
-      <div v-if="booksStore.loadingBooksInSeries" class="ml-4 mt-4">
-        <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5"/>
       </div>
     </template>
 

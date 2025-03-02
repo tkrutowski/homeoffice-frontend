@@ -181,17 +181,11 @@ const cancel = () => {
                   :options="bookstoreStore.bookstores"
                   option-label="name"
                   @change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
+                  :loading="bookstoreStore.loadingBookstore"
               />
               <small class="p-error">{{
                   showErrorBookstore() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="bookstoreStore.loadingBookstore" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -205,17 +199,11 @@ const cancel = () => {
                   :class="{ 'p-invalid': showErrorOwnership() }"
                   :options="userbookStore.ownershipStatus"
                   option-label="viewName"
+                  :loading="userbookStore.loadingOwnership"
               />
               <small class="p-error">{{
                   showErrorOwnership() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userbookStore.loadingOwnership" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -229,17 +217,11 @@ const cancel = () => {
                   :class="{ 'p-invalid': showErrorEditionType() }"
                   :options="userbookStore.editionTypes"
                   option-label="viewName"
+                  :loading="userbookStore.loadingEditionType"
               />
               <small class="p-error">{{
                   showErrorEditionType() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userbookStore.loadingEditionType" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -253,17 +235,11 @@ const cancel = () => {
                   :class="{ 'p-invalid': showErrorReadingStatus() }"
                   :options="userbookStore.readingStatuses"
                   option-label="viewName"
+                  :loading="userbookStore.loadingReadingStatus"
               />
               <small class="p-error">{{
                   showErrorReadingStatus() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userbookStore.loadingReadingStatus" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 

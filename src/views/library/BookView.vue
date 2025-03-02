@@ -488,6 +488,7 @@ const showErrorCover = () => {
                       :suggestions="filteredAuthors"
                       :option-label="(author) => author.firstName + ' ' + author.lastName"
                       @complete="searchAuthor"
+                      :loading="bookStore.loadingAuthors"
                   />
                   <small class="p-error">{{
                       showErrorAuthor() ? 'Pole jest wymagane.' : '&nbsp;'
@@ -500,13 +501,6 @@ const showErrorCover = () => {
                     class="mt-1 self-center"
                     @click="showAddModal = true"
                 />
-<!--                <div v-if="bookStore.loadingAuthors" class="mt-4">-->
-<!--                  <ProgressSpinner-->
-<!--                      class="ml-2 mt-1"-->
-<!--                      style="width: 40px; height: 40px"-->
-<!--                      stroke-width="5"-->
-<!--                  />-->
-<!--                </div>-->
               </div>
 
               <!-- ROW-3  SERIES / NUMBER  -->
@@ -522,13 +516,7 @@ const showErrorCover = () => {
                       field="title"
                       option-label="title"
                       @complete="searchSeries"
-                  />
-                </div>
-                <div v-if="bookStore.loadingSeries" class="mt-4">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 40px; height: 40px"
-                      stroke-width="5"
+                      :loading="bookStore.loadingSeries"
                   />
                 </div>
 
@@ -553,6 +541,7 @@ const showErrorCover = () => {
                       field="name"
                       option-label="name"
                       @complete="searchCategory"
+                      :loading="bookStore.loadingCategories"
                   />
                   <small class="p-error">{{
                       showErrorCategory() ? 'Pole jest wymagane.' : '&nbsp;'
@@ -565,13 +554,6 @@ const showErrorCover = () => {
                     class="mt-1 self-center"
                     @click="showAddCategoryModal = true"
                 />
-                <div v-if="bookStore.loadingCategories" class="mt-4">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 40px; height: 40px"
-                      stroke-width="5"
-                  />
-                </div>
               </div>
 
               <!-- ROW-5   URL -->

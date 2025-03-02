@@ -332,18 +332,12 @@ const showErrorDeadline = () => {
                   :options="userStore.getUserByPrivileges"
                   :option-label="(user) => user.firstName + ' ' + user.lastName"
                   @change="purchase.idUser = selectedUser ? selectedUser.id : 0"
+                  :loading="userStore.loadingUsers"
                   required
               />
               <small class="p-error">{{
                   showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userStore.loadingUsers" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -358,17 +352,11 @@ const showErrorDeadline = () => {
                   :options="optionCard"
                   option-label="name"
                   @change="purchase.idCard = selectedCard ? selectedCard.id : 0"
+                  :loading="cardStore.loadingCards"
               />
               <small class="p-error">{{
                   showErrorCard() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="cardStore.loadingCards" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -385,18 +373,11 @@ const showErrorDeadline = () => {
                   :suggestions="filteredFirms"
                   option-label="name"
                   @complete="searchFirm"
+                  :loading="firmStore.loadingFirms"
               />
-              <!--                  @input="fee.firm = selectedFirm ? selectedFirm : undefined"-->
               <small class="p-error">
                 {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
               </small>
-            </div>
-            <div v-if="firmStore.loadingFirms" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 

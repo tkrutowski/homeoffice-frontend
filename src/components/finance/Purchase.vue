@@ -323,17 +323,11 @@ const showErrorAmount = () => {
                     option-label="{{data => data.firstName + ' ' + data.lastName}}}"
                     :onchange="onUserChange"
                     required
+                    :loading="userStore.loadingUsers"
                 />
                 <small class="p-error">{{
                     showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
-              </div>
-              <div v-if="userStore.loadingUsers" class="mt-4">
-                <ProgressSpinner
-                    class="ml-2 mt-1"
-                    style="width: 40px; height: 40px"
-                    stroke-width="5"
-                />
               </div>
             </div>
 
@@ -348,17 +342,11 @@ const showErrorAmount = () => {
                     :options="cardStore.cards"
                     option-label="name"
                     :onchange="onCardChange"
+                    :loading="cardStore.loadingCards"
                 />
                 <small class="p-error">{{
                     showErrorCard() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
-              </div>
-              <div v-if="cardStore.loadingCards" class="mt-4">
-                <ProgressSpinner
-                    class="ml-2 mt-1"
-                    style="width: 40px; height: 40px"
-                    stroke-width="5"
-                />
               </div>
             </div>
 
@@ -373,17 +361,11 @@ const showErrorAmount = () => {
                     :options="firmStore.firms"
                     option-label="name"
                     :onchange="onFirmChange"
+                    :loading="firmStore.loadingFirms"
                 />
                 <small class="p-error">{{
                     showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;'
                   }}</small>
-              </div>
-              <div v-if="firmStore.loadingFirms" class="mt-4">
-                <ProgressSpinner
-                    class="ml-2 mt-1"
-                    style="width: 40px; height: 40px"
-                    stroke-width="5"
-                />
               </div>
             </div>
 

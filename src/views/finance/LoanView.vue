@@ -281,18 +281,12 @@ const showErrorFirstDate = () => {
                   :class="{ 'p-invalid': showErrorUser() }"
                   :options="userStore.users"
                   :option-label="(user) => user.firstName + ' ' + user.lastName"
+                  :loading="userStore.loadingUsers"
                   @change="loan.idUser = selectedUser ? selectedUser.id : 0"
               />
               <small class="text-red-500">{{
                   showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userStore.loadingUsers" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -307,17 +301,11 @@ const showErrorFirstDate = () => {
                   :options="bankStore.banks"
                   option-label="name"
                   :onchange="(loan.bank = selectedBank ? selectedBank : null)"
+                  :loading="bankStore.loadingBanks"
               />
               <small class="text-red-500">{{
                   showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="bankStore.loadingBanks" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 

@@ -290,18 +290,12 @@ const showErrorFirstDate = () => {
                   :options="userStore.users"
                   :option-label="(user) => user.firstName + ' ' + user.lastName"
                   :onchange="(fee.idUser = selectedUser ? selectedUser.id : 0)"
+                  :loading="userStore.loadingUsers"
                   required
               />
               <small class="text-red-500">{{
                   showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="userStore.loadingUsers" class="content-center">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 30px; height: 30px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -317,18 +311,12 @@ const showErrorFirstDate = () => {
                   :invalid="showErrorFirm()"
                   :suggestions="filteredFirms"
                   option-label="name"
+                  :loading="firmStore.loadingFirms"
                   @complete="searchFirm"
               />
               <small class="text-red-500">
                 {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
               </small>
-            </div>
-            <div v-if="firmStore.loadingFirms" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
           </div>
 
@@ -373,17 +361,11 @@ const showErrorFirstDate = () => {
                   option-label="viewName"
                   :onchange="(fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null)"
                   :disabled="isEdit"
+                  :loading="feeStore.loadingFeeFrequencyType"
               />
               <small class="text-red-500">{{
                   showErrorFeeFrequency() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
-            </div>
-            <div v-if="feeStore.loadingFeeFrequencyType" class="mt-4">
-              <ProgressSpinner
-                  class="ml-2 mt-1"
-                  style="width: 40px; height: 40px"
-                  stroke-width="5"
-              />
             </div>
             <div class="flex flex-col w-full">
               <label for="noOfPayment">Ilość opłat:</label>

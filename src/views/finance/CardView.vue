@@ -407,18 +407,12 @@ const showErrorActivationDate = () => {
                       :class="{ 'p-invalid': showErrorUser() }"
                       :options="userStore.getUsers"
                       :option-label="(data) => data.firstName + ' ' + data.lastName"
+                      :loading="userStore.loadingUsers"
                       @change="onUserChange"
                   />
                   <small class="p-error">{{
                       showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
-                </div>
-                <div v-if="userStore.loadingUsers" class="mt-3 content-center">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 30px; height: 30px"
-                      stroke-width="5"
-                  />
                 </div>
               </div>
             </div>
@@ -433,18 +427,12 @@ const showErrorActivationDate = () => {
                       :class="{ 'p-invalid': showErrorBank() }"
                       :options="bankStore.getSortedBanks"
                       option-label="name"
+                      :loading="bankStore.loadingBanks"
                       @change="onBankChange"
                   />
                   <small class="p-error">{{
                       showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;'
                     }}</small>
-                </div>
-                <div v-if="bankStore.loadingBanks" class="mt-3 content-center">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 30px; height: 30px"
-                      stroke-width="5"
-                  />
                 </div>
               </div>
             </div>

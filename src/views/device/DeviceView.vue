@@ -475,6 +475,7 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
                       :options="deviceStore.devicesTypes"
                       option-label="name"
                       :invalid="showErrorDeviceType()"
+                      :loading="deviceStore.loadingDeviceTypes"
                   />
                   <small class="p-error">
                     {{ showErrorDeviceType() ? 'Pole jest wymagane.' : '&nbsp;' }}
@@ -487,13 +488,6 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
                     class="mt-3 self-center"
                     @click="showAddDeviceTypeModal = true"
                 />
-                <div v-if="deviceStore.loadingDeviceTypes" class="mt-4">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 40px; height: 40px"
-                      stroke-width="5"
-                  />
-                </div>
               </div>
 
               <!-- ROW-3   FIRM -->
@@ -507,19 +501,13 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
                       force-selection
                       :invalid="showErrorFirm()"
                       :suggestions="filteredFirms"
+                      :loading="firmStore.loadingFirms"
                       option-label="name"
                       @complete="searchFirm"
                   />
                   <small class="p-error">
                     {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
                   </small>
-                </div>
-                <div v-if="firmStore.loadingFirms" class="content-center">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 30px; height: 30px"
-                      stroke-width="5"
-                  />
                 </div>
               </div>
 
