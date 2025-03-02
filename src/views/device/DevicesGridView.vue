@@ -243,15 +243,6 @@ const onSortChange = (event: SelectChangeEvent) => {
   />
 
   <Panel class="mt-5 ml-2 mr-2">
-    <template #header>
-      <div class="w-full flex justify-center gap-3">
-        <span class="m-0 text-3xl">LISTA URZĄDZEŃ</span>
-        <div v-if="deviceStore.loadingDevices" class="flex">
-          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
-        </div>
-      </div>
-    </template>
-
     <DataView :value="filteredDevices" data-key="id"
               :layout="layout"
               v-if="!deviceStore.loadingDevices"
@@ -350,7 +341,7 @@ const onSortChange = (event: SelectChangeEvent) => {
                         title="Zmień status na NIEAKTYWNY"
                         icon="pi pi-check-circle"
                         :rounded="false"
-                        severity="secondary"
+                        severity="success"
                         @click="confirmStatusChange(item)"
                     />
                     <OfficeIconButton
@@ -437,3 +428,8 @@ const onSortChange = (event: SelectChangeEvent) => {
     </template>
   </Toolbar>
 </template>
+<style scoped>
+::v-deep(.p-panel-header) {
+  padding: 0.25rem !important;
+}
+</style>

@@ -109,42 +109,34 @@ const submitDelete = async () => {
       @cancel="showDeleteConfirmationDialog = false"
   />
   <div>
-    <div
-        class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4"
+
+  <Toolbar class="m-6 text-color">
+    <template #start
+    ><p class="mt-auto mb-auto">ROK: {{ displayedYear }}</p></template
     >
-      <h2 class="text-3xl font-semibold text-primary">Moja półka - przeczytane...</h2>
-      <div v-if="userbookStore.loadingUserbooks">
-        <ProgressSpinner style="width: 30px; height: 30px" stroke-width="5"/>
-      </div>
-    </div>
+    <template #center>
+      <InputNumber
+          v-model="selectedYear"
+          :min="2010"
+          :max="2040"
+          show-buttons
+          :format="false"
+          button-layout="horizontal"
+      />
+    </template>
 
-    <Toolbar class="m-6 text-color">
-      <template #start
-      ><p class="mt-auto mb-auto">ROK: {{ displayedYear }}</p></template
-      >
-
-      <template #center>
-        <InputNumber
-            v-model="selectedYear"
-            :min="2010"
-            :max="2040"
-            show-buttons
-            :format="false"
-            button-layout="horizontal"
-        />
-      </template>
-
-      <template #end>
-        <Button
-            class="font-bold uppercase tracking-wider"
-            outlined
-            :disabled="userbookStore.loadingUserbooks"
-            :loading="userbookStore.loadingUserbooks"
-            @click="getUserbooks"
-        >wyświetl
-        </Button>
-      </template>
-    </Toolbar>
+    <template #end>
+      <Button
+          class="font-bold uppercase tracking-wider"
+          outlined
+          size="small"
+          :disabled="userbookStore.loadingUserbooks"
+          :loading="userbookStore.loadingUserbooks"
+          @click="getUserbooks"
+      >wyświetl
+      </Button>
+    </template>
+  </Toolbar>
 
     <div class="flex flex-row flex-wrap justify-center">
       <div v-for="ub in userbooks" :key="ub.id">

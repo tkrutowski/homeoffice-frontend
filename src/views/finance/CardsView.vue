@@ -168,14 +168,6 @@ const editCard = (item: Card) => {
       @cancel="showDeleteConfirmationDialog = false"
   />
   <Panel class="max-w-screen-xl m-auto mt-5">
-    <template #header>
-      <div class="w-full flex justify-center gap-4">
-        <h3 class="color-green">LISTA KART</h3>
-        <div v-if="cardStore.loadingCards">
-          <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5"/>
-        </div>
-      </div>
-    </template>
     <DataView :value="filteredData" dataKey="id">
       <template #list="slotProps">
         <div class="flex flex-col">

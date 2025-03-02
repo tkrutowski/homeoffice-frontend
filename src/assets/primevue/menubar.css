@@ -60,6 +60,10 @@
   @apply bg-surface-100 dark:bg-surface-800 text-surface-800 dark:text-surface-0;
 }
 
+.p-menubar-item.active {
+    @apply border-2 border-primary  rounded-md;
+}
+
 .p-menubar-item:not(.p-disabled) > .p-menubar-item-content:hover .p-menubar-item-icon {
   @apply text-surface-500 dark:text-surface-400;
 }

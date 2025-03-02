@@ -58,7 +58,6 @@ const props = defineProps({
 
 .icon-only:disabled {
   color: white !important;
-  background-color: gray !important;
 }
 
 .icon-only:focus {

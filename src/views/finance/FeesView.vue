@@ -207,14 +207,6 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
   />
 
   <Panel class="mt-3 ml-2 mr-2">
-    <template #header>
-      <div class="w-full flex justify-center">
-        <span class="m-0 text-4xl">LISTA OPŁAT</span>
-        <div v-if="feeStore.loadingFees">
-          <ProgressSpinner class="ml-3" style="width: 40px; height: 40px" stroke-width="5"/>
-        </div>
-      </div>
-    </template>
     <DataTable
         v-if="!feeStore.loadingFees"
         v-model:expandedRows="expandedRows"
@@ -501,5 +493,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
 <style scoped>
 .p-datatable .p-datatable-tbody > tr > td {
   text-align: center !important;
+}
+::v-deep(.p-panel-header) {
+  padding: 0.25rem !important;
 }
 </style>

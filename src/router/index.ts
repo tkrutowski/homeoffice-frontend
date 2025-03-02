@@ -184,13 +184,13 @@ const routes = [
   },
   //-------------------------------------------------CARDS
   {
-    path: '/finance/payment/cards',
+    path: '/finance/cards',
     name: 'Cards',
     component: CardsView,
     props: true,
   },
   {
-    path: '/finance/payment/card/:isEdit/:cardId',
+    path: '/finance/card/:isEdit/:cardId',
     name: 'Card',
     component: CardView,
     props: true,

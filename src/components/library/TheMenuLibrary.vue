@@ -1,9 +1,29 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {useAuthorizationStore} from '../../stores/authorization'
 import router from '../../router'
+import {useRoute} from 'vue-router';
+import {useBooksStore} from "../../stores/books.ts";
+import {useUserbooksStore} from "../../stores/userbooks.ts";
+import OfficeIconButton from "../../components/OfficeIconButton.vue";
 
+const userbooksStore = useUserbooksStore()
+const booksStore = useBooksStore()
 const authorizationStore = useAuthorizationStore()
+const route = useRoute();
+
+const activeMenu = computed(() => {
+  console.log('activeMenu', route.path)
+  if (route.path.includes('/homelib')) return 'dashboard';
+  if (route.path.includes('/library/book/shell')) return 'shell';
+  if (route.path.includes('/library/book')) return 'book';
+  return null; // Jeśli nie pasuje do żadnego menu
+});
+
+const allLoading = computed(() => {
+  return userbooksStore.loadingUserbooks || booksStore.loadingBooks || booksStore.loadingAuthors || booksStore.loadingBooksInSeries
+});
+
 const items = ref([
   {
     label: 'Home',
@@ -15,6 +35,7 @@ const items = ref([
   {
     label: 'Tablica',
     icon: 'pi pi-fw pi-clipboard',
+    class: `${activeMenu.value === 'dashboard' ? 'active' : ''}`,
     disabled: !authorizationStore.hasAccessLibrary,
     command: () => {
       router.push({name: 'LibraryHome'})
@@ -23,6 +44,7 @@ const items = ref([
   {
     label: 'Książki',
     icon: 'pi pi-book',
+    class: `${activeMenu.value === 'book' ? 'active' : ''}`,
     disabled: !authorizationStore.hasAccessLibrary,
     items: [
       {
@@ -39,7 +61,12 @@ const items = ref([
         label: 'Spis książek',
         icon: 'pi pi-fw pi-list',
         command: () => {
-          router.push({name: 'Books'})
+          if (window.location.href.includes(router.resolve({name: 'Books'}).href)) {
+            const redirect = JSON.stringify({name: 'Books'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          } else {
+            router.push({name: 'Books'})
+          }
         },
       },
       {
@@ -54,6 +81,7 @@ const items = ref([
   {
     label: 'Moja półka',
     icon: 'pi pi-fw pi-address-book',
+    class: `${activeMenu.value === 'shell' ? 'active' : ''}`,
     disabled: !authorizationStore.hasAccessLibrary,
     items: [
       {
@@ -99,20 +127,25 @@ const items = ref([
       <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2"/>
     </template>
     <template #end>
-      <div v-if="!authorizationStore.isAuthenticatedOrToken">
-        <router-link :to="{ name: 'login' }" style="text-decoration: none">
-          <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
-        </router-link>
-      </div>
-      <div v-else>
-        <Button
-            class="font-bold uppercase tracking-wider"
-            outlined
-            :onclick="authorizationStore.logout"
-        >wyloguj
-        </Button>
+      <div class="flex flex-row gap-4">
+        <OfficeIconButton class="cursor-default" icon="pi pi-check-square" severity="success" :loading="allLoading"
+                          title="Określa, czy wyświetlane dane są aktualne."/>
+        <div v-if="!authorizationStore.isAuthenticatedOrToken">
+          <router-link :to="{ name: 'login' }" style="text-decoration: none">
+            <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
+          </router-link>
+        </div>
+        <div v-else>
+          <Button
+              class="font-bold uppercase tracking-wider"
+              icon="pi pi-power-off"
+              outlined
+              label="wyloguj"
+              icon-pos="right"
+              :onclick="authorizationStore.logout"
+          />
+        </div>
       </div>
     </template>
   </Menubar>
 </template>
-<style scoped></style>
