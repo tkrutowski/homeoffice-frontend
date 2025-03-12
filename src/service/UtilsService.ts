@@ -1,12 +1,13 @@
 import { useBookstoreStore } from '../stores/bookstores'
-import { useUserbooksStore } from '../stores/userbooks'
 import { useCardsStore } from '../stores/cards'
 import { useFirmsStore } from '../stores/firms'
-import type { Author, Category } from '../types/Book'
+import {type Author, type Category} from '../types/Book'
+import {OwnershipStatus, EditionType, ReadingStatus} from '../types/Book'
 import moment from 'moment'
 import type { FeeInstallment } from '../types/Fee'
 import type { Installment } from '../types/Payment'
 import type { LoanInstallment } from '../types/Loan'
+import {TranslationService} from "@/service/TranslationService.ts";
 
 export const UtilsService = {
   formatCurrency(value: number | undefined) {
@@ -42,11 +43,7 @@ export const UtilsService = {
 
   getTypesForLibrary() {
     const bookstoreStore = useBookstoreStore()
-    const userbookStore = useUserbooksStore()
     if (bookstoreStore.bookstores.length === 0) bookstoreStore.getBookstoresFromDb()
-    if (userbookStore.ownershipStatus.length === 0) userbookStore.getOwnershipFromDb()
-    if (userbookStore.editionTypes.length === 0) userbookStore.getEditionTypeFromDb()
-    if (userbookStore.readingStatuses.length === 0) userbookStore.getReadingStatusFromDb()
   },
 
   getTypesForFinance() {
@@ -85,4 +82,29 @@ export const UtilsService = {
   isFeeInstallment(installment: Installment): installment is FeeInstallment {
     return (installment as FeeInstallment).idFee !== undefined
   },
+
+  getOwnershipStatusOption() {
+    return Object.keys(OwnershipStatus)
+        .filter((key) => key !== "ALL") // Usuwamy klucz ALL
+        .map((key) => ({
+      label: TranslationService.translateEnum("OwnershipStatus", key), // klucz
+      value: OwnershipStatus[key as keyof typeof OwnershipStatus], // wartość
+    }));
+  },
+  getEditionTypeOption() {
+    return Object.keys(EditionType)
+        .filter((key) => key !== "ALL") // Usuwamy klucz ALL
+        .map((key) => ({
+      label: TranslationService.translateEnum("EditionType", key), // klucz
+      value: EditionType[key as keyof typeof EditionType], // wartość
+    }));
+  },
+  getReadingStatusOption() {
+  return Object.keys(ReadingStatus)
+      .filter((key) => key !== "ALL") // Usuwamy klucz ALL
+      .map((key) => ({
+    label: TranslationService.translateEnum("ReadingStatus", key), // klucz
+    value: ReadingStatus[key as keyof typeof ReadingStatus], // wartość
+  }));
+},
 }

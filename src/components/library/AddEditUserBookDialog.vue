@@ -37,7 +37,7 @@ const userbook = ref<UserBook>({
   idUser: 0,
   book: null,
   idBookstore: 0,
-  editionType: EditionType.BOOK,
+  editionType: EditionType.AUDIOBOOK,
   readingStatus: ReadingStatus.NOT_READ,
   ownershipStatus: OwnershipStatus.READ_ONLY,
   readFrom: null,
@@ -91,13 +91,13 @@ const showErrorBookstore = () => {
   return submitted.value && userbook.value.idBookstore === 0
 }
 const showErrorOwnership = () => {
-  return submitted.value && userbook.value.ownershipStatus.length === 0
+  return submitted.value && !userbook.value.ownershipStatus
 }
 const showErrorEditionType = () => {
-  return submitted.value && userbook.value.editionType.length === 0
+  return submitted.value && !userbook.value.editionType
 }
 const showErrorReadingStatus = () => {
-  return submitted.value && userbook.value.readingStatus.length === 0
+  return submitted.value && !userbook.value.readingStatus
 }
 const showErrorDateFrom = () => {
   return (
@@ -197,8 +197,9 @@ const cancel = () => {
                   id="input-ownership"
                   v-model="userbook.ownershipStatus"
                   :class="{ 'p-invalid': showErrorOwnership() }"
-                  :options="userbookStore.ownershipStatus"
-                  option-label="viewName"
+                  :options="UtilsService.getOwnershipStatusOption()"
+                  option-label="label"
+                  option-value="value"
                   :loading="userbookStore.loadingOwnership"
               />
               <small class="p-error">{{
@@ -215,8 +216,9 @@ const cancel = () => {
                   id="input-edition"
                   v-model="userbook.editionType"
                   :class="{ 'p-invalid': showErrorEditionType() }"
-                  :options="userbookStore.editionTypes"
-                  option-label="viewName"
+                  :options="UtilsService.getEditionTypeOption()"
+                  option-label="label"
+                  option-value="value"
                   :loading="userbookStore.loadingEditionType"
               />
               <small class="p-error">{{
@@ -233,8 +235,9 @@ const cancel = () => {
                   id="input-read"
                   v-model="userbook.readingStatus"
                   :class="{ 'p-invalid': showErrorReadingStatus() }"
-                  :options="userbookStore.readingStatuses"
-                  option-label="viewName"
+                  :options="UtilsService.getReadingStatusOption()"
+                  option-label="label"
+                  option-value="value"
                   :loading="userbookStore.loadingReadingStatus"
               />
               <small class="p-error">{{

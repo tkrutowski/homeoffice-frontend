@@ -133,44 +133,5 @@ export const useUserbooksStore = defineStore('userbook', {
             if (index !== -1) this.userbooks.splice(index, 1)
             console.log('END - deleteUserbookDb()')
         },
-
-        //
-        //GET OWNERSHIP  FROM DB
-        //
-        async getOwnershipFromDb(): Promise<void> {
-            console.log('START - getOwnershipFromDb()')
-            this.loadingOwnership = true
-
-            const response = await httpCommon.get(`/v1/library/userbook/ownership_status`)
-            this.ownershipStatus = response.data
-            this.loadingOwnership = false
-            console.log('END - getOwnershipFromDb()')
-        },
-
-        //
-        //GET EDITION TYPE FROM DB
-        //
-        async getEditionTypeFromDb(): Promise<void> {
-            console.log('START - getEditionTypeFromDb()')
-            this.loadingEditionType = true
-
-            const response = await httpCommon.get(`/v1/library/userbook/edition_type`)
-            this.editionTypes = response.data
-            this.loadingEditionType = false
-            console.log('END - getEditionTypeFromDb()')
-        },
-
-        //
-        //GET READING STATUS FROM DB
-        //
-        async getReadingStatusFromDb(): Promise<void> {
-            console.log('START - getReadingStatusFromDb()')
-            this.loadingReadingStatus = true
-
-            const response = await httpCommon.get(`/v1/library/userbook/reading_status`)
-            this.readingStatuses = response.data
-            this.loadingReadingStatus = false
-            console.log('END - getReadingStatusFromDb()')
-        },
     },
 })
