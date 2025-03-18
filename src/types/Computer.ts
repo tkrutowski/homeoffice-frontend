@@ -8,9 +8,12 @@ export interface ComponentType {
     column: 'processor' | 'motherboard' | 'computerCase' | 'ram' | 'graphicCard' | 'disk' | 'power' | 'cooling' | 'display' | 'keyboard' | 'mouse' | 'soundCard' | 'usb'
 }
 
-export interface ComputerType {
-    name: 'LAPTOP' | 'DESKTOP' | 'TABLET'
-    viewName: string
+
+export enum ComputerType {
+    LAPTOP = "LAPTOP",
+    DESKTOP = "DESKTOP",
+    TABLET = "TABLET",
+    ALL = "ALL"
 }
 
 export interface ComputerDto {

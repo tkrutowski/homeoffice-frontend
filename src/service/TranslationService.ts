@@ -5,26 +5,28 @@ export const Translations: Record<string, Record<string, string>> = {
         NOT_READ: 'Nie przeczytana',
         READ_NOW: 'Czytana',
         READ: 'Przeczytana',
-        ALL: 'ALL'
     },
     OwnershipStatus: {
         HAVE: 'Mam',
         WANT: 'Chcę',
         READ_ONLY: 'Tylko czytam',
-        ALL: 'ALL'
     },
     EditionType: {
         BOOK: 'Książka',
         AUDIOBOOK: 'Audiobook',
         EBOOK: 'Ebook',
-        ALL: 'ALL'
     },
     PaymentStatus: {
         PAID: "Zapłacone",
         TO_PAY: "Do zapłaty",
         OVER_DUE: "Przeterminowana",
-        ALL: "ALL"
+    },
+    ComputerType: {
+        LAPTOP: "Laptop",
+        DESKTOP: "Desktop",
+        TABLET: "Tablet",
     }
+
 };
 
 export const TranslationService = {
@@ -33,7 +35,7 @@ export const TranslationService = {
         return Translations[enumName]?.[key] || key;
     },
 
-    translateMonth (month: number) {
+    translateMonth(month: number) {
         switch (month) {
             case 1:
                 return 'Styczeń'
