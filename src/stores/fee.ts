@@ -71,7 +71,7 @@ export const useFeeStore = defineStore('fee', {
                 `/v1/finance/fee/status?status=` + paymentStatus + '&installment=' + installment,
             )
             console.log('getFeesFromDb() - Ilosc[]: ' + response.data.length)
-            this.fees = response.data
+            this.fees = response.data.map((fee: any) => this.convertResponse(fee));
             this.loadingFees = false
             console.log('END - getFeesFromDb(' + paymentStatus + ', ' + installment + ')')
         },
@@ -86,7 +86,7 @@ export const useFeeStore = defineStore('fee', {
             this.loadingFees = false
             console.log('END - getFeesFromDb()')
             if (response.data) {
-                return response.data
+                return this.convertResponse(response.data);
             } else
                 return null
         },
@@ -178,5 +178,12 @@ export const useFeeStore = defineStore('fee', {
                 return null
 
         },
+
+        convertResponse(fee: Fee) {
+            return {
+                ...fee,
+                date: fee.date ? new Date(fee.date) : null,
+            }
+        }
     },
 })

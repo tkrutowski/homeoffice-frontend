@@ -32,7 +32,7 @@ const initFilters = () => {
     'firm.name': {value: null, matchMode: FilterMatchMode.CONTAINS}, //nie dziala z IN
     date: {
       operator: FilterOperator.AND,
-      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_AFTER}],
     },
     amount: {
       operator: FilterOperator.AND,

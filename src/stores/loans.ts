@@ -87,7 +87,7 @@ export const useLoansStore = defineStore('loan', {
                 `/v1/finance/loan/status?status=` + paymentStatus + '&installment=' + installment,
             )
             console.log('getLoansFromDb() - Ilosc[]: ' + response.data.length)
-            this.loans = response.data
+            this.loans = response.data.map((loan: any) => this.convertResponse(loan));
             this.loadingLoans = false
             console.log('END - etLoansFromDb(' + paymentStatus + ', ' + installment + ')')
         },
@@ -102,7 +102,7 @@ export const useLoansStore = defineStore('loan', {
             this.loadingLoans = false
             if (response.data) {
                 console.log('END - getLoansFromDb()')
-                return response.data
+                return this.convertResponse(response.data);
             } else {
                 console.log('END - getLoansFromDb()')
                 return null
@@ -183,6 +183,13 @@ export const useLoansStore = defineStore('loan', {
             }
             console.log('END - updateLoanInstallmentDb()')
             return loan
+        },
+
+        convertResponse(loan: Loan) {
+            return {
+                ...loan,
+                date: loan.date ? new Date(loan.date) : null,
+            }
         }
     },
 })

@@ -15,7 +15,6 @@ import {usePaymentStore} from '@/stores/payments'
 
 import type {StatusType} from '@/types/StatusType'
 import type {DataTablePageEvent} from 'primevue/datatable'
-import moment from "moment/moment";
 import type {AxiosError} from "axios";
 import {PaymentStatus} from "@/types/Payment.ts";
 
@@ -32,7 +31,7 @@ const initFilters = () => {
     'bank.name': {value: null, matchMode: FilterMatchMode.CONTAINS}, //nie dziala z IN
     date: {
       operator: FilterOperator.AND,
-      constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}],
+      constraints: [{value: null, matchMode: FilterMatchMode.DATE_AFTER}],
     },
     amount: {
       operator: FilterOperator.AND,
@@ -50,9 +49,6 @@ const bankFilter = computed(() => {
         .map((loan: Loan) => loan.bank?.name || '')),
   ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''))
 })
-const formatDate = (value: Date) => {
-  return moment(value).format("YYYY-MM-DD")
-}
 
 const expandedRows = ref([])
 const loanTemp = ref<Loan | null>(null)
@@ -319,7 +315,7 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
       <!--DATA-->
       <Column field="date" header="Data" :sortable="true" data-type="date">
         <template #body="{ data }">
-          {{ formatDate(data.date) }}
+          {{ UtilsService.formatDateToString(data.date) }}
         </template>
         <template #filter="{ filterModel }">
           <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm"/>
