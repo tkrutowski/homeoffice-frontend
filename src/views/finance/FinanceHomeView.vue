@@ -6,6 +6,6 @@ UtilsService.getTypesForFinance()
 
 <template>
   <TheMenuFinance />
-  <p class="text-4xl text-center mt-8">Tutaj będą nadchodzące opłaty... ;)</p>
+  <p class="text-4xl text-center mt-8 text-primary">Tutaj będą nadchodzące opłaty... ;)</p>
 </template>
 <style scoped></style>

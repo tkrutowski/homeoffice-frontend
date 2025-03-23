@@ -19,6 +19,7 @@ import {useFirmsStore} from '@/stores/firms'
 import {usePurchasesStore} from '@/stores/purchases'
 import {useCardsStore} from '@/stores/cards'
 import {PaymentStatus} from "@/types/Payment.ts";
+import AddFirmDialog from "@/components/share/AddFirmDialog.vue";
 
 const userStore = useUsersStore()
 const purchaseStore = usePurchasesStore()
@@ -59,14 +60,6 @@ const isSaveBtnDisabled = computed(() => {
       btnSaveDisabled.value
   )
 })
-// const purchaseDateTemp = ref<string>('')
-// watch(purchaseDateTemp, (newDate: string) => {
-//   purchase.value.purchaseDate = moment(new Date(newDate)).format('YYYY-MM-DD')
-// })
-// const deadlineDateTemp = ref<string>('')
-// watch(deadlineDateTemp, (newDate: string) => {
-//   purchase.value.paymentDeadline = moment(new Date(newDate)).format('YYYY-MM-DD')
-// })
 //
 //AUTO COMPLETE
 //
@@ -287,12 +280,42 @@ const showErrorDate = () => {
 const showErrorDeadline = () => {
   return submitted.value && !purchase.value.paymentDeadline
 }
+
+//
+//----------------------------------------------NEW FIRM-------------------------------
+//
+const showNewFirmModal = ref<boolean>(false)
+
+async function newFirm(firm: Firm) {
+  console.log("newFirm()", firm);
+  showNewFirmModal.value = false;
+  await firmStore.addFirmDb(firm).then(() => {
+    toast.add({
+      severity: "success",
+      summary: "Potwierdzenie",
+      detail: "Dodano firmę: " + firm.name,
+      life: 3000,
+    });
+  }).catch((reason: AxiosError) => {
+    console.error(reason);
+    toast.add({
+      severity: "error",
+      summary: "Błąd podczas dodawania firmy.",
+      detail: (reason?.response?.data as { message: string }).message,
+      life: 5000,
+    });
+  })
+}
 </script>
 
 <template>
   <Toast/>
   <TheMenuFinance/>
-
+  <AddFirmDialog
+      v-model:visible="showNewFirmModal"
+      @save="newFirm"
+      @cancel="showNewFirmModal = false"
+  />
   <div class="m-4 max-w-4xl mx-auto">
     <form @submit.stop.prevent="savePurchase">
       <Panel>
@@ -379,6 +402,13 @@ const showErrorDeadline = () => {
                 {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
               </small>
             </div>
+            <OfficeIconButton
+                title="Dodaj firmę"
+                :icon="firmStore.loadingFirms ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                style="height: 35px; width: 35px; padding: 0"
+                class="mt-1 self-center"
+                @click="showNewFirmModal = true"
+            />
           </div>
 
           <!-- ROW-4  DATE  -->
