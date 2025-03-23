@@ -194,7 +194,7 @@ const submitDelete = async () => {
         severity: 'error',
         summary: reason?.message,
         detail: 'Błąd podczas usuwania kredytu: ' + loanTemp.value?.name,
-        life: 3000,
+        life: 5000,
       })
     })
   }

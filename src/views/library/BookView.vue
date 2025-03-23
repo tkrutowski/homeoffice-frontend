@@ -124,14 +124,14 @@ async function newBook() {
               severity: 'warn',
               summary: 'Info',
               detail: 'Książka już istnieje w bazie danych.',
-              life: 3000,
+              life: 5000,
             })
           } else {
             toast.add({
               severity: 'error',
               summary: reason?.message,
               detail: 'Błąd podczas dodawania książki.',
-              life: 3000,
+              life: 5000,
             })
           }
         })
@@ -174,7 +174,7 @@ async function editBook() {
             severity: 'error',
             summary: reason?.message,
             detail: 'Błąd podczas edycji książki.',
-            life: 3000,
+            life: 5000,
           })
           btnSaveDisabled.value = false
         })
@@ -249,7 +249,7 @@ async function saveAuthor(firstName: string, lastName: string) {
         severity: 'error',
         summary: reason?.message,
         detail: 'Nie dodano autora: ' + firstName + ' ' + lastName,
-        life: 3000,
+        life: 5000,
       })
     })
   }
@@ -281,7 +281,7 @@ async function saveCategory(name: string) {
         severity: 'error',
         summary: reason?.message,
         detail: 'Nie dodano kategorii: ' + name,
-        life: 3000,
+        life: 5000,
       })
     })
   }

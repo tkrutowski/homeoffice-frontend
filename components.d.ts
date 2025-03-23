@@ -11,6 +11,7 @@ declare module 'vue' {
     AddDialog: typeof import('./src/components/AddDialog.vue')['default']
     AddEditSeriesDialog: typeof import('./src/components/library/AddEditSeriesDialog.vue')['default']
     AddEditUserBookDialog: typeof import('./src/components/library/AddEditUserBookDialog.vue')['default']
+    AddFirmDialog: typeof import('./src/components/share/AddFirmDialog.vue')['default']
     AddMultipleDialog: typeof import('./src/components/AddMultipleDialog.vue')['default']
     AppCard: typeof import('./src/components/AppCard.vue')['default']
     AutoComplete: typeof import('primevue/autocomplete')['default']

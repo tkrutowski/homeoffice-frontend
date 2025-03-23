@@ -181,6 +181,25 @@ export const useAuthorizationStore = defineStore('authorization', {
                 return false
             }
         },
+        hasAccessFinanceFirm(): boolean {
+            console.log('hasAccessFinanceFirm()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_FINANCE_FIRM') ||
+                        decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessFinanceFirm() ERROR', error)
+                return false
+            }
+        },
         hasAccessLibrary(): boolean {
             console.log('hasAccessLibrary()')
             try {

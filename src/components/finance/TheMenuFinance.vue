@@ -24,6 +24,7 @@ const activeMenu = computed(() => {
   if (route.path.includes('/finance/payment')) return 'payment';
   if (route.path.includes('/finance/purchase')) return 'purchase';
   if (route.path.includes('/finance/card')) return 'card';
+  if (route.path.includes('/finance/firm')) return 'firm';
   return null; // Jeśli nie pasuje do żadnego menu
 });
 
@@ -176,6 +177,36 @@ const items = ref([
             router.push({path: '/refresh', query: {redirect: redirect}})
           } else {
             router.push({name: 'Cards'})
+          }
+        },
+      },
+    ],
+  },
+  {
+    label: 'Firmy',
+    icon: 'pi pi-fw pi-building',
+    class: `${activeMenu.value === 'firm' ? 'active' : ''}`,
+    disabled: !authorizationStore.hasAccessFinanceFirm,
+    items: [
+      {
+        label: 'Nowa firma',
+        icon: 'pi pi-fw pi-file',
+        command: () => {
+          router.push({
+            name: 'Firm',
+            params: {isEdit: 'false', firmId: 0},
+          })
+        },
+      },
+      {
+        label: 'Lista firm',
+        icon: 'pi pi-fw pi-list',
+        command: () => {
+          if (window.location.href.includes(router.resolve({name: 'Firms'}).href)) {
+            const redirect = JSON.stringify({name: 'Firms'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          } else {
+            router.push({name: 'Firms'})
           }
         },
       },

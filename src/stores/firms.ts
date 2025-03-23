@@ -27,9 +27,7 @@ export const useFirmsStore = defineStore('firm', {
             // console.log("GET_FIRM id:", id);
             const result = this.firms.find((firm) => firm.id === id)
             // console.log("GET_FIRM bez:", result);
-            if (result) return result
-
-            return null
+            return result || null
         },
 
         //----------------------------------DATABASE-----------------------
@@ -42,7 +40,7 @@ export const useFirmsStore = defineStore('firm', {
 
             const response = await httpCommon.get(`/v1/finance/firm`)
             console.log('getFirmsFromDb() - Ilosc[]: ' + response.data.length)
-            this.firms = response.data
+            this.firms = response.data.map((firm: any) => this.convertResponse(firm));
             this.loadingFirms = false
             console.log('END - getFirmsFromDb()')
         },
@@ -56,16 +54,13 @@ export const useFirmsStore = defineStore('firm', {
             const response = await httpCommon.get(`/v1/finance/firm/` + firmId)
             this.loadingFirms = false
             console.log('END - getFirmFromDb()')
-            if (response.data)
-                return response.data
-            else
-                return null
+            return this.convertResponse(response.data) || null
         },
         //
         //ADD FIRM
         //
         async addFirmDb(firm: Firm) {
-            console.log('START - addBankDb()')
+            console.log('START - addFirmDb()')
             const response = await httpCommon.post(`/v1/finance/firm`, firm)
             this.firms.push(response.data)
             console.log('END - addFirmDb()')
@@ -74,7 +69,7 @@ export const useFirmsStore = defineStore('firm', {
         //UPDATE FIRM
         //
         async updateFirmDb(firm: Firm) {
-            console.log('START - updateBankDb()')
+            console.log('START - updateFirmDb()')
 
             const response = await httpCommon.put(`/v1/finance/firm`, firm)
             const index = this.firms.findIndex((f: Firm) => f.id === firm.id)
@@ -91,5 +86,12 @@ export const useFirmsStore = defineStore('firm', {
             if (index !== -1) this.firms.splice(index, 1)
             console.log('END - deleteFirmDb()')
         },
+
+        convertResponse(firm: Firm) {
+            return {
+                ...firm,
+                address: firm.address ? firm.address : {id: 0, city: '', street: '', zip: ''},
+            }
+        }
     },
 })

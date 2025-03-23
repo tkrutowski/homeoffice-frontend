@@ -40,6 +40,10 @@ import DevicesListView from '@/views/device/DevicesListView.vue'
 import DeviceView from '@/views/device/DeviceView.vue'
 import ComputersView from "@/views/device/ComputersView.vue";
 
+//SHARE
+import FirmsView from "@/views/share/FirmsView.vue";
+import FirmView from "@/views/share/FirmView.vue";
+
 const routes = [
   {
     path: '/',
@@ -221,6 +225,19 @@ const routes = [
     path: '/devices/computer/all',
     name: 'Computers',
     component: ComputersView,
+  },
+  //-----------------------------------------------SHARE---------------------------------------------
+  // FIRM
+  {
+    path: '/finance/firm/all',
+    name: 'Firms',
+    component: FirmsView,
+  },
+  {
+    path: '/finances/firm/:isEdit/:firmId',
+    name: 'Firm',
+    component: FirmView,
+    props: true,
   },
 ]
 
