@@ -110,7 +110,7 @@ const filteredData = computed(() => {
   }
 })
 const dataTableRef = ref<DefineComponent | null>(null)
-const selectedLoanAmount = computed(() => {
+const filteredLoanAmount = computed(() => {
   const processedData = dataTableRef.value?.processedData
   let sum = 0
   processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
@@ -216,6 +216,22 @@ const editItem = (item: Loan) => {
 const handleRowsPerPageChange = (event: DataTablePageEvent) => {
   localStorage.setItem('rowsPerPageLoans', event.rows.toString())
 }
+
+//
+//-------------SELECTED LOANS
+//
+const selectedLoans = ref<Loan[]>([])
+const selectedLoanAmount = computed(() => {
+  let sum = 0
+  selectedLoans.value.forEach((loan: { installmentList: LoanInstallment[] }) => {
+    const installmentSum = loan.installmentList
+        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
+        .map((value) => value.installmentAmountToPay)
+        .reduce((acc, currentValue) => acc + currentValue, 0)
+    sum += installmentSum
+  })
+  return sum
+})
 </script>
 <template>
   <TheMenuFinance/>
@@ -241,6 +257,9 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
         :value="filteredData"
+        v-model:selection="selectedLoans"
+        selectionMode="multiple"
+        metaKeySelection
         removable-sort
         paginator
         :rows="loansStore.rowsPerPage"
@@ -579,6 +598,10 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
       <div class="flex flex-col gap-2">
         <p class="">
           <span class="">Przefiltrowane:</span>
+          <span class="ml-3">{{ UtilsService.formatCurrency(filteredLoanAmount) }}</span>
+        </p>
+        <p class="">
+          <span class="">Wybrane:</span>
           <span class="ml-3">{{ UtilsService.formatCurrency(selectedLoanAmount) }}</span>
         </p>
         <p class="">
