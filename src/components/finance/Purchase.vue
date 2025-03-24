@@ -286,11 +286,7 @@ const showErrorAmount = () => {
       <Panel>
         <template #header>
           <IconButton
-              v-tooltip.right="{
-              value: 'Powrót do listy zakupów',
-              showDelay: 500,
-              hideDelay: 300,
-            }"
+              title="Powrót do listy zakupów"
               icon="pi-fw pi-list"
               @click="() => router.push({ name: 'Purchases' })"
           />

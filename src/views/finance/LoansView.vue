@@ -559,11 +559,7 @@ const selectedLoanAmount = computed(() => {
   <Toolbar class="sticky-toolbar">
     <template #start>
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Odświerz listę kredytów',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Odświerz listę kredytów"
           :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
           class="mr-2"
           @click="loansStore.refreshLoans()"

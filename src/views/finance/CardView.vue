@@ -260,11 +260,7 @@ const showErrorActivationDate = () => {
       <Panel>
         <template #header>
           <IconButton
-              v-tooltip.right="{
-              value: 'Powrót do listy kart',
-              showDelay: 500,
-              hideDelay: 300,
-            }"
+              title="Powrót do listy kart"
               icon="pi pi-fw pi-list"
               @click="() => router.push({ name: 'Cards' })"
           />

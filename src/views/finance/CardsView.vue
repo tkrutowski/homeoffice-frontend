@@ -221,11 +221,7 @@ const editCard = (item: Card) => {
                   <div class="flex flex-row-reverse md:flex-row gap-2">
                     <OfficeIconButton
                         v-if="item.activeStatus == 'INACTIVE'"
-                        v-tooltip.top="{
-                        value: 'Zmień status na AKTYWNY',
-                        showDelay: 1000,
-                        hideDelay: 300,
-                      }"
+                        title="Zmień status na AKTYWNY"
                         icon="pi pi-times-circle"
                         :rounded="false"
                         severity="danger"
@@ -233,11 +229,7 @@ const editCard = (item: Card) => {
                     />
                     <OfficeIconButton
                         v-else
-                        v-tooltip.top="{
-                        value: 'Zmień status na NIEAKTYWNY',
-                        showDelay: 1000,
-                        hideDelay: 300,
-                      }"
+                        title="Zmień status na NIEAKTYWNY"
                         icon="pi pi-check-circle"
                         :rounded="false"
                         severity="secondary"
@@ -245,22 +237,14 @@ const editCard = (item: Card) => {
                     />
                     <OfficeIconButton
                         icon="pi pi-file-edit"
-                        v-tooltip.top="{
-                        value: `Edytuj kartę: ${item.name}`,
-                        showDelay: 1000,
-                        hideDelay: 300,
-                      }"
+                        title="`Edytuj kartę: ${item.name}`"
                         :rounded="false"
                         severity="primary"
                         @click="editCard(item)"
                     />
                     <OfficeIconButton
                         icon="pi pi-trash"
-                        v-tooltip.top="{
-                        value: `Usuń kartę: ${item.name}`,
-                        showDelay: 1000,
-                        hideDelay: 300,
-                      }"
+                        title="`Usuń kartę: ${item.name}`"
                         :rounded="false"
                         severity="danger"
                         @click="confirmDeleteCard(item)"
@@ -268,7 +252,7 @@ const editCard = (item: Card) => {
                     <OfficeButton
                         btn-type="office-regular"
                         icon="pi pi-shopping-cart"
-                        v-tooltip.top="{ value: `Nowy zakup.`, showDelay: 1000, hideDelay: 300 }"
+                        title="Nowy zakup"
                         class="flex-auto md:flex-initial whitespace-nowrap"
                         text=""
                     ></OfficeButton>
@@ -284,11 +268,7 @@ const editCard = (item: Card) => {
   <Toolbar class="sticky-toolbar p-2 m-2">
     <template #start>
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Odświerz listę książek',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Odświerz listę książek"
           :icon="
           bankStore.loadingBanks || cardStore.loadingCards
             ? 'pi pi-spin pi-spinner'
@@ -300,11 +280,7 @@ const editCard = (item: Card) => {
     </template>
     <template #center>
       <OfficeIconButton
-          v-tooltip.left="{
-          value: 'Wyświetl nieaktywne',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Wyświetl nieaktywne"
           :icon="
           bankStore.loadingBanks || cardStore.loadingCards
             ? 'pi pi-spin pi-spinner'
@@ -315,11 +291,7 @@ const editCard = (item: Card) => {
           @click="setFilter('INACTIVE')"
       />
       <OfficeIconButton
-          v-tooltip.top="{
-          value: 'Wyświetl aktywne',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Wyświetl aktywne"
           :icon="
           bankStore.loadingBanks || cardStore.loadingCards
             ? 'pi pi-spin pi-spinner'
@@ -330,11 +302,7 @@ const editCard = (item: Card) => {
           @click="setFilter('ACTIVE')"
       />
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Wyświetl wszystkie',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Wyświetl wszystkie"
           :icon="
           bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-list'
         "

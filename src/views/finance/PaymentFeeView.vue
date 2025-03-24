@@ -200,11 +200,7 @@ const refresh = async () => {
   <Panel id="fee-panel" class="mt-3 m-auto">
     <template #header>
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Powrót do listy',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Powrót do listy"
           icon="pi pi-fw pi-list"
           @click="() => router.push({ name: 'Fees' })"
       />
@@ -296,20 +292,12 @@ const refresh = async () => {
               <template #body="slotProps">
                 <div class="flex flex-row gap-2 justify-center">
                   <OfficeIconButton
-                      v-tooltip.top="{
-                      value: 'Edytuj wpłatę',
-                      showDelay: 1000,
-                      hideDelay: 300,
-                    }"
+                      title="Edytuj wpłatę"
                       icon="pi pi-file-edit"
                       @click="openPaymentModal(slotProps.data)"
                   />
                   <OfficeIconButton
-                      v-tooltip.top="{
-                      value: 'Usuń wpłatę',
-                      showDelay: 1000,
-                      hideDelay: 300,
-                    }"
+                      title="Usuń wpłatę"
                       icon="pi pi-trash"
                       severity="danger"
                       :disabled="slotProps.data.installmentAmountPaid === 0"

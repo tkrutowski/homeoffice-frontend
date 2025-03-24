@@ -71,11 +71,7 @@ watch(
           class="image-card ml-4 mt-3 mb-2"
         />
         <h4
-          v-tooltip.top="{
-            value: 'Termin spłaty',
-            showDelay: 1000,
-            hideDelay: 300,
-          }"
+          title="Termin spłaty"
           class="mb-0"
         >
           {{ props.deadlineDate }}

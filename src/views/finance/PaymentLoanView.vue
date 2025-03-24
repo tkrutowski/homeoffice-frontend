@@ -213,11 +213,7 @@ const refresh = async () => {
   <Panel id="loan-panel" class="mt-3 m-auto">
     <template #header>
       <OfficeIconButton
-          v-tooltip.right="{
-          value: 'Powrót do listy',
-          showDelay: 500,
-          hideDelay: 300,
-        }"
+          title="Powrót do listy"
           icon="pi pi-fw pi-list"
           @click="() => router.push({ name: 'Loans' })"
       />
