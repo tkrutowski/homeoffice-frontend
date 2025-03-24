@@ -83,7 +83,7 @@ const submitChangeStatus = async () => {
             life: 3000,
           })
         })
-        .catch((reason:AxiosError) => {
+        .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
             summary: reason.message,
@@ -182,10 +182,14 @@ const editCard = (item: Card) => {
             >
               <div class="md:w-40 relative">
                 <img
+                    v-if="item.imageUrl && item.imageUrl.length > 0"
                     class="block xl:block mx-auto rounded w-full"
                     :src="item.imageUrl"
                     :alt="item.name"
                 />
+                <img v-else
+                     src="@/assets/images/no_card.png"
+                     alt="Karta"/>
               </div>
               <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">

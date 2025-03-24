@@ -20,7 +20,6 @@ const bankStore = useBanksStore()
 const userStore = useUsersStore()
 const toast = useToast()
 
-// const card = ref<Card>();
 const card = ref<Card>({
   id: 0,
   idBank: 0,
@@ -39,25 +38,6 @@ const card = ref<Card>({
 
 const btnShowBusy = ref<boolean>(false)
 const btnSaveDisabled = ref<boolean>(false)
-
-
-// const isSaveBtnDisabled = computed(() => {
-//   return (
-//       bookStore.loadingBooks ||
-//       bookStore.loadingSeries ||
-//       bookStore.loadingAuthors ||
-//       btnSaveDisabled.value
-//   );
-// });
-
-// const activationDate = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
-// watch(activationDate, (newDate: Date | null) => {
-//   if (card.value) card.value.activationDate = newDate
-// })
-// const expirationDate = ref<Date | Date[] | (Date | null)[] | null | undefined>(null)
-// watch(expirationDate, (newDate: Date | null) => {
-//   if (card.value) card.value.expirationDate = newDate
-// })
 
 const selectedUser = ref<User | null>(null)
 
@@ -88,7 +68,7 @@ function saveCard() {
 }
 
 //
-//---------------------------------------------------------NEW BOOK----------------------------------------------
+//---------------------------------------------------------NEW CARD----------------------------------------------
 //
 async function newCard() {
   console.log('newCard()')
@@ -137,7 +117,7 @@ async function newCard() {
 }
 
 //
-//-----------------------------------------------------EDIT BOOK------------------------------------------------
+//-----------------------------------------------------EDIT CARD------------------------------------------------
 //
 const isEdit = ref<boolean>(false)
 
@@ -160,7 +140,7 @@ async function editCard() {
             router.push({name: 'Cards'})
           }, 3000)
         })
-        .catch((reason:AxiosError) => {
+        .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
             summary: reason.message,
@@ -234,7 +214,7 @@ const showError = (msg: string) => {
     severity: 'error',
     summary: 'Error Message',
     detail: msg,
-    life: 3000,
+    life: 5000,
   })
 }
 const isNotValid = () => {
@@ -307,7 +287,9 @@ const showErrorActivationDate = () => {
                   width="140"
                   alt="Karta"
               />
-              <img v-else src="@/assets/images/no-card.jpg" height="100" width="200" alt="Karta"/>
+              <img v-else
+                   src="@/assets/images/no_card.png"
+                   alt="Karta"/>
             </div>
 
             <div class="col-start-3 col-span-4">
