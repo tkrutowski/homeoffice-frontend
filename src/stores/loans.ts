@@ -141,7 +141,12 @@ export const useLoansStore = defineStore('loan', {
         //
         async updateLoanDb(loan: Loan) {
             console.log('START - updateLoanDb()')
-            const response = await httpCommon.put(`/v1/finance/loan`, loan)
+            const transformedLoan = {
+                ...loan,
+                date: loan.date ? moment(loan.date).format("YYYY-MM-DD") : null,
+                firstPaymentDate: loan.firstPaymentDate ? moment(loan.firstPaymentDate).format("YYYY-MM-DD") : null,
+            };
+            const response = await httpCommon.put(`/v1/finance/loan`, transformedLoan)
             const index = this.loans.findIndex((l: Loan) => l.id === loan.id)
             if (index !== -1) this.loans.splice(index, 1, response.data)
             console.log('END - updateLoanDb()')

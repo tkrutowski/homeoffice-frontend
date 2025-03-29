@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import moment from 'moment'
-import {onMounted, ref} from 'vue'
+import {nextTick, onMounted, ref} from 'vue'
 import {UtilsService} from '@/service/UtilsService.ts'
 import router from '@/router'
 import type {Installment, Payment} from '@/types/Payment.ts'
@@ -53,13 +53,14 @@ const getAmount = (installments: Installment[], month: number) => {
 }
 
 const getClassAmount = (installments: Installment[], month: number) => {
+  let result = getClassBorderLeftCurrentMonth(month);
   const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
           pay.paymentDeadline?.getFullYear() === selectedYear.value &&
           pay.paymentDeadline?.getMonth() + 1 === month,
   )
   const paymentDeadline = installment?.paymentDeadline
-  if (!paymentDeadline) return 'no-credit'
+  if (!paymentDeadline) return result + ' no-credit'
 
   const date = moment(installment?.paymentDate).format('yyyy-MM-DD')
   const isPaid = !date.startsWith('Invalid')
@@ -67,14 +68,27 @@ const getClassAmount = (installments: Installment[], month: number) => {
     const deadline = moment(installment?.paymentDeadline)
     const paymentDate = moment(installment?.paymentDate)
 
-    if (paymentDate.isAfter(deadline)) return 'overdue'
-    else return 'paid'
+    if (paymentDate.isAfter(deadline)) return result + ' overdue'
+    else return result + ' paid'
   } else {
     const deadline = moment(installment?.paymentDeadline)
     const now = moment()
-    if (now.isAfter(deadline)) return 'overdue'
+    if (now.isAfter(deadline)) return result + ' overdue'
   }
-  return 'to-pay'
+  return result + ' to-pay'
+}
+
+const getClassBorderLeftCurrentMonth = (month: number) => {
+  if (month === moment().month() + 1) {
+    return "border-l-4 border-l-blue-500"
+  }
+  return ""
+}
+const getClassBorderRightLeftCurrentMonth = (month: number) => {
+  if (month === moment().month() + 1) {
+    return "border-r-4 border-r-blue-500"
+  }
+  return ""
 }
 
 const getDate = (installments: Installment[], month: number) => {
@@ -94,13 +108,14 @@ const getDate = (installments: Installment[], month: number) => {
 }
 
 const getClassDate = (installments: Installment[], month: number) => {
+  let result = getClassBorderRightLeftCurrentMonth(month);
   const installment = installments.find(
       (pay: Installment) =>
           pay.paymentDeadline?.getFullYear() === selectedYear.value &&
           pay.paymentDeadline?.getMonth() + 1 === month,
   )
   const paymentDeadline = installment?.paymentDeadline
-  if (!paymentDeadline) return 'no-credit'
+  if (!paymentDeadline) return result + ' no-credit'
 
   const date = moment(installment?.paymentDate).format('yyyy-MM-DD')
   const isPaid = !date.startsWith('Invalid')
@@ -108,10 +123,10 @@ const getClassDate = (installments: Installment[], month: number) => {
     const deadline = moment(installment?.paymentDeadline)
     const paymentDate = moment(installment?.paymentDate)
 
-    if (paymentDate.isAfter(deadline)) return 'overdue'
-    else return 'paid'
+    if (paymentDate.isAfter(deadline)) return result + ' overdue'
+    else return result + ' paid'
   }
-  return null
+  return result + ' py-[0.7rem]'
 }
 
 const calculateTotal = (month: number) => {
@@ -193,7 +208,27 @@ onMounted(() => {
   console.log('onMounted UserPayments')
   moment.locale('pl')
   payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString())
+
+  // todayIndex.value = dateRange.value.findIndex(day => moment(day).isSame(moment(), "day"));
+  nextTick(() => {
+    scrollToToday();
+  });
 })
+
+//display current day in the table
+const dataTableRef = ref(null);
+const todayIndex = ref<number>(moment().month() + 2);
+
+const scrollToToday = () => {
+  if (dataTableRef.value) {
+    const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-thead > tr:first-child > th ");
+    console.log("columns", columns);
+    console.log("columns", moment().month());
+    if (columns[todayIndex.value]) { //-1 żeby było bardziej widoczne
+      columns[todayIndex.value].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
+    }
+  }
+};
 </script>
 
 <template>
@@ -208,27 +243,27 @@ onMounted(() => {
         </div>
       </div>
     </template>
-    <DataTable
-        v-model:selection="selectedPayment"
-        :loading="paymentStore.loadingPayments"
-        :sort-order="1"
-        :value="payments"
-        removable-sort
-        scrollable
-        selection-mode="single"
-        sort-field="paymentDay"
-        table-style="min-width: 50rem"
-        @row-select="onRowSelect"
-        size="small"
+    <DataTable ref="dataTableRef"
+               v-model:selection="selectedPayment"
+               :loading="paymentStore.loadingPayments"
+               :sort-order="1"
+               :value="payments"
+               removable-sort
+               scrollable
+               selection-mode="single"
+               sort-field="paymentDay"
+               table-style="min-width: 50rem"
+               @row-select="onRowSelect"
+               size="small"
     >
       <template #empty>
-        <p v-if="!paymentStore.loadingPayments" class="text-red-500 text-3xl">
+        <p v-if="!paymentStore.loadingPayments" class="text-red-500 text-3xl ">
           Nie znaleziono opłat...
         </p>
       </template>
 
       <!--  NAME    -->
-      <Column field="name" header="Nazwa" :sortable="true" frozen style="min-width: 180px">
+      <Column field="name" header="Nazwa" :sortable="true" frozen style="min-width: 200px">
         <template #body="{ data, field }">
           <div class="name">
             {{ data[field] }}
@@ -280,7 +315,7 @@ onMounted(() => {
         >
           <template #body="slotProps">
             <div :class="getClassDate(slotProps.data.installments, number)">
-              {{ getDate(slotProps.data.installments, number) }}
+              {{ getDate(slotProps.data.installments, number) }}&emsp;
             </div>
           </template>
         </Column>
