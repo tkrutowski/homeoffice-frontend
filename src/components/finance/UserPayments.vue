@@ -209,7 +209,6 @@ onMounted(() => {
   moment.locale('pl')
   payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString())
 
-  // todayIndex.value = dateRange.value.findIndex(day => moment(day).isSame(moment(), "day"));
   nextTick(() => {
     scrollToToday();
   });
@@ -217,15 +216,28 @@ onMounted(() => {
 
 //display current day in the table
 const dataTableRef = ref(null);
-const todayIndex = ref<number>(moment().month() + 2);
+const todayIndex = ref<number>((moment().month() * 2) + 3);//3 first columns to skip
 
 const scrollToToday = () => {
   if (dataTableRef.value) {
-    const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-thead > tr:first-child > th ");
-    console.log("columns", columns);
-    console.log("columns", moment().month());
-    if (columns[todayIndex.value]) { //-1 żeby było bardziej widoczne
-      columns[todayIndex.value].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
+    const container = dataTableRef.value.$el.querySelector(".p-datatable-table-container") as HTMLElement | null;
+
+    if (container) {
+      const columns = container.querySelectorAll("thead.p-datatable-thead > tr > th");
+
+      const frozenColumnsCount = 2;
+      const frozenColumnsWidth = Array.from(columns)
+          .slice(0, frozenColumnsCount)
+          .reduce((total, col) => total + (col as HTMLElement).offsetWidth, 0);
+
+      const target = columns[todayIndex.value] as HTMLElement;
+
+      if (target) {
+        container.scrollTo({
+          left: target.offsetLeft - frozenColumnsWidth,
+          behavior: "smooth",
+        });
+      }
     }
   }
 };
