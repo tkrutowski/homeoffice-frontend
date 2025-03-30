@@ -98,20 +98,8 @@ onMounted(() => {
       @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-5 mx-2">
-    <template #header>
-      <div class="w-full flex justify-center gap-4">
-        <div v-if="firmStore.loadingFirms">
-          <ProgressSpinner
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-          />
-        </div>
-      </div>
-    </template>
+  <Panel class="my-3 mx-2">
     <DataTable
-        v-if="!firmStore.loadingFirms"
         v-model:filters="filters"
         v-model:expanded-rows="expandedRows"
         :value="firmStore.firms"
@@ -121,6 +109,7 @@ onMounted(() => {
         paginator
         :rows="10"
         :rows-per-page-options="[5, 10, 20, 50]"
+        size="small"
         table-style="min-width: 50rem"
         filter-display="menu"
         :global-filter-fields="[
@@ -138,8 +127,15 @@ onMounted(() => {
             }"
               style="text-decoration: none"
           >
-            <OfficeButton text="Nowa firma" btn-type="office-regular"/>
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nową firmę"/>
           </router-link>
+          <div v-if="firmStore.loadingFirms">
+            <ProgressSpinner
+                class="ml-3"
+                style="width: 35px; height: 35px"
+                stroke-width="5"
+            />
+          </div>
           <div class="flex gap-4">
             <IconField icon-position="left">
               <InputIcon>
@@ -165,10 +161,6 @@ onMounted(() => {
         <p v-if="!firmStore.loadingFirms" class="text-red-500">
           Nie znaleziono firm...
         </p>
-      </template>
-
-      <template #loading>
-        <p>Ładowanie danych. Proszę czekać...</p>
       </template>
 
       <Column expander style="width: 5rem"/>
@@ -244,5 +236,8 @@ onMounted(() => {
 <style scoped>
 .p-datatable .p-datatable-tbody > tr > td {
   text-align: center !important;
+}
+::v-deep(.p-panel-header) {
+  padding: 0.25rem !important;
 }
 </style>

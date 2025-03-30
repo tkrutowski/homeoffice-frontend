@@ -206,9 +206,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
       @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="mt-3 ml-2 mr-2">
+  <Panel class="my-3 mx-2">
     <DataTable
-        v-if="!feeStore.loadingFees"
         v-model:expandedRows="expandedRows"
         v-model:filters="filters"
         :value="filteredData"
@@ -231,21 +230,33 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
               :to="{ name: 'Fee', params: { isEdit: 'false', feeId: 0 } }"
               style="text-decoration: none"
           >
-            <Button outlined>Nowa opłata</Button>
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nową opłatę"/>
           </router-link>
-          <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Wyczyść"
-              outlined
-              @click="clearFilter()"
-          />
-          <IconField iconPosition="left">
-            <InputIcon>
-              <i class="pi pi-search"/>
-            </InputIcon>
-            <InputText v-model="filters['global'].value" placeholder="Keyword Search"/>
-          </IconField>
+          <div v-if="feeStore.loadingFees">
+            <ProgressSpinner
+                class="ml-3"
+                style="width: 35px; height: 35px"
+                stroke-width="5"
+            />
+          </div>
+          <div class="flex gap-4">
+            <IconField icon-position="left">
+              <InputIcon>
+                <i class="pi pi-search"/>
+              </InputIcon>
+              <InputText class="!max-w-32"
+                         v-model="filters['global'].value"
+                         placeholder="wyszukaj..."
+              />
+            </IconField>
+            <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+            />
+          </div>
         </div>
       </template>
 
@@ -454,7 +465,7 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
     </DataTable>
   </Panel>
 
-  <Toolbar class="sticky-toolbar">
+  <Toolbar class="sticky-toolbar mx-2">
     <template #start>
       <OfficeIconButton
           title="Odświerz listę opłat"

@@ -75,6 +75,7 @@ async function newFirm() {
       }, 3000);
     }).catch((reason: AxiosError) => {
       console.error(reason);
+      btnSaveDisabled.value = false
       toast.add({
         severity: "error",
         summary: "Błąd podczas dodawania firmy.",

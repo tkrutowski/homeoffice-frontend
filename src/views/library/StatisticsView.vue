@@ -14,7 +14,7 @@ const availableYears = computed(()=>{
           .filter(year => !isNaN(year))
   )].sort((a: number, b: number) => b - a);
 })
-const selectedYear = ref(availableYears.value[availableYears.value.length - 1]);
+const selectedYear = ref(availableYears.value[0]);
 
 const filteredData = computed(() => {
   const ub = userbookStore.getUserbooksByDate(selectedYear.value);

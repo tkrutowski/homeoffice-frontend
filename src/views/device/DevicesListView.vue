@@ -232,9 +232,8 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
       @cancel="showStatusChangeConfirmationDialog = false"
   />
 
-  <Panel class="mt-5 ml-2 mr-2">
+  <Panel class="my-3 mx-2">
     <DataTable
-        v-if="!deviceStore.loadingDevices"
         ref="dataTableRef"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
@@ -259,26 +258,33 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
               :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }"
               style="text-decoration: none"
           >
-            <OfficeButton
-                text="Nowe urządzenie"
-                btn-type="office-regular"
-                title="Dodaj nowe urządzenie"
-            />
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowe urządzenie"/>
           </router-link>
-          <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Wyczyść"
-              outlined
-              title="Wyczyść wszystkie filtry"
-              @click="clearFilter()"
-          />
-          <IconField icon-position="left">
-            <InputIcon>
-              <i class="pi pi-search"/>
-            </InputIcon>
-            <InputText v-model="filters['global'].value" placeholder="wpisz tutaj..."/>
-          </IconField>
+          <div v-if="deviceStore.loadingDevices">
+            <ProgressSpinner
+                class="ml-3"
+                style="width: 35px; height: 35px"
+                stroke-width="5"
+            />
+          </div>
+          <div class="flex gap-4">
+            <IconField icon-position="left">
+              <InputIcon>
+                <i class="pi pi-search"/>
+              </InputIcon>
+              <InputText class="!max-w-32"
+                         v-model="filters['global'].value"
+                         placeholder="wyszukaj..."
+              />
+            </IconField>
+            <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+            />
+          </div>
         </div>
       </template>
 
@@ -474,7 +480,7 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
     </DataTable>
   </Panel>
 
-  <Toolbar class="sticky-toolbar p-2 m-2">
+  <Toolbar class="sticky-toolbar mx-2">
     <template #start>
       <OfficeIconButton
           title="Odświerz listę książek"
@@ -525,7 +531,6 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
 .p-datatable >>> .p-datatable-tbody > tr > td {
   padding: 0 !important;
 }
-
  ::v-deep(.p-panel-header) {
    padding: 0.25rem !important;
  }

@@ -250,9 +250,8 @@ const selectedLoanAmount = computed(() => {
       @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="mt-3 ml-2 mr-2">
+  <Panel class="my-3 mx-2">
     <DataTable
-        v-if="!loansStore.loadingLoans"
         ref="dataTableRef"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
@@ -279,21 +278,33 @@ const selectedLoanAmount = computed(() => {
               :to="{ name: 'Loan', params: { isEdit: 'false', loanId: 0 } }"
               style="text-decoration: none"
           >
-            <Button outlined>Nowy kredyt</Button>
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy kredyt"/>
           </router-link>
-          <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Wyczyść"
-              outlined
-              @click="clearFilter()"
-          />
-          <IconField icon-position="left">
-            <InputIcon>
-              <i class="pi pi-search"/>
-            </InputIcon>
-            <InputText v-model="filters['global'].value" placeholder="Keyword Search"/>
-          </IconField>
+          <div v-if="loansStore.loadingLoans">
+            <ProgressSpinner
+                class="ml-3"
+                style="width: 35px; height: 35px"
+                stroke-width="5"
+            />
+          </div>
+          <div class="flex gap-4">
+            <IconField icon-position="left">
+              <InputIcon>
+                <i class="pi pi-search"/>
+              </InputIcon>
+              <InputText class="!max-w-32"
+                         v-model="filters['global'].value"
+                         placeholder="wyszukaj..."
+              />
+            </IconField>
+            <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+            />
+          </div>
         </div>
       </template>
 
@@ -556,7 +567,7 @@ const selectedLoanAmount = computed(() => {
       </template>
     </DataTable>
   </Panel>
-  <Toolbar class="sticky-toolbar">
+  <Toolbar class="sticky-toolbar mx-2">
     <template #start>
       <OfficeIconButton
           title="Odświerz listę kredytów"

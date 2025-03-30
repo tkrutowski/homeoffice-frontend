@@ -186,14 +186,12 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
       @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="mt-5 ml-2 mr-2">
+  <Panel class="my-3 mx-2">
     <DataTable
-        v-if="!bookStore.loadingBooks"
         ref="dataTableRef"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
         :value="booksDto"
-        :loading="bookStore.loadingBooks"
         removable-sort
         paginator
         :rows="20"
@@ -212,26 +210,40 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
               :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }"
               style="text-decoration: none"
           >
-            <Button outlined>Nowa książka</Button>
+            <Button outlined label="Dodaj" icon="pi pi-plus " title="Dodaj nową książkę"/>
           </router-link>
-          <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Wyczyść"
-              outlined
-              @click="clearFilter()"
-          />
-          <IconField icon-position="left">
-            <InputIcon>
-              <i class="pi pi-search"/>
-            </InputIcon>
-            <InputText v-model="filters['global'].value" placeholder="wpisz tutaj..."/>
-          </IconField>
+          <div v-if="bookStore.loadingBooks">
+            <ProgressSpinner
+                class="ml-3"
+                style="width: 35px; height: 35px"
+                stroke-width="5"
+            />
+          </div>
+          <div class="flex gap-4">
+            <IconField icon-position="left">
+              <InputIcon>
+                <i class="pi pi-search"/>
+              </InputIcon>
+              <InputText class="!max-w-32"
+                         v-model="filters['global'].value"
+                         placeholder="wyszukaj..."
+              />
+            </IconField>
+            <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+            />
+          </div>
         </div>
       </template>
 
       <template #empty>
-        <h4 v-if="!bookStore.loadingBooks" class="color-red">Nie znaleziono książek...</h4>
+        <p v-if="!bookStore.loadingBooks" class="text-red-500">
+          Nie znaleziono książek...
+        </p>
       </template>
 
       <!--      AUTHOR        -->
@@ -342,7 +354,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
     </DataTable>
   </Panel>
 
-  <Toolbar class="sticky-toolbar p-2 m-2">
+  <Toolbar class="sticky-toolbar mx-2">
     <template #start>
       <OfficeIconButton
           title="Odświerz listę książek"
@@ -366,6 +378,9 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
   </Toolbar>
 </template>
 <style scoped>
+::v-deep(.p-panel-header) {
+  padding: 0.25rem !important;
+}
 ::v-deep(.p-panel-header) {
   padding: 0.25rem !important;
 }
