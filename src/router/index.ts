@@ -18,6 +18,8 @@ import PurchasesCurrentView from '@/views/finance/PurchasesCurrentView.vue'
 import PurchaseView from '@/views/finance/PurchaseView.vue'
 import CardsView from '@/views/finance/CardsView.vue'
 import CardView from '@/views/finance/CardView.vue'
+import BanksView from "@/views/finance/BanksView.vue";
+import BankView from "@/views/finance/BankView.vue";
 
 //LIBRARY
 import LibraryHomeView from '@/views/library/LibraryHomeView.vue'
@@ -152,6 +154,18 @@ const routes = [
     path: '/finances/fee/:isEdit/:feeId',
     name: 'Fee',
     component: FeeView,
+    props: true,
+  },
+  // BANK
+  {
+    path: '/finance/bank/all',
+    name: 'Banks',
+    component: BanksView,
+  },
+  {
+    path: '/finances/bank/:isEdit/:bankId',
+    name: 'Bank',
+    component: BankView,
     props: true,
   },
   //--------------------------------------------------------PAYMENT

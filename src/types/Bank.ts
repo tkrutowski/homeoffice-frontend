@@ -3,9 +3,7 @@ export type ActiveStatus = 'ACTIVE' | 'INACTIVE' | 'ALL'
 export interface Bank {
   id: number
   name: string
-  city: string
-  street: string
-  zip: string
+  address: Address
   phone: string
   phone2: string
   fax: string
@@ -13,6 +11,14 @@ export interface Bank {
   www: string
   otherInfo: string
 }
+
+export interface Address {
+  id: number;
+  city: string;
+  street: string;
+  zip: string;
+}
+
 export interface Card {
   id: number
   idBank: number

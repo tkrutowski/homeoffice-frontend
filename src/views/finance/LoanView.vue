@@ -15,6 +15,7 @@ import OfficeIconButton from '@/components/OfficeIconButton.vue'
 import {UtilsService} from '@/service/UtilsService'
 import type {AxiosError} from "axios";
 import {PaymentStatus} from "@/types/Payment.ts";
+import AddBankDialog from "@/components/finance/AddBankDialog.vue";
 
 const userStore = useUsersStore()
 const loanStore = useLoansStore()
@@ -55,14 +56,6 @@ const isSaveBtnDisabled = computed(() => {
       btnSaveDisabled.value
   )
 })
-// const loanDateTemp = ref<string>('')
-// watch(loanDateTemp, (newDate: string) => {
-//   loan.value.date = moment(new Date(newDate)).format('YYYY-MM-DD')
-// })
-// const firstPaymentDateTemp = ref<string>('')
-// watch(firstPaymentDateTemp, (newDate: string) => {
-//   loan.value.firstPaymentDate = moment(new Date(newDate)).format('YYYY-MM-DD')
-// })
 //
 //------------------------------------------------------SAVE-----------------------------------------
 //
@@ -241,10 +234,40 @@ const showErrorDate = () => {
 const showErrorFirstDate = () => {
   return submitted.value && !loan.value.firstPaymentDate
 }
+
+//
+//----------------------------------------------NEW BANK-------------------------------
+//
+const showNewBankModal = ref<boolean>(false)
+
+async function newBank(bank: Bank) {
+  showNewBankModal.value = false;
+  await bankStore.addBankDb(bank).then(() => {
+    toast.add({
+      severity: "success",
+      summary: "Potwierdzenie",
+      detail: "Dodano bank: " + bank.name,
+      life: 3000,
+    });
+  }).catch((reason: AxiosError) => {
+    console.error(reason);
+    toast.add({
+      severity: "error",
+      summary: "Błąd podczas dodawania banku.",
+      detail: (reason?.response?.data as { message: string }).message,
+      life: 5000,
+    });
+  })
+}
 </script>
 
 <template>
   <TheMenuFinance/>
+  <AddBankDialog
+      v-model:visible="showNewBankModal"
+      @save="newBank"
+      @cancel="showNewBankModal = false"
+  />
 
   <div class="m-4 max-w-4xl mx-auto">
     <form @submit.stop.prevent="saveLoan" class="w-full">
@@ -307,6 +330,13 @@ const showErrorFirstDate = () => {
                   showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;'
                 }}</small>
             </div>
+            <OfficeIconButton
+                title="Dodaj bank"
+                :icon="bankStore.loadingBanks ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                style="height: 35px; width: 35px; padding: 0"
+                class="mt-1 self-center"
+                @click="showNewBankModal = true"
+            />
           </div>
 
           <!-- ROW-4  NUMBER / DATE  -->

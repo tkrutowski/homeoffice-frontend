@@ -220,7 +220,7 @@ const todayIndex = ref<number>((moment().month() * 2) + 3);//3 first columns to 
 
 const scrollToToday = () => {
   if (dataTableRef.value) {
-    const container = dataTableRef.value.$el.querySelector(".p-datatable-table-container") as HTMLElement | null;
+    const container = (dataTableRef.value as any).$el.querySelector(".p-datatable-table-container") as HTMLElement | null;
 
     if (container) {
       const columns = container.querySelectorAll("thead.p-datatable-thead > tr > th");

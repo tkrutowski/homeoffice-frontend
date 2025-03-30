@@ -27,7 +27,7 @@ export const useBanksStore = defineStore('bank', {
             if (bank) return bank
             else return null
         },
-        /////////////////////////////////////////////DATABASE//////////////////////////
+        //-------------------------------------------------DATABASE-----------------------------------------
         //
         //GET BANKS
         //
@@ -35,13 +35,9 @@ export const useBanksStore = defineStore('bank', {
             console.log('START - getBanksFromDb()')
             this.loadingBanks = true
 
-            if (this.banks.length === 0) {
                 const response = await httpCommon.get(`/v1/finance/bank`)
-                console.log('getBanksFromDb() - Ilosc[]: ' + response.data.length)
-                this.banks = response.data
-            } else {
-                console.log('getBanksFromDb() - BEZ GET')
-            }
+            console.log('getBanksFromDb() - Ilosc[]: ' + response.data.length)
+            this.banks = response.data.map((bank: any) => this.convertResponse(bank));
             this.loadingBanks = false
             console.log('END - getBanksFromDb()')
         },
@@ -55,7 +51,7 @@ export const useBanksStore = defineStore('bank', {
             const response = await httpCommon.get(`/v1/finance/bank/` + bankId)
             this.loadingBanks = false
             console.log('END - getBanksFromDb()')
-            return response.data ? response.data : null
+            return this.convertResponse(response.data) || null
         },
         //
         //ADD Bank
@@ -87,5 +83,12 @@ export const useBanksStore = defineStore('bank', {
             if (index !== -1) this.banks.splice(index, 1)
             console.log('END - deleteBankDb()')
         },
+
+        convertResponse(bank: Bank) {
+            return {
+                ...bank,
+                address: bank.address ? bank.address : {id: 0, city: '', street: '', zip: ''},
+            }
+        }
     },
 })

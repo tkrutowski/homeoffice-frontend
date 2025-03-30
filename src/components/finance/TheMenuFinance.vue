@@ -25,6 +25,7 @@ const activeMenu = computed(() => {
   if (route.path.includes('/finance/purchase')) return 'purchase';
   if (route.path.includes('/finance/card')) return 'card';
   if (route.path.includes('/finance/firm')) return 'firm';
+  if (route.path.includes('/finance/bank')) return 'bank';
   return null; // Jeśli nie pasuje do żadnego menu
 });
 
@@ -207,6 +208,36 @@ const items = ref([
             router.push({path: '/refresh', query: {redirect: redirect}})
           } else {
             router.push({name: 'Firms'})
+          }
+        },
+      },
+    ],
+  },
+  {
+    label: 'Banki',
+    icon: 'pi pi-fw pi-building',
+    class: `${activeMenu.value === 'bank' ? 'active' : ''}`,
+    disabled: !authorizationStore.hasAccessFinanceBank,
+    items: [
+      {
+        label: 'Nowy bank',
+        icon: 'pi pi-fw pi-file',
+        command: () => {
+          router.push({
+            name: 'Bank',
+            params: {isEdit: 'false', bankId: 0},
+          })
+        },
+      },
+      {
+        label: 'Lista banków',
+        icon: 'pi pi-fw pi-list',
+        command: () => {
+          if (window.location.href.includes(router.resolve({name: 'Banks'}).href)) {
+            const redirect = JSON.stringify({name: 'Banks'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          } else {
+            router.push({name: 'Banks'})
           }
         },
       },

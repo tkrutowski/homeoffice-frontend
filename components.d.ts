@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddAutoCompleteDialog: typeof import('./src/components/AddAutoCompleteDialog.vue')['default']
+    AddBankDialog: typeof import('./src/components/finance/AddBankDialog.vue')['default']
     AddDialog: typeof import('./src/components/AddDialog.vue')['default']
     AddEditSeriesDialog: typeof import('./src/components/library/AddEditSeriesDialog.vue')['default']
     AddEditUserBookDialog: typeof import('./src/components/library/AddEditUserBookDialog.vue')['default']

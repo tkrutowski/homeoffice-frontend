@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import {useRoute} from "vue-router";
 import {computed, onMounted, ref} from "vue";
-import {type Firm} from "@/types/Firm.ts";
 import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import router from "@/router";
 import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import type {AxiosError} from "axios";
-import {useFirmsStore} from "@/stores/firms.ts";
 import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
+import type {Bank} from "@/types/Bank.ts";
+import {useBanksStore} from "@/stores/banks.ts";
 
-const firmStore = useFirmsStore();
+const bankStore = useBanksStore();
 const route = useRoute();
 
 const toast = useToast();
-const firm = ref<Firm>({
+const bank = ref<Bank>({
   id: 0,
   name: "",
   phone: "",
@@ -36,7 +36,7 @@ const btnShowBusy = ref<boolean>(false);
 
 const isSaveBtnDisabled = computed(() => {
   return (
-      firmStore.loadingFirms ||
+      bankStore.loadingBanks ||
       btnSaveDisabled.value
   );
 });
@@ -44,41 +44,41 @@ const isSaveBtnDisabled = computed(() => {
 //
 //SAVE
 //
-function saveFirm() {
+function saveBank() {
   submitted.value = true;
   if (isEdit.value) {
-    editFirm();
+    editBank();
   } else {
-    newFirm();
+    newBank();
   }
 }
 
 //
-//---------------------------------------------------------NEW FIRM----------------------------------------------
+//---------------------------------------------------------NEW BANK----------------------------------------------
 //
-async function newFirm() {
-  console.log("newFirm()");
+async function newBank() {
+  console.log("newBank()");
   if (!isValid()) {
     showError("Uzupełnij brakujące elementy");
   } else {
     btnSaveDisabled.value = true;
-    await firmStore.addFirmDb(firm.value).then(() => {
+    await bankStore.addBankDb(bank.value).then(() => {
       toast.add({
         severity: "success",
         summary: "Potwierdzenie",
-        detail: "Dodano firmę: " + firm.value.name,
+        detail: "Dodano bank: " + bank.value.name,
         life: 3000,
       });
       setTimeout(() => {
         btnSaveDisabled.value = false
-        router.push({name: "Firms"});
+        router.push({name: "Banks"});
       }, 3000);
     }).catch((reason: AxiosError) => {
       console.error(reason);
       btnSaveDisabled.value = false
       toast.add({
         severity: "error",
-        summary: "Błąd podczas dodawania firmy.",
+        summary: "Błąd podczas dodawania banku.",
         detail: (reason?.response?.data as { message: string }).message,
         life: 5000,
       });
@@ -90,30 +90,30 @@ async function newFirm() {
 }
 
 //
-//-----------------------------------------------------EDIT FRIMA------------------------------------------------
+//-----------------------------------------------------EDIT BANK------------------------------------------------
 //
 const isEdit = ref<boolean>(false);
 
-async function editFirm() {
+async function editBank() {
   if (!isValid()) {
     showError("Uzupełnij brakujące elementy");
   } else {
     btnSaveDisabled.value = true;
-    await firmStore.updateFirmDb(firm.value)
+    await bankStore.updateBankDb(bank.value)
         .then(() => {
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",
-            detail: "Zaaktualizowano dane firmy: " + firm.value.name,
+            detail: "Zaaktualizowano dane banku: " + bank.value.name,
             life: 3000,
           });
           setTimeout(() => {
-            router.push({name: "Firms"});
+            router.push({name: "Banks"});
           }, 3000);
         }).catch((reason: AxiosError) => {
           toast.add({
             severity: "error",
-            summary: "Błąd podczas edycji firmy.",
+            summary: "Błąd podczas edycji banku.",
             detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
@@ -126,19 +126,19 @@ onMounted(async () => {
   btnSaveDisabled.value = true;
   isEdit.value = route.params.isEdit === "true";
   if (!isEdit.value) {
-    console.log("onMounted NEW FIRM");
+    console.log("onMounted NEW BANK");
   } else {
-    console.log("onMounted EDIT FIRM");
-    const firmId = Number(route.params.firmId as string);
-    firmStore
-        .getFirmFromDb(firmId)
+    console.log("onMounted EDIT BANK");
+    const bankId = Number(route.params.bankId as string);
+    bankStore
+        .getBankFromDb(bankId)
         .then((data) => {
           if (data) {
-            firm.value = data;
+            bank.value = data;
           }
         })
         .catch((error) => {
-          console.error("Błąd podczas pobierania firmy:", error);
+          console.error("Błąd podczas pobierania banku:", error);
         });
   }
   btnSaveDisabled.value = false;
@@ -159,16 +159,16 @@ const showError = (msg: string) => {
 };
 const isValid = () => {
     return (
-        firm.value.name.length > 0
+        bank.value.name.length > 0
     );
 };
 
 const showErrorName = () => {
-  return submitted.value && firm.value.name.length <= 0;
+  return submitted.value && bank.value.name.length <= 0;
 };
 const showErrorZip = () => {
   if (submitted.value) {
-    const { zip } = firm.value.address;
+    const { zip } = bank.value.address;
     if (!zip) return false; // Jeśli zip jest pusty, nie pokazuj błędu
     return !/^\d{2}-\d{3}$/.test(zip) || zip.length > 6;
   }
@@ -176,8 +176,8 @@ const showErrorZip = () => {
 };
 
 const showErrorMail = () => {
-  if (submitted.value && firm.value.mail.length > 0) {
-    return !firm.value.mail.includes("@");
+  if (submitted.value && bank.value.mail.length > 0) {
+    return !bank.value.mail.includes("@");
   }
   return false;
 };
@@ -189,20 +189,20 @@ const showErrorMail = () => {
   <div class="m-4 max-w-6xl mx-auto">
     <form
         class="col-12 col-md-9 col-xl-6 align-self-center"
-        @submit.stop.prevent="saveFirm"
+        @submit.stop.prevent="saveBank"
     >
       <Panel>
         <template #header>
           <OfficeIconButton
-              title="Powrót do listy firm"
+              title="Powrót do listy banków"
               icon="pi pi-fw pi-table"
-              @click="() => router.push({ name: 'Firms' })"
+              @click="() => router.push({ name: 'Banks' })"
           />
           <div class="w-full flex justify-center gap-4">
              <span class="text-3xl">
-              {{ isEdit ? `Edycja danych firmy` : "Nowa firma" }}
+              {{ isEdit ? `Edycja danych banku` : "Nowy bank" }}
             </span>
-            <div v-if="firmStore.loadingFirms">
+            <div v-if="bankStore.loadingBanks">
               <ProgressSpinner
                   class="ml-3"
                   style="width: 40px; height: 40px"
@@ -214,10 +214,10 @@ const showErrorMail = () => {
 
         <!-- ROW-1 NAME  -->
           <div class="flex flex-col w-full">
-            <label for="input" class="ml-2">Nazwa firmy</label>
+            <label for="input" class="ml-2">Nazwa banku</label>
             <InputText
                 id="input"
-                v-model="firm.name"
+                v-model="bank.name"
                 maxlength="100"
                 :invalid="showErrorName()"
             />
@@ -232,7 +232,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="street">Ulica</label>
               <InputText
                   id="street"
-                  v-model="firm.address.street"
+                  v-model="bank.address.street"
                   maxlength="100"
               />
             </div>
@@ -240,7 +240,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="zip">Kod</label>
               <InputText
                   id="zip"
-                  v-model="firm.address.zip"
+                  v-model="bank.address.zip"
                   maxlength="6"
                   :invalid="showErrorZip()"
               />
@@ -252,7 +252,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="city">Miasto</label>
               <InputText
                   id="city"
-                  v-model="firm.address.city"
+                  v-model="bank.address.city"
                   maxlength="100"
               />
             </div>
@@ -264,7 +264,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="phone">Telefon</label>
               <InputText
                   id="phone"
-                  v-model="firm.phone"
+                  v-model="bank.phone"
                   maxlength="30"
               />
             </div>
@@ -272,7 +272,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="phone2">Telefon 2</label>
               <InputText
                   id="phone2"
-                  v-model="firm.phone2"
+                  v-model="bank.phone2"
                   maxlength="30"
               />
             </div>
@@ -280,7 +280,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="fax">Fax</label>
               <InputText
                   id="fax"
-                  v-model="firm.fax"
+                  v-model="bank.fax"
                   maxlength="30"
               />
             </div>
@@ -292,7 +292,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="mail">E-mail</label>
               <InputText
                   id="mail"
-                  v-model="firm.mail"
+                  v-model="bank.mail"
                   :invalid="showErrorMail()"
                   maxlength="100"
               />
@@ -304,7 +304,7 @@ const showErrorMail = () => {
               <label class="ml-2" for="www">WWW</label>
               <InputText
                   id="www"
-                  v-model="firm.www"
+                  v-model="bank.www"
                   maxlength="100"
               />
             </div>
@@ -314,7 +314,7 @@ const showErrorMail = () => {
           <div class="row">
             <div class="flex flex-col">
               <label class="ml-2" for="input">Dodatkowe informacje:</label>
-              <Textarea v-model="firm.otherInfo" rows="4" cols="30"/>
+              <Textarea v-model="bank.otherInfo" rows="4" cols="30"/>
             </div>
           </div>
 

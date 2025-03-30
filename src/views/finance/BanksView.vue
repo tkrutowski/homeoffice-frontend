@@ -3,17 +3,18 @@ import {computed, onMounted, ref} from "vue";
 import {FilterMatchMode} from '@primevue/core/api';
 import router from "@/router";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import type {Firm} from "@/types/Firm.ts";
 import {useToast} from "primevue/usetoast";
 import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import type {AxiosError} from "axios";
-import {useFirmsStore} from "@/stores/firms.ts";
 import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
+import {useBanksStore} from "@/stores/banks.ts";
+import type {Bank} from "@/types/Bank.ts";
 
-const firmStore = useFirmsStore();
+
+const bankStore = useBanksStore();
 const toast = useToast();
 const expandedRows = ref([]);
-const firmTemp = ref<Firm>();
+const bankTemp = ref<Bank>();
 
 //filter
 const filters = ref();
@@ -31,37 +32,37 @@ const clearFilter = () => {
 };
 
 //
-//-------------------------------------------------DELETE FIRM-------------------------------------------------
+//-------------------------------------------------DELETE BANK-------------------------------------------------
 //
 const showDeleteConfirmationDialog = ref<boolean>(false);
 
-const confirmDeleteFirm = async (firm: Firm) => {
-  firmTemp.value = firm;
+const confirmDeleteBank = async (bank: Bank) => {
+  bankTemp.value = bank;
   showDeleteConfirmationDialog.value = true;
 };
 
 const deleteConfirmationMessage = computed(() => {
-  if (firmTemp.value) {
-    return `Czy chcesz usunąc firmę: <b>${firmTemp.value.name}</b>?`;
+  if (bankTemp.value) {
+    return `Czy chcesz usunąc bank: <b>${bankTemp.value.name}</b>?`;
   }
   return "No message";
 });
 const submitDelete = async () => {
   console.log("submitDelete()");
-  if (firmTemp.value) {
-    await firmStore.deleteFirmDb(firmTemp.value.id)
+  if (bankTemp.value) {
+    await bankStore.deleteBankDb(bankTemp.value.id)
         .then(() => {
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",
-            detail: "Usunięto firmę: " + firmTemp.value?.name,
+            detail: "Usunięto bank: " + bankTemp.value?.name,
             life: 3000,
           });
         }).catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
             summary: reason?.message,
-            detail: 'Błąd podczas usuwania firmy: ' + firmTemp.value?.name,
+            detail: 'Błąd podczas usuwania banku: ' + bankTemp.value?.name,
             life: 5000,
           })
         })
@@ -70,20 +71,20 @@ const submitDelete = async () => {
 };
 
 //
-//-------------------------------------------------EDIT FIRM-------------------------------------------------
+//-------------------------------------------------EDIT BANK-------------------------------------------------
 //
-const editFirm = (firm: Firm) => {
-  const firmTemp: Firm = JSON.parse(JSON.stringify(firm));
+const editBank = (bank: Bank) => {
+  const bankTemp: Bank = JSON.parse(JSON.stringify(bank));
   router.push({
-    name: "Firm",
-    params: {isEdit: "true", firmId: firmTemp.id},
+    name: "Bank",
+    params: {isEdit: "true", bankId: bankTemp.id},
   });
 };
 
 //
 //-----------------------------------------------------MOUNTED---------------------------------
 onMounted(() => {
-  if (firmStore.firms.length <= 1)firmStore.getFirmsFromDb();
+  if (bankStore.banks.length <= 1) bankStore.getBanksFromDb();
 });
 
 </script>
@@ -101,7 +102,7 @@ onMounted(() => {
     <DataTable
         v-model:filters="filters"
         v-model:expanded-rows="expandedRows"
-        :value="firmStore.firms"
+        :value="bankStore.banks"
         striped-rows
         removable-sort
         paginator
@@ -120,14 +121,14 @@ onMounted(() => {
         <div class="flex justify-between">
           <router-link
               :to="{
-              name: 'Firm',
-              params: { isEdit: 'false', firmId: 0 },
+              name: 'Bank',
+              params: { isEdit: 'false', bankId: 0 },
             }"
               style="text-decoration: none"
           >
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nową firmę"/>
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy bank"/>
           </router-link>
-          <div v-if="firmStore.loadingFirms">
+          <div v-if="bankStore.loadingBanks">
             <ProgressSpinner
                 class="ml-3"
                 style="width: 35px; height: 35px"
@@ -156,8 +157,8 @@ onMounted(() => {
       </template>
 
       <template #empty>
-        <p v-if="!firmStore.loadingFirms" class="text-red-500">
-          Nie znaleziono firm...
+        <p v-if="!bankStore.loadingBanks" class="text-red-500">
+          Nie znaleziono banków...
         </p>
       </template>
 
@@ -192,22 +193,22 @@ onMounted(() => {
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-content-end">
             <OfficeIconButton
-                title="Edytuj firmę"
+                title="Edytuj bank"
                 icon="pi pi-file-edit"
-                @click="editFirm(slotProps.data)"
+                @click="editBank(slotProps.data)"
             />
             <OfficeIconButton
-                title="Usuń firmę"
+                title="Usuń bank"
                 icon="pi pi-trash"
                 severity="danger"
-                @click="confirmDeleteFirm(slotProps.data)"
+                @click="confirmDeleteBank(slotProps.data)"
             />
           </div>
         </template>
       </Column>
       <template #expansion="slotProps">
         <div class="p-3">
-          <p class="text-lg text-center">Szczególy firmy</p>
+          <p class="text-lg text-center">Szczególy banku</p>
 
           <p class="mt-2 ml-8" style="text-align: left">
             <b>Adres:</b> ul. {{ slotProps.data.address.street }},
