@@ -45,7 +45,6 @@ const isExpired = () => {
 }
 
 function calculate() {
-  console.log('calculate START')
   if (purchases.value && purchases.value.length > 0) {
     paid.value = 0
     toPay.value = 0
@@ -54,13 +53,11 @@ function calculate() {
       else toPay.value += Number(p.amount)
       // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
     })
-    console.log('calculate paid: ', paid.value)
-    console.log('calculate topay: ', toPay.value)
     cardLogo.value = cardStore.getCardLogo(purchases.value[0].idCard)
   }
 }
 watch(
-  () => purchasesStore.purchases,
+  () => purchasesStore.purchasesCurrent,
   () => {
     calculate()
   },

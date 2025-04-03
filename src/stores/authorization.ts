@@ -356,7 +356,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             feeStore.fees = []
             loanStore.loans = []
             paymentStore.payments.clear()
-            purchaseStore.purchases.clear()
+            purchaseStore.purchasesCurrent.clear()
             userbookStore.userbooks = []
             router.replace({name: 'login'})
         },

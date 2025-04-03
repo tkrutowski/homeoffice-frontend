@@ -9,14 +9,26 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 import {useToast} from 'primevue/usetoast'
 import type {Purchase} from "@/types/Purchase.ts";
 import router from "@/router";
+import type {User} from "@/types/User.ts";
+import {useUsersStore} from "@/stores/users.ts";
 const purchasesStore = usePurchasesStore()
 const toast = useToast()
+const userStore = useUsersStore()
 
 UtilsService.getTypesForFinance()
-purchasesStore.getPurchaseCurrentFromDb()
 onMounted(() => {
   purchasesStore.clearPurchasesToPay()
+  if(userStore.users.length <= 0) userStore.getUsersFromDb()
 })
+const selectedUser = ref<User | null>(userStore.getLoggedUser)
+const purchases = ref<Map<string, Purchase[]>>(new Map<string, Purchase[]>())
+//--------------------------------------GET PURCHASE
+async function getCurrentPurchaseByUser() {
+  purchases.value.clear()
+  if(selectedUser.value) {
+    purchases.value = await purchasesStore.getPurchaseCurrentFromDb(selectedUser.value?.username)
+  }
+}
 
 //
 //----------------------------------------PAY SELECTED-------------------------------------------
@@ -88,10 +100,41 @@ const submitMultiChangeStatus = async () => {
       @save="submitMultiChangeStatus"
       @cancel="showStatusChangeConfirmationDialog = false"
   />
-  <div v-for="[key] in purchasesStore.purchases" :key="key">
+  <Toolbar class="m-6">
+    <template #start>
+      <p>
+        RAZEM:
+        {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
+      </p>
+    </template>
+
+    <template #center>
+      <Select
+          id="input-customer"
+          v-model="selectedUser"
+          :options="userStore.getUserByPrivileges"
+          :option-label="(user) => user.firstName + ' ' + user.lastName"
+          :loading="userStore.loadingUsers"
+          @change="() => purchases.clear()"
+          required
+      />
+    </template>
+
+    <template #end>
+      <Button
+          outlined
+          class="font-bold uppercase tracking-wider"
+          label="wyszukaj"
+          :disabled="purchasesStore.loadingPurchases || selectedUser === null"
+          :loading="purchasesStore.loadingPurchases"
+          @click="getCurrentPurchaseByUser"
+      />
+    </template>
+  </Toolbar>
+  <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
     <PurchaseCurrentItemGroup :deadline-date="key"/>
   </div>
-  <h1 v-if="purchasesStore.purchases.size === 0" class="flex justify-center mt-5 mb-5">
+  <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">
     Wszystko spłacone
   </h1>
   <Toolbar class="sticky-toolbar">
@@ -114,7 +157,8 @@ const submitMultiChangeStatus = async () => {
           title="Odświerz listę zakupów"
           :icon="purchasesStore.loadingPurchases ? 'pi  pi-spin pi-spinner' : 'pi pi-refresh'"
           class="mr-2"
-          @click="purchasesStore.getPurchaseCurrentFromDb()"
+          :disabled="selectedUser === null"
+          @click="purchasesStore.getPurchaseCurrentFromDb(selectedUser?.username!)"
       />
       <Button
           title="Oznacz wybrane zakupy jako opłacone."

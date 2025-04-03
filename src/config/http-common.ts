@@ -16,8 +16,8 @@ apiClient.interceptors.request.use(
   (config) => {
     if (
       config.url?.endsWith('/login') ||
-      config.url?.endsWith('/refresh') ||
-      config.url?.endsWith('/test')
+      config.url?.endsWith('/refresh')
+      // config.url?.endsWith('/test')
     ) {
       console.log('Żądanie do /login, pomijanie nagłówka Authorization')
     } else {

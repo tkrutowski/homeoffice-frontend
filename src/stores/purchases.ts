@@ -14,14 +14,14 @@ export const usePurchasesStore = defineStore('purchase', {
         purchasesToPay: [] as Purchase[],
 
         // purchases: new Map<string, Purchase[]>(),
-        purchases: new Map<string, Purchase[]>(),
+        purchasesCurrent: new Map<string, Purchase[]>(),
     }),
 
     //getters = computed
     getters: {
         totalAmount: (state) => {
             let total = 0
-            state.purchases.forEach((purchases) => {
+            state.purchasesCurrent.forEach((purchases) => {
                 purchases.forEach((purchase: Purchase) => {
                     total += Number(purchase.amount) // Zakładając, że 'kwota' to pole w obiekcie 'Purchase'
                 })
@@ -54,13 +54,13 @@ export const usePurchasesStore = defineStore('purchase', {
             if (index !== -1) this.purchasesToPay.splice(index, 1)
         },
         getPurchasesByDate(date: string) {
-            return this.purchases.get(date)
+            return this.purchasesCurrent.get(date)
         },
         //
         //GET PURCHASE BY ID
         //
         getPurchaseById(searchId: number) {
-            for (const [, purchases] of this.purchases.entries()) {
+            for (const [, purchases] of this.purchasesCurrent.entries()) {
                 for (const purchase of purchases) {
                     if (purchase.id === searchId) {
                         return purchase
@@ -74,16 +74,17 @@ export const usePurchasesStore = defineStore('purchase', {
         //
         //GET CURRENT PURCHASES FROM DB
         //
-        async getPurchaseCurrentFromDb(): Promise<void> {
-            console.log('START - getPurchaseCurrentFromDb()')
+        async getPurchaseCurrentFromDb(username: string) {
+            console.log(`START - getPurchaseCurrentFromDb(${username})`)
             this.loadingPurchases = true
 
-            const response = await httpCommon.get(`/v1/finance/purchase/current`)
+            const response = await httpCommon.get(`/v1/finance/purchase/current/${username}`)
             console.log('getPurchaseCurrentFromDb() - Ilosc[]: ' + response.data)
             const purchasesTemp = new Map(Object.entries(response.data))
-            this.purchases = purchasesTemp as Map<string, Purchase[]>
+            this.purchasesCurrent = purchasesTemp as Map<string, Purchase[]>
             this.loadingPurchases = false
             console.log('END - getPurchaseCurrentFromDb()')
+            return this.purchasesCurrent
         },
         //
         //GET  PURCHASE FROM DB BY ID
@@ -119,14 +120,14 @@ export const usePurchasesStore = defineStore('purchase', {
             // const paymentDeadline = res.paymentDeadline && res.paymentDeadline instanceof Date ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01'
             const paymentDeadline = res.paymentDeadline ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01'
 
-            if (this.purchases.has(paymentDeadline)) {
-                const purchaseArray = this.purchases.get(paymentDeadline)
+            if (this.purchasesCurrent.has(paymentDeadline)) {
+                const purchaseArray = this.purchasesCurrent.get(paymentDeadline)
                 if (purchaseArray) {
                     purchaseArray.push(res)
-                    this.purchases.set(paymentDeadline, purchaseArray)
+                    this.purchasesCurrent.set(paymentDeadline, purchaseArray)
                 }
             } else {
-                this.purchases.set(paymentDeadline, new Array(res))
+                this.purchasesCurrent.set(paymentDeadline, new Array(res))
             }
             console.log('END - addPurchaseDb()')
         },
@@ -138,7 +139,7 @@ export const usePurchasesStore = defineStore('purchase', {
 
                 await httpCommon.put(`/v1/finance/purchase/status/` + purchaseId, {value: status})
 
-                for (const [deadline, purchases] of this.purchases.entries()) {
+                for (const [deadline, purchases] of this.purchasesCurrent.entries()) {
                     const index = purchases.findIndex((purchase: Purchase) => purchase.id === purchaseId)
 
                     console.log('rozmier przed ', purchases.length)
@@ -146,7 +147,7 @@ export const usePurchasesStore = defineStore('purchase', {
                         purchases.splice(index, 1)
                         console.log(`Usunięto zakup o id ${purchaseId} dla deadline ${deadline}`)
                         console.log('rozmier po ', purchases.length)
-                        if (purchases.length === 0) this.purchases.delete(deadline)
+                        if (purchases.length === 0) this.purchasesCurrent.delete(deadline)
                         return true
                     }
                 }

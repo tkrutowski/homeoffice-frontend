@@ -53,7 +53,7 @@ onMounted(async () => {
   calculate()
 })
 watch(
-  () => purchasesStore.purchases,
+  () => purchasesStore.purchasesCurrent,
   () => {
     calculate()
   },

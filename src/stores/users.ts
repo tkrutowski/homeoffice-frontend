@@ -32,6 +32,12 @@ export const useUsersStore = defineStore('user', {
             if (user) return [user]
             else return []
         },
+        getLoggedUser: (state) => {
+            const authorization = useAuthorizationStore()
+            const user = state.users.find((user: User) => user.username === authorization.username)
+            console.log('getLoggedUser', user)
+            return user || null
+        },
     },
 
     //actions = metody w komponentach

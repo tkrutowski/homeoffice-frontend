@@ -201,7 +201,6 @@ onMounted(() => {
   if (firmStore.firms.length === 0) firmStore.getFirmsFromDb()
   cardStore.getCardsFromDb('ALL')
   btnSaveDisabled.value = false
-  if (purchaseStore.purchases.size === 0) purchaseStore.getPurchaseCurrentFromDb()
 })
 
 onMounted(async () => {
