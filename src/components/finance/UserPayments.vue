@@ -335,7 +335,8 @@ const scrollToToday = () => {
 
       <ColumnGroup type="footer">
         <Row>
-          <Column footer="Razem:" :colspan="3" frozen footer-style="text-align:left"/>
+          <Column footer="Razem:" :colspan="2" frozen footer-style="text-align:left"/>
+          <Column />
           <Column
               v-for="number in 12"
               :key="number"
@@ -346,11 +347,12 @@ const scrollToToday = () => {
         <Row>
           <Column
               footer="Zapłacono:"
-              :colspan="3"
+              :colspan="2"
               footer-style="text-align:left"
               footer-class="ml-5"
               frozen
           />
+          <Column/>
           <Column
               v-for="number in 12"
               :key="number"
@@ -359,7 +361,8 @@ const scrollToToday = () => {
           />
         </Row>
         <Row>
-          <Column footer="Do zapłaty:" :colspan="3" frozen footer-style="text-align:left"/>
+          <Column footer="Do zapłaty:" :colspan="2" frozen footer-style="text-align:left"/>
+          <Column/>
           <Column
               v-for="number in 12"
               :key="number"

@@ -33,4 +33,5 @@ export interface Card {
   cardNumber: string
   closingDay: number
   imageUrl: string
+  multi: boolean
 }

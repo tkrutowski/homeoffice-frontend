@@ -428,6 +428,8 @@ async function newBank(bank: Bank) {
                   mode="currency"
                   currency="PLN"
                   locale="pl-PL"
+                  @focus="UtilsService.selectText"
+
               />
               <small class="text-red-500">{{
                   showErrorInstallmentAmount() ? 'Pole jest wymagane.' : '&nbsp;'

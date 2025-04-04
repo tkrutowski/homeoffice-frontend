@@ -45,10 +45,10 @@ export const useCardsStore = defineStore('card', {
             else return null
         },
         getCardByUser(idUser: number): Card[] {
-            return this.cards.filter((card: Card) => card.idUser === idUser)
+            return this.cards.filter((card: Card) => card.idUser === idUser || card.multi)
         },
         getCardByUserAndStatus(idUser: number, status: ActiveStatus): Card[] {
-            return this.cards.filter((card: Card) => card.idUser === idUser && card.activeStatus === status)
+            return this.cards.filter((card: Card) => (card.idUser === idUser || card.multi) && card.activeStatus === status)
         },
         //----------------------------------------DB-------------------------------------------------------
         //

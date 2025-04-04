@@ -447,6 +447,14 @@ const showErrorActivationDate = () => {
                   }}</small>
               </div>
             </div>
+
+            <div class="col-start-1 col-span-3 ">
+              <div class="flex items-center gap-2">
+                <Checkbox v-model="card.multi" inputId="multiCheckbox" :binary="true" title="Karta może być wybrana przez innego użytkownika."/>
+                <label for="multiCheckbox" title="Karta może być wybrana przez innego użytkownika.">Multi</label>
+              </div>
+            </div>
+
           </div>
         </Fieldset>
 
