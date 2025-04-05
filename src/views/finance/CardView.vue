@@ -34,6 +34,7 @@ const card = ref<Card>({
   cardNumber: '',
   closingDay: 1,
   imageUrl: '',
+  multi: false,
 })
 
 const btnShowBusy = ref<boolean>(false)
@@ -197,6 +198,7 @@ function resetForm() {
     cardNumber: '',
     closingDay: 1,
     imageUrl: '',
+    multi: false
   }
   selectedBank.value = null
   selectedUser.value = null

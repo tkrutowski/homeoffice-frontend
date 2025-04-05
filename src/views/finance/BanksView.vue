@@ -9,6 +9,7 @@ import type {AxiosError} from "axios";
 import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
 import {useBanksStore} from "@/stores/banks.ts";
 import type {Bank} from "@/types/Bank.ts";
+import type {ResponseData} from "@/types/User.ts";
 
 
 const bankStore = useBanksStore();
@@ -58,34 +59,44 @@ const submitDelete = async () => {
             detail: "Usunięto bank: " + bankTemp.value?.name,
             life: 3000,
           });
-        }).catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas usuwania banku: ' + bankTemp.value?.name,
-            life: 5000,
-          })
         })
+        .catch((reason: AxiosError) => {
+          if (reason.response && reason.response.status === 423) {
+            const data = reason.response?.data as ResponseData;
+            toast.add({
+              severity: 'warn',
+              summary: 'Informacja',
+              detail: data?.message,
+              life: 5000,
+            })
+          } else {
+            toast.add({
+              severity: 'error',
+              summary: reason?.message,
+              detail: 'Błąd podczas usuwania banku: ' + bankTemp.value?.name,
+              life: 5000,
+            })
+          }
+        })
+    showDeleteConfirmationDialog.value = false;
   }
-  showDeleteConfirmationDialog.value = false;
-};
-
+}
 //
 //-------------------------------------------------EDIT BANK-------------------------------------------------
 //
-const editBank = (bank: Bank) => {
-  const bankTemp: Bank = JSON.parse(JSON.stringify(bank));
-  router.push({
-    name: "Bank",
-    params: {isEdit: "true", bankId: bankTemp.id},
-  });
-};
+  const editBank = (bank: Bank) => {
+    const bankTemp: Bank = JSON.parse(JSON.stringify(bank));
+    router.push({
+      name: "Bank",
+      params: {isEdit: "true", bankId: bankTemp.id},
+    });
+  };
 
 //
 //-----------------------------------------------------MOUNTED---------------------------------
-onMounted(() => {
-  if (bankStore.banks.length <= 1) bankStore.getBanksFromDb();
-});
+  onMounted(() => {
+    if (bankStore.banks.length <= 1) bankStore.getBanksFromDb();
+  });
 
 </script>
 <template>
@@ -236,6 +247,7 @@ onMounted(() => {
 .p-datatable .p-datatable-tbody > tr > td {
   text-align: center !important;
 }
+
 ::v-deep(.p-panel-header) {
   padding: 0.25rem !important;
 }

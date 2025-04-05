@@ -9,6 +9,7 @@ import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import type {AxiosError} from "axios";
 import {useFirmsStore} from "@/stores/firms.ts";
 import TheMenuFinance from "@/components/finance/TheMenuFinance.vue";
+import type {ResponseData} from "@/types/User.ts";
 
 const firmStore = useFirmsStore();
 const toast = useToast();
@@ -58,6 +59,15 @@ const submitDelete = async () => {
             life: 3000,
           });
         }).catch((reason: AxiosError) => {
+          if (reason.response && reason.response.status === 423) {
+            const data = reason.response?.data as ResponseData;
+            toast.add({
+              severity: 'warn',
+              summary: 'Informacja',
+              detail: data?.message,
+              life: 5000,
+            })
+          } else
           toast.add({
             severity: 'error',
             summary: reason?.message,
