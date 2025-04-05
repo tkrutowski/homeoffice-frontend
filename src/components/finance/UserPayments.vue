@@ -3,7 +3,7 @@ import moment from 'moment'
 import {nextTick, onMounted, ref} from 'vue'
 import {UtilsService} from '@/service/UtilsService.ts'
 import router from '@/router'
-import type {Installment, Payment} from '@/types/Payment.ts'
+import {type Installment, type Payment, PaymentStatus} from '@/types/Payment.ts'
 
 import {usePaymentStore} from '@/stores/payments.ts'
 import {useUsersStore} from '@/stores/users.ts'
@@ -163,9 +163,9 @@ const calculateTotalToPay = (month: number) => {
               pay.paymentDeadline.getMonth() + 1 === month,
       )
       .map((value) =>
-          value.installmentAmountToPay - value.installmentAmountPaid < 0
-              ? 0
-              : value.installmentAmountToPay - value.installmentAmountPaid,
+          value.paymentStatus === PaymentStatus.TO_PAY
+              ? value.installmentAmountToPay
+              : 0,
       )
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
 }
