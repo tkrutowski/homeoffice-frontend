@@ -77,9 +77,7 @@ function goBack(): void {
 
     <!-- BUTTON -->
     <Button type="submit" class="mt-5 mb-1 font-bold w-full uppercase tracking-[5px]" outlined
-    >zaloguj
-    </Button
-    >
+            :loading="authorizationStore.loading" label="zaloguj" icon-pos="right" />
     <p class="text-right mb-4">
       <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
     </p>

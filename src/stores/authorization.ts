@@ -15,7 +15,6 @@ export const useAuthorizationStore = defineStore('authorization', {
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
         loginError:  null as string | null,
-        btnDisabled: false,
         isAuthenticated: false,
         loading: false,
         username: localStorage.getItem('username') || '',
@@ -322,7 +321,6 @@ export const useAuthorizationStore = defineStore('authorization', {
         async login(username: string, password: string) {
             console.log('START - login()')
             this.loading = true
-            this.btnDisabled = true
             const res = await httpCommon.post('/v1/auth/login', {
                 username: username,
                 password: password,
@@ -333,7 +331,6 @@ export const useAuthorizationStore = defineStore('authorization', {
 
 
             this.loading = false
-            this.btnDisabled = false
             this.clearLoginError()
             console.log('END - login()')
             return true
