@@ -3,7 +3,7 @@ import httpCommon from '@/config/http-common'
 import type {Fee, FeeFrequency, FeeInstallment} from '@/types/Fee'
 import type {StatusType} from '@/types/StatusType'
 import moment from "moment";
-import {PaymentStatus} from "@/types/Payment.ts";
+import {type Installment, PaymentStatus} from "@/types/Payment.ts";
 
 export const useFeeStore = defineStore('fee', {
     state: () => ({
@@ -25,6 +25,20 @@ export const useFeeStore = defineStore('fee', {
         },
         getFeesToPay: (state) => {
             return state.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.TO_PAY)
+        },
+        feesSumToPay: (state) => {
+            const fees: Fee[] = state.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.TO_PAY)
+            let sum = 0
+            fees.forEach((fee: Fee) => {
+                const installmentSum = fee.installmentList
+                    .filter((value: Installment) => value.paymentStatus === PaymentStatus.TO_PAY)
+                    .map((value: Installment) => value.installmentAmountToPay)
+                    .reduce((acc: number, currentValue: number) => acc + currentValue, 0)
+
+                sum += installmentSum
+            })
+
+            return sum
         },
     },
 

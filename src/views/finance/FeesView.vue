@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, type DefineComponent, ref} from 'vue'
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
 import router from '@/router'
 import {UtilsService} from '@/service/UtilsService'
@@ -18,6 +18,7 @@ import type {StatusType} from '@/types/StatusType'
 import moment from "moment";
 import type {AxiosError} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
+import type {LoanInstallment} from "@/types/Loan.ts";
 
 const toast = useToast()
 const feeStore = useFeeStore()
@@ -94,6 +95,36 @@ const filteredData = computed(() => {
     default:
       return feeStore.fees
   }
+})
+
+//
+//-------------SELECTED FEES
+//
+const selectedFees = ref<Fee[]>([])
+const selectedFeesAmount = computed(() => {
+  let sum = 0
+  selectedFees.value.forEach((fee: { installmentList: FeeInstallment[] }) => {
+    const installmentSum = fee.installmentList
+        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
+        .map((value) => value.installmentAmountToPay)
+        .reduce((acc, currentValue) => acc + currentValue, 0)
+    sum += installmentSum
+  })
+  return sum
+})
+
+const dataTableRef = ref<DefineComponent | null>(null)
+const filteredFeeAmount = computed(() => {
+  const processedData = dataTableRef.value?.processedData
+  let sum = 0
+  processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
+    const installmentSum = loan.installmentList
+        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
+        .map((value) => value.installmentAmountToPay)
+        .reduce((acc, currentValue) => acc + currentValue, 0)
+    sum += installmentSum
+  })
+  return sum
 })
 
 //
@@ -188,6 +219,8 @@ const editItem = (item: Fee) => {
 const handleRowsPerPageChange = (event: DataTablePageEvent) => {
   localStorage.setItem('rowsPerPageLoans', event.rows.toString())
 }
+
+
 </script>
 <template>
   <TheMenuFinance/>
@@ -208,9 +241,13 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
 
   <Panel class="my-3 mx-2">
     <DataTable
+        ref="dataTableRef"
         v-model:expandedRows="expandedRows"
         v-model:filters="filters"
         :value="filteredData"
+        v-model:selection="selectedFees"
+        selectionMode="multiple"
+        metaKeySelection
         removable-sort
         paginator
         :rows="feeStore.rowsPerPage"
@@ -497,6 +534,23 @@ const handleRowsPerPageChange = (event: DataTablePageEvent) => {
           :active="filter === 'ALL'"
           @click="setFilter('ALL')"
       />
+    </template>
+
+    <template #end>
+      <div class="flex flex-col gap-2">
+        <p class="">
+          <span class="">Przefiltrowane:</span>
+          <span class="ml-3">{{ UtilsService.formatCurrency(filteredFeeAmount) }}</span>
+        </p>
+        <p class="">
+          <span class="">Wybrane:</span>
+          <span class="ml-3">{{ UtilsService.formatCurrency(selectedFeesAmount) }}</span>
+        </p>
+        <p class="">
+          <span class="">DO SPŁATY RAZEM:</span>
+          <span class="ml-3">{{ UtilsService.formatCurrency(feeStore.feesSumToPay) }}</span>
+        </p>
+      </div>
     </template>
   </Toolbar>
 </template>
