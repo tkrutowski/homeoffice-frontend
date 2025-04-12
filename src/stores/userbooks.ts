@@ -120,7 +120,9 @@ export const useUserbooksStore = defineStore('userbook', {
             };
             const response = await httpCommon.put(`/v1/library/userbook`, transformedUserBook)
             const index = this.userbooks.findIndex((ub: UserBook) => ub.id === userbook.id)
-            if (index !== -1) this.userbooks.splice(index, 1, response.data)
+            console.log("index",index)
+            if (index !== -1) Object.assign(this.userbooks[index], response.data);//aktualizuje po zmiananch
+            // if (index !== -1) this.userbooks.splice(index, 1, response.data)
             console.log('END - updateUserbookDb()')
         },
         //
