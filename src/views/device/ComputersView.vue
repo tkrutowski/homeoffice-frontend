@@ -203,11 +203,13 @@ async function addComponent(id: number) {
   showAddModal.value = false
   if (selectedComputer.value !== null && componentType.value !== null) {
     let columnValue = selectedComputer.value[componentType.value.column];
-    if (componentType.value.max === 1 && columnValue instanceof Number) {
-      columnValue = id
-    }
-    if (Array.isArray(columnValue)) {
-      columnValue.push(id)
+    if (componentType.value.max === 1) {
+      selectedComputer.value[componentType.value.column] = id;
+    } else if (Array.isArray(columnValue)) {
+      if (!columnValue.includes(id)) {
+        columnValue.push(id);
+        selectedComputer.value[componentType.value.column] = columnValue;
+      }
     }
     if (deviceDetailsMap.value.has(componentType.value)) {
       // Jeśli klucz istnieje, aktualizujemy istniejącą listę

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import OfficeButton from '@/components/OfficeButton.vue'
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 type  T = {
   id: number
   name: string
@@ -8,15 +8,24 @@ type  T = {
 const props = defineProps<{
   msg: string,
   objectList: T[],
+  visible: boolean,
 }>()
 const emit = defineEmits<{
   (e: 'save', id: number): void
   (e: 'cancel'): void
+  (e: 'update:visible', value: boolean): void
 }>()
 
 const selected = ref<T | null>(null)
 const filtered = ref<T[]>([])
 const inputRef = ref(null);
+
+watch(() => props.visible, (newValue) => {
+  if (newValue) {
+    selected.value = null;
+    filtered.value = [];
+  }
+})
 
 const search = (event: { query: string }) => {
   filtered.value = props.objectList.filter((item: T) => {
@@ -34,7 +43,7 @@ const cancel = () => {
 </script>
 
 <template>
-  <Dialog :style="{ width: '550px' }" :modal="true">
+  <Dialog :style="{ width: '550px' }" :modal="true" :visible="visible" @update:visible="$emit('update:visible', $event)" @hide="cancel">
     <template #header>
       <p class="text-2xl">Wybierz</p>
     </template>
