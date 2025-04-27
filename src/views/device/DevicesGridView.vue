@@ -201,12 +201,12 @@ const sortKey = ref<object>({label: 'Data: od najnowszych', value: '!purchaseDat
 const sortOrder = ref<number>(-1);
 const sortField = ref<string>("purchaseDate");
 const sortOptions = ref([
-  {label: 'Cena: od najdroższych', value: '!purchaseAmount'},
-  {label: 'Cena: od najtańszych', value: 'purchaseAmount'},
-  {label: 'Alfabetycznie: Z-A', value: '!name'},
-  {label: 'Alfabetycznie: A-Z', value: 'name'},
-  {label: 'Data: od najnowszych', value: '!purchaseDate'},
-  {label: 'Data: od najstarszych', value: 'purchaseDate'},
+  {label: 'Cena: od najdroższych', value: '!purchaseAmount', icon: 'pi-sort-amount-down'},
+  {label: 'Cena: od najtańszych', value: 'purchaseAmount', icon: 'pi-sort-amount-up'},
+  {label: 'Alfabetycznie: Z-A', value: '!name', icon: 'pi-sort-alpha-down-alt'},
+  {label: 'Alfabetycznie: A-Z', value: 'name', icon: 'pi-sort-alpha-up'},
+  {label: 'Data: od najnowszych', value: '!purchaseDate', icon: 'pi-sort-numeric-down'},
+  {label: 'Data: od najstarszych', value: 'purchaseDate', icon: 'pi-sort-numeric-up-alt'},
 ]);
 const onSortChange = (event: SelectChangeEvent) => {
   console.log('onSortChange', event)
@@ -264,7 +264,16 @@ const onSortChange = (event: SelectChangeEvent) => {
               />
             </router-link>
             <Select v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Sortuj:"
-                    class="ml-3" @change="onSortChange"/>
+                    class="ml-3" @change="onSortChange">
+              <template #option="slotProps">
+                <i :class="['pi', slotProps.option.icon]" />
+                <span class="ml-2">{{ slotProps.option.label }}</span>
+              </template>
+              <template #value="slotProps">
+                <i v-if="slotProps.value" :class="['pi', slotProps.value.icon]" />
+                <span class="ml-2">{{ slotProps.value ? slotProps.value.label : 'Sortuj:' }}</span>
+              </template>
+            </Select>
           </div>
           <div class="flex gap-4">
             <IconField icon-position="left">
