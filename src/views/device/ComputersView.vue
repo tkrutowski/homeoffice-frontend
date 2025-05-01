@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import {useDevicesStore} from '@/stores/devices.ts'
-import {computed, onMounted, ref, watch} from 'vue'
+import { useDevicesStore } from '@/stores/devices.ts'
+import { computed, onMounted, ref, watch } from 'vue'
 import OfficeButton from '@/components/OfficeButton.vue'
-import {useToast} from 'primevue/usetoast'
-import type {Device} from '@/types/Devices.ts'
+import { useToast } from 'primevue/usetoast'
+import type { Device } from '@/types/Devices.ts'
 import TheMenuDevice from '@/components/device/TheMenuDevice.vue'
-import {UtilsService} from '@/service/UtilsService'
-import {useComputerStore} from "@/stores/computers.ts";
-import type {ComponentType, Computer} from "@/types/Computer.ts";
+import { UtilsService } from '@/service/UtilsService'
+import { useComputerStore } from "@/stores/computers.ts";
+import type { ComponentType, Computer } from "@/types/Computer.ts";
 import ComponentCategory from "@/components/device/ComponentCategory.vue";
 import DeviceDetails from "@/components/device/DeviceDetails.vue";
 import AddAutoComplete from "@/components/AddAutoCompleteDialog.vue";
-import type {SelectChangeEvent} from "primevue/select";
-import type {AxiosError} from "axios";
+import type { SelectChangeEvent } from "primevue/select";
+import type { AxiosError } from "axios";
 import AddDialog from "@/components/AddDialog.vue";
-
+import NewComputer from "@/components/device/NewComputer.vue";
 const deviceStore = useDevicesStore()
 const computerStore = useComputerStore()
 
@@ -91,35 +91,35 @@ async function newComputer(name: string) {
   hasChange.value = false
   updating.value = true
   computerStore
-      .addComputerDb(computer)
-      .then(() => {
+    .addComputerDb(computer)
+    .then(() => {
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Dodano nowy komputer: ' + computer.name,
+        life: 3000,
+      })
+    })
+    .catch((reason: AxiosError) => {
+      console.log('reason', reason)
+      if (reason.response?.status === 409) {
         toast.add({
-          severity: 'success',
-          summary: 'Potwierdzenie',
-          detail: 'Dodano nowy komputer: ' + computer.name,
+          severity: 'warn',
+          summary: 'Info',
+          detail: 'Komputer o podanej nazwie już istnieje w bazie danych.',
           life: 3000,
         })
-      })
-      .catch((reason: AxiosError) => {
-        console.log('reason', reason)
-        if (reason.response?.status === 409) {
-          toast.add({
-            severity: 'warn',
-            summary: 'Info',
-            detail: 'Komputer o podanej nazwie już istnieje w bazie danych.',
-            life: 3000,
-          })
-        } else {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas dodawania komputera.',
-            life: 3000,
-          })
-          hasChange.value = true
-        }
-      })
-      .finally(() => updating.value = false)
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: reason?.message,
+          detail: 'Błąd podczas dodawania komputera.',
+          life: 3000,
+        })
+        hasChange.value = true
+      }
+    })
+    .finally(() => updating.value = false)
 }
 
 //
@@ -131,25 +131,25 @@ async function updateComputer() {
     hasChange.value = false
     updating.value = true
     await computerStore
-        .updateComputerDb(selectedComputer.value)
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zaaktualizowano komputer: ' + selectedComputer.value?.name,
-            life: 3000,
-          })
+      .updateComputerDb(selectedComputer.value)
+      .then(() => {
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaaktualizowano komputer: ' + selectedComputer.value?.name,
+          life: 3000,
         })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas edycji komputera.',
-            life: 3000,
-          })
-          hasChange.value = true
+      })
+      .catch((reason: AxiosError) => {
+        toast.add({
+          severity: 'error',
+          summary: reason?.message,
+          detail: 'Błąd podczas edycji komputera.',
+          life: 3000,
         })
-        .finally(() => updating.value = false)
+        hasChange.value = true
+      })
+      .finally(() => updating.value = false)
   }
 }
 
@@ -162,7 +162,7 @@ const addToDisplayMap = async (componentType: ComponentType) => {
     let devices: Device[] = []
     if (Array.isArray(idOrIds)) {
       const devicesOrNull = await Promise.all(idOrIds.filter((id: number) => id > 0)
-          .map((id: number) => deviceStore.getDevice(id)))
+        .map((id: number) => deviceStore.getDevice(id)))
       devices = devicesOrNull.filter((dev: Device | null) => dev != null)
     } else if (typeof idOrIds === "number" && idOrIds > 0) {
       const newDevice: Device | null = await deviceStore.getDevice(idOrIds)
@@ -181,9 +181,9 @@ const removeFromDisplayMap = async (componentType: ComponentType) => {
 //
 const selectedDevicesCost = computed(() => {
   return Array.from(deviceDetailsMap.value.values())
-      .flat()
-      .map((device: Device) => device.purchaseAmount)
-      .reduce((accumulator, currentValue) => accumulator + currentValue, 0)
+    .flat()
+    .map((device: Device) => device.purchaseAmount)
+    .reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 })
 
 
@@ -234,6 +234,7 @@ function removeComponent(part: ComponentType, device: Device) {
   //remove from selectedComputer
   if (selectedComputer.value !== null) {
     let columnValue = selectedComputer.value[part.column];
+    console.log('removeComponent - columnValue', columnValue)
     if (part.max === 1) {
       columnValue = -1
     }
@@ -246,10 +247,15 @@ function removeComponent(part: ComponentType, device: Device) {
     //remove from displayMap
     if (deviceDetailsMap.value.has(part)) {
       const existingDevices = deviceDetailsMap.value.get(part) || [];
+      console.log('removeComponent - existingDevices', existingDevices)
       const index = existingDevices.findIndex((dev: Device) => dev.id === device.id);
+      console.log('removeComponent - index', index)
       if (index !== -1) {
+        console.log('removeComponent - deviceDetailsMap.value', deviceDetailsMap.value)
         existingDevices.splice(index, 1);
         deviceDetailsMap.value.set(part, existingDevices);
+        console.log('removeComponent - deviceDetailsMap.value', deviceDetailsMap.value)
+
       }
     }
     hasChange.value = true;
@@ -258,46 +264,53 @@ function removeComponent(part: ComponentType, device: Device) {
 
 const devices = computed(() => {
   return deviceStore.devices
-      .filter((dev: Device) => dev.activeStatus === "ACTIVE")
-      .map((dev: Device) => {
-        return {
-          id: dev.id,
-          name: dev.name
-        }
-      })
+    .filter((dev: Device) => dev.activeStatus === "ACTIVE")
+    .map((dev: Device) => {
+      return {
+        id: dev.id,
+        name: dev.name
+      }
+    })
 })
+
+const handleSave = async () => {
+  const currentComputerId = selectedComputer.value?.id
+  await computerStore.getComputers()
+  if (currentComputerId) {
+    // Znajdź zaktualizowany komputer i ustaw go jako wybrany
+    selectedComputer.value = computerStore.computers.find(comp => comp.id === currentComputerId) || null
+  }
+}
+
+const handleCancel = () => {
+  showAddComputerModal.value = false
+}
+
 </script>
 
 <template>
-  <TheMenuDevice/>
+  <TheMenuDevice />
+  {{ selectedComputer }}
   <AddAutoComplete v-model:visible="showAddModal" :msg="message" :object-list="devices"
-                   @cancel="() => showAddModal = false" @save="addComponent"/>
-  <AddDialog
-      v-model:visible="showAddComputerModal"
-      msg="Dodaj komputer"
-      label1="Nazwa komputera:"
-      @save="newComputer"
-      @cancel="showAddComputerModal = false"
-  />
+    @cancel="() => showAddModal = false" @save="addComponent" />
+  <NewComputer v-model:visible="showAddComputerModal" :computer="selectedComputer" @save="handleSave"
+    @cancel="handleCancel" />
   <Toolbar class="m-6">
     <template #start>
       <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" size="small"
-                    @click="showAddComputerModal=true" btn-disabled/>
+        @click="showAddComputerModal = true" />
+      <OfficeButton class="ml-2" btn-type="office-regular" text="Edycja" icon-pos="left" icon="pi pi-pencil"
+        size="small" @click="showAddComputerModal = true" :disabled="selectedComputer == null" />
     </template>
 
     <template #center>
-      <Select v-model="selectedComputer"
-              :options="computerStore.computers"
-              optionLabel="name"
-              placeholder="Wybierz komputer"
-              :loading="computerStore.loadingComputers"
-              @change="selectedComputerChanged"/>
+      <Select v-model="selectedComputer" :options="computerStore.computers" optionLabel="name"
+        placeholder="Wybierz komputer" :loading="computerStore.loadingComputers" @change="selectedComputerChanged" />
     </template>
 
     <template #end>
       <OfficeButton btn-type="office-save" text="zapisz" :btn-disabled="!hasChange" icon="pi pi-save" size="small"
-                    class="mr-2"
-                    :loading="updating" @click="updateComputer"/>
+        class="mr-2" :loading="updating" @click="updateComputer" />
     </template>
   </Toolbar>
   <div v-if="selectedComputer" class="flex gap-4 m-6">
@@ -308,15 +321,11 @@ const devices = computed(() => {
         </div>
       </template>
       <template #content>
-        <ScrollPanel class=" overflow-y-auto min-h-[calc(100vh-440px)]"
-                     :style="{maxHeight: panelHeight + 'px'}">
-          <p v-if="refreshKey"> refreshkey</p>
-          <p v-else> !refreshkey</p>
+        <ScrollPanel class=" overflow-y-auto min-h-[calc(100vh-440px)]" :style="{ maxHeight: panelHeight + 'px' }">
           <div v-if="refreshKey">
-
             <div v-for="type in computerStore.componentTypes" :key="type.name">
-              <ComponentCategory :componentType="type" :computer="selectedComputer"
-                                 @addView="addToDisplayMap" @removeView="removeFromDisplayMap"/>
+              <ComponentCategory :componentType="type" :computer="selectedComputer" @addView="addToDisplayMap"
+                @removeView="removeFromDisplayMap" />
             </div>
           </div>
         </ScrollPanel>
@@ -327,16 +336,16 @@ const devices = computed(() => {
       <template #header>
         <div class="w-full flex justify-center gap-4">
           <span class="font-bold text-3xl ml-2 text-color">Wybrane kategorie: {{
-              UtilsService.formatCurrency(selectedDevicesCost)
-            }}</span>
+            UtilsService.formatCurrency(selectedDevicesCost)
+          }}</span>
           <div v-if="deviceStore.loadingDevices || computerStore.loadingComputers">
-            <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5"/>
+            <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5" />
           </div>
         </div>
       </template>
       <div v-for="[category, devices] in deviceDetailsMap" :key="category.name" ref="devDetailsRef">
         <DeviceDetails :component-type="category" :devices="devices" @add="openAddComponentDialog"
-                       @remove="removeComponent" class="mb-5"/>
+          @remove="removeComponent" class="mb-5" />
       </div>
     </Panel>
   </div>

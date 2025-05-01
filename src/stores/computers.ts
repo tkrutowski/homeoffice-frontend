@@ -162,7 +162,7 @@ export const useComputerStore = defineStore('computer', {
         //ADD COMPUTER
         //
         async addComputerDb(computer: Computer) {
-            console.log('START - addComputerDb()')
+            console.log('START - addComputerDb()',computer)
             const response = await httpCommon.post(`/v1/computer`, computer)
             this.computers.push(response.data)
             console.log('END - addComputerDb()')
