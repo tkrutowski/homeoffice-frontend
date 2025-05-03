@@ -13,7 +13,6 @@ import DeviceDetails from "@/components/device/DeviceDetails.vue";
 import AddAutoComplete from "@/components/AddAutoCompleteDialog.vue";
 import type { SelectChangeEvent } from "primevue/select";
 import type { AxiosError } from "axios";
-import AddDialog from "@/components/AddDialog.vue";
 import NewComputer from "@/components/device/NewComputer.vue";
 const deviceStore = useDevicesStore()
 const computerStore = useComputerStore()
@@ -64,63 +63,6 @@ function selectedComputerChanged(event: SelectChangeEvent) {
 //---------------------------------------------------------NEW COMPUTER----------------------------------------------
 //
 const showAddComputerModal = ref<boolean>(false)
-
-async function newComputer(name: string) {
-  console.log('newComputer()', name)
-  showAddComputerModal.value = false
-  const computer: Computer = {
-    name: name,
-    activeStatus: 'ACTIVE',
-    computerCase: 105,
-    cooling: [],
-    power: -1,
-    disk: [],
-    display: [],
-    id: 1,
-    keyboard: -1,
-    motherboard: -1,
-    mouse: -1,
-    ram: [],
-    info: '',
-    processor: -1,
-    soundCard: -1,
-    graphicCard: [],
-    usb: []
-  }
-
-  hasChange.value = false
-  updating.value = true
-  computerStore
-    .addComputerDb(computer)
-    .then(() => {
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Dodano nowy komputer: ' + computer.name,
-        life: 3000,
-      })
-    })
-    .catch((reason: AxiosError) => {
-      console.log('reason', reason)
-      if (reason.response?.status === 409) {
-        toast.add({
-          severity: 'warn',
-          summary: 'Info',
-          detail: 'Komputer o podanej nazwie już istnieje w bazie danych.',
-          life: 3000,
-        })
-      } else {
-        toast.add({
-          severity: 'error',
-          summary: reason?.message,
-          detail: 'Błąd podczas dodawania komputera.',
-          life: 3000,
-        })
-        hasChange.value = true
-      }
-    })
-    .finally(() => updating.value = false)
-}
 
 //
 //-----------------------------------------------------EDIT COMPUTER------------------------------------------------
@@ -203,14 +145,25 @@ async function addComponent(id: number) {
   showAddModal.value = false
   if (selectedComputer.value !== null && componentType.value !== null) {
     let columnValue = selectedComputer.value[componentType.value.column];
-    if (componentType.value.max === 1) {
-      selectedComputer.value[componentType.value.column] = id;
-    } else if (Array.isArray(columnValue)) {
-      if (!columnValue.includes(id)) {
-        columnValue.push(id);
-        selectedComputer.value[componentType.value.column] = columnValue;
+    if (
+      componentType.value.column === 'ram' ||
+      componentType.value.column === 'disk' ||
+      componentType.value.column === 'cooling' ||
+      componentType.value.column === 'display' ||
+      componentType.value.column === 'graphicCard' ||
+      componentType.value.column === 'usb'
+    ) {
+      // To są tablice
+      const arr = columnValue as number[];
+      if (!arr.includes(id)) {
+        arr.push(id);
+        selectedComputer.value[componentType.value.column] = [...arr];
       }
+    } else {
+      // To są liczby
+      selectedComputer.value[componentType.value.column] = id as number;
     }
+
     if (deviceDetailsMap.value.has(componentType.value)) {
       // Jeśli klucz istnieje, aktualizujemy istniejącą listę
       const existingDevices: Device[] = deviceDetailsMap.value.get(componentType.value) || [];
@@ -231,31 +184,32 @@ async function addComponent(id: number) {
 
 function removeComponent(part: ComponentType, device: Device) {
   console.log("removeComponent", part, device)
-  //remove from selectedComputer
   if (selectedComputer.value !== null) {
-    let columnValue = selectedComputer.value[part.column];
-    console.log('removeComponent - columnValue', columnValue)
-    if (part.max === 1) {
-      columnValue = -1
-    }
-    if (Array.isArray(columnValue)) {
-      const index = columnValue.findIndex((id: number) => id === device.id);
+    // Usuwamy z selectedComputer
+    const arrayFields = [
+      'ram', 'disk', 'cooling', 'display', 'graphicCard', 'usb'
+    ] as const;
+
+    if (arrayFields.includes(part.column as typeof arrayFields[number])) {
+      // To są tablice
+      const arr = selectedComputer.value[part.column] as number[];
+      const index = arr.findIndex(id => id === device.id);
       if (index !== -1) {
-        columnValue.splice(index, 1);
+        arr.splice(index, 1);
+        selectedComputer.value[part.column] = [...arr] as any; // <- dodaj as any
       }
+    } else {
+      // To są liczby
+      selectedComputer.value[part.column] = -1 as any; // <- dodaj as any
     }
-    //remove from displayMap
+
+    // Usuwamy z displayMap
     if (deviceDetailsMap.value.has(part)) {
       const existingDevices = deviceDetailsMap.value.get(part) || [];
-      console.log('removeComponent - existingDevices', existingDevices)
-      const index = existingDevices.findIndex((dev: Device) => dev.id === device.id);
-      console.log('removeComponent - index', index)
+      const index = existingDevices.findIndex(dev => dev.id === device.id);
       if (index !== -1) {
-        console.log('removeComponent - deviceDetailsMap.value', deviceDetailsMap.value)
         existingDevices.splice(index, 1);
-        deviceDetailsMap.value.set(part, existingDevices);
-        console.log('removeComponent - deviceDetailsMap.value', deviceDetailsMap.value)
-
+        deviceDetailsMap.value.set(part, [...existingDevices]); // Tworzymy nową tablicę aby wymusić reaktywność
       }
     }
     hasChange.value = true;

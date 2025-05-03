@@ -5,9 +5,7 @@ import {
   ComputerDesktopIcon,
   CpuChipIcon,
   CircleStackIcon,
-  TableCellsIcon,
   SpeakerWaveIcon,
-  WindowIcon,
   KeyIcon,
   CursorArrowRippleIcon,
   BoltIcon,
@@ -17,7 +15,6 @@ import {
   Square3Stack3DIcon,
   ArrowPathRoundedSquareIcon,
   PhotoIcon,
-  RectangleGroupIcon
 } from '@heroicons/vue/24/solid'
 
 const props = defineProps({

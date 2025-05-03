@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import {useToast} from 'primevue/usetoast'
 import {useUsersStore} from '@/stores/users'
 import type {User} from '@/types/User'
@@ -9,7 +9,7 @@ import type {AxiosError} from "axios";
 
 const props = defineProps<{
   visible: boolean
-  computer?: Computer
+  computer: Computer | null
 }>()
 
 const emit = defineEmits<{
@@ -28,7 +28,6 @@ const computerInfo = ref<string>('')
 const btnShowBusy = ref<boolean>(false)
 const submitted = ref<boolean>(false)
 
-const isEdit = computed(() => props.computer !== undefined)
 
 const showError = (msg: string) => {
   toast.add({

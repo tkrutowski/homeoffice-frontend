@@ -38,6 +38,7 @@ export interface ComputerDto {
 
 export interface Computer {
     id: number
+    idUser: number
     name: string
     processor: number
     motherboard: number
