@@ -14,6 +14,7 @@ import AddAutoComplete from "@/components/AddAutoCompleteDialog.vue";
 import type { SelectChangeEvent } from "primevue/select";
 import type { AxiosError } from "axios";
 import NewComputer from "@/components/device/NewComputer.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 const deviceStore = useDevicesStore()
 const computerStore = useComputerStore()
 
@@ -63,6 +64,7 @@ function selectedComputerChanged(event: SelectChangeEvent) {
 //---------------------------------------------------------NEW COMPUTER----------------------------------------------
 //
 const showAddComputerModal = ref<boolean>(false)
+const showEditComputerModal = ref<boolean>(false)
 
 //
 //-----------------------------------------------------EDIT COMPUTER------------------------------------------------
@@ -238,23 +240,58 @@ const handleSave = async () => {
 
 const handleCancel = () => {
   showAddComputerModal.value = false
+  showEditComputerModal.value = false
+}
+
+const showDeleteConfirmation = ref<boolean>(false)
+
+async function deleteComputer() {
+  if (selectedComputer.value) {
+     computerStore.deleteComputerDb(selectedComputer.value.id)
+     .then(() => {
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Usunięto komputer: ' + selectedComputer.value?.name,
+        life: 3000,
+      })
+      selectedComputer.value = null
+    })
+    .catch((reason: AxiosError) => {
+      toast.add({
+        severity: 'error',
+        summary: reason?.message,
+        detail: 'Nie udało się usunąć komputera',
+        life: 3000,
+      })
+    })
+  }
+  showDeleteConfirmation.value = false
 }
 
 </script>
 
 <template>
   <TheMenuDevice />
-  {{ selectedComputer }}
   <AddAutoComplete v-model:visible="showAddModal" :msg="message" :object-list="devices"
     @cancel="() => showAddModal = false" @save="addComponent" />
-  <NewComputer v-model:visible="showAddComputerModal" :computer="selectedComputer" @save="handleSave"
+  <NewComputer v-model:visible="showAddComputerModal" :computer="null" @save="handleSave"
     @cancel="handleCancel" />
+  <NewComputer v-model:visible="showEditComputerModal" :computer="selectedComputer" @save="handleSave"
+    @cancel="handleCancel" />
+  <ConfirmationDialog v-model:visible="showDeleteConfirmation" 
+    msg="Czy na pewno chcesz usunąć wybrany komputer?"
+    label="Usuń"
+    @save="deleteComputer"
+    @cancel="() => showDeleteConfirmation = false" />
   <Toolbar class="m-6">
     <template #start>
       <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" size="small"
         @click="showAddComputerModal = true" />
       <OfficeButton class="ml-2" btn-type="office-regular" text="Edycja" icon-pos="left" icon="pi pi-pencil"
-        size="small" @click="showAddComputerModal = true" :disabled="selectedComputer == null" />
+        size="small" @click="showEditComputerModal = true" :disabled="selectedComputer == null" />
+      <OfficeButton class="ml-2" btn-type="office-save" text="Usuń" icon-pos="left" icon="pi pi-trash"
+        size="small" @click="showDeleteConfirmation = true" :disabled="selectedComputer == null" />
     </template>
 
     <template #center>

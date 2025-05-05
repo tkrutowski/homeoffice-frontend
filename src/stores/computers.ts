@@ -153,7 +153,7 @@ export const useComputerStore = defineStore('computer', {
         //
         async deleteComputerDb(computerId: number) {
             console.log('START - deleteComputerDb()')
-            await httpCommon.delete(`/v1/devices/` + computerId)
+            await httpCommon.delete(`/v1/computer/` + computerId)
             const index = this.computers.findIndex((comp: Computer) => comp.id === computerId)
             if (index !== -1) this.computers.splice(index, 1)
             console.log('END - deleteComputerDb()')
