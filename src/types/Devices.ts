@@ -1,5 +1,6 @@
 import type { Firm } from './Firm.ts'
 import type { ActiveStatus } from './Bank.ts'
+import type {FileInfo} from "@/types/FileInfo.ts";
 
 export interface Device {
   id: number
@@ -16,6 +17,7 @@ export interface Device {
   activeStatus: ActiveStatus
   details: Map<string, string>
   imageUrl: string
+  files: FileInfo[]
 }
 
 export interface DeviceType {
@@ -38,4 +40,5 @@ export interface DeviceDto {
   activeStatus: ActiveStatus
   details: Map<string, string>
   imageUrl: string
+  files: FileInfo[]
 }

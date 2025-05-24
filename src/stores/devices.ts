@@ -3,6 +3,7 @@ import httpCommon from '@/config/http-common'
 import type {Device, DeviceDto, DeviceType} from '@/types/Devices.ts'
 import type {ActiveStatus} from '@/types/Bank.ts'
 import moment from "moment";
+import type {FileInfo, Module} from "@/types/FileInfo.ts";
 
 export const useDevicesStore = defineStore('device', {
     state: () => ({
@@ -37,7 +38,8 @@ export const useDevicesStore = defineStore('device', {
                     otherInfo: dev.otherInfo,
                     activeStatus: dev.activeStatus,
                     details: new Map(Object.entries(dev.details)),
-                    imageUrl: dev.imageUrl
+                    imageUrl: dev.imageUrl,
+                    files: dev.files || []
                 }
                 return dto
             })
@@ -64,7 +66,7 @@ export const useDevicesStore = defineStore('device', {
             console.log('END - getDevices()')
             return this.devices
         },
-        async getDevice(idDevice: number):Promise<Device | null> {
+        async getDevice(idDevice: number): Promise<Device | null> {
             console.log('START - getDevice()', idDevice)
             let dev = this.devices.find((dev: Device) => dev.id === idDevice);
 
@@ -222,5 +224,27 @@ export const useDevicesStore = defineStore('device', {
             this.devicesTypes.push(response.data)
             console.log('END - addDeviceTypeDb()')
         },
+
+        //
+        // ADD DEVICE FILE
+        //
+        async addFileDb(idDevice: number, files: FileInfo[]) {
+            console.log('START - addFileDb()', idDevice, files)
+            const response = await httpCommon.post(`/v1/devices/files/${idDevice}`, files);
+
+            const index = this.devices.findIndex((dev: Device) => dev.id === idDevice)
+            if (index !== -1) this.devices.splice(index, 1, response.data)
+            console.log('END - addFileDb()')
+            return response.data;
+        },
+        //
+        //DELETE FILE
+        //
+        async deleteFileDb(module: Module, fileName: string) {
+            console.log('START - deleteFileDb()', module, fileName)
+            const response = await httpCommon.delete(`/v1/files/delete/${module}/${fileName}`);
+            console.log('END - deleteFileDb()')
+            return response;
+        }
     },
 })

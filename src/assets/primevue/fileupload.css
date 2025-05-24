@@ -28,8 +28,12 @@
   @apply flex flex-col gap-2 mt-[1.125rem];
 }
 
+/*.p-fileupload-file {*/
+/*  @apply flex flex-wrap items-center p-4 border-b border-surface-200 dark:border-surface-700 gap-2 last:border-b-0;*/
+/*}*/
+
 .p-fileupload-file {
-  @apply flex flex-wrap items-center p-4 border-b border-surface-200 dark:border-surface-700 gap-2 last:border-b-0;
+  @apply flex flex-wrap items-center p-4 border rounded-xl  border-surface-200 dark:border-surface-700 gap-2;
 }
 
 .p-fileupload-file-info {

@@ -13,6 +13,10 @@ import type {ActiveStatus} from '@/types/Bank'
 import type {AxiosError} from "axios";
 import type {SelectChangeEvent} from "primevue/select";
 import type {DataViewPageEvent} from "primevue";
+import FileUploadDialog from "@/components/FileUploadDialog.vue";
+import type {FileInfo} from "@/types/FileInfo.ts";
+import ButtonOutlined from '@/components/ButtonOutlined.vue'
+import DeviceDetailsDialog from '@/components/device/DeviceDetailsDialog.vue'
 
 const deviceStore = useDevicesStore()
 const toast = useToast()
@@ -23,10 +27,11 @@ onMounted(() => {
   }
 })
 
-
-
 const deviceTemp = ref<DeviceDto>()
 
+// Zmienne dla dialogu wgrywania plików
+const showUploadDialog = ref<boolean>(false)
+const selectedDevice = ref<DeviceDto | null>(null)
 
 //
 //-------------------------------------------------DELETE -------------------------------------------------
@@ -121,7 +126,7 @@ const filterDevices = () => {
   if (searchQuery.value.length >= 3) {
     filteredDevices.value = filteredDevices.value.filter((device: DeviceDto) =>
         device.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        device.firm?.toLowerCase().includes(searchQuery.value.toLowerCase())||
+        device.firm?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         device.purchaseDate?.toString().includes(searchQuery.value)
     );
   } else {
@@ -177,6 +182,34 @@ const handleRowsPerPageChange = (event: DataViewPageEvent) => {
   localStorage.setItem('rowsPerPageDevicesGrid', event.rows.toString())
 }
 
+// Funkcja do wyświetlania dialogu do wgrywania plików
+const showUploadFilesDialog = (device: DeviceDto) => {
+  selectedDevice.value = device;
+  showUploadDialog.value = true;
+};
+
+const saveFiles = (files: FileInfo[]) => {
+  console.log('saveFiles()', files)
+  if (selectedDevice.value && files.length > 0) {
+    deviceStore.addFileDb(selectedDevice.value.id, files)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zapisano pliki',
+            life: 3000,
+          })
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason.message,
+            detail: 'Nie zapisano plików',
+            life: 5000,
+          })
+        })
+  }
+};
 
 const layout = ref<'list' | 'grid' | undefined>('list');
 const options = ref<string[]>(['list', 'grid']);
@@ -224,6 +257,14 @@ const onSortChange = (event: SelectChangeEvent) => {
   }
 };
 
+const showDetailsDialog = ref<boolean>(false)
+const selectedDeviceForDetails = ref<DeviceDto | null>(null)
+
+const displayDetails = (device: DeviceDto) => {
+  selectedDeviceForDetails.value = device
+  showDetailsDialog.value = true
+}
+
 </script>
 
 <template>
@@ -242,6 +283,19 @@ const onSortChange = (event: SelectChangeEvent) => {
       @cancel="showStatusChangeConfirmationDialog = false"
   />
 
+  <DeviceDetailsDialog
+      v-model:visible="showDetailsDialog"
+      :device="selectedDeviceForDetails"
+  />
+
+  <FileUploadDialog
+      v-model:visible="showUploadDialog"
+      :module="'DEVICE_FILES'"
+      header="Wgraj pliki"
+      :closable="true"
+      :closeOnEscape="true"
+      @save="saveFiles"
+  />
   <Panel class="mt-5 ml-2 mr-2">
     <DataView :value="filteredDevices" data-key="id"
               :layout="layout"
@@ -266,11 +320,11 @@ const onSortChange = (event: SelectChangeEvent) => {
             <Select v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Sortuj:"
                     class="ml-3" @change="onSortChange">
               <template #option="slotProps">
-                <i :class="['pi', slotProps.option.icon]" />
+                <i :class="['pi', slotProps.option.icon]"/>
                 <span class="ml-2">{{ slotProps.option.label }}</span>
               </template>
               <template #value="slotProps">
-                <i v-if="slotProps.value" :class="['pi', slotProps.value.icon]" />
+                <i v-if="slotProps.value" :class="['pi', slotProps.value.icon]"/>
                 <span class="ml-2">{{ slotProps.value ? slotProps.value.label : 'Sortuj:' }}</span>
               </template>
             </Select>
@@ -361,19 +415,26 @@ const onSortChange = (event: SelectChangeEvent) => {
                         @click="editItem(item)"
                     />
                     <OfficeIconButton
+                        icon="pi pi-cloud-upload"
+                        :title="`Wgraj pliki dla urządzenia: ${item.name}`"
+                        :rounded="false"
+                        severity="info"
+                        @click="showUploadFilesDialog(item)"
+                    />
+                    <OfficeIconButton
                         icon="pi pi-trash"
                         :title="`Usuń urządzenie: ${item.name}`"
                         :rounded="false"
                         severity="danger"
                         @click="confirmDelete(item)"
                     />
-                    <OfficeButton
-                        btn-type="office-regular"
+                    <ButtonOutlined
                         icon="pi pi-info"
                         title="Wyświetl szczegóły."
                         class="flex-auto md:flex-initial whitespace-nowrap"
                         text=""
-                    ></OfficeButton>
+                        @click="displayDetails(item)"
+                    />
                   </div>
                 </div>
               </div>

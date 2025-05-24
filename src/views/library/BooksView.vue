@@ -12,6 +12,7 @@ import {useToast} from 'primevue/usetoast'
 import AddBookToShellDialog from '@/components/library/AddEditUserBookDialog.vue'
 import type {BookDto} from '@/types/Book'
 import type {AxiosError} from "axios";
+import ButtonOutlined from '@/components/ButtonOutlined.vue'
 
 const bookStore = useBooksStore()
 const userbookStore = useUserbooksStore()
@@ -210,7 +211,7 @@ const submitAddUserbook = async (newUserbook: UserBook) => {
               :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }"
               style="text-decoration: none"
           >
-            <Button outlined label="Dodaj" icon="pi pi-plus " title="Dodaj nową książkę"/>
+            <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową książkę"/>
           </router-link>
           <div v-if="bookStore.loadingBooks">
             <ProgressSpinner

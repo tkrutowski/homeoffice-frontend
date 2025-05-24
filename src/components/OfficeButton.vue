@@ -19,12 +19,21 @@ defineProps({
     type: Boolean,
     required: false,
   },
+  icon: {
+    type: String,
+    required: false,
+  },
+  iconPos: {
+    type: String as () => 'right' | 'left' | 'top' | 'bottom',
+    required: false,
+    default: 'right'
+  }
 })
 </script>
 <template>
   <Button
       type="button"
-      class="disabled:bg-surface-500 hover:disabled:!bg-surface-500"
+      class="disabled:bg-surface-500 hover:disabled:!bg-surface-500 px-4 py-2"
       :class="{
       'font-bold uppercase tracking-widest border bg-primary hover:!bg-primary-700 border-primary-900 hover:!border-primary-900':
         btnType === 'office-regular',
@@ -33,14 +42,17 @@ defineProps({
     }"
       :disabled="btnDisabled"
       :loading="loading"
-      icon-pos="right"
+      :icon="icon"
+      :icon-pos="iconPos"
       :label="text"
-      size="small"
   >
+    <template #default>
+      <span class="uppercase">{{ text }}</span>
+    </template>
   </Button>
 </template>
 <style scoped>
-.office-regular {
+/* .office-regular {
   background-color: var(--office-color);
   color: #332600 !important;
   border-color: var(--office-color) !important;
@@ -85,5 +97,5 @@ defineProps({
 .office-save:focus {
   outline: none !important;
   box-shadow: none !important;
-}
+} */
 </style>

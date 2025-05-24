@@ -2,6 +2,7 @@
 import {useRoute} from 'vue-router'
 import {useDevicesStore} from '@/stores/devices'
 import {useFirmsStore} from '@/stores/firms'
+import {useFilesStore} from '@/stores/files'
 import {computed, onMounted, ref} from 'vue'
 import OfficeButton from '@/components/OfficeButton.vue'
 import router from '@/router'
@@ -18,9 +19,14 @@ import type {AxiosError} from "axios";
 import type {DataTableRowReorderEvent} from "primevue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import AddMultipleDialog from "@/components/AddMultipleDialog.vue";
+import {FileService} from "@/service/FileService.ts";
+import type {FileInfo} from "@/types/FileInfo.ts";
+import ButtonOutlined from '@/components/ButtonOutlined.vue'
+
 
 const deviceStore = useDevicesStore()
 const firmStore = useFirmsStore()
+const filesStore = useFilesStore()
 const route = useRoute()
 
 const toast = useToast()
@@ -83,8 +89,9 @@ const device = ref<Device>({
   insuranceEndDate: null,
   otherInfo: '',
   activeStatus: 'ACTIVE',
-  imageUrl:'',
-  details: new Map<string, string>()
+  imageUrl: '',
+  details: new Map<string, string>(),
+  files: []
 })
 
 const btnShowBusy = ref<boolean>(false)
@@ -297,7 +304,8 @@ function resetForm() {
     otherInfo: '',
     activeStatus: 'ACTIVE',
     details: new Map<string, string>(),
-    imageUrl: ''
+    imageUrl: '',
+    files: []
   }
   submitted.value = false
   btnSaveDisabled.value = false
@@ -339,6 +347,7 @@ const openNew = () => {
   tempDetail.value = [];
   showAddMultipleDetailsModal.value = true;
 };
+
 async function saveMultipleDetails(keyToAdd: string, valueToAdd: string, close: boolean) {
   // console.log("keyToAdd, valueToAdd, close", keyToAdd, valueToAdd, close)
   if (device.value.details.has(keyToAdd)) {
@@ -348,8 +357,8 @@ async function saveMultipleDetails(keyToAdd: string, valueToAdd: string, close: 
       detail: 'Podana watość klucza już istnieje: ' + keyToAdd,
       life: 6000,
     })
-  }else {
-    if(close) showAddMultipleDetailsModal.value = false
+  } else {
+    if (close) showAddMultipleDetailsModal.value = false
     device.value.details.set(keyToAdd, valueToAdd)
   }
 }
@@ -386,6 +395,60 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
     }
   }
 }
+
+/////////////////-------------------------------UPLOAD FILE---------------------
+const showDeleteFileDialog = ref<boolean>(false);
+const fileToDelete = ref<FileInfo | null>(null);
+const deleteFileMessage = computed(() => {
+  return fileToDelete.value
+      ? `Czy na pewno chcesz usunąć plik "${fileToDelete.value.name}"?`
+      : '';
+});
+const confirmDeleteFile = (file: FileInfo) => {
+  fileToDelete.value = file;
+  showDeleteFileDialog.value = true;
+};
+const deleteFile = async () => {
+  if (fileToDelete.value != null && device.value.files && device.value.files.length > 0 ) {
+    device.value.files = device.value.files.filter(f => f.id !== fileToDelete.value?.id);
+    showDeleteFileDialog.value = false;
+    fileToDelete.value = null;
+  }
+};
+
+const downloadFile = async (file: FileInfo) => {
+  try {
+    const blob = await filesStore.downloadFileDb('DEVICE_FILES', file.name);
+    const url = window.URL.createObjectURL(blob);
+    
+    // Check if file can be displayed in browser
+    const displayableTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'text/html'];
+    
+    if (displayableTypes.includes(file.type)) {
+      // Open in new window for displayable types
+      window.open(url, '_blank');
+    } else {
+      // Trigger download for other file types
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Clean up the URL object
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Błąd',
+      detail: 'Nie udało się pobrać pliku.',
+      life: 3000,
+    });
+  }
+};
 </script>
 
 <template>
@@ -421,6 +484,13 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
       label="Usuń"
       @save="submitDelete"
       @cancel="showDeleteConfirmationDialog = false"
+  />
+  <ConfirmationDialog
+      v-model:visible="showDeleteFileDialog"
+      :msg="deleteFileMessage"
+      label="Usuń"
+      @save="deleteFile"
+      @cancel="showDeleteFileDialog = false"
   />
   <div class="m-4 max-w-5xl mx-auto">
     <form @submit.stop.prevent="saveDevice">
@@ -619,10 +689,76 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
           </div>
         </Fieldset>
 
+        <Fieldset v-if="device.files" class="w-full" legend="Pliki" :toggleable="true">
+          <DataTable v-if="device.files.length > 0"
+                     :value="device.files"
+                     class="mt-4"
+                     :rows="10"
+                     :paginator="true"
+                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                     :rowsPerPageOptions="[5,10,20,50]"
+                     responsiveLayout="scroll"
+          >
+            <Column field="name" header="Nazwa pliku" sortable>
+              <template #body="slotProps">
+                <div class="flex items-center">
+                  <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2"></i>
+                  <a :href="slotProps.data.url"
+                     target="_blank"
+                     class="text-blue-600 hover:text-blue-800"
+                  >
+                    {{ slotProps.data.name }}
+                  </a>
+                </div>
+              </template>
+            </Column>
+            <Column field="type" header="Typ" sortable style="width: 150px">
+              <template #body="slotProps">
+                <Tag :value="FileService.getFileTypeLabel(slotProps.data.type)"
+                     :severity="FileService.getFileTypeSeverity(slotProps.data.type)"
+                />
+              </template>
+            </Column>
+            <Column field="size" header="Rozmiar" sortable style="width: 150px">
+              <template #body="slotProps">
+                {{ FileService.formatFileSize(slotProps.data.size) }}
+              </template>
+            </Column>
+            <Column field="uploadDate" header="Data dodania" sortable style="width: 200px">
+              <template #body="slotProps">
+                {{ FileService.formatDate(slotProps.data.uploadDate) }}
+              </template>
+            </Column>
+            <Column field="description" header="Opis" style="width: 200px">
+              <template #body="slotProps">
+                <InputText v-model="slotProps.data.description"
+                           placeholder="Dodaj opis..."
+                />
+              </template>
+            </Column>
+            <Column header="Akcje" style="width: 100px">
+              <template #body="slotProps">
+                <div class="flex gap-2">
+                  <OfficeIconButton
+                      icon="pi pi-download"
+                      @click="downloadFile(slotProps.data)"
+                  />
+                  <OfficeIconButton
+                      icon="pi pi-trash"
+                      severity="danger"
+                      @click="confirmDeleteFile(slotProps.data)"
+                  />
+                </div>
+              </template>
+            </Column>
+          </DataTable>
+        </Fieldset>
+
+
         <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
           <Toolbar class="mb-6">
             <template #start>
-              <OfficeButton btn-type="office-regular" text="Nowy" icon-pos="left" icon="pi pi-plus" class="mr-2" size="small" @click="openNew"/>
+              <ButtonOutlined text="Nowy" icon="pi pi-plus" icon-pos="left" class="mr-2" @click="openNew"/>
             </template>
           </Toolbar>
           <DataTable :value="Array.from(device.details)" :reorderableColumns="true" @rowReorder="onRowReorder"
@@ -633,8 +769,8 @@ async function saveDetails(keyToAdd: string, valueToAdd: string) {
             <Column header="Akcje">
               <template #body="slotProps">
                 <OfficeIconButton icon="pi pi-pencil" class="mr-2"
-                        @click="editDetails(slotProps.data, slotProps.index)"/>
-                <OfficeIconButton icon="pi pi-trash"  severity="danger" @click="confirmDelete(slotProps.data)"/>
+                                  @click="editDetails(slotProps.data, slotProps.index)"/>
+                <OfficeIconButton icon="pi pi-trash" severity="danger" @click="confirmDelete(slotProps.data)"/>
               </template>
             </Column>
           </DataTable>
