@@ -8,8 +8,10 @@ export interface Payment {
   idUser: number
   name: string
   paymentDay: number
+  paymentType: 'LOAN' | 'FEE'
+  loanStatus?: PaymentStatus
+  feeStatus?: PaymentStatus
   installments: Installment[]
-  paymentType: PaymentType
 }
 
 export enum PaymentStatus {

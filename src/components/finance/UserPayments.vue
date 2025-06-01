@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import moment from 'moment'
-import {nextTick, onMounted, ref} from 'vue'
+import {nextTick, onMounted, ref, computed} from 'vue'
 import {UtilsService} from '@/service/UtilsService.ts'
 import router from '@/router'
 import {type Installment, type Payment, PaymentStatus} from '@/types/Payment.ts'
+import {useToast} from 'primevue/usetoast'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import ContextMenu from 'primevue/contextmenu'
 
 import {usePaymentStore} from '@/stores/payments.ts'
 import {useUsersStore} from '@/stores/users.ts'
@@ -15,6 +18,7 @@ const paymentStore = usePaymentStore()
 const userStore = useUsersStore()
 const loansStore = useLoansStore()
 const feeStore = useFeeStore()
+const toast = useToast()
 
 const props = defineProps({
   idUser: {
@@ -31,6 +35,13 @@ const selectedPayment = ref<Payment | null>(null)
 const selectedYear = ref<number>(props.year)
 const payments = ref<Payment[]>([])
 
+const showStatusChangeConfirmationDialog = ref<boolean>(false)
+const selectedPaymentTemp = ref<Payment | null>(null)
+
+const dataTableRef = ref(null);
+const cm = ref<InstanceType<typeof ContextMenu> | null>(null);
+const todayIndex = ref<number>((moment().month() * 2) + 3);//3 first columns to skip
+
 const onRowSelect = (event: any) => {
   const payment = event.data.paymentType === 'LOAN' ? 'PaymentLoan' : 'PaymentFee'
   router.push({
@@ -38,6 +49,14 @@ const onRowSelect = (event: any) => {
     params: {id: event.data.id},
   })
 }
+
+const onRowContextMenu = (event: any) => {
+  selectedPaymentTemp.value = event.data
+  if (cm.value) {
+    cm.value.show(event.originalEvent)
+  }
+}
+
 const getAmount = (installments: Installment[], month: number) => {
   const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
@@ -203,6 +222,49 @@ const getUserFullName = (id: number) => {
   return userStore.getUserFullName(id)
 }
 
+const changeStatusConfirmationMessage = computed(() => {
+  if (selectedPaymentTemp.value) {
+    const status = selectedPaymentTemp.value.paymentType === 'LOAN' 
+      ? selectedPaymentTemp.value.loanStatus 
+      : selectedPaymentTemp.value.feeStatus
+    return `Czy chcesz zmienić status ${selectedPaymentTemp.value.paymentType === 'LOAN' ? 'kredytu' : 'opłaty'}: <b>${selectedPaymentTemp.value.name}</b> na <b>${
+      status === PaymentStatus.PAID ? 'Do spłaty' : 'Spłacony'
+    }</b>?`
+  }
+  return 'No message'
+})
+
+const submitChangeStatus = async () => {
+  if (selectedPaymentTemp.value) {
+    const newStatus = selectedPaymentTemp.value.paymentType === 'LOAN' 
+      ? (selectedPaymentTemp.value.loanStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID)
+      : (selectedPaymentTemp.value.feeStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID)
+
+    try {
+      if (selectedPaymentTemp.value.paymentType === 'LOAN') {
+        await loansStore.updateLoanStatusDb(selectedPaymentTemp.value.id, newStatus)
+      } else {
+        await feeStore.updateFeeStatusDb(selectedPaymentTemp.value.id, newStatus)
+      }
+      
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: `Zmieniono status ${selectedPaymentTemp.value.paymentType === 'LOAN' ? 'kredytu' : 'opłaty'}: ${selectedPaymentTemp.value.name}`,
+        life: 3000,
+      })
+    } catch (error: any) {
+      toast.add({
+        severity: 'error',
+        summary: error?.message,
+        detail: `Błąd podczas zmiany statusu ${selectedPaymentTemp.value.paymentType === 'LOAN' ? 'kredytu' : 'opłaty'}: ${selectedPaymentTemp.value.name}`,
+        life: 3000,
+      })
+    }
+  }
+  showStatusChangeConfirmationDialog.value = false
+}
+
 //------------------------------------MOUNTED------------------------------
 onMounted(() => {
   console.log('onMounted UserPayments')
@@ -213,10 +275,6 @@ onMounted(() => {
     scrollToToday();
   });
 })
-
-//display current day in the table
-const dataTableRef = ref(null);
-const todayIndex = ref<number>((moment().month() * 2) + 3);//3 first columns to skip
 
 const scrollToToday = () => {
   if (dataTableRef.value) {
@@ -255,6 +313,22 @@ const scrollToToday = () => {
         </div>
       </div>
     </template>
+
+    <ConfirmationDialog
+        v-model:visible="showStatusChangeConfirmationDialog"
+        :msg="changeStatusConfirmationMessage"
+        @save="submitChangeStatus"
+        @cancel="showStatusChangeConfirmationDialog = false"
+    />
+
+    <ContextMenu ref="cm" :model="[
+      {
+        label: 'Zmień status',
+        icon: 'pi pi-refresh',
+        command: () => showStatusChangeConfirmationDialog = true
+      }
+    ]" />
+
     <DataTable ref="dataTableRef"
                v-model:selection="selectedPayment"
                :loading="paymentStore.loadingPayments"
@@ -266,6 +340,8 @@ const scrollToToday = () => {
                sort-field="paymentDay"
                table-style="min-width: 50rem"
                @row-select="onRowSelect"
+               @row-contextmenu="onRowContextMenu"
+               contextMenu
                size="small"
     >
       <template #empty>
