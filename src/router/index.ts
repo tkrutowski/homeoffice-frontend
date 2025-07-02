@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/MainHomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import Error503View from '@/views/Error503View.vue'
+import Error403View from "@/views/Error403View.vue";
 import RefreshComponent from '@/components/RefreshComponent.vue'
 import { useAuthorizationStore } from '@/stores/authorization'
 
@@ -65,7 +66,7 @@ const routes = [
   {
     path: '/error403',
     name: 'Error403',
-    component: Error503View,
+    component: Error403View,
   },
   {
     path: '/refresh',

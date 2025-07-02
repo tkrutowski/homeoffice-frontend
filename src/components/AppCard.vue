@@ -38,7 +38,7 @@ function clicked() {
     <template #footer>
       <div class="card-footer">
         <Button class="font-bold uppercase tracking-wider w-full" outlined :onclick="clicked"
-          >wejście</Button
+          >WEJŚCIE</Button
         >
       </div>
     </template>
@@ -48,9 +48,5 @@ function clicked() {
 .card-footer {
   display: flex;
   justify-content: center;
-}
-.header {
-  font-weight: bolder;
-  letter-spacing: 1.2px;
 }
 </style>

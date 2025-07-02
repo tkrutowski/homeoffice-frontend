@@ -82,7 +82,6 @@ declare module 'vue' {
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
     Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
-    UploadFile: typeof import('./src/components/share/UploadFile.vue')['default']
     UserBookLarge: typeof import('./src/components/library/UserBookLarge.vue')['default']
     UserBookSmall: typeof import('./src/components/library/UserBookSmall.vue')['default']
     UserPayments: typeof import('./src/components/finance/UserPayments.vue')['default']

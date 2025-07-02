@@ -69,7 +69,7 @@ const items = ref([
     <template #end>
       <div v-if="!authorizationStore.isAuthenticatedOrToken">
         <router-link :to="{ name: 'login' }" style="text-decoration: none">
-          <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
+          <Button class="font-bold uppercase tracking-wider" outlined>ZALOGUJ</Button>
         </router-link>
       </div>
       <div v-else>
@@ -77,7 +77,7 @@ const items = ref([
             class="font-bold uppercase tracking-wider"
             icon="pi pi-power-off"
             outlined
-            label="wyloguj"
+            label="WYLOGUJ"
             icon-pos="right"
             :onclick="authorizationStore.logout"
         />
