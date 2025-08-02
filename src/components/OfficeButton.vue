@@ -46,56 +46,10 @@ defineProps({
       :icon-pos="iconPos"
       :label="text"
   >
-    <template #default>
-      <span class="uppercase">{{ text }}</span>
-    </template>
   </Button>
 </template>
 <style scoped>
-/* .office-regular {
-  background-color: var(--office-color);
-  color: #332600 !important;
-  border-color: var(--office-color) !important;
-  letter-spacing: 1px;
+:deep(.p-button-label) {
   text-transform: uppercase;
-  font-weight: bold;
 }
-
-.office-regular:hover {
-  background-color: var(--office-color-hoover) !important;
-}
-
-.office-regular:disabled {
-  color: white !important;
-  background-color: gray !important;
-}
-
-.office-regular:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.office-save {
-  background-color: rgba(220, 56, 72, 0.7) !important;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-weight: bold;
-  color: rgb(232, 230, 227) !important;
-  border-color: rgb(128, 123, 0, 1) !important;
-}
-
-.office-save:hover {
-  color: white !important;
-  background-color: rgba(220, 56, 72) !important;
-}
-
-.office-save:disabled {
-  color: white !important;
-  background-color: gray !important;
-}
-
-.office-save:focus {
-  outline: none !important;
-  box-shadow: none !important;
-} */
 </style>

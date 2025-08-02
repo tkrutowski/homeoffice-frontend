@@ -296,7 +296,7 @@ const btnSearchShowBusy = ref<boolean>(false)
 const btnSearchShowOk = ref<boolean>(false)
 const btnSearchDisabled = ref<boolean>(false)
 
-function findBook() {
+function findBook(ai: boolean = false) {
   console.log('START - findBook(' + searchUrl.value + ')')
   submittedSearch.value = true
   resetForm()
@@ -307,7 +307,7 @@ function findBook() {
   } else {
     btnSearchDisabled.value = true
     bookStore
-        .getBookFromUrl(searchUrl.value)
+        .getBookFromUrl(searchUrl.value, ai)
         .then((bookByUrl: Book | null) => {
           if (bookByUrl == null) {
             btnSearchDisabled.value = false
@@ -444,7 +444,7 @@ const showErrorCover = () => {
           </div>
 
           <!--   BTN SEARCH -->
-          <div class="flex justify-center">
+          <div class="flex justify-center gap-2">
             <OfficeButton
                 text="wyszukaj"
                 type="button"
@@ -452,6 +452,15 @@ const showErrorCover = () => {
                 :loading="btnSearchShowBusy"
                 :btn-disabled="btnSearchDisabled"
                 @click="findBook()"
+            />
+            <OfficeButton
+                text="wyszukaj"
+                type="button"
+                icon="pi pi-microchip-ai"
+                btn-type="office-regular"
+                :loading="btnSearchShowBusy"
+                :btn-disabled="btnSearchDisabled"
+                @click="findBook(true)"
             />
           </div>
         </Fieldset>

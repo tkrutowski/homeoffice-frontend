@@ -123,7 +123,7 @@ const submitMultiChangeStatus = async () => {
       <Button
           outlined
           class="font-bold uppercase tracking-wider"
-          label="wyszukaj"
+          label="WYSZUKAJ"
           :disabled="purchasesStore.loadingPurchases || selectedUser === null"
           :loading="purchasesStore.loadingPurchases"
           @click="getCurrentPurchaseByUser"

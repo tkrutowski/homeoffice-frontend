@@ -265,7 +265,7 @@ const items = ref([
               class="font-bold uppercase tracking-wider"
               icon="pi pi-power-off"
               outlined
-              label="wyloguj"
+              label="WYLOGUJ"
               icon-pos="right"
               :onclick="authorizationStore.logout"
           />
