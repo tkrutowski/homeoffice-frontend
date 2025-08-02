@@ -37,8 +37,7 @@ const showStatusChangeConfirmationDialog = ref<boolean>(false)
 const changeStatusConfirmationMessage = computed(() => {
   const purchasesToPay = purchasesStore.purchasesToPay
   const amountAll = purchasesToPay
-      // .map((value) => parseFloat(value.amount))
-      .reduce((acc: number, curr: Purchase) => acc + curr.amount, 0)
+      .reduce((acc: number, curr: Purchase) => acc + Number(curr.amount), 0)
   console.log('amountAll', amountAll)
   if (purchasesToPay && purchasesToPay.length > 0) {
     const purchaseNamesListHtml = `
