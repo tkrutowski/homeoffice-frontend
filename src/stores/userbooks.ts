@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import { EditionType, OwnershipStatus, ReadingStatus, type UserBook } from '@/types/Book';
+import {type BookStatistic, EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '@/types/Book';
 import moment from 'moment';
 
 export const useUserbooksStore = defineStore('userbook', {
@@ -9,6 +9,7 @@ export const useUserbooksStore = defineStore('userbook', {
     btnDisabled: false,
     busyIcon: false,
     loadingUserbooks: false,
+    loadingStatistics: false,
     loadingOwnership: false,
     loadingEditionType: false,
     loadingReadingStatus: false,
@@ -72,8 +73,21 @@ export const useUserbooksStore = defineStore('userbook', {
       const response = await httpCommon.get(`/v1/library/userbook/status?status=` + status);
       console.log('getBanksFromDb() - Ilosc[]: ' + response.data.length);
       this.loadingUserbooks = false;
-      return response.data || [];
       console.log('END - getUserbooksFromDb()');
+      return response.data || [];
+    },
+    //
+    //GET STATISTICS
+    //
+    async getStatisticsFromDb(): Promise<BookStatistic[]> {
+      console.log('START - getStatisticsFromDb()');
+      this.loadingStatistics = true;
+
+      const response = await httpCommon.get(`/v1/library/userbook/statistics`);
+      console.log('getStatisticsFromDb() - Ilosc[]: ' + response.data.length);
+      this.loadingStatistics = false;
+      console.log('END - getStatisticsFromDb()');
+      return response.data || [];
     },
     //
     //GET  USERBOOK FROM DB BY ID

@@ -1,41 +1,34 @@
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue';
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
-  import type { UserBook } from '@/types/Book.ts';
+  import { type BookStatistic } from '@/types/Book.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
-  import moment from 'moment';
-  import { TranslationService } from '@/service/TranslationService.ts';
+  
   const userbookStore = useUserbooksStore();
-
-  const availableYears = computed(() => {
-    return [
-      ...new Set(userbookStore.userbooks.map((ub: UserBook) => moment(ub.readTo).year()).filter(year => !isNaN(year))),
-    ].sort((a: number, b: number) => b - a);
-  });
-  const selectedYear = ref(availableYears.value[0]);
-
-  const filteredData = computed(() => {
-    const ub = userbookStore.getUserbooksByDate(selectedYear.value);
-    return ub;
-  });
+  const statistics = ref<BookStatistic[]>([]);
 
   const chartData = computed(() => {
-    const months = [...Array(12)].map((_, i) => TranslationService.translateMonth(i + 1));
-    const categories = ['BOOK', 'AUDIOBOOK', 'EBOOK'];
-    const colors = ['#42A5F5', '#66BB6A', '#FFA726'];
+    if (statistics.value.length === 0) return { labels: [], datasets: [] };
+    
+    const years = statistics.value.map(stat => stat.year).sort((a, b) => a - b);
+    const categories = [
+      { key: 'book', label: 'BOOK', color: '#42A5F5' },
+      { key: 'audiobook', label: 'AUDIOBOOK', color: '#66BB6A' },
+      { key: 'ebook', label: 'EBOOK', color: '#FFA726' }
+    ];
 
     return {
-      labels: months,
-      datasets: categories.map((category, index) => ({
-        label: category,
-        backgroundColor: colors[index],
-        data: months.map(month => {
-          const books: UserBook[] = filteredData.value.filter(
-            (ub: UserBook) =>
-              TranslationService.translateMonth(moment(ub.readTo).month() + 1) === month &&
-              ub.editionType.toString() === category
-          );
-          return books ? books.length : 0;
+      labels: years,
+      datasets: categories.map((category) => ({
+        label: category.label,
+        borderColor: category.color,
+        backgroundColor: category.color + '20',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4,
+        data: years.map(year => {
+          const stat = statistics.value.find(s => s.year === year);
+          return stat ? (stat[category.key as keyof BookStatistic] as number) : 0;
         }),
       })),
     };
@@ -51,19 +44,46 @@
       },
     },
     scales: {
-      x: { stacked: true },
-      y: { stacked: true, beginAtZero: true },
+      x: {
+        display: true,
+        title: {
+          display: true,
+          text: 'Rok'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Liczba książek'
+        }
+      },
     },
   });
 
   function getTotalAudiobook(edition: string): number {
-    return filteredData.value.filter((ub: UserBook) => ub.editionType === edition).length;
+    return statistics.value.reduce((total, stat) => {
+      switch (edition) {
+        case 'AUDIOBOOK':
+          return total + stat.audiobook;
+        case 'EBOOK':
+          return total + stat.ebook;
+        case 'BOOK':
+          return total + stat.book;
+        default:
+          return total;
+      }
+    }, 0);
   }
 
   //------------------------------------MOUNTED------------------------------
-  onMounted(() => {
+  onMounted(async () => {
     console.log('onMounted StatisticsView');
-    if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
+    try {
+      statistics.value = await userbookStore.getStatisticsFromDb();
+    } catch (error) {
+      console.error('Błąd podczas pobierania statystyk:', error);
+    }
   });
 </script>
 
@@ -73,14 +93,7 @@
     <div class="grid gap-4">
       <Card class="shadow-lg p-4">
         <template #content>
-          <Select
-            v-model="selectedYear"
-            :options="availableYears"
-            placeholder="Wybierz rok"
-            class="mb-4 w-full md:w-40"
-            :loading="userbookStore.loadingUserbooks"
-          />
-          <Chart type="bar" :data="chartData" :options="chartOptions" class="w-full h-96" />
+          <Chart type="line" :data="chartData" :options="chartOptions" class="w-full h-96" />
         </template>
       </Card>
     </div>

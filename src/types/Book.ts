@@ -75,3 +75,10 @@ export interface UserBook {
   readTo: Date | null;
   info: string;
 }
+
+export interface BookStatistic {
+  year: number;
+  audiobook: number;
+  book: number;
+  ebook: number;
+}
