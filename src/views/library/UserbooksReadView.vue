@@ -2,8 +2,9 @@
 import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
 import {useUserbooksStore} from '@/stores/userbooks'
 import UserBookSmall from '@/components/library/UserBookSmall.vue'
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 import type {UserBook} from '@/types/Book'
+import {ReadingStatus} from '@/types/Book'
 import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue'
 import {useToast} from 'primevue/usetoast'
 import type {AxiosError} from "axios";
@@ -13,12 +14,47 @@ const toast = useToast()
 const userbookStore = useUserbooksStore()
 const selectedYear = ref<number>(new Date().getFullYear())
 const displayedYear = ref<number>(new Date().getFullYear())
+const searchQuery = ref<string>('')
 const userbooks = ref<UserBook[]>([])
-if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+const searchTimeout = ref<NodeJS.Timeout | null>(null)
+const displayText = ref<string>(selectedYear.value.toString())
+// if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+
+// Watch dla automatycznego wyszukiwania z debounce
+watch(searchQuery, (newQuery) => {
+  // cancel previous timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+  
+  // new timeout
+  if (newQuery.length >= 3) {
+    displayText.value = "Wyszukiwanie"
+    searchTimeout.value = setTimeout(() => {
+      searchBooks()
+    }, 500) // 500ms debounce
+  } else if (newQuery.length === 0) {
+    displayText.value = selectedYear.value.toString()
+    getUserbooks()
+  }
+})
 
 async function getUserbooks() {
-  userbooks.value = userbookStore.getUserbooksByDate(selectedYear.value)
+  searchQuery.value = ''
+  userbooks.value = await userbookStore.getUserbooksByDate(selectedYear.value, ReadingStatus.READ)
   displayedYear.value = selectedYear.value
+}
+
+async function searchBooks() {
+  if (searchQuery.value.length >= 3) {
+    await userbookStore.searchUserbooksFromDb(searchQuery.value)
+    userbooks.value = userbookStore.userbooks
+  }
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  getUserbooks()
 }
 
 function getTotalAudiobook(edition: string): number {
@@ -112,7 +148,7 @@ const submitDelete = async () => {
 
   <Toolbar class="m-6 text-color">
     <template #start
-    ><p class="mt-auto mb-auto">ROK: {{ displayedYear }}</p></template
+    ><p class="mt-auto mb-auto">ROK: {{ displayText }}</p></template
     >
     <template #center>
       <InputNumber
@@ -123,18 +159,35 @@ const submitDelete = async () => {
           :format="false"
           button-layout="horizontal"
       />
-    </template>
-
-    <template #end>
       <Button
-          class="font-bold uppercase tracking-wider"
+          class="font-bold uppercase tracking-wider h-full ml-2"
           outlined
-          size="small"
+          icon="pi pi-search"
           :disabled="userbookStore.loadingUserbooks"
           :loading="userbookStore.loadingUserbooks"
           @click="getUserbooks"
-      >wyświetl
-      </Button>
+      />
+    </template>
+
+    <template #end>
+      <div class="flex gap-4">
+        <IconField icon-position="left">
+          <InputIcon>
+            <i class="pi pi-search"/>
+          </InputIcon>
+          <InputText class="!max-w-32"
+                     v-model="searchQuery"
+                     placeholder="wyszukaj..."
+          />
+        </IconField>
+        <Button
+            type="button"
+            icon="pi pi-times"
+            outlined
+            title="Wyczyść wyszukiwanie"
+            @click="clearSearch"
+        />
+      </div>
     </template>
   </Toolbar>
 

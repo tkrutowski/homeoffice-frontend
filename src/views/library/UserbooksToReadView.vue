@@ -3,15 +3,20 @@ import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue'
 import {useUserbooksStore} from '@/stores/userbooks'
 import UserBookSmall from '@/components/library/UserBookSmall.vue'
 import {useToast} from 'primevue/usetoast'
-import {computed, ref} from 'vue'
-import type {UserBook} from '@/types/Book'
+import {computed, ref, onMounted} from 'vue'
+import {ReadingStatus, type UserBook} from '@/types/Book'
 import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue'
 import type {AxiosError} from "axios";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const toast = useToast()
 const userbookStore = useUserbooksStore()
-if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+const userbooks = ref<UserBook[]>([])
+// if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+
+onMounted(async () => {
+  userbooks.value = await userbookStore.getUserbooksByStatusFromDb( ReadingStatus.NOT_READ)
+})
 
 //
 //-------------------------------------------------USERBOOK-------------------------------------------------
@@ -105,7 +110,7 @@ const submitDelete = async () => {
     </div>
 
     <div class="flex flex-row flex-wrap justify-center">
-      <div v-for="ub in userbookStore.getBooksToRead" :key="ub.id">
+      <div v-for="ub in userbooks" :key="ub.id">
         <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete"/>
       </div>
     </div>

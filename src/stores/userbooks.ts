@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import httpCommon from '@/config/http-common'
-import type {EditionType, OwnershipStatus, ReadingStatus, UserBook} from '@/types/Book'
+import {EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '@/types/Book'
 import moment from 'moment'
 
 export const useUserbooksStore = defineStore('userbook', {
@@ -36,13 +36,21 @@ export const useUserbooksStore = defineStore('userbook', {
         //
         //GET USERBOOKS
         //
-        getUserbooksByDate(year: number) {
-            console.log('START - getUserbooksByDate()', year)
-            return this.userbooks
-                .filter((ub: UserBook) => ub.readingStatus === 'READ')
-                .filter((ub: UserBook) => {
-                        return moment(ub.readTo).year() === year;
-                })
+        async getUserbooksByDate(year: number, status: ReadingStatus): Promise<UserBook[]> {
+            console.log('START - getUserbooksByDate()', year, status)
+            this.loadingUserbooks = true
+
+            const response = await httpCommon.get(`/v1/library/userbook/status?status=${status}&year=${year}`)
+            console.log('getUserbooksByDate() - Ilosc[]: ' + response.data.length)
+            this.loadingUserbooks = false
+            console.log('END - getUserbooksByDate()')
+            return response.data
+        },
+        async getBooksReadNowByDate(year: number): Promise<UserBook[]> {
+            return await this.getUserbooksByDate(year, ReadingStatus.READ_NOW)
+        },
+        async getBooksToReadByDate(year: number): Promise<UserBook[]> {
+            return await this.getUserbooksByDate(year, ReadingStatus.NOT_READ)
         },
         async getUserbooksFromDb(): Promise<void> {
             console.log('START - getUserbooksFromDb()')
@@ -57,14 +65,14 @@ export const useUserbooksStore = defineStore('userbook', {
         //
         //GET USERBOOKS BY STATUS
         //
-        async getUserbooksByStatusFromDb(status: ReadingStatus): Promise<void> {
+        async getUserbooksByStatusFromDb(status: ReadingStatus): Promise<UserBook[]> {
             console.log('START - getUserbooksFromDb()')
             this.loadingUserbooks = true
 
             const response = await httpCommon.get(`/v1/library/userbook/status?status=` + status)
             console.log('getBanksFromDb() - Ilosc[]: ' + response.data.length)
-            this.userbooks = response.data
             this.loadingUserbooks = false
+            return response.data || []
             console.log('END - getUserbooksFromDb()')
         },
         //
@@ -134,6 +142,19 @@ export const useUserbooksStore = defineStore('userbook', {
             const index = this.userbooks.findIndex((b: UserBook) => b.id === userbookId)
             if (index !== -1) this.userbooks.splice(index, 1)
             console.log('END - deleteUserbookDb()')
+        },
+        //
+        //SEARCH USERBOOKS
+        //
+        async searchUserbooksFromDb(query: string): Promise<void> {
+            console.log('START - searchUserbooksFromDb()')
+            this.loadingUserbooks = true
+
+            const response = await httpCommon.get(`/v1/library/userbook/search?query=${encodeURIComponent(query)}`)
+            console.log('searchUserbooksFromDb() - Ilosc[]: ' + response.data.length)
+            this.userbooks = response.data
+            this.loadingUserbooks = false
+            console.log('END - searchUserbooksFromDb()')
         },
     },
 })
