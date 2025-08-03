@@ -1,27 +1,27 @@
 <script setup lang="ts">
-const emit = defineEmits<{
-  (e: 'clicked'): void
-}>()
+  const emit = defineEmits<{
+    (e: 'clicked'): void;
+  }>();
 
-defineProps({
-  textTitle: {
-    type: String,
-    required: true,
-  },
-  textContent: {
-    type: String,
-    required: true,
-  },
-  disabled: {
-    type: Boolean,
-    required: false,
-    default: true,
-  },
-})
-function clicked() {
-  console.log('clicked')
-  emit('clicked')
-}
+  defineProps({
+    textTitle: {
+      type: String,
+      required: true,
+    },
+    textContent: {
+      type: String,
+      required: true,
+    },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+  });
+  function clicked() {
+    console.log('clicked');
+    emit('clicked');
+  }
 </script>
 <template>
   <Card class="hover:border-primary border dark:border-surface-600 border-surface-100">
@@ -37,16 +37,14 @@ function clicked() {
 
     <template #footer>
       <div class="card-footer">
-        <Button class="font-bold uppercase tracking-wider w-full" outlined :onclick="clicked"
-          >WEJŚCIE</Button
-        >
+        <Button class="font-bold uppercase tracking-wider w-full" outlined :onclick="clicked">WEJŚCIE</Button>
       </div>
     </template>
   </Card>
 </template>
 <style scoped>
-.card-footer {
-  display: flex;
-  justify-content: center;
-}
+  .card-footer {
+    display: flex;
+    justify-content: center;
+  }
 </style>

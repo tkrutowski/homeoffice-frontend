@@ -1,228 +1,226 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
-import router from '@/router'
-import {UtilsService} from '@/service/UtilsService'
-import type {Loan, LoanInstallment} from '@/types/Loan'
-import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue'
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import OfficeButton from '@/components/OfficeButton.vue'
-import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
+  import { computed, onMounted, ref } from 'vue';
+  import router from '@/router';
+  import { UtilsService } from '@/service/UtilsService';
+  import type { Loan, LoanInstallment } from '@/types/Loan';
+  import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import OfficeButton from '@/components/OfficeButton.vue';
+  import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
 
-import {useLoansStore} from '@/stores/loans'
-import {usePaymentStore} from '@/stores/payments'
-import {useToast} from 'primevue/usetoast'
-import OfficeIconButton from '@/components/OfficeIconButton.vue'
-import type {AxiosError} from "axios";
-import {PaymentStatus} from "@/types/Payment.ts";
+  import { useLoansStore } from '@/stores/loans';
+  import { usePaymentStore } from '@/stores/payments';
+  import { useToast } from 'primevue/usetoast';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import type { AxiosError } from 'axios';
+  import { PaymentStatus } from '@/types/Payment.ts';
 
-const loansStore = useLoansStore()
-const paymentStore = usePaymentStore()
-const toast = useToast()
+  const loansStore = useLoansStore();
+  const paymentStore = usePaymentStore();
+  const toast = useToast();
 
-const loan = ref<Loan | null>(null)
-const installments = ref<LoanInstallment[]>([])
-const isBusy = ref<boolean>(false)
+  const loan = ref<Loan | null>(null);
+  const installments = ref<LoanInstallment[]>([]);
+  const isBusy = ref<boolean>(false);
 
-const props = defineProps({
-  id: {
-    type: Number,
-    required: true,
-  },
-})
+  const props = defineProps({
+    id: {
+      type: Number,
+      required: true,
+    },
+  });
 
-const getOtherInfo = computed(() => {
-  if (loan.value) {
-    return loan.value.otherInfo
-  }
-  return ''
-})
+  const getOtherInfo = computed(() => {
+    if (loan.value) {
+      return loan.value.otherInfo;
+    }
+    return '';
+  });
 
-const countDeadLine = computed(() => {
-  return loan.value?.installmentList[loan.value?.installmentList.length - 1].paymentDeadline
-})
-const plannedInterest = computed(() => {
-  if (loan.value)
-    return (
-        (loan.value?.amount - loan.value?.numberOfInstallments * loan.value?.installmentAmount) * -1
-    )
-  return 0
-})
-const realInterest = computed(() => {
-  if (loan.value)
-    return loan.value.installmentList
+  const countDeadLine = computed(() => {
+    return loan.value?.installmentList[loan.value?.installmentList.length - 1].paymentDeadline;
+  });
+  const plannedInterest = computed(() => {
+    if (loan.value) return (loan.value?.amount - loan.value?.numberOfInstallments * loan.value?.installmentAmount) * -1;
+    return 0;
+  });
+  const realInterest = computed(() => {
+    if (loan.value)
+      return loan.value.installmentList
         .filter((l: LoanInstallment) => l.paymentStatus === PaymentStatus.PAID)
         .map((installment: LoanInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
-        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
-  return 0
-})
-const calculateCost = computed(() => {
-  if (loan.value)
-    return (
-        (loan.value.amount -
-            loan.value.loanCost -
-            loan.value.numberOfInstallments * loan.value.installmentAmount) *
-        -1
-    )
-  return 0
-})
-const calculatePaid = computed(() => {
-  if (loan.value)
-    return loan.value.installmentList.filter(
-        (installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID,
-    ).length
-  return 0
-})
-const getAmount = computed(() => {
-  return installment.value?.installmentAmountPaid
+        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
+    return 0;
+  });
+  const calculateCost = computed(() => {
+    if (loan.value)
+      return (
+        (loan.value.amount - loan.value.loanCost - loan.value.numberOfInstallments * loan.value.installmentAmount) * -1
+      );
+    return 0;
+  });
+  const calculatePaid = computed(() => {
+    if (loan.value)
+      return loan.value.installmentList.filter(
+        (installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID
+      ).length;
+    return 0;
+  });
+  const getAmount = computed(() => {
+    return installment.value?.installmentAmountPaid
       ? installment.value.installmentAmountPaid
-      : installment.value?.installmentAmountToPay
-})
-const getDate = computed(() => {
-  if (!installment.value?.paymentDate) return new Date()
-  return installment.value?.paymentDate
-})
-const calculateProgressBar = computed(() => {
-  if (loan.value)
-    return (
+      : installment.value?.installmentAmountToPay;
+  });
+  const getDate = computed(() => {
+    if (!installment.value?.paymentDate) return new Date();
+    return installment.value?.paymentDate;
+  });
+  const calculateProgressBar = computed(() => {
+    if (loan.value)
+      return (
         (loan.value.installmentList.filter((i: LoanInstallment) => i.paymentStatus === PaymentStatus.PAID).length /
-            loan.value.numberOfInstallments) *
+          loan.value.numberOfInstallments) *
         100
-    )
-  return 0
-})
-// ---------------------------------------------EDIT PAYMENT--------------------------------
-const showPaymentModal = ref(false)
-const installment = ref<LoanInstallment>()
+      );
+    return 0;
+  });
+  // ---------------------------------------------EDIT PAYMENT--------------------------------
+  const showPaymentModal = ref(false);
+  const installment = ref<LoanInstallment>();
 
-function openPaymentModal(i: LoanInstallment) {
-  installment.value = i
-  showPaymentModal.value = true
-}
-
-async function savePayment(date: Date, amount: number) {
-  isBusy.value = true
-  if (installment.value) {
-    installment.value.paymentDate = date
-    installment.value.installmentAmountPaid = amount
-    installment.value.paymentStatus = PaymentStatus.PAID
-    showPaymentModal.value = false
-
-    await loansStore.updateLoanInstallmentDb(installment.value).then((savedLoan) => {
-      if (savedLoan) {
-        installments.value = savedLoan.installmentList
-        paymentStore.updatePayment(savedLoan, 'LOAN')
-      }
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Zaktualizowano płatność.',
-        life: 3000,
-      })
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas płatność.',
-        life: 3000,
-      })
-    }).finally(() => {
-      isBusy.value = false
-      refresh()
-    })
+  function openPaymentModal(i: LoanInstallment) {
+    installment.value = i;
+    showPaymentModal.value = true;
   }
-}
 
-//----------------------------------------------DELETE PAYMENT----------------------------
-const showDeleteConfirmationDialog = ref<boolean>(false)
+  async function savePayment(date: Date, amount: number) {
+    isBusy.value = true;
+    if (installment.value) {
+      installment.value.paymentDate = date;
+      installment.value.installmentAmountPaid = amount;
+      installment.value.paymentStatus = PaymentStatus.PAID;
+      showPaymentModal.value = false;
 
-const confirmDeletePayment = (i: LoanInstallment) => {
-  installment.value = i
-  showDeleteConfirmationDialog.value = true
-}
-
-const deleteConfirmationMessage = computed(() => {
-  if (installment.value)
-    return `Czy chcesz usunąc płatność z dnia: <b>${installment.value?.paymentDate}</b> </br>&emsp;&emsp;&emsp; na kwotę <b>${installment.value?.installmentAmountPaid} zł</b>?`
-  return 'No message'
-})
-const submitDelete = async () => {
-  console.log('submitDelete()')
-  isBusy.value = true
-  if (installment.value) {
-    installment.value.paymentStatus = PaymentStatus.TO_PAY
-    installment.value.paymentDate = null
-    installment.value.installmentAmountPaid = 0
-    showDeleteConfirmationDialog.value = false
-    console.log('przed del, ', installment.value)
-    await loansStore.updateLoanInstallmentDb(installment.value).then((savedLoan) => {
-      console.log('po del, ', savedLoan)
-      //update views
-      if (savedLoan) {
-        installments.value = savedLoan.installmentList
-        paymentStore.updatePayment(savedLoan, 'LOAN')
-      }
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Usunięto płatność.',
-        life: 3000,
-      })
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas usuwania płatności',
-        life: 3000,
-      })
-    }).finally(() => {
-      refresh()
-      isBusy.value = false
-    })
+      await loansStore
+        .updateLoanInstallmentDb(installment.value)
+        .then(savedLoan => {
+          if (savedLoan) {
+            installments.value = savedLoan.installmentList;
+            paymentStore.updatePayment(savedLoan, 'LOAN');
+          }
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zaktualizowano płatność.',
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas płatność.',
+            life: 3000,
+          });
+        })
+        .finally(() => {
+          isBusy.value = false;
+          refresh();
+        });
+    }
   }
-}
 
-//------------------------------------MOUNTED------------------------------
-onMounted(async () => {
-  console.log('onMounted GET')
-  loansStore.getLoans('ALL')
-  refresh()
-})
-const refresh = async () => {
-  loan.value = await loansStore.getLoanFromDb(+props.id)
-  installments.value = loan.value ? loan.value?.installmentList : []
-}
+  //----------------------------------------------DELETE PAYMENT----------------------------
+  const showDeleteConfirmationDialog = ref<boolean>(false);
+
+  const confirmDeletePayment = (i: LoanInstallment) => {
+    installment.value = i;
+    showDeleteConfirmationDialog.value = true;
+  };
+
+  const deleteConfirmationMessage = computed(() => {
+    if (installment.value)
+      return `Czy chcesz usunąc płatność z dnia: <b>${installment.value?.paymentDate}</b> </br>&emsp;&emsp;&emsp; na kwotę <b>${installment.value?.installmentAmountPaid} zł</b>?`;
+    return 'No message';
+  });
+  const submitDelete = async () => {
+    console.log('submitDelete()');
+    isBusy.value = true;
+    if (installment.value) {
+      installment.value.paymentStatus = PaymentStatus.TO_PAY;
+      installment.value.paymentDate = null;
+      installment.value.installmentAmountPaid = 0;
+      showDeleteConfirmationDialog.value = false;
+      console.log('przed del, ', installment.value);
+      await loansStore
+        .updateLoanInstallmentDb(installment.value)
+        .then(savedLoan => {
+          console.log('po del, ', savedLoan);
+          //update views
+          if (savedLoan) {
+            installments.value = savedLoan.installmentList;
+            paymentStore.updatePayment(savedLoan, 'LOAN');
+          }
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto płatność.',
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas usuwania płatności',
+            life: 3000,
+          });
+        })
+        .finally(() => {
+          refresh();
+          isBusy.value = false;
+        });
+    }
+  };
+
+  //------------------------------------MOUNTED------------------------------
+  onMounted(async () => {
+    console.log('onMounted GET');
+    loansStore.getLoans('ALL');
+    refresh();
+  });
+  const refresh = async () => {
+    loan.value = await loansStore.getLoanFromDb(+props.id);
+    installments.value = loan.value ? loan.value?.installmentList : [];
+  };
 </script>
 
 <template>
-  <TheMenuFinance/>
+  <TheMenuFinance />
   <PayPaymentDialog
-      v-model:visible="showPaymentModal"
-      :amount="getAmount"
-      :date="getDate"
-      @save="savePayment"
-      @cancel="showPaymentModal = false"
+    v-model:visible="showPaymentModal"
+    :amount="getAmount"
+    :date="getDate"
+    @save="savePayment"
+    @cancel="showPaymentModal = false"
   />
   <ConfirmationDialog
-      v-model:visible="showDeleteConfirmationDialog"
-      :msg="deleteConfirmationMessage"
-      label="Usuń"
-      @save="submitDelete"
-      @cancel="showDeleteConfirmationDialog = false"
+    v-model:visible="showDeleteConfirmationDialog"
+    :msg="deleteConfirmationMessage"
+    label="Usuń"
+    @save="submitDelete"
+    @cancel="showDeleteConfirmationDialog = false"
   />
 
   <Panel id="loan-panel" class="mt-3 m-auto">
     <template #header>
-      <OfficeIconButton
-          title="Powrót do listy"
-          icon="pi pi-fw pi-list"
-          @click="() => router.push({ name: 'Loans' })"
-      />
+      <OfficeIconButton title="Powrót do listy" icon="pi pi-fw pi-list" @click="() => router.push({ name: 'Loans' })" />
       <div class="w-full flex justify-center gap-4">
         <h3 class="m-0">
           {{ `Szczegóły kredytu: ${loan?.name}` }}
         </h3>
         <div v-if="loansStore.loadingLoans">
-          <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5"/>
+          <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5" />
         </div>
       </div>
     </template>
@@ -275,23 +273,16 @@ const refresh = async () => {
             {{ loan?.numberOfInstallments }}
           </p>
 
-          <ProgressBar :value="calculateProgressBar">
-            {{ calculateProgressBar.toFixed(0) }}%
-          </ProgressBar>
+          <ProgressBar :value="calculateProgressBar"> {{ calculateProgressBar.toFixed(0) }}% </ProgressBar>
         </Fieldset>
         <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="getOtherInfo" fluid rows="5" cols="30"/>
+          <Textarea id="description" v-model="getOtherInfo" fluid rows="5" cols="30" />
         </Fieldset>
       </div>
       <!--      RIGHT TABLE-->
       <div class="col-span-md:col-span-5">
         <Fieldset legend="Szczegóły wpłat">
-          <DataTable
-              v-if="!loansStore.loadingLoans"
-              scroll-height="70vh"
-              :value="installments"
-              size="small"
-          >
+          <DataTable v-if="!loansStore.loadingLoans" scroll-height="70vh" :value="installments" size="small">
             <Column field="installmentNumber">
               <template #header>
                 <div class="w-full" style="text-align: left">Nr raty</div>
@@ -302,11 +293,7 @@ const refresh = async () => {
                 </div>
               </template>
             </Column>
-            <Column
-                field="paymentDeadline"
-                header="Termin płatności"
-                header-style="min-width:120px"
-            >
+            <Column field="paymentDeadline" header="Termin płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
                   {{ data[field] }}
@@ -339,16 +326,16 @@ const refresh = async () => {
               <template #body="slotProps">
                 <div class="flex flex-row gap-2 justify-center">
                   <OfficeIconButton
-                      title="Edytuj wpłatę"
-                      icon="pi pi-file-edit"
-                      @click="openPaymentModal(slotProps.data)"
+                    title="Edytuj wpłatę"
+                    icon="pi pi-file-edit"
+                    @click="openPaymentModal(slotProps.data)"
                   />
                   <OfficeIconButton
-                      title="Usuń wpłatę"
-                      icon="pi pi-trash"
-                      severity="danger"
-                      :disabled="slotProps.data.installmentAmountPaid === 0"
-                      @click="confirmDeletePayment(slotProps.data)"
+                    title="Usuń wpłatę"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    :disabled="slotProps.data.installmentAmountPaid === 0"
+                    @click="confirmDeletePayment(slotProps.data)"
                   />
                 </div>
               </template>
@@ -360,11 +347,11 @@ const refresh = async () => {
     <template #footer>
       <div class="flex justify-center">
         <OfficeButton
-            text="zamknij"
-            btn-type="office-regular"
-            :btn-disabled="isBusy"
-            :loading="isBusy"
-            @click="() => router.back()"
+          text="zamknij"
+          btn-type="office-regular"
+          :btn-disabled="isBusy"
+          :loading="isBusy"
+          @click="() => router.back()"
         />
       </div>
     </template>
@@ -372,24 +359,24 @@ const refresh = async () => {
 </template>
 
 <style scoped>
-.color-red {
-  color: #dc3545;
-}
+  .color-red {
+    color: #dc3545;
+  }
 
-#loan-panel {
-  max-width: 1200px;
-}
+  #loan-panel {
+    max-width: 1200px;
+  }
 
-.p-datatable >>> .p-datatable-column-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .p-datatable >>> .p-datatable-column-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.p-datatable >>> .p-datatable-tbody > tr > td {
-  text-align: center;
-  //border: 1px solid black;
-  //border-width: 0 1px 1px 0;
-  //padding: 0;
-}
+  .p-datatable >>> .p-datatable-tbody > tr > td {
+    text-align: center;
+    //border: 1px solid black;
+    //border-width: 0 1px 1px 0;
+    //padding: 0;
+  }
 </style>

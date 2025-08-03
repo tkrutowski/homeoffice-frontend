@@ -1,215 +1,216 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
-import type {Fee, FeeInstallment} from '@/types/Fee'
-import {UtilsService} from '@/service/UtilsService'
-import router from '@/router'
-import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue'
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
-import OfficeButton from '@/components/OfficeButton.vue'
+  import { computed, onMounted, ref } from 'vue';
+  import type { Fee, FeeInstallment } from '@/types/Fee';
+  import { UtilsService } from '@/service/UtilsService';
+  import router from '@/router';
+  import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import OfficeButton from '@/components/OfficeButton.vue';
 
-import {useFeeStore} from '@/stores/fee'
-import {usePaymentStore} from '@/stores/payments'
-import {useToast} from 'primevue/usetoast'
-import OfficeIconButton from '@/components/OfficeIconButton.vue'
-import type {AxiosError} from "axios";
-import {PaymentStatus} from "@/types/Payment.ts";
+  import { useFeeStore } from '@/stores/fee';
+  import { usePaymentStore } from '@/stores/payments';
+  import { useToast } from 'primevue/usetoast';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import type { AxiosError } from 'axios';
+  import { PaymentStatus } from '@/types/Payment.ts';
 
-const feeStore = useFeeStore()
-const paymentStore = usePaymentStore()
-const toast = useToast()
+  const feeStore = useFeeStore();
+  const paymentStore = usePaymentStore();
+  const toast = useToast();
 
-const isBusy = ref<boolean>(false)
+  const isBusy = ref<boolean>(false);
 
-const fee = ref<Fee | null>(null)
-const installments = ref<FeeInstallment[]>([])
+  const fee = ref<Fee | null>(null);
+  const installments = ref<FeeInstallment[]>([]);
 
-const props = defineProps({
-  id: {
-    type: Number,
-    required: true,
-  },
-})
+  const props = defineProps({
+    id: {
+      type: Number,
+      required: true,
+    },
+  });
 
-const getOtherInfo = computed(() => {
-  if (fee.value) {
-    return fee.value.otherInfo
-  }
-  return ''
-})
+  const getOtherInfo = computed(() => {
+    if (fee.value) {
+      return fee.value.otherInfo;
+    }
+    return '';
+  });
 
-const countDeadLine = computed(() => {
-  return fee.value?.installmentList[fee.value?.installmentList.length - 1].paymentDeadline
-})
-const plannedInterest = computed(() => {
-  if (fee.value)
-    return fee.value?.installmentList
+  const countDeadLine = computed(() => {
+    return fee.value?.installmentList[fee.value?.installmentList.length - 1].paymentDeadline;
+  });
+  const plannedInterest = computed(() => {
+    if (fee.value)
+      return fee.value?.installmentList
         .map((installment: FeeInstallment) => installment.installmentAmountToPay)
-        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
-  return 0
-})
-const currentInterest = computed(() => {
-  if (fee.value)
-    return fee.value.installmentList
+        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
+    return 0;
+  });
+  const currentInterest = computed(() => {
+    if (fee.value)
+      return fee.value.installmentList
         .filter((l: FeeInstallment) => l.paymentStatus === PaymentStatus.PAID)
         .map((installment: FeeInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
-        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
-  return 0
-})
-const realInterest = computed(() => {
-  if (fee.value) {
-    let length = fee.value.installmentList.filter(
-        (installment: FeeInstallment) => installment.installmentAmountPaid !== 0,
-    ).length
-    if (length === fee.value.numberOfPayments)
-      return fee.value?.installmentList
+        .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
+    return 0;
+  });
+  const realInterest = computed(() => {
+    if (fee.value) {
+      let length = fee.value.installmentList.filter(
+        (installment: FeeInstallment) => installment.installmentAmountPaid !== 0
+      ).length;
+      if (length === fee.value.numberOfPayments)
+        return fee.value?.installmentList
           .map((installment: FeeInstallment) => installment.installmentAmountPaid)
-          .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
+          .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
+    }
+    return 0;
+  });
+  // ---------------------------------------------EDIT PAYMENT---------------------------------
+  const showPaymentModal = ref(false);
+  const installment = ref<FeeInstallment>();
+
+  function openPaymentModal(i: FeeInstallment) {
+    installment.value = { ...i };
+    showPaymentModal.value = true;
   }
-  return 0
-})
-// ---------------------------------------------EDIT PAYMENT---------------------------------
-const showPaymentModal = ref(false)
-const installment = ref<FeeInstallment>()
 
-function openPaymentModal(i: FeeInstallment) {
-  installment.value = {...i}
-  showPaymentModal.value = true
-}
-
-async function savePayment(date: Date, amount: number) {
-  if (installment.value) {
-    isBusy.value = true
-    installment.value.paymentDate = new Date(date)
-    installment.value.installmentAmountPaid = amount
-    installment.value.paymentStatus = PaymentStatus.PAID
-    showPaymentModal.value = false
-    await feeStore.updateFeeInstallmentDb(installment.value).then((savedFee: Fee | null) => {
-      if (savedFee) {
-        installments.value = savedFee.installmentList
-        paymentStore.updatePayment(savedFee, 'FEE')
-        toast.add({
-          severity: 'success',
-          summary: 'Potwierdzenie',
-          detail: 'Zaktualizowano płatność.',
-          life: 3000,
+  async function savePayment(date: Date, amount: number) {
+    if (installment.value) {
+      isBusy.value = true;
+      installment.value.paymentDate = new Date(date);
+      installment.value.installmentAmountPaid = amount;
+      installment.value.paymentStatus = PaymentStatus.PAID;
+      showPaymentModal.value = false;
+      await feeStore
+        .updateFeeInstallmentDb(installment.value)
+        .then((savedFee: Fee | null) => {
+          if (savedFee) {
+            installments.value = savedFee.installmentList;
+            paymentStore.updatePayment(savedFee, 'FEE');
+            toast.add({
+              severity: 'success',
+              summary: 'Potwierdzenie',
+              detail: 'Zaktualizowano płatność.',
+              life: 3000,
+            });
+          }
         })
-      }
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas zapisywania płatności',
-        life: 3000,
-      })
-    })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas zapisywania płatności',
+            life: 3000,
+          });
+        });
+    }
+    isBusy.value = false;
   }
-  isBusy.value = false
-}
 
-//---------------------------------------------DELETE PAYMENT-----------------------------
-const showDeleteConfirmationDialog = ref<boolean>(false)
+  //---------------------------------------------DELETE PAYMENT-----------------------------
+  const showDeleteConfirmationDialog = ref<boolean>(false);
 
-const confirmDeletePayment = (i: FeeInstallment) => {
-  installment.value = {...i}
-  showDeleteConfirmationDialog.value = true
-}
+  const confirmDeletePayment = (i: FeeInstallment) => {
+    installment.value = { ...i };
+    showDeleteConfirmationDialog.value = true;
+  };
 
-const deleteConfirmationMessage = computed(() => {
-  if (installment.value)
-    return `Czy chcesz usunąc płatność z dnia: <b>${installment.value?.paymentDate}</b> </br>&emsp;&emsp;&emsp; na kwotę <b>${installment.value?.installmentAmountPaid} zł</b>?`
-  return 'No message'
-})
-const submitDelete = async () => {
-  console.log('submitDelete()', installment.value)
-  isBusy.value = true
-  if (installment.value) {
-    installment.value.paymentStatus = PaymentStatus.TO_PAY
-    installment.value.paymentDate = null
-    installment.value.installmentAmountPaid = 0
-    showDeleteConfirmationDialog.value = false
-    await feeStore.updateFeeInstallmentDb(installment.value).then((savedFee: Fee | null) => {
-      if (savedFee) {
-        installments.value = savedFee.installmentList
-        paymentStore.updatePayment(savedFee, 'FEE')
-        toast.add({
-          severity: 'success',
-          summary: 'Potwierdzenie',
-          detail: 'Usunięto płatność.',
-          life: 3000,
+  const deleteConfirmationMessage = computed(() => {
+    if (installment.value)
+      return `Czy chcesz usunąc płatność z dnia: <b>${installment.value?.paymentDate}</b> </br>&emsp;&emsp;&emsp; na kwotę <b>${installment.value?.installmentAmountPaid} zł</b>?`;
+    return 'No message';
+  });
+  const submitDelete = async () => {
+    console.log('submitDelete()', installment.value);
+    isBusy.value = true;
+    if (installment.value) {
+      installment.value.paymentStatus = PaymentStatus.TO_PAY;
+      installment.value.paymentDate = null;
+      installment.value.installmentAmountPaid = 0;
+      showDeleteConfirmationDialog.value = false;
+      await feeStore
+        .updateFeeInstallmentDb(installment.value)
+        .then((savedFee: Fee | null) => {
+          if (savedFee) {
+            installments.value = savedFee.installmentList;
+            paymentStore.updatePayment(savedFee, 'FEE');
+            toast.add({
+              severity: 'success',
+              summary: 'Potwierdzenie',
+              detail: 'Usunięto płatność.',
+              life: 3000,
+            });
+          }
         })
-      }
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas usuwania płatności',
-        life: 3000,
-      })
-    })
-  }
-  await refresh()
-  isBusy.value = false
-}
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas usuwania płatności',
+            life: 3000,
+          });
+        });
+    }
+    await refresh();
+    isBusy.value = false;
+  };
 
-const getAmount = computed(() => {
-  return installment.value?.installmentAmountPaid
+  const getAmount = computed(() => {
+    return installment.value?.installmentAmountPaid
       ? installment.value.installmentAmountPaid
-      : installment.value?.installmentAmountToPay
-})
-const getDate = computed(() => {
-  if (installment.value?.paymentDate)
-    return installment.value?.paymentDate
-  return new Date()
-})
-const isEdit = computed(() => {
-  let isEdit = false
-  if (installment.value) isEdit = installment.value.installmentAmountPaid > 0
-  return isEdit
-})
+      : installment.value?.installmentAmountToPay;
+  });
+  const getDate = computed(() => {
+    if (installment.value?.paymentDate) return installment.value?.paymentDate;
+    return new Date();
+  });
+  const isEdit = computed(() => {
+    let isEdit = false;
+    if (installment.value) isEdit = installment.value.installmentAmountPaid > 0;
+    return isEdit;
+  });
 
-//-----------------------------------------------------MOUNTED------------------------------------------
-onMounted(async () => {
-  console.log('onMounted GET')
-  feeStore.getFees('ALL')
-  refresh()
-})
-const refresh = async () => {
-  fee.value = await feeStore.getFeeFromDb(+props.id)
-  installments.value = fee.value ? fee.value?.installmentList : []
-}
+  //-----------------------------------------------------MOUNTED------------------------------------------
+  onMounted(async () => {
+    console.log('onMounted GET');
+    feeStore.getFees('ALL');
+    refresh();
+  });
+  const refresh = async () => {
+    fee.value = await feeStore.getFeeFromDb(+props.id);
+    installments.value = fee.value ? fee.value?.installmentList : [];
+  };
 </script>
 
 <template>
-  <TheMenuFinance/>
+  <TheMenuFinance />
   <PayPaymentDialog
-      v-model:visible="showPaymentModal"
-      :amount="getAmount"
-      :date="getDate"
-      :is-edit="isEdit"
-      @save="savePayment"
-      @cancel="showPaymentModal = false"
+    v-model:visible="showPaymentModal"
+    :amount="getAmount"
+    :date="getDate"
+    :is-edit="isEdit"
+    @save="savePayment"
+    @cancel="showPaymentModal = false"
   />
   <ConfirmationDialog
-      v-model:visible="showDeleteConfirmationDialog"
-      :msg="deleteConfirmationMessage"
-      label="Usuń"
-      @save="submitDelete"
-      @cancel="showDeleteConfirmationDialog = false"
+    v-model:visible="showDeleteConfirmationDialog"
+    :msg="deleteConfirmationMessage"
+    label="Usuń"
+    @save="submitDelete"
+    @cancel="showDeleteConfirmationDialog = false"
   />
   <Panel id="fee-panel" class="mt-3 m-auto">
     <template #header>
-      <OfficeIconButton
-          title="Powrót do listy"
-          icon="pi pi-fw pi-list"
-          @click="() => router.push({ name: 'Fees' })"
-      />
+      <OfficeIconButton title="Powrót do listy" icon="pi pi-fw pi-list" @click="() => router.push({ name: 'Fees' })" />
       <div class="w-full flex justify-center gap-4">
         <h3>
           {{ `Szczegóły opłaty: ${fee?.name}` }}
         </h3>
         <div v-if="feeStore.loadingFees">
-          <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5"/>
+          <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5" />
         </div>
       </div>
     </template>
@@ -247,7 +248,7 @@ const refresh = async () => {
           </p>
         </Fieldset>
         <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="getOtherInfo" fluid rows="5" cols="30"/>
+          <Textarea id="description" v-model="getOtherInfo" fluid rows="5" cols="30" />
         </Fieldset>
       </div>
 
@@ -255,11 +256,7 @@ const refresh = async () => {
       <div class="col-span-md:col-span-5">
         <Fieldset legend="Szczegóły wpłat">
           <DataTable :value="installments" size="small">
-            <Column
-                field="paymentDeadline"
-                header="Termin płatności"
-                header-style="min-width:120px"
-            >
+            <Column field="paymentDeadline" header="Termin płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
                   {{ data[field] }}
@@ -292,16 +289,16 @@ const refresh = async () => {
               <template #body="slotProps">
                 <div class="flex flex-row gap-2 justify-center">
                   <OfficeIconButton
-                      title="Edytuj wpłatę"
-                      icon="pi pi-file-edit"
-                      @click="openPaymentModal(slotProps.data)"
+                    title="Edytuj wpłatę"
+                    icon="pi pi-file-edit"
+                    @click="openPaymentModal(slotProps.data)"
                   />
                   <OfficeIconButton
-                      title="Usuń wpłatę"
-                      icon="pi pi-trash"
-                      severity="danger"
-                      :disabled="slotProps.data.installmentAmountPaid === 0"
-                      @click="confirmDeletePayment(slotProps.data)"
+                    title="Usuń wpłatę"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    :disabled="slotProps.data.installmentAmountPaid === 0"
+                    @click="confirmDeletePayment(slotProps.data)"
                   />
                 </div>
               </template>
@@ -314,11 +311,11 @@ const refresh = async () => {
     <template #footer>
       <div class="flex justify-center">
         <OfficeButton
-            text="zamknij"
-            btn-type="office-regular"
-            :btn-disabled="isBusy"
-            :loading="isBusy"
-            @click="() => router.back()"
+          text="zamknij"
+          btn-type="office-regular"
+          :btn-disabled="isBusy"
+          :loading="isBusy"
+          @click="() => router.back()"
         />
       </div>
     </template>
@@ -326,24 +323,24 @@ const refresh = async () => {
 </template>
 
 <style scoped>
-#fee-panel {
-  max-width: 1000px;
-}
+  #fee-panel {
+    max-width: 1000px;
+  }
 
-.p-datatable >>> .p-datatable-column-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .p-datatable >>> .p-datatable-column-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.color-red {
-  color: #dc3545;
-}
+  .color-red {
+    color: #dc3545;
+  }
 
-.p-datatable >>> .p-datatable-tbody > tr > td {
-  text-align: center;
-  //border: 1px solid black;
-  //border-width: 0 1px 1px 0;
-  //padding: 0;
-}
+  .p-datatable >>> .p-datatable-tbody > tr > td {
+    text-align: center;
+    //border: 1px solid black;
+    //border-width: 0 1px 1px 0;
+    //padding: 0;
+  }
 </style>

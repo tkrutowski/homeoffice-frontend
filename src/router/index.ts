@@ -1,51 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/MainHomeView.vue'
-import LoginView from '@/views/LoginView.vue'
-import Error503View from '@/views/Error503View.vue'
-import Error403View from "@/views/Error403View.vue";
-import RefreshComponent from '@/components/RefreshComponent.vue'
-import { useAuthorizationStore } from '@/stores/authorization'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '@/views/MainHomeView.vue';
+import LoginView from '@/views/LoginView.vue';
+import Error503View from '@/views/Error503View.vue';
+import Error403View from '@/views/Error403View.vue';
+import RefreshComponent from '@/components/RefreshComponent.vue';
+import { useAuthorizationStore } from '@/stores/authorization';
 
 //FINANCE
-import FinanceHomeView from '@/views/finance/FinanceHomeView.vue'
-import LoanView from '@/views/finance/LoanView.vue'
-import LoansView from '@/views/finance/LoansView.vue'
-import FeesView from '@/views/finance/FeesView.vue'
-import FeeView from '@/views/finance/FeeView.vue'
-import PaymentsView from '@/views/finance/PaymentsView.vue'
-import PaymentFeeView from '@/views/finance/PaymentFeeView.vue'
-import PaymentLoanView from '@/views/finance/PaymentLoanView.vue'
-import PurchasesCurrentView from '@/views/finance/PurchasesCurrentView.vue'
-import PurchaseView from '@/views/finance/PurchaseView.vue'
-import CardsView from '@/views/finance/CardsView.vue'
-import CardView from '@/views/finance/CardView.vue'
-import BanksView from "@/views/finance/BanksView.vue";
-import BankView from "@/views/finance/BankView.vue";
+import FinanceHomeView from '@/views/finance/FinanceHomeView.vue';
+import LoanView from '@/views/finance/LoanView.vue';
+import LoansView from '@/views/finance/LoansView.vue';
+import FeesView from '@/views/finance/FeesView.vue';
+import FeeView from '@/views/finance/FeeView.vue';
+import PaymentsView from '@/views/finance/PaymentsView.vue';
+import PaymentFeeView from '@/views/finance/PaymentFeeView.vue';
+import PaymentLoanView from '@/views/finance/PaymentLoanView.vue';
+import PurchasesCurrentView from '@/views/finance/PurchasesCurrentView.vue';
+import PurchaseView from '@/views/finance/PurchaseView.vue';
+import CardsView from '@/views/finance/CardsView.vue';
+import CardView from '@/views/finance/CardView.vue';
+import BanksView from '@/views/finance/BanksView.vue';
+import BankView from '@/views/finance/BankView.vue';
 
 //LIBRARY
-import LibraryHomeView from '@/views/library/LibraryHomeView.vue'
-import BooksView from '@/views/library/BooksView.vue'
-import BookView from '@/views/library/BookView.vue'
-import UserbooksReadNowView from '@/views/library/UserbooksReadNowView.vue'
-import UserbooksToReadView from '@/views/library/UserbooksToReadView.vue'
-import UserbooksReadView from '@/views/library/UserbooksReadView.vue'
-import SeriesSearchView from '@/views/library/SeriesSearchView.vue'
-import StatisticsView from "@/views/library/StatisticsView.vue";
+import LibraryHomeView from '@/views/library/LibraryHomeView.vue';
+import BooksView from '@/views/library/BooksView.vue';
+import BookView from '@/views/library/BookView.vue';
+import UserbooksReadNowView from '@/views/library/UserbooksReadNowView.vue';
+import UserbooksToReadView from '@/views/library/UserbooksToReadView.vue';
+import UserbooksReadView from '@/views/library/UserbooksReadView.vue';
+import SeriesSearchView from '@/views/library/SeriesSearchView.vue';
+import StatisticsView from '@/views/library/StatisticsView.vue';
 
 //ADMIN
-import PrivilegesView from '@/views/PrivilegesView.vue'
-import LogsView from '@/views/LogsView.vue'
+import PrivilegesView from '@/views/PrivilegesView.vue';
+import LogsView from '@/views/LogsView.vue';
 
 //DEVICE
-import DevicesHomeView from '@/views/device/DeviceHomeView.vue'
-import DevicesGridView from '@/views/device/DevicesGridView.vue'
-import DevicesListView from '@/views/device/DevicesListView.vue'
-import DeviceView from '@/views/device/DeviceView.vue'
-import ComputersView from "@/views/device/ComputersView.vue";
+import DevicesHomeView from '@/views/device/DeviceHomeView.vue';
+import DevicesGridView from '@/views/device/DevicesGridView.vue';
+import DevicesListView from '@/views/device/DevicesListView.vue';
+import DeviceView from '@/views/device/DeviceView.vue';
+import ComputersView from '@/views/device/ComputersView.vue';
 
 //SHARE
-import FirmsView from "@/views/share/FirmsView.vue";
-import FirmView from "@/views/share/FirmView.vue";
+import FirmsView from '@/views/share/FirmsView.vue';
+import FirmView from '@/views/share/FirmView.vue';
 
 const routes = [
   {
@@ -254,30 +254,25 @@ const routes = [
     component: FirmView,
     props: true,
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthorizationStore()
-  console.log('ROUTE to: ', to, ', from: ', from)
+  const authStore = useAuthorizationStore();
+  console.log('ROUTE to: ', to, ', from: ', from);
   if (to.path) {
-    const history = JSON.parse(localStorage.getItem('navigationHistory') || '[]')
-    history.push(to.path)
-    localStorage.setItem('navigationHistory', JSON.stringify(history))
+    const history = JSON.parse(localStorage.getItem('navigationHistory') || '[]');
+    history.push(to.path);
+    localStorage.setItem('navigationHistory', JSON.stringify(history));
   }
-  const refreshToken = localStorage.getItem('refreshToken') || null
-  if (
-    to.name !== 'login' &&
-    to.name !== 'Error503' &&
-    !authStore.isAuthenticated &&
-    refreshToken === null
-  ) {
-    next({ name: 'login' })
+  const refreshToken = localStorage.getItem('refreshToken') || null;
+  if (to.name !== 'login' && to.name !== 'Error503' && !authStore.isAuthenticated && refreshToken === null) {
+    next({ name: 'login' });
   } else {
-    next()
+    next();
   }
-})
-export default router
+});
+export default router;

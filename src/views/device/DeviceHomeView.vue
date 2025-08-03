@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TheMenuDevice from '@/components/device/TheMenuDevice.vue'
+  import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
 </script>
 
 <template>

@@ -1,68 +1,68 @@
 2
 <script setup lang="ts">
-import PurchaseCurrentItem from '@/components/finance/PurchaseCurrentItem.vue'
-import moment from 'moment'
-import {computed, ref, watch} from 'vue'
-import {UtilsService} from '@/service/UtilsService.ts'
-import {useCardsStore} from '@/stores/cards.ts'
-import {usePurchasesStore} from '@/stores/purchases.ts'
-import type {Purchase} from "@/types/Purchase.ts";
-import {PaymentStatus} from "@/types/Payment.ts";
+  import PurchaseCurrentItem from '@/components/finance/PurchaseCurrentItem.vue';
+  import moment from 'moment';
+  import { computed, ref, watch } from 'vue';
+  import { UtilsService } from '@/service/UtilsService.ts';
+  import { useCardsStore } from '@/stores/cards.ts';
+  import { usePurchasesStore } from '@/stores/purchases.ts';
+  import type { Purchase } from '@/types/Purchase.ts';
+  import { PaymentStatus } from '@/types/Payment.ts';
 
-const cardStore = useCardsStore()
-const purchasesStore = usePurchasesStore()
-const paid = ref<number>(0)
-const toPay = ref<number>(0)
-const props = defineProps({
-  deadlineDate: {
-    type: String,
-    required: true,
-  },
-})
-const deadlineDate = ref(props.deadlineDate)
-const cardLogo = ref<string | undefined>('')
-const purchases = computed(() => {
-  return purchasesStore.getPurchasesByDate(deadlineDate.value)
-})
+  const cardStore = useCardsStore();
+  const purchasesStore = usePurchasesStore();
+  const paid = ref<number>(0);
+  const toPay = ref<number>(0);
+  const props = defineProps({
+    deadlineDate: {
+      type: String,
+      required: true,
+    },
+  });
+  const deadlineDate = ref(props.deadlineDate);
+  const cardLogo = ref<string | undefined>('');
+  const purchases = computed(() => {
+    return purchasesStore.getPurchasesByDate(deadlineDate.value);
+  });
 
-// Watch to handle changes in purchases
-watch(
-  purchases,
-  (newPurchases) => {
-    if (newPurchases && newPurchases.length > 0) {
-      calculate()
+  // Watch to handle changes in purchases
+  watch(
+    purchases,
+    newPurchases => {
+      if (newPurchases && newPurchases.length > 0) {
+        calculate();
+      }
+    },
+    { immediate: true }
+  );
+
+  const calculateToPay = computed(() => {
+    return UtilsService.formatCurrency(toPay.value);
+  });
+
+  const isExpired = () => {
+    return moment(props.deadlineDate).isBefore(moment());
+  };
+
+  function calculate() {
+    if (purchases.value && purchases.value.length > 0) {
+      paid.value = 0;
+      toPay.value = 0;
+      purchases.value.forEach((p: Purchase) => {
+        if (p.paymentStatus === PaymentStatus.PAID) paid.value += Number(p.amount);
+        else toPay.value += Number(p.amount);
+        // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
+      });
+      cardLogo.value = cardStore.getCardLogo(purchases.value[0].idCard);
     }
-  },
-  { immediate: true },
-)
-
-const calculateToPay = computed(() => {
-  return UtilsService.formatCurrency(toPay.value)
-})
-
-const isExpired = () => {
-  return moment(props.deadlineDate).isBefore(moment())
-}
-
-function calculate() {
-  if (purchases.value && purchases.value.length > 0) {
-    paid.value = 0
-    toPay.value = 0
-    purchases.value.forEach((p:Purchase) => {
-      if (p.paymentStatus === PaymentStatus.PAID) paid.value += Number(p.amount)
-      else toPay.value += Number(p.amount)
-      // console.log("PurchaseItemGroup - MOUNTED: ", toPay.value);
-    })
-    cardLogo.value = cardStore.getCardLogo(purchases.value[0].idCard)
   }
-}
-watch(
-  () => purchasesStore.purchasesCurrent,
-  () => {
-    calculate()
-  },
-  { deep: true },
-)
+  watch(
+    () => purchasesStore.purchasesCurrent,
+    () => {
+      calculate();
+    },
+    { deep: true }
+  );
 </script>
 
 <template>
@@ -88,37 +88,37 @@ watch(
 </template>
 
 <style scoped>
-.item-group {
-  margin: 50px auto;
-  max-width: 700px;
-}
-.image-card {
-  max-height: 70px;
-}
+  .item-group {
+    margin: 50px auto;
+    max-width: 700px;
+  }
+  .image-card {
+    max-height: 70px;
+  }
 
-.purchase-header {
-  display: flex;
-  align-content: center;
-  justify-content: space-between;
-  align-items: center;
-}
+  .purchase-header {
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.purchase-header-item {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start;
-  flex-direction: column;
-}
-.item-title {
-  font-size: 0.8rem;
-}
-.expired {
-  background-color: rgba(137, 6, 6, 0.3) !important;
-}
-.paid {
-  background-color: rgba(7, 63, 1, 0.3) !important;
-}
-.bg-office-dark1 {
-  background-color: #1e2122 !important;
-}
+  .purchase-header-item {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .item-title {
+    font-size: 0.8rem;
+  }
+  .expired {
+    background-color: rgba(137, 6, 6, 0.3) !important;
+  }
+  .paid {
+    background-color: rgba(7, 63, 1, 0.3) !important;
+  }
+  .bg-office-dark1 {
+    background-color: #1e2122 !important;
+  }
 </style>

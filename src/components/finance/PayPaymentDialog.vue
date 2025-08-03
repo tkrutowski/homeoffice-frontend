@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import OfficeButton from '@/components/OfficeButton.vue'
-import moment from 'moment'
-import { UtilsService } from '@/service/UtilsService.ts'
+  import { ref, watch } from 'vue';
+  import OfficeButton from '@/components/OfficeButton.vue';
+  import moment from 'moment';
+  import { UtilsService } from '@/service/UtilsService.ts';
 
-const emit = defineEmits<{
-  (e: 'save', date: Date, amount: number): void
-  (e: 'cancel'): void
-}>()
-const props = defineProps({
-  date: {
-    type: Date,
-    require: false,
-    default: '',
-  },
-  amount: {
-    type: Number,
-    require: true,
-    default: 0,
-  },
-  isEdit: {
-    type: Boolean,
-    require: false,
-    default: false,
-  },
-})
-const newDate = ref<Date>(props.date)
-const newAmount = ref<number>(props.amount)
-const submitted = ref(false)
+  const emit = defineEmits<{
+    (e: 'save', date: Date, amount: number): void;
+    (e: 'cancel'): void;
+  }>();
+  const props = defineProps({
+    date: {
+      type: Date,
+      require: false,
+      default: '',
+    },
+    amount: {
+      type: Number,
+      require: true,
+      default: 0,
+    },
+    isEdit: {
+      type: Boolean,
+      require: false,
+      default: false,
+    },
+  });
+  const newDate = ref<Date>(props.date);
+  const newAmount = ref<number>(props.amount);
+  const submitted = ref(false);
 
-watch(
-  () => props.amount,
-  (newValue) => {
-    newAmount.value = newValue
-  },
-  { immediate: true },
-)
+  watch(
+    () => props.amount,
+    newValue => {
+      newAmount.value = newValue;
+    },
+    { immediate: true }
+  );
 
-watch(
-  () => props.date,
-  (newValue) => {
-    newDate.value = moment(newValue).toDate()
-  },
-  { immediate: true },
-)
+  watch(
+    () => props.date,
+    newValue => {
+      newDate.value = moment(newValue).toDate();
+    },
+    { immediate: true }
+  );
 
-const isValid = () => {
-  return newAmount.value > 0
-}
-const showErrorAmount = () => {
-  return submitted.value && newAmount.value > 0
-}
-const submit = () => {
-  submitted.value = true
-  if (isValid()) {
-    emit('save', newDate.value, newAmount.value)
-    submitted.value = false
-  }
-}
-const cancel = () => {
-  emit('cancel')
-}
+  const isValid = () => {
+    return newAmount.value > 0;
+  };
+  const showErrorAmount = () => {
+    return submitted.value && newAmount.value > 0;
+  };
+  const submit = () => {
+    submitted.value = true;
+    if (isValid()) {
+      emit('save', newDate.value, newAmount.value);
+      submitted.value = false;
+    }
+  };
+  const cancel = () => {
+    emit('cancel');
+  };
 </script>
 
 <template>

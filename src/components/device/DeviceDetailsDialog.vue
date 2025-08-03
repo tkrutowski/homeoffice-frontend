@@ -1,46 +1,48 @@
 <script setup lang="ts">
-import type {DeviceDto} from '@/types/Devices'
-import {FileService} from '@/service/FileService'
-import OfficeButton from '@/components/OfficeButton.vue'
+  import type { DeviceDto } from '@/types/Devices';
+  import { FileService } from '@/service/FileService';
+  import OfficeButton from '@/components/OfficeButton.vue';
 
-defineProps<{
-  visible: boolean
-  device: DeviceDto | null
-}>()
+  defineProps<{
+    visible: boolean;
+    device: DeviceDto | null;
+  }>();
 
-const emit = defineEmits<{
-  (e: 'update:visible', value: boolean): void
-}>()
+  const emit = defineEmits<{
+    (e: 'update:visible', value: boolean): void;
+  }>();
 
-const closeDialog = () => {
-  emit('update:visible', false)
-}
+  const closeDialog = () => {
+    emit('update:visible', false);
+  };
 </script>
 
 <template>
-  <Dialog :visible="visible"
-          @update:visible="(val) => emit('update:visible', val)"
-          :header="`Szczegóły urządzenia: ${device?.name}`"
-          :style="{width: '70vw'}" 
-          :maximizable="true"
-          :modal="true">
+  <Dialog
+    :visible="visible"
+    @update:visible="val => emit('update:visible', val)"
+    :header="`Szczegóły urządzenia: ${device?.name}`"
+    :style="{ width: '70vw' }"
+    :maximizable="true"
+    :modal="true"
+  >
     <div v-if="device" class="flex flex-col gap-4">
       <Fieldset v-if="device.files" class="w-full" legend="Pliki" :toggleable="true">
-        <DataTable v-if="device.files.length > 0"
-                   :value="device.files"
-                   class="mt-4"
-                   :rows="10"
-                   :paginator="true"
-                   paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                   :rowsPerPageOptions="[5,10,20,50]"
-                   responsiveLayout="scroll">
+        <DataTable
+          v-if="device.files.length > 0"
+          :value="device.files"
+          class="mt-4"
+          :rows="10"
+          :paginator="true"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+          :rowsPerPageOptions="[5, 10, 20, 50]"
+          responsiveLayout="scroll"
+        >
           <Column field="name" header="Nazwa pliku" sortable>
             <template #body="slotProps">
               <div class="flex items-center">
                 <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2"></i>
-                <a :href="slotProps.data.url"
-                   target="_blank"
-                   class="text-blue-600 hover:text-blue-800">
+                <a :href="slotProps.data.url" target="_blank" class="text-blue-600 hover:text-blue-800">
                   {{ slotProps.data.name }}
                 </a>
               </div>
@@ -48,8 +50,10 @@ const closeDialog = () => {
           </Column>
           <Column field="type" header="Typ" sortable style="width: 150px">
             <template #body="slotProps">
-              <Tag :value="FileService.getFileTypeLabel(slotProps.data.type)"
-                   :severity="FileService.getFileTypeSeverity(slotProps.data.type)" />
+              <Tag
+                :value="FileService.getFileTypeLabel(slotProps.data.type)"
+                :severity="FileService.getFileTypeSeverity(slotProps.data.type)"
+              />
             </template>
           </Column>
           <Column field="size" header="Rozmiar" sortable style="width: 150px">
@@ -71,24 +75,16 @@ const closeDialog = () => {
       </Fieldset>
 
       <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
-        <DataTable :value="Array.from(device.details)" 
-                   tableStyle="min-width: 50rem" 
-                   size="small">
-          <Column field="0" header="Klucz" style="width: 40%;"></Column>
-          <Column field="1" header="Wartość" style="width:40%;"></Column>
+        <DataTable :value="Array.from(device.details)" tableStyle="min-width: 50rem" size="small">
+          <Column field="0" header="Klucz" style="width: 40%"></Column>
+          <Column field="1" header="Wartość" style="width: 40%"></Column>
         </DataTable>
       </Fieldset>
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <OfficeButton
-            btn-type="office-regular"
-            text="OK"
-            icon="pi pi-check"
-            icon-pos="left"
-            @click="closeDialog"
-        />
+        <OfficeButton btn-type="office-regular" text="OK" icon="pi pi-check" icon-pos="left" @click="closeDialog" />
       </div>
     </template>
   </Dialog>
-</template> 
+</template>

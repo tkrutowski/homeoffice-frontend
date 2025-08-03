@@ -1,308 +1,304 @@
 <script setup lang="ts">
-import {FilterMatchMode, FilterOperator} from '@primevue/core/api'
-import {computed, type DefineComponent, ref} from 'vue'
-import router from '@/router'
-import {UtilsService} from '@/service/UtilsService'
-import StatusButton from '@/components/StatusButton.vue'
-import type {Loan, LoanInstallment} from '@/types/Loan'
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import TheMenuFinance from '@/components/finance/TheMenuFinance.vue'
-import OfficeIconButton from '@/components/OfficeIconButton.vue'
+  import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
+  import { computed, type DefineComponent, ref } from 'vue';
+  import router from '@/router';
+  import { UtilsService } from '@/service/UtilsService';
+  import StatusButton from '@/components/StatusButton.vue';
+  import type { Loan, LoanInstallment } from '@/types/Loan';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
 
-import {useToast} from 'primevue/usetoast'
-import {useLoansStore} from '@/stores/loans'
-import {usePaymentStore} from '@/stores/payments'
+  import { useToast } from 'primevue/usetoast';
+  import { useLoansStore } from '@/stores/loans';
+  import { usePaymentStore } from '@/stores/payments';
 
-import type {StatusType} from '@/types/StatusType'
-import type {DataTablePageEvent} from 'primevue/datatable'
-import type {AxiosError} from "axios";
-import {PaymentStatus} from "@/types/Payment.ts";
+  import type { StatusType } from '@/types/StatusType';
+  import type { DataTablePageEvent } from 'primevue/datatable';
+  import type { AxiosError } from 'axios';
+  import { PaymentStatus } from '@/types/Payment.ts';
 
-const toast = useToast()
-const loansStore = useLoansStore()
-const paymentStore = usePaymentStore()
+  const toast = useToast();
+  const loansStore = useLoansStore();
+  const paymentStore = usePaymentStore();
 
-//filter
-const filters = ref()
-const initFilters = () => {
-  filters.value = {
-    global: {value: null, matchMode: FilterMatchMode.CONTAINS},
-    name: {value: null, matchMode: FilterMatchMode.CONTAINS},
-    'bank.name': {value: null, matchMode: FilterMatchMode.CONTAINS}, //nie dziala z IN
-    date: {
-      operator: FilterOperator.AND,
-      constraints: [{value: null, matchMode: FilterMatchMode.DATE_AFTER}],
-    },
-    amount: {
-      operator: FilterOperator.AND,
-      constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}],
-    },
+  //filter
+  const filters = ref();
+  const initFilters = () => {
+    filters.value = {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      'bank.name': { value: null, matchMode: FilterMatchMode.CONTAINS }, //nie dziala z IN
+      date: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
+      },
+      amount: {
+        operator: FilterOperator.AND,
+        constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+      },
+    };
+  };
+  initFilters();
+  const clearFilter = () => {
+    initFilters();
+  };
+  const bankFilter = computed(() => {
+    return [
+      ...new Set(loansStore.loans.filter((loan: Loan) => loan.bank).map((loan: Loan) => loan.bank?.name || '')),
+    ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''));
+  });
+
+  const expandedRows = ref([]);
+  const loanTemp = ref<Loan | null>(null);
+  loansStore.getLoans('ALL');
+
+  const calculateInstallmentToPayAmount = (installments: LoanInstallment[]): number => {
+    return installments
+      .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
+      .map(value => value.installmentAmountToPay)
+      .reduce((acc, currentValue) => acc + currentValue, 0);
+  };
+  const getCompletePaymentDate = (installments: LoanInstallment[]): Date | null => {
+    return installments[installments.length - 1].paymentDeadline;
+  };
+  const calculatePlannedInterest = (loan: Loan): number => {
+    return (loan.amount - loan.numberOfInstallments * loan.installmentAmount) * -1;
+  };
+  const calculateActualInterest = (loan: Loan): number => {
+    return loan.installmentList
+      .filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
+      .map((installment: LoanInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
+      .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
+  };
+  const calculateTotalCost = (loan: Loan): number => {
+    return (loan.amount - loan.loanCost - loan.numberOfInstallments * loan.installmentAmount) * -1;
+  };
+  const calculateInstallmentPaid = (loan: Loan): number => {
+    return loan.installmentList.filter(
+      (installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID
+    ).length;
+  };
+  const calculateInstallmentToPayNumber = (installments: LoanInstallment[]): number => {
+    return installments.filter((value: LoanInstallment) => value.paymentStatus === PaymentStatus.TO_PAY).length;
+  };
+  //
+  //--------------------------------DISPLAY FILTER
+  //
+  const filter = ref<StatusType>('ALL');
+  const setFilter = (selectedFilter: StatusType) => {
+    filter.value = selectedFilter;
+    localStorage.setItem('selectedFilterLoans', selectedFilter);
+  };
+
+  const savedFilter = localStorage.getItem('selectedFilterLoans');
+  if (savedFilter) {
+    filter.value = savedFilter as StatusType;
   }
-}
-initFilters()
-const clearFilter = () => {
-  initFilters()
-}
-const bankFilter = computed(() => {
-  return [
-    ...new Set(loansStore.loans.filter((loan: Loan) => loan.bank)
-        .map((loan: Loan) => loan.bank?.name || '')),
-  ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''))
-})
 
-const expandedRows = ref([])
-const loanTemp = ref<Loan | null>(null)
-loansStore.getLoans('ALL')
+  const filteredData = computed(() => {
+    switch (filter.value) {
+      case 'TO_PAY':
+        return loansStore.getLoansToPay;
+      case 'PAID':
+        return loansStore.getLoansPaid;
+      case 'ALL':
+      default:
+        return loansStore.loans;
+    }
+  });
+  const dataTableRef = ref<DefineComponent | null>(null);
+  const filteredLoanAmount = computed(() => {
+    const processedData = dataTableRef.value?.processedData;
+    let sum = 0;
+    processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
+      const installmentSum = loan.installmentList
+        .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
+        .map(value => value.installmentAmountToPay)
+        .reduce((acc, currentValue) => acc + currentValue, 0);
+      sum += installmentSum;
+    });
+    return sum;
+  });
 
-const calculateInstallmentToPayAmount = (installments: LoanInstallment[]): number => {
-  return installments
-      .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
-      .map((value) => value.installmentAmountToPay)
-      .reduce((acc, currentValue) => acc + currentValue, 0)
-}
-const getCompletePaymentDate = (installments: LoanInstallment[]): Date | null => {
-  return installments[installments.length - 1].paymentDeadline
-}
-const calculatePlannedInterest = (loan: Loan): number => {
-  return (loan.amount - loan.numberOfInstallments * loan.installmentAmount) * -1
-}
-const calculateActualInterest = (loan: Loan): number => {
-  return (
-      loan.installmentList
-          .filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
-          .map((installment: LoanInstallment) => installment.installmentAmountPaid - installment.installmentAmountToPay)
-          .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0)
-  )
-}
-const calculateTotalCost = (loan: Loan): number => {
-  return (loan.amount - loan.loanCost - loan.numberOfInstallments * loan.installmentAmount) * -1
-}
-const calculateInstallmentPaid = (loan: Loan): number => {
-  return loan.installmentList.filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
-      .length
-}
-const calculateInstallmentToPayNumber = (installments: LoanInstallment[]): number => {
-  return installments.filter((value: LoanInstallment) => value.paymentStatus === PaymentStatus.TO_PAY).length
-}
-//
-//--------------------------------DISPLAY FILTER
-//
-const filter = ref<StatusType>('ALL')
-const setFilter = (selectedFilter: StatusType) => {
-  filter.value = selectedFilter
-  localStorage.setItem('selectedFilterLoans', selectedFilter)
-}
+  //
+  //---------------------------------------------STATUS CHANGE--------------------------------------------------
+  //
+  const showStatusChangeConfirmationDialog = ref<boolean>(false);
+  const confirmStatusChange = (loan: Loan) => {
+    loanTemp.value = loan;
+    showStatusChangeConfirmationDialog.value = true;
+  };
+  const changeStatusConfirmationMessage = computed(() => {
+    console.log('temp', loanTemp.value);
 
-const savedFilter = localStorage.getItem('selectedFilterLoans')
-if (savedFilter) {
-  filter.value = savedFilter as StatusType
-}
-
-const filteredData = computed(() => {
-  switch (filter.value) {
-    case 'TO_PAY':
-      return loansStore.getLoansToPay
-    case 'PAID':
-      return loansStore.getLoansPaid
-    case 'ALL':
-    default:
-      return loansStore.loans
-  }
-})
-const dataTableRef = ref<DefineComponent | null>(null)
-const filteredLoanAmount = computed(() => {
-  const processedData = dataTableRef.value?.processedData
-  let sum = 0
-  processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
-    const installmentSum = loan.installmentList
-        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
-        .map((value) => value.installmentAmountToPay)
-        .reduce((acc, currentValue) => acc + currentValue, 0)
-    sum += installmentSum
-  })
-  return sum
-})
-
-//
-//---------------------------------------------STATUS CHANGE--------------------------------------------------
-//
-const showStatusChangeConfirmationDialog = ref<boolean>(false)
-const confirmStatusChange = (loan: Loan) => {
-  loanTemp.value = loan
-  showStatusChangeConfirmationDialog.value = true
-}
-const changeStatusConfirmationMessage = computed(() => {
-  console.log('temp', loanTemp.value)
-
-  if (loanTemp.value)
-    return `Czy chcesz zmienić status kredytu: <b>${loanTemp.value?.name}</b> na <b>${
+    if (loanTemp.value)
+      return `Czy chcesz zmienić status kredytu: <b>${loanTemp.value?.name}</b> na <b>${
         loanTemp.value?.loanStatus === PaymentStatus.PAID ? 'Do spłaty' : 'Spłacony'
-    }</b>?`
-  return 'No message'
-})
-const submitChangeStatus = async () => {
-  console.log('submitChangeStatus()')
-  if (loanTemp.value) {
-    const newStatus: PaymentStatus = loanTemp.value.loanStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID
-    await loansStore.updateLoanStatusDb(loanTemp.value.id, newStatus).then(() => {
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Zmieniono status kredytu: ' + loanTemp.value?.name,
-        life: 3000,
-      })
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas zmiany statusu: ' + loanTemp.value?.name,
-        life: 3000,
-      })
-    })
-  }
-  showStatusChangeConfirmationDialog.value = false
-}
+      }</b>?`;
+    return 'No message';
+  });
+  const submitChangeStatus = async () => {
+    console.log('submitChangeStatus()');
+    if (loanTemp.value) {
+      const newStatus: PaymentStatus =
+        loanTemp.value.loanStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
+      await loansStore
+        .updateLoanStatusDb(loanTemp.value.id, newStatus)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zmieniono status kredytu: ' + loanTemp.value?.name,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas zmiany statusu: ' + loanTemp.value?.name,
+            life: 3000,
+          });
+        });
+    }
+    showStatusChangeConfirmationDialog.value = false;
+  };
 
-//
-//-------------------------------------------------DELETE LOAN-------------------------------------------------
-//
-const showDeleteConfirmationDialog = ref<boolean>(false)
-const confirmDeleteLoan = (loan: Loan) => {
-  loanTemp.value = loan
-  showDeleteConfirmationDialog.value = true
-}
-const deleteConfirmationMessage = computed(() => {
-  if (loanTemp.value) return `Czy chcesz usunąc kredyt: <b>${loanTemp.value?.name}</b>?`
-  return 'No message'
-})
-const submitDelete = async () => {
-  console.log('submitDelete()')
-  if (loanTemp.value) {
-    await loansStore.deleteLoanDb(loanTemp.value.id).then(() => {
-      //update payment
-      if (loanTemp.value) {
-        paymentStore.deletePayment(loanTemp.value, 'FEE')
-      }
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Usunięto kredyt: ' + loanTemp.value?.name,
-        life: 3000,
-      })
-    }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas usuwania kredytu: ' + loanTemp.value?.name,
-        life: 5000,
-      })
-    })
-  }
-  showDeleteConfirmationDialog.value = false
-}
+  //
+  //-------------------------------------------------DELETE LOAN-------------------------------------------------
+  //
+  const showDeleteConfirmationDialog = ref<boolean>(false);
+  const confirmDeleteLoan = (loan: Loan) => {
+    loanTemp.value = loan;
+    showDeleteConfirmationDialog.value = true;
+  };
+  const deleteConfirmationMessage = computed(() => {
+    if (loanTemp.value) return `Czy chcesz usunąc kredyt: <b>${loanTemp.value?.name}</b>?`;
+    return 'No message';
+  });
+  const submitDelete = async () => {
+    console.log('submitDelete()');
+    if (loanTemp.value) {
+      await loansStore
+        .deleteLoanDb(loanTemp.value.id)
+        .then(() => {
+          //update payment
+          if (loanTemp.value) {
+            paymentStore.deletePayment(loanTemp.value, 'FEE');
+          }
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto kredyt: ' + loanTemp.value?.name,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas usuwania kredytu: ' + loanTemp.value?.name,
+            life: 5000,
+          });
+        });
+    }
+    showDeleteConfirmationDialog.value = false;
+  };
 
-//
-//-------------------------------------------------EDIT LOAN-------------------------------------------------
-//
-const editItem = (item: Loan) => {
-  const loanItem: Loan = JSON.parse(JSON.stringify(item))
-  console.log('EDIT: ', loanItem)
-  router.push({
-    name: 'Loan',
-    params: {isEdit: 'true', loanId: loanItem.id},
-  })
-}
+  //
+  //-------------------------------------------------EDIT LOAN-------------------------------------------------
+  //
+  const editItem = (item: Loan) => {
+    const loanItem: Loan = JSON.parse(JSON.stringify(item));
+    console.log('EDIT: ', loanItem);
+    router.push({
+      name: 'Loan',
+      params: { isEdit: 'true', loanId: loanItem.id },
+    });
+  };
 
-const handleRowsPerPageChange = (event: DataTablePageEvent) => {
-  localStorage.setItem('rowsPerPageLoans', event.rows.toString())
-}
+  const handleRowsPerPageChange = (event: DataTablePageEvent) => {
+    localStorage.setItem('rowsPerPageLoans', event.rows.toString());
+  };
 
-//
-//-------------SELECTED LOANS
-//
-const selectedLoans = ref<Loan[]>([])
-const selectedLoanAmount = computed(() => {
-  let sum = 0
-  selectedLoans.value.forEach((loan: { installmentList: LoanInstallment[] }) => {
-    const installmentSum = loan.installmentList
-        .filter((value) => value.paymentStatus === PaymentStatus.TO_PAY)
-        .map((value) => value.installmentAmountToPay)
-        .reduce((acc, currentValue) => acc + currentValue, 0)
-    sum += installmentSum
-  })
-  return sum
-})
+  //
+  //-------------SELECTED LOANS
+  //
+  const selectedLoans = ref<Loan[]>([]);
+  const selectedLoanAmount = computed(() => {
+    let sum = 0;
+    selectedLoans.value.forEach((loan: { installmentList: LoanInstallment[] }) => {
+      const installmentSum = loan.installmentList
+        .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
+        .map(value => value.installmentAmountToPay)
+        .reduce((acc, currentValue) => acc + currentValue, 0);
+      sum += installmentSum;
+    });
+    return sum;
+  });
 </script>
 <template>
-  <TheMenuFinance/>
+  <TheMenuFinance />
   <ConfirmationDialog
-      v-model:visible="showStatusChangeConfirmationDialog"
-      :msg="changeStatusConfirmationMessage"
-      @save="submitChangeStatus"
-      @cancel="showStatusChangeConfirmationDialog = false"
+    v-model:visible="showStatusChangeConfirmationDialog"
+    :msg="changeStatusConfirmationMessage"
+    @save="submitChangeStatus"
+    @cancel="showStatusChangeConfirmationDialog = false"
   />
 
   <ConfirmationDialog
-      v-model:visible="showDeleteConfirmationDialog"
-      :msg="deleteConfirmationMessage"
-      label="Usuń"
-      @save="submitDelete"
-      @cancel="showDeleteConfirmationDialog = false"
+    v-model:visible="showDeleteConfirmationDialog"
+    :msg="deleteConfirmationMessage"
+    label="Usuń"
+    @save="submitDelete"
+    @cancel="showDeleteConfirmationDialog = false"
   />
 
   <Panel class="my-3 mx-2">
     <DataTable
-        ref="dataTableRef"
-        v-model:expanded-rows="expandedRows"
-        v-model:filters="filters"
-        :value="filteredData"
-        v-model:selection="selectedLoans"
-        selectionMode="multiple"
-        metaKeySelection
-        removable-sort
-        paginator
-        :rows="loansStore.rowsPerPage"
-        :rows-per-page-options="[5, 10, 20, 50]"
-        table-style="min-width: 50rem"
-        filter-display="menu"
-        :global-filter-fields="['name', 'bank.name', 'date']"
-        sort-field="date"
-        :sort-order="-1"
-        row-hover
-        size="small"
-        @page="handleRowsPerPageChange"
+      ref="dataTableRef"
+      v-model:expanded-rows="expandedRows"
+      v-model:filters="filters"
+      :value="filteredData"
+      v-model:selection="selectedLoans"
+      selectionMode="multiple"
+      metaKeySelection
+      removable-sort
+      paginator
+      :rows="loansStore.rowsPerPage"
+      :rows-per-page-options="[5, 10, 20, 50]"
+      table-style="min-width: 50rem"
+      filter-display="menu"
+      :global-filter-fields="['name', 'bank.name', 'date']"
+      sort-field="date"
+      :sort-order="-1"
+      row-hover
+      size="small"
+      @page="handleRowsPerPageChange"
     >
       <template #header>
         <div class="flex justify-between">
-          <router-link
-              :to="{ name: 'Loan', params: { isEdit: 'false', loanId: 0 } }"
-              style="text-decoration: none"
-          >
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy kredyt"/>
+          <router-link :to="{ name: 'Loan', params: { isEdit: 'false', loanId: 0 } }" style="text-decoration: none">
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy kredyt" />
           </router-link>
           <div v-if="loansStore.loadingLoans">
-            <ProgressSpinner
-                class="ml-3"
-                style="width: 35px; height: 35px"
-                stroke-width="5"
-            />
+            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
           </div>
           <div class="flex gap-4">
             <IconField icon-position="left">
               <InputIcon>
-                <i class="pi pi-search"/>
+                <i class="pi pi-search" />
               </InputIcon>
-              <InputText class="!max-w-32"
-                         v-model="filters['global'].value"
-                         placeholder="wyszukaj..."
-              />
+              <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
             </IconField>
             <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                outlined size="small"
-                title="Wyczyść filtry"
-                @click="clearFilter()"
+              type="button"
+              icon="pi pi-filter-slash"
+              outlined
+              size="small"
+              title="Wyczyść filtry"
+              @click="clearFilter()"
             />
           </div>
         </div>
@@ -312,33 +308,28 @@ const selectedLoanAmount = computed(() => {
         <h4 class="text-red-500" v-if="!loansStore.loadingLoans">Nie znaleziono kredytów...</h4>
       </template>
 
-      <Column expander style="width: 5rem"/>
+      <Column expander style="width: 5rem" />
 
       <!--  NAME  -->
       <Column field="name" header="Nazwa" sortable>
         <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
+          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
         </template>
       </Column>
 
       <!--  BANK-->
       <Column
-          field="bank.name"
-          header="Nazwa banku"
-          :sortable="true"
-          filter-field="bank.name"
-          :show-filter-match-modes="false"
+        field="bank.name"
+        header="Nazwa banku"
+        :sortable="true"
+        filter-field="bank.name"
+        :show-filter-match-modes="false"
       >
         <template #body="{ data }">
           {{ data.bank.name }}
         </template>
         <template #filter="{ filterModel }">
-          <Select
-              v-model="filterModel.value"
-              :options="bankFilter"
-              placeholder="Wybierz..."
-              class="p-column-filter"
-          />
+          <Select v-model="filterModel.value" :options="bankFilter" placeholder="Wybierz..." class="p-column-filter" />
         </template>
       </Column>
 
@@ -348,28 +339,22 @@ const selectedLoanAmount = computed(() => {
           {{ UtilsService.formatDateToString(data.date) }}
         </template>
         <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm"/>
+          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
         </template>
       </Column>
 
       <!--AMOUNT-->
-      <Column
-          field="amount"
-          header="Kwota"
-          style="min-width: 120px"
-          data-type="numeric"
-          filter-field="amount"
-      >
+      <Column field="amount" header="Kwota" style="min-width: 120px" data-type="numeric" filter-field="amount">
         <template #body="slotProps">
           {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
         </template>
         <template #filter="{ filterModel }">
-          <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL"/>
+          <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
         </template>
       </Column>
 
       <!--NUMBER OF INSTALLMENTS-->
-      <Column field="numberOfInstallments" header="Ilość rat" sortable/>
+      <Column field="numberOfInstallments" header="Ilość rat" sortable />
 
       <!--INSTALLMENT AMOUNT-->
       <Column field="installmentAmount" header="Kwota raty" style="min-width: 120px">
@@ -381,11 +366,7 @@ const selectedLoanAmount = computed(() => {
       <!--  REMAINS   -->
       <Column header="Pozostało" sortable style="min-width: 80px">
         <template #body="slotProps">
-          {{
-            UtilsService.formatCurrency(
-                calculateInstallmentToPayAmount(slotProps.data.installmentList),
-            )
-          }}
+          {{ UtilsService.formatCurrency(calculateInstallmentToPayAmount(slotProps.data.installmentList)) }}
           ({{ calculateInstallmentToPayNumber(slotProps.data.installmentList) }})
         </template>
       </Column>
@@ -393,10 +374,10 @@ const selectedLoanAmount = computed(() => {
       <Column field="loanStatus" header="Status" style="width: 100px">
         <template #body="{ data, field }">
           <StatusButton
-              title="Zmień status kredytu"
-              :btn-type="data[field]"
-              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
-              @click="confirmStatusChange(data)"
+            title="Zmień status kredytu"
+            :btn-type="data[field]"
+            :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
+            @click="confirmStatusChange(data)"
           />
         </template>
       </Column>
@@ -404,16 +385,12 @@ const selectedLoanAmount = computed(() => {
       <Column header="Akcja" :exportable="false" style="width: 8rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-start">
+            <OfficeIconButton title="Edytuj kredyt" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
             <OfficeIconButton
-                title="Edytuj kredyt"
-                icon="pi pi-file-edit"
-                @click="editItem(slotProps.data)"
-            />
-            <OfficeIconButton
-                title="Usuń kredyt"
-                icon="pi pi-trash"
-                severity="danger"
-                @click="confirmDeleteLoan(slotProps.data)"
+              title="Usuń kredyt"
+              icon="pi pi-trash"
+              severity="danger"
+              @click="confirmDeleteLoan(slotProps.data)"
             />
           </div>
         </template>
@@ -421,22 +398,14 @@ const selectedLoanAmount = computed(() => {
 
       <template #expansion="slotProps">
         <div class="p-3 justify-center">
-          <p class="mb-3 text-center text-xl font-bold">
-            Szczególy kredytu {{ slotProps.data.name }}
-          </p>
-          <hr/>
+          <p class="mb-3 text-center text-xl font-bold">Szczególy kredytu {{ slotProps.data.name }}</p>
+          <hr />
           <div class="flex flex-col md:flex-row gap-4">
             <div class="basis-1/2">
               <Fieldset legend="Ogólne informacje" class="">
-                <p class="mb-1 mt-3 text-left">
-                  <small>Nazwa kredytu:</small> {{ slotProps.data.name }}
-                </p>
-                <p class="text-left mb-1">
-                  <small>Nazwa banku:</small> {{ slotProps.data.bank.name }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Nr kredytu:</small> {{ slotProps.data.loanNumber }}
-                </p>
+                <p class="mb-1 mt-3 text-left"><small>Nazwa kredytu:</small> {{ slotProps.data.name }}</p>
+                <p class="text-left mb-1"><small>Nazwa banku:</small> {{ slotProps.data.bank.name }}</p>
+                <p class="mb-1 text-left"><small>Nr kredytu:</small> {{ slotProps.data.loanNumber }}</p>
                 <p class="mb-1 text-left"><small>Z dnia:</small> {{ slotProps.data.date }}</p>
                 <p class="mb-1 text-left">
                   <small>Data pierwszej raty:</small>
@@ -446,9 +415,7 @@ const selectedLoanAmount = computed(() => {
                   <small>Termin całkowitej spłaty:</small>
                   {{ getCompletePaymentDate(slotProps.data.installmentList) }}
                 </p>
-                <p class="mb-5 text-left">
-                  <small>Nr konta:</small> {{ slotProps.data.accountNumber }}
-                </p>
+                <p class="mb-5 text-left"><small>Nr konta:</small> {{ slotProps.data.accountNumber }}</p>
 
                 <p class="mb-1 text-left">
                   <small>Kwota kredytu:</small>
@@ -456,9 +423,7 @@ const selectedLoanAmount = computed(() => {
                 </p>
                 <p class="mb-1 text-left">
                   <small>Koszt kredytu: </small>
-                  <span class="text-red-500 ml-1">
-                    {{ UtilsService.formatCurrency(slotProps.data.loanCost) }}</span
-                  >
+                  <span class="text-red-500 ml-1"> {{ UtilsService.formatCurrency(slotProps.data.loanCost) }}</span>
                 </p>
                 <p class="mb-1 text-left">
                   <small>Ilość rat:</small>
@@ -495,29 +460,15 @@ const selectedLoanAmount = computed(() => {
                 </p>
 
                 <ProgressBar
-                    :value="
-                    (calculateInstallmentPaid(slotProps.data) /
-                      slotProps.data.numberOfInstallments) *
-                    100
-                  "
+                  :value="(calculateInstallmentPaid(slotProps.data) / slotProps.data.numberOfInstallments) * 100"
                 >
                   {{
-                    (
-                        (calculateInstallmentPaid(slotProps.data) /
-                            slotProps.data.numberOfInstallments) *
-                        100
-                    ).toFixed(0)
+                    ((calculateInstallmentPaid(slotProps.data) / slotProps.data.numberOfInstallments) * 100).toFixed(0)
                   }}%
                 </ProgressBar>
               </Fieldset>
               <Fieldset legend="Dodatkowe informacje">
-                <Textarea
-                    id="description"
-                    v-model="slotProps.data.otherInfo"
-                    fluid
-                    rows="5"
-                    cols="30"
-                />
+                <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" />
               </Fieldset>
             </div>
 
@@ -570,34 +521,34 @@ const selectedLoanAmount = computed(() => {
   <Toolbar class="sticky-toolbar mx-2">
     <template #start>
       <OfficeIconButton
-          title="Odświerz listę kredytów"
-          :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-          class="mr-2"
-          @click="loansStore.refreshLoans()"
+        title="Odświerz listę kredytów"
+        :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+        class="mr-2"
+        @click="loansStore.refreshLoans()"
       />
     </template>
 
     <template #center>
       <OfficeIconButton
-          title="Wyświetl niespłacone"
-          :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-          class="mr-2"
-          :active="filter === 'TO_PAY'"
-          @click="setFilter('TO_PAY')"
+        title="Wyświetl niespłacone"
+        :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+        class="mr-2"
+        :active="filter === 'TO_PAY'"
+        @click="setFilter('TO_PAY')"
       />
       <OfficeIconButton
-          title="Wyświetl spłacone"
-          :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-          class="mr-2"
-          :active="filter === 'PAID'"
-          @click="setFilter('PAID')"
+        title="Wyświetl spłacone"
+        :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+        class="mr-2"
+        :active="filter === 'PAID'"
+        @click="setFilter('PAID')"
       />
       <OfficeIconButton
-          title="Wyświetl wszystkie"
-          :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-          class="mr-2"
-          :active="filter === 'ALL'"
-          @click="setFilter('ALL')"
+        title="Wyświetl wszystkie"
+        :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+        class="mr-2"
+        :active="filter === 'ALL'"
+        @click="setFilter('ALL')"
       />
     </template>
 
@@ -621,10 +572,10 @@ const selectedLoanAmount = computed(() => {
 </template>
 
 <style scoped>
-.p-datatable .p-datatable-tbody > tr > td {
-  text-align: center !important;
-}
-::v-deep(.p-panel-header) {
-  padding: 0.25rem !important;
-}
+  .p-datatable .p-datatable-tbody > tr > td {
+    text-align: center !important;
+  }
+  :deep(.p-panel-header) {
+    padding: 0.25rem !important;
+  }
 </style>
