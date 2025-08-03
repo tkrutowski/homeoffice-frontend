@@ -191,16 +191,16 @@
   const responsiveOptions = ref([
     {
       breakpoint: '1700px',
-      numVisible: 4,
-      numScroll: 1,
-    },
-    {
-      breakpoint: '1400px',
       numVisible: 3,
+      numScroll: 2,
+    },
+    {
+      breakpoint: '1200px',
+      numVisible: 2,
       numScroll: 1,
     },
     {
-      breakpoint: '1099px',
+      breakpoint: '900px',
       numVisible: 2,
       numScroll: 1,
     },
@@ -331,15 +331,16 @@
       <Button icon="pi pi-cog" severity="secondary" rounded text @click="toggle" />
       <Menu ref="menuRef" id="config_menu" :model="items" popup />
     </template>
-    <div class="card">
+    <div class="card" style="overflow: hidden">
       <!--                verticalViewPortHeight="300px" -->
       <Carousel
         :value="booksInSeries"
         :responsive-options="responsiveOptions"
-        :num-visible="4"
+        :num-visible="3"
         :num-scroll="2"
         class="w-full"
         :key="carouselKey"
+        style="overflow: hidden; width: 100%"
       >
         <template #item="slotProps">
           <div class="flex justify-center">
@@ -356,4 +357,16 @@
   </Panel>
 </template>
 
-<style scoped></style>
+<style scoped>
+  .card {
+    overflow: hidden;
+  }
+
+  .p-carousel {
+    width: 100%;
+  }
+
+  .p-carousel-viewport {
+    overflow: hidden;
+  }
+</style>
