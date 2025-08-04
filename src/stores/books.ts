@@ -136,7 +136,7 @@ export const useBooksStore = defineStore('book', {
     async addBookDb(book: Book) {
       console.log('START - addBookDb()');
       const response = await httpCommon.post(`/v1/library/book`, book);
-      this.books.push(response.data);
+      this.books.unshift(response.data);
       console.log('END - addBookDb()');
     },
 

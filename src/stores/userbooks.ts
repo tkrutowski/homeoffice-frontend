@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import {type BookStatistic, EditionType, OwnershipStatus, ReadingStatus, type UserBook} from '@/types/Book';
+import { type BookStatistic, EditionType, OwnershipStatus, ReadingStatus, type UserBook } from '@/types/Book';
 import moment from 'moment';
 
 export const useUserbooksStore = defineStore('userbook', {

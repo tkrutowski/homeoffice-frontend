@@ -3,23 +3,23 @@
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
   import { type BookStatistic } from '@/types/Book.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
-  
+
   const userbookStore = useUserbooksStore();
   const statistics = ref<BookStatistic[]>([]);
 
   const chartData = computed(() => {
     if (statistics.value.length === 0) return { labels: [], datasets: [] };
-    
+
     const years = statistics.value.map(stat => stat.year).sort((a, b) => a - b);
     const categories = [
       { key: 'book', label: 'BOOK', color: '#42A5F5' },
       { key: 'audiobook', label: 'AUDIOBOOK', color: '#66BB6A' },
-      { key: 'ebook', label: 'EBOOK', color: '#FFA726' }
+      { key: 'ebook', label: 'EBOOK', color: '#FFA726' },
     ];
 
     return {
       labels: years,
-      datasets: categories.map((category) => ({
+      datasets: categories.map(category => ({
         label: category.label,
         borderColor: category.color,
         backgroundColor: category.color + '20',
@@ -48,15 +48,15 @@
         display: true,
         title: {
           display: true,
-          text: 'Rok'
-        }
+          text: 'Rok',
+        },
       },
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Liczba książek'
-        }
+          text: 'Liczba książek',
+        },
       },
     },
   });

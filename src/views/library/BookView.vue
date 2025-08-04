@@ -132,11 +132,12 @@
               life: 5000,
             });
           }
+        })
+        .finally(() => {
+          btnSaveDisabled.value = false;
+          btnShowBusy.value = false;
+          submitted.value = false;
         });
-
-      btnSaveDisabled.value = false;
-      btnShowBusy.value = false;
-      submitted.value = false;
     }
   }
 
