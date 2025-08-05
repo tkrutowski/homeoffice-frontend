@@ -6,6 +6,7 @@
 
   const userbookStore = useUserbooksStore();
   const statistics = ref<BookStatistic[]>([]);
+  const bookstoreStatistics = ref<Map<string, number>>(new Map());
 
   const chartData = computed(() => {
     if (statistics.value.length === 0) return { labels: [], datasets: [] };
@@ -34,7 +35,7 @@
     };
   });
 
-  // Konfiguracja wykresu
+  // Konfiguracja wykresu liniowego
   const chartOptions = ref({
     responsive: true,
     maintainAspectRatio: false,
@@ -61,6 +62,47 @@
     },
   });
 
+  // Dane dla wykresu Doughnut - statystyki księgarni
+  const bookstoreChartData = computed(() => {
+    if (bookstoreStatistics.value.size === 0) return { labels: [], datasets: [] };
+
+    const labels = Array.from(bookstoreStatistics.value.keys());
+    const data = Array.from(bookstoreStatistics.value.values());
+    
+    const colors = [
+      '#42A5F5', '#66BB6A', '#FFA726', '#EF5350', '#AB47BC',
+      '#26A69A', '#FF7043', '#8D6E63', '#78909C', '#26C6DA'
+    ];
+
+    return {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors.slice(0, labels.length),
+        borderColor: colors.slice(0, labels.length),
+        borderWidth: 2,
+      }],
+    };
+  });
+
+  // Konfiguracja wykresu Doughnut
+  const bookstoreChartOptions = ref({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+      title: {
+        display: true,
+        text: 'Książki według księgarni',
+        font: {
+          size: 16,
+        },
+      },
+    },
+  });
+
   function getTotalAudiobook(edition: string): number {
     return statistics.value.reduce((total, stat) => {
       switch (edition) {
@@ -81,6 +123,7 @@
     console.log('onMounted StatisticsView');
     try {
       statistics.value = await userbookStore.getStatisticsFromDb();
+      bookstoreStatistics.value = await userbookStore.getBookstoreStatisticsFromDb();
     } catch (error) {
       console.error('Błąd podczas pobierania statystyk:', error);
     }
@@ -90,10 +133,15 @@
 <template>
   <TheMenuLibrary />
   <div class="p-6">
-    <div class="grid gap-4">
-      <Card class="shadow-lg p-4">
+    <div class="grid gap-4 grid-cols-3">
+      <Card class="shadow-lg p-4 col-span-2">
         <template #content>
           <Chart type="line" :data="chartData" :options="chartOptions" class="w-full h-96" />
+        </template>
+      </Card>
+      <Card class="shadow-lg p-4">
+        <template #content>
+          <Chart type="doughnut" :data="bookstoreChartData" :options="bookstoreChartOptions" class="w-full h-96" />
         </template>
       </Card>
     </div>
