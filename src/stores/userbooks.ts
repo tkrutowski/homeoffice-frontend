@@ -125,44 +125,17 @@ export const useUserbooksStore = defineStore('userbook', {
         } else {
           // Jeśli to obiekt, używamy Object.entries
           Object.entries(response.data).forEach(([key, value]) => {
-            console.log('Processing object entry - key:', key, 'type:', typeof key, 'value:', value);
-            
-            // Sprawdzamy czy key to string reprezentujący obiekt BookstoreDto
-            if (typeof key === 'string' && key.includes('BookstoreDto')) {
-              // Próbujemy wyciągnąć nazwę z stringa "BookstoreDto(id=1, name=Empik, url=...)"
-              const nameMatch = key.match(/name=([^,]+)/);
-              if (nameMatch) {
-                const name = nameMatch[1];
-                console.log('Extracted name from BookstoreDto string:', name);
-                bookstoreStats.set(name, value as number);
-              } else {
-                console.log('Could not extract name from BookstoreDto string, using key:', key);
-                bookstoreStats.set(key, value as number);
-              }
-            } else if (typeof key === 'object' && key && typeof key === 'object' && 'name' in key) {
-              // Jeśli key to obiekt z właściwością name
-              console.log('Key is object with name:', (key as { name: string }).name);
-              bookstoreStats.set((key as { name: string }).name, value as number);
-            } else if (typeof key === 'string') {
-              // Jeśli key to string, próbujemy sparsować jako JSON
-              try {
-                const bookstore = JSON.parse(key);
-                if (bookstore && typeof bookstore === 'object' && 'name' in bookstore) {
-                  console.log('Parsed JSON bookstore name:', bookstore.name);
-                  bookstoreStats.set(bookstore.name, value as number);
-                } else {
-                  console.log('Using key as name:', key);
-                  bookstoreStats.set(key, value as number);
-                }
-              } catch (e) {
-                // Jeśli nie można sparsować JSON, używamy key jako nazwy
-                console.log('Failed to parse JSON, using key as name:', key);
-                bookstoreStats.set(key, value as number);
-              }
+            console.log('Processing object entry - key:', key, 'value:', value);
+
+            // Wyciągamy nazwę z stringa "BookstoreDto(id=1, name=Empik, url=...)"
+            const nameMatch = key.match(/name=([^,]+)/);
+            if (nameMatch) {
+              const name = nameMatch[1];
+              console.log('Extracted name from BookstoreDto string:', name);
+              bookstoreStats.set(name, value as number);
             } else {
-              // Fallback - używamy key jako nazwy
-              console.log('Fallback, using key as name:', String(key));
-              bookstoreStats.set(String(key), value as number);
+              console.log('Could not extract name from BookstoreDto string, using key:', key);
+              bookstoreStats.set(key, value as number);
             }
           });
         }
