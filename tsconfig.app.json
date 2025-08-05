@@ -29,7 +29,6 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "extends": [
-    "@tsconfig/node22/tsconfig.json",
     "@vue/tsconfig/tsconfig.json"
   ],
 }
