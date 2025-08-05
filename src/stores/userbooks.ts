@@ -90,6 +90,87 @@ export const useUserbooksStore = defineStore('userbook', {
       return response.data || [];
     },
     //
+    //GET BOOKSTORE STATISTICS
+    //
+    async getBookstoreStatisticsFromDb(): Promise<Map<string, number>> {
+      console.log('START - getBookstoreStatisticsFromDb()');
+      this.loadingStatistics = true;
+
+      const response = await httpCommon.get(`/v1/library/userbook/statistics/bookstore`);
+      // console.log('getBookstoreStatisticsFromDb() - response:', response.data);
+      // console.log('getBookstoreStatisticsFromDb() - response type:', typeof response.data);
+      // console.log('getBookstoreStatisticsFromDb() - response keys:', Object.keys(response.data || {}));
+      this.loadingStatistics = false;
+
+      
+      // Konwertuj Map z backendu na obiekt z nazwami księgarni
+      const bookstoreStats: Map<string, number> = new Map();
+      if (response.data) {
+        // console.log('Response data structure:', response.data);
+        // console.log('Response data constructor:', response.data.constructor.name);
+        
+        // Sprawdzamy czy response.data to Map czy obiekt
+        if (response.data instanceof Map) {
+          // Jeśli to Map, iterujemy po entries
+          response.data.forEach((value, key) => {
+            console.log('Processing Map entry - key:', key, 'type:', typeof key, 'value:', value);
+            if (typeof key === 'object' && key && 'name' in key) {
+              console.log('Key is object with name:', (key as { name: string }).name);
+              bookstoreStats.set((key as { name: string }).name, value as number);
+            } else {
+              console.log('Using key as name:', String(key));
+              bookstoreStats.set(String(key), value as number);
+            }
+          });
+        } else {
+          // Jeśli to obiekt, używamy Object.entries
+          Object.entries(response.data).forEach(([key, value]) => {
+            console.log('Processing object entry - key:', key, 'type:', typeof key, 'value:', value);
+            
+            // Sprawdzamy czy key to string reprezentujący obiekt BookstoreDto
+            if (typeof key === 'string' && key.includes('BookstoreDto')) {
+              // Próbujemy wyciągnąć nazwę z stringa "BookstoreDto(id=1, name=Empik, url=...)"
+              const nameMatch = key.match(/name=([^,]+)/);
+              if (nameMatch) {
+                const name = nameMatch[1];
+                console.log('Extracted name from BookstoreDto string:', name);
+                bookstoreStats.set(name, value as number);
+              } else {
+                console.log('Could not extract name from BookstoreDto string, using key:', key);
+                bookstoreStats.set(key, value as number);
+              }
+            } else if (typeof key === 'object' && key && typeof key === 'object' && 'name' in key) {
+              // Jeśli key to obiekt z właściwością name
+              console.log('Key is object with name:', (key as { name: string }).name);
+              bookstoreStats.set((key as { name: string }).name, value as number);
+            } else if (typeof key === 'string') {
+              // Jeśli key to string, próbujemy sparsować jako JSON
+              try {
+                const bookstore = JSON.parse(key);
+                if (bookstore && typeof bookstore === 'object' && 'name' in bookstore) {
+                  console.log('Parsed JSON bookstore name:', bookstore.name);
+                  bookstoreStats.set(bookstore.name, value as number);
+                } else {
+                  console.log('Using key as name:', key);
+                  bookstoreStats.set(key, value as number);
+                }
+              } catch (e) {
+                // Jeśli nie można sparsować JSON, używamy key jako nazwy
+                console.log('Failed to parse JSON, using key as name:', key);
+                bookstoreStats.set(key, value as number);
+              }
+            } else {
+              // Fallback - używamy key jako nazwy
+              console.log('Fallback, using key as name:', String(key));
+              bookstoreStats.set(String(key), value as number);
+            }
+          });
+        }
+      }
+      console.log('END - getBookstoreStatisticsFromDb()');
+      return bookstoreStats;
+    },
+    //
     //GET  USERBOOK FROM DB BY ID
     //
     async getUserbookFromDb(userbookId: number): Promise<UserBook | null> {
