@@ -18,6 +18,7 @@
   import type { Loan } from '@/types/Loan.ts';
   import type { AxiosError } from 'axios';
   import { PaymentStatus } from '@/types/Payment.ts';
+  import router from '@/router';
 
   const userStore = useUsersStore();
   const loanStore = useLoansStore();

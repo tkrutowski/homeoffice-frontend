@@ -10,6 +10,7 @@
   import type { Purchase } from '@/types/Purchase.ts';
   import type { User } from '@/types/User.ts';
   import { useUsersStore } from '@/stores/users.ts';
+  import router from '@/router';
   const purchasesStore = usePurchasesStore();
   const toast = useToast();
   const userStore = useUsersStore();
