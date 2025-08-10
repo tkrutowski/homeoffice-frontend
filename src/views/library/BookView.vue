@@ -342,7 +342,8 @@
             detail: 'Błąd podczas wyszukiwania książki...',
             life: 3500,
           });
-        });
+        })
+          .finally(() => bookStore.searchBook = false);
     }
   }
 

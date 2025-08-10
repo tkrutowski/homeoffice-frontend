@@ -118,7 +118,7 @@ export const useBooksStore = defineStore('book', {
       // const response = await httpCommon.get(`/v1/library/book/url?&url=${url}`)
       const response = await httpCommon.get(baseUrl);
       console.log("BOOK URL: " + JSON.stringify(response.data));
-      console.log("BOOK URL: ", response.data);
+      console.log("BOOK URL: ", response);
       this.searchBook = true;
       console.log('END - getBookFromUrl()');
       return response.data ? response.data : null;
