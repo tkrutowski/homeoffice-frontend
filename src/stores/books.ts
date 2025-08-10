@@ -7,6 +7,7 @@ export const useBooksStore = defineStore('book', {
     btnDisabled: false,
     busyIcon: false,
     loadingBooks: false,
+    searchBook: false,
     loadingBooksInSeries: false,
     loadingAuthors: false,
     loadingSeries: false,
@@ -110,13 +111,15 @@ export const useBooksStore = defineStore('book', {
     //Get books from url
     async getBookFromUrl(url: string, ai: boolean = false): Promise<Book | null> {
       console.log('START - getBookFromUrl(' + url + ')');
+      this.searchBook = true;
       const baseUrl = ai
         ? `https://n8n.focikhome.synology.me/webhook/bf930829-7649-4dfe-a30d-56e941abedfa?&url=${url}`
         : `/v1/library/book/url?&url=${url}`;
-      // console.log("BOOK URL: " + JSON.stringify(response.data));
       // const response = await httpCommon.get(`/v1/library/book/url?&url=${url}`)
       const response = await httpCommon.get(baseUrl);
-      this.loadingBooks = false;
+      console.log("BOOK URL: " + JSON.stringify(response.data));
+      console.log("BOOK URL: ", response.data);
+      this.searchBook = true;
       console.log('END - getBookFromUrl()');
       return response.data ? response.data : null;
     },

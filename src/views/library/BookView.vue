@@ -454,7 +454,7 @@
               text="wyszukaj"
               type="button"
               btn-type="office-regular"
-              :loading="btnSearchShowBusy"
+              :loading="bookStore.searchBook"
               :btn-disabled="btnSearchDisabled"
               @click="findBook()"
             />
@@ -463,7 +463,7 @@
               type="button"
               icon="pi pi-microchip-ai"
               btn-type="office-regular"
-              :loading="btnSearchShowBusy"
+              :loading="bookStore.searchBook"
               :btn-disabled="btnSearchDisabled"
               @click="findBook(true)"
             />
