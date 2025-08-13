@@ -116,7 +116,10 @@ export const useBooksStore = defineStore('book', {
         ? `https://n8n.focikhome.synology.me/webhook/bf930829-7649-4dfe-a30d-56e941abedfa?&url=${url}`
         : `/v1/library/book/url?&url=${url}`;
       // const response = await httpCommon.get(`/v1/library/book/url?&url=${url}`)
-      const response = await httpCommon.get(baseUrl);
+      const response = await httpCommon.get(baseUrl, {
+        timeout: 90000 // timeout w milisekundach (np. 90 sekund)
+      });
+
       console.log("BOOK URL: " + JSON.stringify(response.data));
       console.log("BOOK URL: ", response);
       this.searchBook = true;
