@@ -68,20 +68,30 @@
 
     const labels = Array.from(bookstoreStatistics.value.keys());
     const data = Array.from(bookstoreStatistics.value.values());
-    
+
     const colors = [
-      '#42A5F5', '#66BB6A', '#FFA726', '#EF5350', '#AB47BC',
-      '#26A69A', '#FF7043', '#8D6E63', '#78909C', '#26C6DA'
+      '#42A5F5',
+      '#66BB6A',
+      '#FFA726',
+      '#EF5350',
+      '#AB47BC',
+      '#26A69A',
+      '#FF7043',
+      '#8D6E63',
+      '#78909C',
+      '#26C6DA',
     ];
 
     return {
       labels: labels,
-      datasets: [{
-        data: data,
-        backgroundColor: colors.slice(0, labels.length),
-        borderColor: colors.slice(0, labels.length),
-        borderWidth: 2,
-      }],
+      datasets: [
+        {
+          data: data,
+          backgroundColor: colors.slice(0, labels.length),
+          borderColor: colors.slice(0, labels.length),
+          borderWidth: 2,
+        },
+      ],
     };
   });
 

@@ -343,7 +343,7 @@
             life: 3500,
           });
         })
-          .finally(() => bookStore.searchBook = false);
+        .finally(() => (bookStore.searchBook = false));
     }
   }
 

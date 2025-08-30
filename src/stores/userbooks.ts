@@ -102,13 +102,12 @@ export const useUserbooksStore = defineStore('userbook', {
       // console.log('getBookstoreStatisticsFromDb() - response keys:', Object.keys(response.data || {}));
       this.loadingStatistics = false;
 
-      
       // Konwertuj Map z backendu na obiekt z nazwami księgarni
       const bookstoreStats: Map<string, number> = new Map();
       if (response.data) {
         // console.log('Response data structure:', response.data);
         // console.log('Response data constructor:', response.data.constructor.name);
-        
+
         // Sprawdzamy czy response.data to Map czy obiekt
         if (response.data instanceof Map) {
           // Jeśli to Map, iterujemy po entries

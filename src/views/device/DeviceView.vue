@@ -145,11 +145,12 @@
             detail: 'Błąd podczas dodawania urządzenia.',
             life: 3000,
           });
+        })
+        .finally(() => {
+          btnSaveDisabled.value = false;
+          btnShowBusy.value = false;
+          submitted.value = false;
         });
-
-      btnSaveDisabled.value = false;
-      btnShowBusy.value = false;
-      submitted.value = false;
     }
   }
 

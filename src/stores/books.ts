@@ -117,11 +117,11 @@ export const useBooksStore = defineStore('book', {
         : `/v1/library/book/url?&url=${url}`;
       // const response = await httpCommon.get(`/v1/library/book/url?&url=${url}`)
       const response = await httpCommon.get(baseUrl, {
-        timeout: 90000 // timeout w milisekundach (np. 90 sekund)
+        timeout: 90000, // timeout w milisekundach (np. 90 sekund)
       });
 
-      console.log("BOOK URL: " + JSON.stringify(response.data));
-      console.log("BOOK URL: ", response);
+      console.log('BOOK URL: ' + JSON.stringify(response.data));
+      console.log('BOOK URL: ', response);
       this.searchBook = true;
       console.log('END - getBookFromUrl()');
       return response.data ? response.data : null;
