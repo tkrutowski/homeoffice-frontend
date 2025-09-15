@@ -33,6 +33,20 @@
       await userbookStore
         .updateUserbookDb(newUserbook)
         .then(() => {
+          // If status has changed from NOT_READ to another value, remove the book from the list
+          if (newUserbook.readingStatus !== ReadingStatus.NOT_READ) {
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value.splice(index, 1);
+            }
+          } else {
+            // If status remains NOT_READ, update the book in the list
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value[index] = newUserbook;
+            }
+          }
+          
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
@@ -69,6 +83,11 @@
       await userbookStore
         .deleteUserbookDb(tempUserbook.value.id)
         .then(() => {
+          const index = userbooks.value.findIndex(ub => ub.id === tempUserbook.value?.id);
+          if (index !== -1) {
+            userbooks.value.splice(index, 1);
+          }
+          
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',

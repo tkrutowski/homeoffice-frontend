@@ -14,7 +14,6 @@
   const userbookStore = useUserbooksStore();
   const toast = useToast();
   const userbooks = ref<UserBook[]>([]);
-  // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
 
   onMounted(async () => {
     userbooks.value = await userbookStore.getUserbooksByStatusFromDb(ReadingStatus.READ_NOW);
@@ -71,6 +70,11 @@
       await userbookStore
         .deleteUserbookDb(tempUserbook.value.id)
         .then(() => {
+          const index = userbooks.value.findIndex(ub => ub.id === tempUserbook.value?.id);
+          if (index !== -1) {
+            userbooks.value.splice(index, 1);
+          }
+          
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
