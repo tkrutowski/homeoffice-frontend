@@ -24,12 +24,6 @@ export const useUserbooksStore = defineStore('userbook', {
   getters: {
     // getSortedInvoices: (state) =>
     //   state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
-    getBooksReadNow: state => {
-      return state.userbooks.filter((ub: UserBook) => ub.readingStatus === 'READ_NOW');
-    },
-    getBooksToRead: state => {
-      return state.userbooks.filter((ub: UserBook) => ub.readingStatus === 'NOT_READ');
-    },
   },
 
   //actions = metody w komponentach
@@ -52,6 +46,12 @@ export const useUserbooksStore = defineStore('userbook', {
     },
     async getBooksToReadByDate(year: number): Promise<UserBook[]> {
       return await this.getUserbooksByDate(year, ReadingStatus.NOT_READ);
+    },
+    async getBooksReadNowForCurrentYear(): Promise<UserBook[]> {
+      return await this.getBooksReadNowByDate(this.readSelectedYear);
+    },
+    async getBooksToReadForCurrentYear(): Promise<UserBook[]> {
+      return await this.getBooksToReadByDate(this.readSelectedYear);
     },
     async getUserbooksFromDb(): Promise<void> {
       console.log('START - getUserbooksFromDb()');

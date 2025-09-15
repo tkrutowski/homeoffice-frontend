@@ -3,17 +3,22 @@
   import { useUserbooksStore } from '@/stores/userbooks';
   import UserBookLarge from '@/components/library/UserBookLarge.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useBooksStore } from '@/stores/books';
   import SeriesCarousel from '@/components/library/SeriesCarusel.vue';
-  import type { Series } from '@/types/Book';
+  import type { Series, UserBook } from '@/types/Book';
 
   const userbookStore = useUserbooksStore();
   const bookStore = useBooksStore();
 
-  if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
   if (bookStore.series.length === 0) bookStore.getSeriesFromDb();
   UtilsService.getTypesForLibrary();
+
+  const booksReadNow = ref<UserBook[]>([]);
+
+  onMounted(async () => {
+    booksReadNow.value = await userbookStore.getBooksReadNowForCurrentYear();
+  });
 
   const responsiveOptions = ref([
     {
@@ -74,7 +79,7 @@
         </div>
       </template>
       <Carousel
-        :value="userbookStore.getBooksReadNow"
+        :value="booksReadNow"
         :num-visible="1"
         :num-scroll="1"
         :responsive-options="responsiveOptions"
