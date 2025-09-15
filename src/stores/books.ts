@@ -12,14 +12,19 @@ export const useBooksStore = defineStore('book', {
     loadingAuthors: false,
     loadingSeries: false,
     loadingCategories: false,
-
+    rowsPerPage: parseInt(localStorage.getItem('rowsPerPageBooks') || '20', 10),
     tempBook: {} as Book,
 
     books: [] as Book[],
+    totalBooks: 0,
+    currentPage: 0,
     // booksInSeries: [] as Book[],
     authors: [] as Author[],
     series: [] as Series[],
     categories: [] as Category[],
+    sortField: 'id',
+    sortOrder: -1, // 1 = ASC, -1 = DESC - domyślnie sortujemy po ID malejąco
+    filters: {} as any,
   }),
 
   //getters = computed
@@ -41,7 +46,32 @@ export const useBooksStore = defineStore('book', {
     //REFRESH BOOKS
     //
     async refreshBooks() {
-      await this.getBooksFromDb();
+      await this.getBooksFromDb(this.currentPage, this.rowsPerPage);
+    },
+    //
+    //LOAD PAGE
+    //
+    async loadPage(page: number) {
+      await this.getBooksFromDb(page, this.rowsPerPage);
+    },
+
+    //
+    //SORT BOOKS
+    //
+    async sortBooks(sortField: string, sortOrder: number) {
+      console.log('sortBooks()', sortField, sortOrder);
+      this.sortField = sortField;
+      this.sortOrder = sortOrder;
+      await this.loadPage(0); // Reset to first page after filter
+    },
+
+    //
+    //FILTER BOOKS
+    //
+    async filterBooks(filters: any) {
+      console.log('filterBooks()', filters);
+      this.filters = filters;
+      await this.loadPage(0); // Reset to first page after filter
     },
     //
     //GET BOOKS
@@ -59,13 +89,41 @@ export const useBooksStore = defineStore('book', {
     //
     //GET BOOKS FROM DB
     //
-    async getBooksFromDb(): Promise<void> {
+    async getBooksFromDb(page: number = 0, size?: number): Promise<void> {
+      const pageSize = size || this.rowsPerPage;
       console.log('START - getBooksFromDb()');
       this.loadingBooks = true;
 
-      const response = await httpCommon.get(`/v1/library/book`);
-      console.log('getBooksFromDb() - Ilosc[]: ' + response.data.length);
-      this.books = response.data;
+      // parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: pageSize.toString(),
+        sort: this.sortField,
+        direction: this.sortOrder > 0 ? 'ASC' : 'DESC',
+      });
+
+      // filters
+      if (this.filters.global?.value) {
+        params.append('globalFilter', this.filters.global.value);
+      }
+      if (this.filters.title?.value) {
+        params.append('title', this.filters.title.value);
+      }
+      if (this.filters.authors?.constraints?.[0]?.value) {
+        params.append('author', this.filters.authors.constraints[0].value);
+      }
+      if (this.filters.categories?.value && this.filters.categories.value.length > 0) {
+        params.append('category', this.filters.categories.value.join(','));
+      }
+      if (this.filters.series?.value && this.filters.series.value.length > 0) {
+        params.append('series', this.filters.series.value.join(','));
+      }
+
+      const response = await httpCommon.get(`/v1/library/book/page?${params.toString()}`);
+      console.log('getBooksFromDb() - Ilosc[]: ' + response.data.content.length);
+      this.books = response.data.content;
+      this.totalBooks = response.data.totalElements;
+      this.currentPage = response.data.number;
       this.loadingBooks = false;
       console.log('END - getBooksFromDb()');
     },

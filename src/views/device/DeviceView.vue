@@ -186,11 +186,11 @@
             life: 3000,
           });
         })
-          .finally(() => {
-            btnSaveDisabled.value = false;
-            btnShowBusy.value = false;
-            submitted.value = false;
-          });
+        .finally(() => {
+          btnSaveDisabled.value = false;
+          btnShowBusy.value = false;
+          submitted.value = false;
+        });
     }
   }
 

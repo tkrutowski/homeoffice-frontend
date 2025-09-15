@@ -4,7 +4,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useBooksStore } from '@/stores/books';
   import { useUserbooksStore } from '@/stores/userbooks';
-  import { computed, type DefineComponent, ref } from 'vue';
+  import { computed, type DefineComponent, ref, watch } from 'vue';
   import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
   import type { Author, Book, Category, UserBook } from '@/types/Book';
   import router from '@/router';
@@ -13,6 +13,13 @@
   import type { BookDto } from '@/types/Book';
   import type { AxiosError } from 'axios';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
+
+  // Typy dla DataTable events
+  interface DataTablePageEvent {
+    page: number;
+    rows: number;
+    first: number;
+  }
 
   const bookStore = useBooksStore();
   const userbookStore = useUserbooksStore();
@@ -31,7 +38,7 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       title: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      categories: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      categories: { value: null, matchMode: FilterMatchMode.IN },
       // 'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
       series: { value: null, matchMode: FilterMatchMode.IN },
       authors: {
@@ -46,17 +53,27 @@
     };
   };
   initFilters();
-  const clearFilter = () => {
+  const clearFilter = async () => {
     initFilters();
+    await bookStore.filterBooks(filters.value);
   };
 
   const seriesFilter = computed(() => {
-    return [
-      ...new Set(bookStore.books.filter((book: Book) => book.series !== null).map((book: Book) => book.series!.title)),
-    ].sort((a: string, b: string) => a.localeCompare(b));
+    return bookStore.series.map(series => series.title).sort((a: string, b: string) => a.localeCompare(b));
+  });
+
+  const categoriesFilter = computed(() => {
+    return bookStore.categories.map(category => category.name).sort((a: string, b: string) => a.localeCompare(b));
   });
 
   bookStore.getBooks();
+  // Load series and categories for filtering
+  if (bookStore.series.length === 0) {
+    bookStore.getSeriesFromDb();
+  }
+  if (bookStore.categories.length === 0) {
+    bookStore.getCategoriesFromDb();
+  }
   const booksDto = computed(() => {
     return bookStore.books.map(mapBookToBookDto);
   });
@@ -82,13 +99,7 @@
   };
 
   const dataTableRef = ref<DefineComponent | null>(null);
-  const selectedBooks = computed(() => {
-    const processedData = dataTableRef.value?.processedData;
-    if (processedData) {
-      return processedData.length;
-    }
-    return 0;
-  });
+
   //
   //-------------------------------------------------DELETE -------------------------------------------------
   //
@@ -169,6 +180,43 @@
         });
     }
   };
+
+  const handlePageChange = async (event: DataTablePageEvent) => {
+    console.log('handlePageChange()', event);
+    localStorage.setItem('rowsPerPageBooks', event.rows.toString());
+    bookStore.rowsPerPage = event.rows;
+    await bookStore.loadPage(event.page);
+  };
+
+  const handleSort = async (event: any) => {
+    console.log('handleSort()', event);
+    await bookStore.sortBooks(event.sortField, event.sortOrder);
+  };
+
+  const handleFilter = async () => {
+    console.log('handleFilter()', filters.value);
+    await bookStore.filterBooks(filters.value);
+  };
+
+  // Obsługa wyszukiwania globalnego z debounce
+  let searchTimeout: NodeJS.Timeout | null = null;
+
+  watch(
+    () => filters.value.global.value,
+    newValue => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Search when value has more than 3 letters or is empty
+      if (!newValue || newValue.length >= 3) {
+        searchTimeout = setTimeout(async () => {
+          console.log('Global search:', newValue);
+          await bookStore.filterBooks(filters.value);
+        }, 500); // 500ms debounce
+      }
+    }
+  );
 </script>
 
 <template>
@@ -195,15 +243,21 @@
       :value="booksDto"
       removable-sort
       paginator
-      :rows="20"
+      lazy
+      :sort-mode="'single'"
+      :rows="bookStore.rowsPerPage"
+      :total-records="bookStore.totalBooks"
       :rows-per-page-options="[5, 10, 20, 50]"
       table-style="min-width: 50rem"
       filter-display="menu"
       :global-filter-fields="['authors', 'series', 'categories', 'title']"
-      sort-field="date"
-      :sort-order="-1"
       row-hover
       size="small"
+      @page="handlePageChange"
+      @sort="handleSort"
+      @filter="handleFilter"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      current-page-report-template="Od {first} do {last} (Wszystkich książek: {totalRecords})"
     >
       <template #header>
         <div class="flex justify-between">
@@ -252,9 +306,25 @@
       </Column>
 
       <!--  CATEGORY  -->
-      <Column field="categories" header="Kategoria" style="max-width: 120px" :sortable="true">
+      <Column
+        field="categories"
+        filter-field="categories"
+        header="Kategoria"
+        style="max-width: 120px"
+        :sortable="true"
+        :show-filter-match-modes="false"
+      >
+        <template #body="slotProps">
+          {{ slotProps.data[slotProps.field] }}
+        </template>
         <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          <MultiSelect
+            v-model="filterModel.value"
+            :options="categoriesFilter"
+            placeholder="Wybierz..."
+            class="p-column-filter"
+            :max-selected-labels="2"
+          />
         </template>
       </Column>
 
@@ -320,29 +390,6 @@
       </template>
     </DataTable>
   </Panel>
-
-  <Toolbar class="sticky-toolbar mx-2">
-    <template #start>
-      <OfficeIconButton
-        title="Odświerz listę książek"
-        :icon="bookStore.loadingBooks ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-        class="mr-2"
-        @click="bookStore.refreshBooks()"
-      />
-    </template>
-    <template #end>
-      <div class="flex flex-col">
-        <p class="">
-          <span class="">Przefiltrowane:</span>
-          <span class="ml-3">{{ selectedBooks }}</span>
-        </p>
-        <p class="">
-          <span class="">RAZEM:</span>
-          <span class="ml-3">{{ bookStore.books.length }} książek</span>
-        </p>
-      </div>
-    </template>
-  </Toolbar>
 </template>
 <style scoped>
   :deep(.p-panel-header) {
