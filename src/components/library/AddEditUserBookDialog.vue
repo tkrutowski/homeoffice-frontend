@@ -19,6 +19,11 @@
     (e: 'cancel'): void;
   }>();
   const props = defineProps({
+    visible: {
+      type: Boolean,
+      require: false,
+      default: false,
+    },
     idBook: {
       type: Number,
       require: true,
@@ -48,7 +53,7 @@
   watch(
     () => props.idBook,
     async (id: number) => {
-      console.log('WATCH');
+      console.log('WATCH idBook');
       if (!props.isEdit && id > 0) {
         console.log('NEW USERBOOK');
         userbook.value.book = await bookStore.getBookFromDb(id);
@@ -57,6 +62,29 @@
         console.log('EDIT USERBOOK');
         await userbookStore
           .getUserbookFromDb(id)
+          .then((result: UserBook | null) => {
+            if (result) {
+              userbook.value = result;
+              selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore);
+              readingDateFrom.value = userbook.value.readFrom;
+              readingDateTo.value = userbook.value.readTo;
+            }
+          })
+          .catch((reason: AxiosError) => {
+            console.log('ERROR: ', reason);
+          });
+      }
+    }
+  );
+
+  // Watch for dialog visibility to reload data when dialog opens
+  watch(
+    () => props.visible,
+    async (isVisible: boolean) => {
+      if (isVisible && props.isEdit && props.idBook > 0) {
+        console.log('WATCH visible - loading userbook data');
+        await userbookStore
+          .getUserbookFromDb(props.idBook)
           .then((result: UserBook | null) => {
             if (result) {
               userbook.value = result;
@@ -168,7 +196,7 @@
 </script>
 
 <template>
-  <Dialog modal class="max-w-5xl mx-auto" close-on-escape @abort="cancel">
+  <Dialog v-model:visible="props.visible" modal class="max-w-5xl mx-auto" close-on-escape @abort="cancel">
     <template #header>
       <p class="text-2xl mx-auto">
         {{ $props.isEdit ? 'Edytuj książkę na półce' : 'Dodaj nową książkę na półkę' }}

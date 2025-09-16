@@ -4,6 +4,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import SeriesCarouselInfoDialog from '@/components/library/SeriesCarouselInfoDialog.vue';
   import { TranslationService } from '@/service/TranslationService.ts';
+  import moment from 'moment';
 
   const props = defineProps({
     userbook: {
@@ -30,7 +31,10 @@
     return org;
   });
   const isRead = computed(() => {
-    return props.userbook.readTo ? props.userbook.readTo : 'nieskończona';
+    return props.userbook.readTo ? moment(props.userbook.readTo).format('YYYY.MM.DD') : 'nieskończona';
+  });
+  const readFrom = computed(() => {
+    return props.userbook.readFrom ? moment(props.userbook.readFrom).format('YYYY.MM.DD') : '';
   });
   const getAuthors = computed(() => {
     return props.userbook?.book?.authors.map((a: Author) => a.firstName + ' ' + a.lastName).join(',');
@@ -117,7 +121,7 @@
       <div class="mt-0 mb-0 flex flex-col items-center">
         <p class="mt-0 mb-0 text-sm">Czytana/Słuchana</p>
         <p class="mt-0 mb-2">
-          <strong>{{ userbook.readFrom }}</strong> do
+          <strong>{{ readFrom }}</strong> do
           <strong>{{ isRead }}</strong>
         </p>
       </div>

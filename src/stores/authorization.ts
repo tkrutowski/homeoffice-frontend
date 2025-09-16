@@ -6,7 +6,6 @@ import { useFeeStore } from './fee';
 import { useLoansStore } from './loans';
 import { usePaymentStore } from './payments';
 import { usePurchasesStore } from './purchases';
-import { useUserbooksStore } from './userbooks.ts';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
 
@@ -327,7 +326,6 @@ export const useAuthorizationStore = defineStore('authorization', {
       const loanStore = useLoansStore();
       const paymentStore = usePaymentStore();
       const purchaseStore = usePurchasesStore();
-      const userbookStore = useUserbooksStore();
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('username');
@@ -337,7 +335,6 @@ export const useAuthorizationStore = defineStore('authorization', {
       loanStore.loans = [];
       paymentStore.payments.clear();
       purchaseStore.purchasesCurrent.clear();
-      userbookStore.userbooks = [];
       router.replace({ name: 'login' });
     },
     //

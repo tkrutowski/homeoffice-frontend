@@ -34,6 +34,20 @@
       await userbookStore
         .updateUserbookDb(newUserbook)
         .then(() => {
+          // If status has changed from READ_NOW to another value, remove the book from the list
+          if (newUserbook.readingStatus !== ReadingStatus.READ_NOW) {
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value.splice(index, 1);
+            }
+          } else {
+            // If status remains READ_NOW, update the book in the list
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value[index] = newUserbook;
+            }
+          }
+          
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',

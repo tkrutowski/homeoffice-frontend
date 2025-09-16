@@ -47,8 +47,7 @@
 
   async function searchBooks() {
     if (searchQuery.value.length >= 3) {
-      await userbookStore.searchUserbooksFromDb(searchQuery.value);
-      userbooks.value = userbookStore.userbooks;
+      userbooks.value = await userbookStore.searchUserbooksFromDb(searchQuery.value);
     }
   }
 

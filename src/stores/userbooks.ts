@@ -14,7 +14,6 @@ export const useUserbooksStore = defineStore('userbook', {
     loadingEditionType: false,
     loadingReadingStatus: false,
     readSelectedYear: new Date().getFullYear(),
-    userbooks: [] as UserBook[],
     ownershipStatus: [] as OwnershipStatus[],
     editionTypes: [] as EditionType[],
     readingStatuses: [] as ReadingStatus[],
@@ -52,16 +51,6 @@ export const useUserbooksStore = defineStore('userbook', {
     },
     async getBooksToReadForCurrentYear(): Promise<UserBook[]> {
       return await this.getBooksToReadByDate(this.readSelectedYear);
-    },
-    async getUserbooksFromDb(): Promise<void> {
-      console.log('START - getUserbooksFromDb()');
-      this.loadingUserbooks = true;
-
-      const response = await httpCommon.get(`/v1/library/userbook`);
-      console.log('getUserbooksFromDb() - Ilosc[]: ' + response.data.length);
-      this.userbooks = response.data;
-      this.loadingUserbooks = false;
-      console.log('END - getUserbooksFromDb()');
     },
     //
     //GET USERBOOKS BY STATUS
@@ -152,8 +141,7 @@ export const useUserbooksStore = defineStore('userbook', {
       const response = await httpCommon.get(`/v1/library/userbook/` + userbookId);
       this.loadingUserbooks = false;
       console.log('END - getUserbookFromDb()');
-      if (response.data) return response.data;
-      else return null;
+      return response.data ? response.data : null;
     },
     //
     //GET  USERBOOK FROM DB BY ID
@@ -177,8 +165,7 @@ export const useUserbooksStore = defineStore('userbook', {
         readFrom: userbook.readFrom ? moment(userbook.readFrom).format('YYYY-MM-DD') : null,
         readTo: userbook.readTo ? moment(userbook.readTo).format('YYYY-MM-DD') : null,
       };
-      const response = await httpCommon.post(`/v1/library/userbook`, transformedUserBook);
-      this.userbooks.push(response.data);
+      await httpCommon.post(`/v1/library/userbook`, transformedUserBook);
       console.log('END - addUserbookDb()');
     },
     //
@@ -191,11 +178,7 @@ export const useUserbooksStore = defineStore('userbook', {
         readFrom: userbook.readFrom ? moment(userbook.readFrom).format('YYYY-MM-DD') : null,
         readTo: userbook.readTo ? moment(userbook.readTo).format('YYYY-MM-DD') : null,
       };
-      const response = await httpCommon.put(`/v1/library/userbook`, transformedUserBook);
-      const index = this.userbooks.findIndex((ub: UserBook) => ub.id === userbook.id);
-      console.log('index', index);
-      if (index !== -1) Object.assign(this.userbooks[index], response.data); //aktualizuje po zmiananch
-      // if (index !== -1) this.userbooks.splice(index, 1, response.data)
+      await httpCommon.put(`/v1/library/userbook`, transformedUserBook);
       console.log('END - updateUserbookDb()');
     },
     //
@@ -204,22 +187,20 @@ export const useUserbooksStore = defineStore('userbook', {
     async deleteUserbookDb(userbookId: number) {
       console.log('START - deleteUserbookDb()');
       await httpCommon.delete(`/v1/library/userbook/` + userbookId);
-      const index = this.userbooks.findIndex((b: UserBook) => b.id === userbookId);
-      if (index !== -1) this.userbooks.splice(index, 1);
       console.log('END - deleteUserbookDb()');
     },
     //
     //SEARCH USERBOOKS
     //
-    async searchUserbooksFromDb(query: string): Promise<void> {
+    async searchUserbooksFromDb(query: string): Promise<UserBook[]> {
       console.log('START - searchUserbooksFromDb()');
       this.loadingUserbooks = true;
 
       const response = await httpCommon.get(`/v1/library/userbook/search?query=${encodeURIComponent(query)}`);
       console.log('searchUserbooksFromDb() - Ilosc[]: ' + response.data.length);
-      this.userbooks = response.data;
       this.loadingUserbooks = false;
       console.log('END - searchUserbooksFromDb()');
+      return response.data || [];
     },
   },
 });
