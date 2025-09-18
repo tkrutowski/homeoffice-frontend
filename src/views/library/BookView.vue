@@ -262,9 +262,10 @@
   //
   const showAddSeriesModal = ref(false);
 
-  async function saveSeries(title: string) {
+  async function saveSeries(title: string, url: string) {
     console.log('in1: ', title);
-    if (title.length === 0) {
+    console.log('in2: ', url);
+    if (title.length === 0 || url.length === 0) {
       showError('Uzupełnij brakujące elementy');
     } else {
       showAddSeriesModal.value = false;
@@ -273,7 +274,7 @@
           id: 0,
           title: title,
           description: '',
-          url: '',
+          url: url,
           checkDate: null,
           hasNewBooks: false,
         })
@@ -461,6 +462,7 @@
     v-model:visible="showAddSeriesModal"
     msg="Dodaj serię"
     label1="Tytuł:"
+    label2="URL:"
     @save="saveSeries"
     @cancel="showAddSeriesModal = false"
   />
