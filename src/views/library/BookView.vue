@@ -228,10 +228,10 @@
   async function saveAuthor(firstName: string, lastName: string) {
     console.log('in1: ', firstName);
     console.log('in2: ', lastName);
-    showAddModal.value = false;
     if (firstName.length === 0 || lastName.length === 0) {
       showError('Uzupełnij brakujące elementy');
     } else {
+      showAddModal.value = false;
       await bookStore
         .addAuthorDb({
           id: 0,
@@ -251,6 +251,45 @@
             severity: 'error',
             summary: reason?.message,
             detail: 'Nie dodano autora: ' + firstName + ' ' + lastName,
+            life: 5000,
+          });
+        });
+    }
+  }
+
+  //
+  //--------------------------------------------------SERIES
+  //
+  const showAddSeriesModal = ref(false);
+
+  async function saveSeries(title: string) {
+    console.log('in1: ', title);
+    if (title.length === 0) {
+      showError('Uzupełnij brakujące elementy');
+    } else {
+      showAddSeriesModal.value = false;
+      await bookStore
+        .addSeriesDb({
+          id: 0,
+          title: title,
+          description: '',
+          url: '',
+          checkDate: null,
+          hasNewBooks: false,
+        })
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano serię: ' + title,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Nie dodano serii: ' + title,
             life: 5000,
           });
         });
@@ -420,6 +459,13 @@
     @cancel="showAddModal = false"
   />
   <AddDialog
+    v-model:visible="showAddSeriesModal"
+    msg="Dodaj serię"
+    label1="Tytuł:"
+    @save="saveSeries"
+    @cancel="showAddSeriesModal = false"
+  />
+  <AddDialog
     v-model:visible="showAddCategoryModal"
     msg="Dodaj kategorię"
     label1="Nazwa:"
@@ -513,21 +559,31 @@
               <div class="flex gap-2 mb-5">
                 <div class="flex flex-col w-full">
                   <label class="ml-2 mb-1" for="series">Seria:</label>
-                  <AutoComplete
-                    id="series"
-                    v-model="selectedSeries"
-                    dropdown
-                    force-selection
-                    :suggestions="filteredSeries"
-                    field="title"
-                    option-label="title"
-                    @complete="searchSeries"
-                    :loading="bookStore.loadingSeries"
-                  />
+                  <div class="flex gap-2">
+                    <AutoComplete
+                      id="series"
+                      v-model="selectedSeries"
+                      dropdown
+                      force-selection
+                      :suggestions="filteredSeries"
+                      field="title"
+                      option-label="title"
+                      @complete="searchSeries"
+                      :loading="bookStore.loadingSeries"
+                      class="flex-1"
+                    />
+                    <OfficeIconButton
+                      title="Dodaj serię"
+                      :icon="bookStore.loadingSeries ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                      style="height: 35px; width: 35px; padding: 0"
+                      class="self-center"
+                      @click="showAddSeriesModal = true"
+                    />
+                  </div>
                 </div>
 
                 <div class="flex flex-col">
-                  <label for="seriesNo">Cześć:</label>
+                  <label for="seriesNo">Część:</label>
                   <InputText id="seriesNo" v-model="book.bookInSeriesNo" maxlength="5" />
                 </div>
               </div>

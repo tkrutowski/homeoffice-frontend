@@ -267,6 +267,15 @@ export const useBooksStore = defineStore('book', {
       else return null;
     },
 
+    //ADD SERIES
+    //
+    async addSeriesDb(series: Series) {
+      console.log('START - addSeriesDb()');
+      const response = await httpCommon.post(`/v1/library/series`, series);
+      this.series.push(response.data);
+      console.log('END - addSeriesDb()');
+    },
+
     //
     //UPDATE SERIES
     //
