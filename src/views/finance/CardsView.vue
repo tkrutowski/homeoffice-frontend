@@ -152,7 +152,6 @@
 </script>
 
 <template>
-  <Toast />
   <TheMenuFinance />
   <ConfirmationDialog
     v-model:visible="showStatusChangeConfirmationDialog"

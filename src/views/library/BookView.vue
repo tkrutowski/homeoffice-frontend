@@ -448,7 +448,6 @@
 </script>
 
 <template>
-  <Toast />
   <TheMenuLibrary />
   <AddDialog
     v-model:visible="showAddModal"

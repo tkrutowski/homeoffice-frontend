@@ -311,7 +311,6 @@
 </script>
 
 <template>
-  <Toast />
   <TheMenuFinance />
   <AddFirmDialog v-model:visible="showNewFirmModal" @save="newFirm" @cancel="showNewFirmModal = false" />
   <div class="m-4 max-w-4xl mx-auto">

@@ -254,7 +254,6 @@
 </script>
 
 <template>
-  <Toast />
   <TheMenuFinance />
 
   <div class="m-4 max-w-4xl mx-auto">
