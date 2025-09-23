@@ -78,12 +78,7 @@
           </div>
         </div>
       </template>
-      <Carousel
-        :value="booksReadNow"
-        :num-visible="1"
-        :num-scroll="1"
-        :responsive-options="responsiveOptions"
-      >
+      <Carousel :value="booksReadNow" :num-visible="1" :num-scroll="1" :responsive-options="responsiveOptions">
         <template #item="slotProps">
           <div class="card flex justify-center">
             <UserBookLarge :userbook="slotProps.data" />

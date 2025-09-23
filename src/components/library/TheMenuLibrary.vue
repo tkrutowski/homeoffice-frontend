@@ -16,6 +16,7 @@
     console.log('activeMenu', route.path);
     if (route.path.includes('/homelib')) return 'dashboard';
     if (route.path.includes('/library/book/shell')) return 'shell';
+    if (route.path.includes('/library/bookstores')) return 'bookstore';
     if (route.path.includes('/library/book')) return 'book';
     return null; // Jeśli nie pasuje do żadnego menu
   });
@@ -79,6 +80,20 @@
           icon: 'pi pi-fw pi-list',
           command: () => {
             router.push({ name: 'SeriesSearch' });
+          },
+        },
+      ],
+    },
+    {
+      label: 'Księgarnie',
+      icon: 'pi pi-fw pi-shop',
+      class: `${activeMenu.value === 'bookstore' ? 'active' : ''}`,
+      items: [
+        {
+          label: 'Lista księgarni',
+          icon: 'pi pi-fw pi-list',
+          command: () => {
+            router.push({ name: 'Bookstores' });
           },
         },
       ],
