@@ -1,11 +1,14 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import AddDialog from '@/components/AddDialog.vue';
   import { useBookstoreStore } from '@/stores/bookstores.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
   import { useBooksStore } from '@/stores/books.ts';
   import { type Bookstore, EditionType, OwnershipStatus, ReadingStatus, type UserBook } from '@/types/Book.ts';
   import { UtilsService } from '@/service/UtilsService.ts';
+  import { useToast } from 'primevue/usetoast';
   import type { AxiosError } from 'axios';
 
   UtilsService.getTypesForLibrary();
@@ -13,6 +16,7 @@
   const bookstoreStore = useBookstoreStore();
   const userbookStore = useUserbooksStore();
   const bookStore = useBooksStore();
+  const toast = useToast();
   // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
   const emit = defineEmits<{
     (e: 'save', userbook: UserBook): void;
@@ -37,6 +41,7 @@
   });
   const submitted = ref<boolean>(false);
   const selectedBookstore = ref<Bookstore | null>();
+  const showAddBookstoreModal = ref<boolean>(false);
   const userbook = ref<UserBook>({
     id: 0,
     idUser: 0,
@@ -193,9 +198,56 @@
     reset();
     emit('cancel');
   };
+
+  //--------------------------------------------------BOOKSTORE
+  //
+  async function saveBookstore(name: string, url: string) {
+    console.log('in1: ', name);
+    console.log('in2: ', url);
+    if (name.length === 0 || url.length === 0) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error Message',
+        detail: 'Uzupełnij brakujące elementy',
+        life: 3000,
+      });
+    } else {
+      showAddBookstoreModal.value = false;
+      await bookstoreStore
+        .addBookstoreDb({
+          id: 0,
+          name: name,
+          url: url,
+        })
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano księgarnię: ' + name,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Nie dodano księgarni: ' + name,
+            life: 5000,
+          });
+        });
+    }
+  }
 </script>
 
 <template>
+  <AddDialog
+    v-model:visible="showAddBookstoreModal"
+    msg="Dodaj księgarnię"
+    label1="Nazwa:"
+    label2="URL:"
+    @save="saveBookstore"
+    @cancel="showAddBookstoreModal = false"
+  />
   <Dialog v-model:visible="props.visible" modal class="max-w-5xl mx-auto" close-on-escape @abort="cancel">
     <template #header>
       <p class="text-2xl mx-auto">
@@ -209,15 +261,25 @@
           <div class="flex flex-row">
             <div class="flex flex-col w-full">
               <label class="ml-2 mb-1" for="input-bookstore">Wybierz księgarnię:</label>
-              <Select
-                id="input-bookstore"
-                v-model="selectedBookstore"
-                :class="{ 'p-invalid': showErrorBookstore() }"
-                :options="bookstoreStore.bookstores"
-                option-label="name"
-                @change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
-                :loading="bookstoreStore.loadingBookstore"
-              />
+              <div class="flex gap-2">
+                <Select
+                  id="input-bookstore"
+                  v-model="selectedBookstore"
+                  :class="{ 'p-invalid': showErrorBookstore() }"
+                  :options="bookstoreStore.bookstores"
+                  option-label="name"
+                  @change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
+                  :loading="bookstoreStore.loadingBookstore"
+                  class="flex-1"
+                />
+                <OfficeIconButton
+                  title="Dodaj księgarnię"
+                  :icon="bookstoreStore.loadingBookstore ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                  style="height: 35px; width: 35px; padding: 0"
+                  class="self-center"
+                  @click="showAddBookstoreModal = true"
+                />
+              </div>
               <small class="p-error">{{ showErrorBookstore() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
             </div>
           </div>

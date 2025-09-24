@@ -47,7 +47,7 @@
               userbooks.value[index] = newUserbook;
             }
           }
-          
+
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
@@ -88,7 +88,7 @@
           if (index !== -1) {
             userbooks.value.splice(index, 1);
           }
-          
+
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
