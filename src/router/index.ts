@@ -27,6 +27,7 @@ import LibraryHomeView from '@/views/library/LibraryHomeView.vue';
 import BooksView from '@/views/library/BooksView.vue';
 import BookView from '@/views/library/BookView.vue';
 import BookstoresView from '@/views/library/BookstoresView.vue';
+import AuthorsView from '@/views/library/AuthorsView.vue';
 import UserbooksReadNowView from '@/views/library/UserbooksReadNowView.vue';
 import UserbooksToReadView from '@/views/library/UserbooksToReadView.vue';
 import UserbooksReadView from '@/views/library/UserbooksReadView.vue';
@@ -101,6 +102,11 @@ const routes = [
     path: '/library/bookstores',
     name: 'Bookstores',
     component: BookstoresView,
+  },
+  {
+    path: '/library/authors',
+    name: 'Authors',
+    component: AuthorsView,
   },
   {
     path: '/library/book/:isEdit/:bookId',

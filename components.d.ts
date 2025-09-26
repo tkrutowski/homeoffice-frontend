@@ -16,6 +16,7 @@ declare module 'vue' {
     AddMultipleDialog: typeof import('./src/components/AddMultipleDialog.vue')['default']
     AppCard: typeof import('./src/components/AppCard.vue')['default']
     AutoComplete: typeof import('primevue/autocomplete')['default']
+    BookSmall: typeof import('./src/components/library/BookSmall.vue')['default']
     Button: typeof import('primevue/button')['default']
     ButtonOutlined: typeof import('./src/components/ButtonOutlined.vue')['default']
     Card: typeof import('primevue/card')['default']

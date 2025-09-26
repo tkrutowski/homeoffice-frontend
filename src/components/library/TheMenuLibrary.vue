@@ -17,6 +17,7 @@
     if (route.path.includes('/homelib')) return 'dashboard';
     if (route.path.includes('/library/book/shell')) return 'shell';
     if (route.path.includes('/library/bookstores')) return 'bookstore';
+    if (route.path.includes('/library/authors')) return 'author';
     if (route.path.includes('/library/book')) return 'book';
     return null; // Jeśli nie pasuje do żadnego menu
   });
@@ -94,6 +95,20 @@
           icon: 'pi pi-fw pi-list',
           command: () => {
             router.push({ name: 'Bookstores' });
+          },
+        },
+      ],
+    },
+    {
+      label: 'Autorzy',
+      icon: 'pi pi-fw pi-users',
+      class: `${activeMenu.value === 'author' ? 'active' : ''}`,
+      items: [
+        {
+          label: 'Lista autorów',
+          icon: 'pi pi-fw pi-list',
+          command: () => {
+            router.push({ name: 'Authors' });
           },
         },
       ],

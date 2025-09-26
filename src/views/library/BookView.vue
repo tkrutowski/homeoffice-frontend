@@ -19,7 +19,7 @@
   const selectedAuthors = ref<Author[]>([]);
   const selectedSeries = ref<Series | null>(null);
   const selectedCategories = ref<Category[]>([]);
-
+  const authors = ref<Author[]>([]);
   const book = ref<Book>({
     id: 0,
     series: null,
@@ -43,7 +43,7 @@
   //AUTHOR
   const filteredAuthors = ref<Author[]>();
   const searchAuthor = (event: { query: string }) => {
-    filteredAuthors.value = bookStore.authors.filter((author: Author) => {
+    filteredAuthors.value = authors.value.filter((author: Author) => {
       return (
         author.lastName.toLowerCase().includes(event.query.toLowerCase()) ||
         author.firstName.toLowerCase().includes(event.query.toLowerCase())
@@ -181,13 +181,12 @@
   }
 
   //---------------------------------------------MOUNTED--------------------------------------------
-  onMounted(() => {
+  onMounted(async () => {
     console.log('onMounted GET');
     btnSaveDisabled.value = true;
-    if (bookStore.authors.length === 0) bookStore.getAuthorsFromDb();
+    authors.value = await bookStore.getAuthorsFromDb();
     if (bookStore.series.length === 0) bookStore.getSeriesFromDb();
     if (bookStore.categories.length === 0) bookStore.getCategoriesFromDb();
-    if (bookStore.books.length === 0) bookStore.getBooksFromDb();
     btnSaveDisabled.value = false;
   });
 

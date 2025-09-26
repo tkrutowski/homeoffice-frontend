@@ -13,6 +13,7 @@ export const useBooksStore = defineStore('book', {
     loadingSeries: false,
     loadingCategories: false,
     rowsPerPage: parseInt(localStorage.getItem('rowsPerPageBooks') || '20', 10),
+    authorsRowsPerPage: parseInt(localStorage.getItem('rowsPerPageAuthors') || '20', 10),
     tempBook: {} as Book,
 
     books: [] as Book[],
@@ -20,11 +21,14 @@ export const useBooksStore = defineStore('book', {
     currentPage: 0,
     // booksInSeries: [] as Book[],
     authors: [] as Author[],
+    totalAuthors: 0,
+    currentAuthorsPage: 0,
     series: [] as Series[],
     categories: [] as Category[],
     sortField: 'id',
     sortOrder: -1, // 1 = ASC, -1 = DESC - domyślnie sortujemy po ID malejąco
     filters: {} as any,
+    authorFilters: {} as any,
   }),
 
   //getters = computed
@@ -220,15 +224,81 @@ export const useBooksStore = defineStore('book', {
     //
     //GET AUTHORS FROM DB
     //
-    async getAuthorsFromDb(): Promise<void> {
+    async getAuthorsFromDb(): Promise<Author[]> {
       console.log('START - getAuthorsFromDb()');
-      this.loadingAuthors = true;
-
       const response = await httpCommon.get(`/v1/library/author`);
       console.log('getAuthorsFromDb() - Ilosc[]: ' + response.data.length);
-      this.authors = response.data;
-      this.loadingAuthors = false;
       console.log('END - getAuthorsFromDb()');
+      return response.data;
+    },
+
+    //
+    //GET AUTHORS FROM DB WITH PAGINATION
+    //
+    async getAuthorsFromDbPage(page: number = 0, size?: number): Promise<void> {
+      const pageSize = size || this.authorsRowsPerPage;
+      console.log('START - getAuthorsFromDbPage()');
+      this.loadingAuthors = true;
+
+      // parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: pageSize.toString(),
+        sort: this.sortField,
+        direction: this.sortOrder > 0 ? 'ASC' : 'DESC',
+      });
+
+      // filters
+      if (this.authorFilters.global?.value) {
+        params.append('globalFilter', this.authorFilters.global.value);
+      }
+
+      const response = await httpCommon.get(`/v1/library/author/page?${params.toString()}`);
+      console.log('getAuthorsFromDbPage() - Ilosc[]: ' + response.data.content.length);
+      this.authors = response.data.content;
+      this.totalAuthors = response.data.totalElements;
+      this.currentAuthorsPage = response.data.number;
+      this.loadingAuthors = false;
+      console.log('END - getAuthorsFromDbPage()');
+    },
+
+    //
+    //LOAD AUTHORS PAGE
+    //
+    async loadAuthorsPage(page: number) {
+      await this.getAuthorsFromDbPage(page, this.authorsRowsPerPage);
+    },
+
+    //
+    //SORT AUTHORS
+    //
+    async sortAuthors(sortField: string, sortOrder: number) {
+      console.log('sortAuthors()', sortField, sortOrder);
+      this.sortField = sortField;
+      this.sortOrder = sortOrder;
+      await this.loadAuthorsPage(0); // Reset to first page after sort
+    },
+
+    //
+    //FILTER AUTHORS
+    //
+    async filterAuthors(filters: any) {
+      console.log('filterAuthors()', filters);
+      this.authorFilters = filters;
+      await this.loadAuthorsPage(0); // Reset to first page after filter
+    },
+
+    //GET AUTHOR BOOKS
+    //
+    async getAuthorBooks(authorId: number): Promise<Book[]> {
+      console.log('START - getAuthorBooks()', authorId);
+      this.loadingBooks = true;
+
+      const response = await httpCommon.get(`/v1/library/book/author/${authorId}`);
+      console.log('getAuthorBooks() - Ilosc[]: ' + response.data.length);
+      this.loadingBooks = false;
+      console.log('END - getAuthorBooks()');
+      return response.data;
     },
 
     //ADD AUTHOR
@@ -238,6 +308,79 @@ export const useBooksStore = defineStore('book', {
       const response = await httpCommon.post(`/v1/library/author`, author);
       this.authors.push(response.data);
       console.log('END - addAuthorDb()');
+    },
+
+    //
+    //GET AUTHOR STATISTICS
+    //
+    async getAuthorStatistics(): Promise<Map<number, number>> {
+      console.log('START - getAuthorStatistics()');
+      this.loadingAuthors = true;
+
+      const response = await httpCommon.get(`/v1/library/author/statistics`);
+      console.log('getAuthorStatistics() - response:', response.data);
+      this.loadingAuthors = false;
+
+      // Konwertuj odpowiedź na Map<number, number>
+      const authorStats: Map<number, number> = new Map();
+      if (response.data) {
+        // Sprawdzamy czy response.data to Map czy obiekt
+        if (response.data instanceof Map) {
+          // Jeśli to Map, iterujemy po entries
+          response.data.forEach((value, key) => {
+            console.log('Processing Map entry - key:', key, 'type:', typeof key, 'value:', value);
+            if (typeof key === 'object' && key && 'id' in key) {
+              console.log('Key is object with id:', (key as { id: number }).id);
+              authorStats.set((key as { id: number }).id, value as number);
+            } else {
+              console.log('Using key as id:', Number(key));
+              authorStats.set(Number(key), value as number);
+            }
+          });
+        } else {
+          // Jeśli to obiekt, używamy Object.entries
+          Object.entries(response.data).forEach(([key, value]) => {
+            console.log('Processing object entry - key:', key, 'value:', value);
+
+            // Wyciągamy ID z stringa "AuthorDto(id=1, firstName=Jan, lastName=Kowalski)"
+            const idMatch = key.match(/id=(\d+)/);
+            if (idMatch) {
+              const id = Number(idMatch[1]);
+              console.log('Extracted id from AuthorDto string:', id);
+              authorStats.set(id, value as number);
+            } else {
+              console.log('Could not extract id from AuthorDto string, using key:', key);
+              authorStats.set(Number(key), value as number);
+            }
+          });
+        }
+      }
+      console.log('END - getAuthorStatistics()');
+      return authorStats;
+    },
+
+    //
+    //DELETE AUTHOR
+    //
+    async deleteAuthorDb(authorId: number) {
+      console.log('START - deleteAuthorDb()');
+      await httpCommon.delete(`/v1/library/author/` + authorId);
+      const index = this.authors.findIndex((a: Author) => a.id === authorId);
+      if (index !== -1) this.authors.splice(index, 1);
+      console.log('END - deleteAuthorDb()');
+    },
+
+    //
+    //UPDATE AUTHOR
+    //
+    async updateAuthorDb(author: Author) {
+      console.log('START - updateAuthorDb()');
+      const response = await httpCommon.put(`/v1/library/author`, author);
+
+      const index = this.authors.findIndex((a: Author) => a.id === author.id);
+      if (index !== -1) this.authors.splice(index, 1, response.data);
+      console.log('END - updateAuthorDb()');
+      return response.data;
     },
 
     //-------------------------------------------------------SERIES
