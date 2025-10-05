@@ -19,6 +19,7 @@
     if (route.path.includes('/library/bookstores')) return 'bookstore';
     if (route.path.includes('/library/authors')) return 'author';
     if (route.path.includes('/library/book')) return 'book';
+    if (route.path.includes('/library/series')) return 'book';
     return null; // Jeśli nie pasuje do żadnego menu
   });
 
@@ -81,6 +82,13 @@
           icon: 'pi pi-fw pi-list',
           command: () => {
             router.push({ name: 'SeriesSearch' });
+          },
+        },
+        {
+          label: 'Spis Cykli',
+          icon: 'pi pi-fw pi-list',
+          command: () => {
+            router.push({ name: 'Series' });
           },
         },
       ],

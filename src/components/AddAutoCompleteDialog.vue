@@ -13,7 +13,6 @@
   const emit = defineEmits<{
     (e: 'save', id: number): void;
     (e: 'cancel'): void;
-    (e: 'update:visible', value: boolean): void;
   }>();
 
   const selected = ref<T | null>(null);
@@ -46,13 +45,7 @@
 </script>
 
 <template>
-  <Dialog
-    :style="{ width: '550px' }"
-    :modal="true"
-    :visible="visible"
-    @update:visible="$emit('update:visible', $event)"
-    @hide="cancel"
-  >
+  <Dialog :style="{ width: '550px' }" :modal="true" @hide="cancel">
     <template #header>
       <p class="text-2xl">Wybierz</p>
     </template>

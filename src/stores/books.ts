@@ -432,6 +432,26 @@ export const useBooksStore = defineStore('book', {
       return response.data;
     },
 
+    //
+    //DELETE SERIES
+    //
+    async deleteSeriesDb(seriesId: number) {
+      console.log('START - deleteSeriesDb()');
+      await httpCommon.delete(`/v1/library/series/` + seriesId);
+      const index = this.series.findIndex((s: Series) => s.id === seriesId);
+      if (index !== -1) this.series.splice(index, 1);
+      console.log('END - deleteSeriesDb()');
+    },
+
+    //
+    //FILTER SERIES
+    //
+    async filterSeries(filters: any) {
+      console.log('filterSeries()', filters);
+      // Filtrowanie odbywa się po stronie klienta - nie pobieramy danych ponownie
+      // Dane są już załadowane w getSeriesFromDb()
+    },
+
     //-------------------------------------------------------CATEGORY
     //
     //GET CATEGORIES FROM DB

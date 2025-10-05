@@ -10,8 +10,11 @@
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
   import { FilterMatchMode } from '@primevue/core/api';
   import BookSmall from '@/components/library/BookSmall.vue';
-  import type { Book } from '@/types/Book';
+  import type { Book, UserBook } from '@/types/Book';
   import type { AxiosError } from 'axios';
+  import { useUserbooksStore } from '@/stores/userbooks';
+  import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue';
+  import NewBookDialog from '@/components/library/NewBookDialog.vue';
   // Typy dla DataTable events
   interface DataTablePageEvent {
     page: number;
@@ -19,6 +22,7 @@
     first: number;
   }
   const booksStore = useBooksStore();
+  const userbookStore = useUserbooksStore();
   const toast = useToast();
 
   // filters
@@ -98,6 +102,21 @@
   const isEditMode = ref<boolean>(false);
   const editingAuthor = ref<Author | null>(null);
 
+  // Userbook dialog variables
+  const showUserbookDialog = ref<boolean>(false);
+  const showAddNewBookDialog = ref<boolean>(false);
+  const tempIdBook = ref<number>(0);
+  const bookToAdd = ref<Book>({
+    id: 0,
+    series: null,
+    authors: [],
+    categories: [],
+    title: '',
+    description: '',
+    cover: '',
+    bookInSeriesNo: '',
+  });
+
   const addAuthor = () => {
     isEditMode.value = false;
     editingAuthor.value = null;
@@ -149,6 +168,49 @@
         detail: `Nie udało się ${isEditMode.value ? 'zaktualizować' : 'dodać'} autora: ` + lastName + ' ' + firstName,
         life: 3000,
       });
+    }
+  };
+
+  // Userbook methods
+  const addUserbook = (book: Book) => {
+    tempIdBook.value = book.id;
+    showUserbookDialog.value = true;
+  };
+
+  const addBook = (book: Book) => {
+    console.log('showAddNewBookDialog', book);
+    bookToAdd.value = book;
+    showAddNewBookDialog.value = true;
+  };
+
+  const submitAddUserbook = async (newUserbook: UserBook) => {
+    showUserbookDialog.value = false;
+    if (newUserbook) {
+      await userbookStore
+        .addUserbookDb(newUserbook)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
+            life: 3000,
+          });
+        })
+        .catch((error: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się dodać książki na półkę: ' + (error.response?.data as string) || error.message,
+            life: 3000,
+          });
+        });
+    }
+  };
+
+  const afterSavedBook = async () => {
+    showAddNewBookDialog.value = false;
+    if (selectedAuthor.value) {
+      await onRowSelect({ data: selectedAuthor.value });
     }
   };
 
@@ -227,6 +289,20 @@
           label="Usuń"
           @save="submitDelete"
           @cancel="showDeleteConfirmationDialog = false"
+        />
+
+        <AddEditUserBookDialog
+          v-model:visible="showUserbookDialog"
+          :id-book="tempIdBook"
+          @save="submitAddUserbook"
+          @cancel="showUserbookDialog = false"
+        />
+
+        <NewBookDialog
+          v-model:visible="showAddNewBookDialog"
+          :book-to-add="bookToAdd"
+          @save="afterSavedBook"
+          @cancel="showAddNewBookDialog = false"
         />
 
         <Panel class="my-3 mx-2 h-[calc(100vh-240px)] overflow-hidden">
@@ -319,7 +395,14 @@
       <!-- Books container -->
       <div class="w-2/3 h-[calc(100vh-240px)] overflow-y-auto p-4">
         <div v-if="selectedAuthor" class="flex flex-wrap gap-4">
-          <BookSmall v-for="book in authorBooks" :key="book.id" :book="book" />
+          <BookSmall
+            v-for="book in authorBooks"
+            :key="book.id"
+            :book="book"
+            @new-userbook="addUserbook"
+            @exist-userbook="addUserbook"
+            @new-book="addBook"
+          />
         </div>
         <div v-else class="flex items-center justify-center h-full text-lg text-gray-500">
           Wybierz autora, aby zobaczyć jego książki

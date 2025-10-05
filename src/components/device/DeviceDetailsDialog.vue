@@ -4,23 +4,13 @@
   import OfficeButton from '@/components/OfficeButton.vue';
 
   defineProps<{
-    visible: boolean;
     device: DeviceDto | null;
   }>();
 
-  const emit = defineEmits<{
-    (e: 'update:visible', value: boolean): void;
-  }>();
-
-  const closeDialog = () => {
-    emit('update:visible', false);
-  };
 </script>
 
 <template>
   <Dialog
-    :visible="visible"
-    @update:visible="val => emit('update:visible', val)"
     :header="`Szczegóły urządzenia: ${device?.name}`"
     :style="{ width: '70vw' }"
     :maximizable="true"
@@ -83,7 +73,7 @@
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <OfficeButton btn-type="office-regular" text="OK" icon="pi pi-check" icon-pos="left" @click="closeDialog" />
+        <OfficeButton btn-type="office-regular" text="OK" icon="pi pi-check" icon-pos="left" />
       </div>
     </template>
   </Dialog>

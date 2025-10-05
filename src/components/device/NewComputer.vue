@@ -13,7 +13,6 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'update:visible', value: boolean): void;
     (e: 'save'): void;
     (e: 'cancel'): void;
   }>();
@@ -57,7 +56,6 @@
   };
 
   const closeDialog = () => {
-    emit('update:visible', false);
     resetForm();
   };
 
@@ -181,12 +179,10 @@
 
 <template>
   <Dialog
-    :visible="visible"
     :modal="true"
     :style="{ width: '500px' }"
     :header="props.computer ? 'Edycja komputera' : 'Nowy komputer'"
     class="p-fluid"
-    @update:visible="value => emit('update:visible', value)"
     @hide="closeDialog"
   >
     <div class="flex flex-col gap-4 p-4">
