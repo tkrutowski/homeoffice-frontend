@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-  import AddDialog from '@/components/AddDialog.vue';
+  import AddEditSeriesDialog from '@/components/library/AddEditSeriesDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useBooksStore } from '@/stores/books';
-  import { computed, ref, onMounted, watch } from 'vue';
-  import type { Author } from '@/types/Book';
+  import { computed, ref, onMounted } from 'vue';
+  import type { Series } from '@/types/Book';
   import { useToast } from 'primevue/usetoast';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
   import { FilterMatchMode } from '@primevue/core/api';
@@ -15,12 +15,7 @@
   import { useUserbooksStore } from '@/stores/userbooks';
   import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue';
   import NewBookDialog from '@/components/library/NewBookDialog.vue';
-  // Typy dla DataTable events
-  interface DataTablePageEvent {
-    page: number;
-    rows: number;
-    first: number;
-  }
+
   const booksStore = useBooksStore();
   const userbookStore = useUserbooksStore();
   const toast = useToast();
@@ -34,51 +29,84 @@
   };
   initFilters();
 
-  const clearFilter = async () => {
+  const clearFilter = () => {
     initFilters();
-    await booksStore.filterAuthors(filters.value);
   };
 
-  // Load authors
-  booksStore.getAuthorsFromDbPage(0);
+  // Computed property for filtered series
+  const filteredSeries = computed(() => {
+    if (!filters.value.global.value) {
+      return booksStore.series;
+    }
 
-  const authorTemp = ref<Author>();
-  const authorStatistics = ref<Map<number, number>>(new Map());
-  const selectedAuthor = ref<Author | null>(null);
-  const authorBooks = ref<Book[]>([]);
+    const searchTerm = filters.value.global.value.toLowerCase();
+    return booksStore.series.filter(
+      (series: Series) =>
+        series.title.toLowerCase().includes(searchTerm) || series.description?.toLowerCase().includes(searchTerm)
+    );
+  });
 
-  const getCounter = (author: Author) => {
-    console.log('getCounter()', `${author.lastName} ${author.firstName}`);
-    return authorStatistics.value.get(author.id) || 0;
+  // Load series
+  booksStore.getSeriesFromDb();
+
+  const seriesTemp = ref<Series>();
+  const selectedSeries = ref<Series | null>(null);
+  const seriesBooks = ref<Book[]>([]);
+
+  // Funkcja do formatowania daty
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'Brak daty';
+    return new Date(date).toLocaleDateString('pl-PL');
+  };
+
+  // Funkcja do parsowania URL-i
+  const parseUrls = (urlString: string) => {
+    if (!urlString) return [];
+    return urlString.split(';;').filter(url => url.trim() !== '');
+  };
+
+  // Funkcja do określania logo na podstawie URL
+  const getLogoForUrl = (url: string): string | undefined => {
+    const lowerUrl = url.toLowerCase();
+
+    if (lowerUrl.includes('legimi')) {
+      return '/src/assets/images/legimi.png';
+    } else if (lowerUrl.includes('upolujebooka')) {
+      return '/src/assets/images/upolujebooka.png';
+    } else if (lowerUrl.includes('lubimyczytac')) {
+      return '/src/assets/images/lubimyczytac.png';
+    }
+
+    // Domyślna ikona dla innych URL-i
+    return undefined;
   };
 
   //
   //-------------------------------------------------DELETE -------------------------------------------------
   //
   const showDeleteConfirmationDialog = ref<boolean>(false);
-  const confirmDelete = (author: Author) => {
-    authorTemp.value = author;
+  const confirmDelete = (series: Series) => {
+    seriesTemp.value = series;
     showDeleteConfirmationDialog.value = true;
   };
   const deleteConfirmationMessage = computed(() => {
-    if (authorTemp.value)
-      return `Czy chcesz usunąć autora: <b>${authorTemp.value?.lastName} ${authorTemp.value?.firstName}</b>?`;
+    if (seriesTemp.value) return `Czy chcesz usunąć cykl: <b>${seriesTemp.value?.title}</b>?`;
     return 'No message';
   });
   const submitDelete = async () => {
     console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
-    if (authorTemp.value) {
+    if (seriesTemp.value) {
       await booksStore
-        .deleteAuthorDb(authorTemp.value.id)
+        .deleteSeriesDb(seriesTemp.value.id)
         .then(() => {
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail: 'Usunięto autora: ' + authorTemp.value?.lastName + ' ' + authorTemp.value?.firstName,
+            detail: 'Usunięto cykl: ' + seriesTemp.value?.title,
             life: 3000,
           });
-          authorTemp.value = undefined;
+          seriesTemp.value = undefined;
         })
         .catch((reason: AxiosError) => {
           console.log('submitDelete() error', reason);
@@ -88,7 +116,7 @@
             detail:
               reason?.response?.data && (reason.response.data as any).message
                 ? (reason.response.data as any).message
-                : 'Nie usunięto autora: ' + authorTemp.value?.lastName + ' ' + authorTemp.value?.firstName,
+                : 'Nie usunięto cyklu: ' + seriesTemp.value?.title,
             life: 5000,
           });
         });
@@ -100,7 +128,7 @@
   //
   const showAddDialog = ref<boolean>(false);
   const isEditMode = ref<boolean>(false);
-  const editingAuthor = ref<Author | null>(null);
+  const editingSeriesId = ref<number>(0);
 
   // Userbook dialog variables
   const showUserbookDialog = ref<boolean>(false);
@@ -117,47 +145,37 @@
     bookInSeriesNo: '',
   });
 
-  const addAuthor = () => {
+  const addSeries = () => {
     isEditMode.value = false;
-    editingAuthor.value = null;
+    editingSeriesId.value = 0;
     showAddDialog.value = true;
   };
 
-  const editAuthor = (item: Author) => {
+  const editSeries = (item: Series) => {
     isEditMode.value = true;
-    editingAuthor.value = { ...item };
+    editingSeriesId.value = item.id;
     showAddDialog.value = true;
   };
 
-  const dialogTitle = computed(() => {
-    return isEditMode.value ? 'Edytuj autora' : 'Dodaj autora';
-  });
-
-  const submitAddEdit = async (lastName: string, firstName: string) => {
-    console.log('submitAddEdit()', lastName, firstName);
+  const submitAddEdit = async (seriesData: Series) => {
+    console.log('submitAddEdit()', seriesData);
     showAddDialog.value = false;
-
-    const authorData: Author = {
-      id: isEditMode.value ? editingAuthor.value!.id : 0,
-      lastName,
-      firstName,
-    };
 
     try {
       if (isEditMode.value) {
-        await booksStore.updateAuthorDb(authorData);
+        await booksStore.updateSeriesDb(seriesData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
-          detail: 'Zaktualizowano autora: ' + lastName + ' ' + firstName,
+          detail: 'Zaktualizowano cykl: ' + seriesData.title,
           life: 3000,
         });
       } else {
-        await booksStore.addAuthorDb(authorData);
+        await booksStore.addSeriesDb(seriesData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
-          detail: 'Dodano autora: ' + lastName + ' ' + firstName,
+          detail: 'Dodano cykl: ' + seriesData.title,
           life: 3000,
         });
       }
@@ -165,7 +183,7 @@
       toast.add({
         severity: 'error',
         summary: reason?.message || 'Błąd',
-        detail: `Nie udało się ${isEditMode.value ? 'zaktualizować' : 'dodać'} autora: ` + lastName + ' ' + firstName,
+        detail: `Nie udało się ${isEditMode.value ? 'zaktualizować' : 'dodać'} cyklu: ` + seriesData.title,
         life: 3000,
       });
     }
@@ -209,61 +227,24 @@
 
   const afterSavedBook = async () => {
     showAddNewBookDialog.value = false;
-    if (selectedAuthor.value) {
-      await onRowSelect({ data: selectedAuthor.value });
+    if (selectedSeries.value) {
+      await onRowSelect({ data: selectedSeries.value });
     }
   };
 
-  const handlePageChange = async (event: DataTablePageEvent) => {
-    console.log('handlePageChange()', event);
-    localStorage.setItem('rowsPerPageAuthors', event.rows.toString());
-    booksStore.authorsRowsPerPage = event.rows;
-    await booksStore.loadAuthorsPage(event.page);
-  };
-
-  const handleSort = async (event: any) => {
-    console.log('handleSort()', event);
-    await booksStore.sortAuthors(event.sortField, event.sortOrder);
-  };
-
-  const onRowSelect = async (event: { data: Author }) => {
+  const onRowSelect = async (event: { data: Series }) => {
     console.log('onRowSelect()', event.data);
-    selectedAuthor.value = event.data;
-    authorBooks.value = await booksStore.getAuthorBooks(event.data.id);
+    selectedSeries.value = event.data;
+    seriesBooks.value = await booksStore.getBooksInSeriesFromDb(event.data.id);
   };
-
-  const handleFilter = async () => {
-    console.log('handleFilter()', filters.value);
-    await booksStore.filterAuthors(filters.value);
-  };
-
-  // Obsługa wyszukiwania globalnego z debounce
-  let searchTimeout: NodeJS.Timeout | null = null;
-
-  watch(
-    () => filters.value.global.value,
-    newValue => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-
-      // Search when value has more than 3 letters or is empty
-      if (!newValue || newValue.length >= 3) {
-        searchTimeout = setTimeout(async () => {
-          console.log('Global search:', newValue);
-          await booksStore.filterAuthors(filters.value);
-        }, 500); // 500ms debounce
-      }
-    }
-  );
 
   //------------------------------------MOUNTED------------------------------
   onMounted(async () => {
-    console.log('onMounted AuthorsView');
+    console.log('onMounted SeriesView');
     try {
-      authorStatistics.value = await booksStore.getAuthorStatistics();
+      await booksStore.getSeriesFromDb();
     } catch (error) {
-      console.error('Błąd podczas pobierania statystyk autorów:', error);
+      console.error('Błąd podczas pobierania cykli:', error);
     }
   });
 </script>
@@ -273,13 +254,10 @@
     <TheMenuLibrary />
     <div class="flex">
       <div class="w-1/3">
-        <AddDialog
+        <AddEditSeriesDialog
           v-model:visible="showAddDialog"
-          :msg="dialogTitle"
-          label1="Nazwisko"
-          label2="Imię"
-          :value1="editingAuthor?.lastName || ''"
-          :value2="editingAuthor?.firstName || ''"
+          :id-series="editingSeriesId"
+          :is-edit="isEditMode"
           @save="submitAddEdit"
           @cancel="showAddDialog = false"
         />
@@ -309,32 +287,21 @@
           <DataTable
             scrollable
             scrollHeight="calc(100vh - 370px)"
-            :value="booksStore.authors"
+            :value="filteredSeries"
             removable-sort
-            paginator
-            lazy
-            :sort-mode="'single'"
             v-model:filters="filters"
             filter-display="menu"
-            :global-filter-fields="['lastName', 'firstName']"
-            :rows="booksStore.authorsRowsPerPage"
-            :total-records="booksStore.totalAuthors"
-            :rows-per-page-options="[5, 10, 20, 50]"
+            :global-filter-fields="['title', 'description']"
             table-style="width: 100%"
             row-hover
             size="small"
-            @page="handlePageChange"
-            @sort="handleSort"
-            @filter="handleFilter"
             selectionMode="single"
-            v-model:selection="selectedAuthor"
+            v-model:selection="selectedSeries"
             @row-select="onRowSelect"
-            paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            current-page-report-template="Od {first} do {last} (Wszystkich autorów: {totalRecords})"
           >
             <template #header>
               <div class="flex justify-between">
-                <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nowego autora" @click="addAuthor()" />
+                <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nowy cykl" @click="addSeries()" />
                 <div class="flex gap-4">
                   <IconField icon-position="left">
                     <InputIcon>
@@ -351,26 +318,49 @@
                     @click="clearFilter()"
                   />
                 </div>
-                <div v-if="booksStore.loadingAuthors">
+                <div v-if="booksStore.loadingSeries">
                   <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
                 </div>
               </div>
             </template>
 
             <template #empty>
-              <p v-if="!booksStore.loadingAuthors" class="text-red-500">Nie znaleziono autorów...</p>
+              <p v-if="!booksStore.loadingSeries" class="text-red-500">Nie znaleziono cykli...</p>
             </template>
 
-            <!--      LAST NAME        -->
-            <Column field="lastName" header="Nazwisko" :sortable="true"></Column>
-
-            <!--      FIRST NAME     -->
-            <Column field="firstName" header="Imię" :sortable="true"></Column>
-
-            <!--  BOOK COUNT  -->
-            <Column field="bookCount" header="Ilość książek" :sortable="true" style="max-width: 120px">
+            <!--      TITLE        -->
+            <Column field="title" header="Tytuł" :sortable="true">
               <template #body="slotProps">
-                {{ getCounter(slotProps.data) }}
+                <span :title="slotProps.data.description" class="cursor-help">
+                  {{ slotProps.data.title }}
+                </span>
+              </template>
+            </Column>
+
+            <!--      URL     -->
+            <Column field="url" header="Linki" :sortable="true">
+              <template #body="slotProps">
+                <div class="flex gap-1">
+                  <a
+                    v-for="(url, index) in parseUrls(slotProps.data.url)"
+                    :key="index"
+                    :href="url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :title="url"
+                    class="text-blue-600 hover:text-blue-800"
+                  >
+                    <img v-if="getLogoForUrl(url)" :src="getLogoForUrl(url)" :alt="url" class="w-5 h-5" />
+                    <i v-else class="pi pi-external-link text-sm"></i>
+                  </a>
+                </div>
+              </template>
+            </Column>
+
+            <!--  CHECK DATE  -->
+            <Column field="checkDate" header="Data sprawdzenia" :sortable="true" style="max-width: 140px">
+              <template #body="slotProps">
+                {{ formatDate(slotProps.data.checkDate) }}
               </template>
             </Column>
 
@@ -378,9 +368,9 @@
             <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
               <template #body="slotProps">
                 <div class="flex flex-row justify-between">
-                  <OfficeIconButton title="Edytuj autora" icon="pi pi-file-edit" @click="editAuthor(slotProps.data)" />
+                  <OfficeIconButton title="Edytuj cykl" icon="pi pi-file-edit" @click="editSeries(slotProps.data)" />
                   <OfficeIconButton
-                    title="Usuń autora"
+                    title="Usuń cykl"
                     icon="pi pi-trash"
                     severity="danger"
                     @click="confirmDelete(slotProps.data)"
@@ -394,9 +384,9 @@
 
       <!-- Books container -->
       <div class="w-2/3 h-[calc(100vh-240px)] overflow-y-auto p-4">
-        <div v-if="selectedAuthor" class="flex flex-wrap gap-4">
+        <div v-if="selectedSeries" class="flex flex-wrap gap-4">
           <BookSmall
-            v-for="book in authorBooks"
+            v-for="book in seriesBooks"
             :key="book.id"
             :book="book"
             @new-userbook="addUserbook"
@@ -405,7 +395,7 @@
           />
         </div>
         <div v-else class="flex items-center justify-center h-full text-lg text-gray-500">
-          Wybierz autora, aby zobaczyć jego książki
+          Wybierz cykl, aby zobaczyć książki z tego cyklu
         </div>
       </div>
     </div>

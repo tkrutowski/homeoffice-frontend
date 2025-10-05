@@ -28,7 +28,7 @@
           :rowsPerPageOptions="[5, 10, 20, 50]"
           responsiveLayout="scroll"
         >
-          <Column field="name" header="Nazwa pliku" sortable>
+          <Column field="name" header="Nazwa pliku" :sortable="true">
             <template #body="slotProps">
               <div class="flex items-center">
                 <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2"></i>
@@ -38,7 +38,7 @@
               </div>
             </template>
           </Column>
-          <Column field="type" header="Typ" sortable style="width: 150px">
+          <Column field="type" header="Typ" :sortable="true" style="width: 150px">
             <template #body="slotProps">
               <Tag
                 :value="FileService.getFileTypeLabel(slotProps.data.type)"
@@ -46,12 +46,12 @@
               />
             </template>
           </Column>
-          <Column field="size" header="Rozmiar" sortable style="width: 150px">
+          <Column field="size" header="Rozmiar" :sortable="true" style="width: 150px">
             <template #body="slotProps">
               {{ FileService.formatFileSize(slotProps.data.size) }}
             </template>
           </Column>
-          <Column field="uploadDate" header="Data dodania" sortable style="width: 200px">
+          <Column field="uploadDate" header="Data dodania" :sortable="true" style="width: 200px">
             <template #body="slotProps">
               {{ FileService.formatDate(slotProps.data.uploadDate) }}
             </template>

@@ -6,6 +6,7 @@
   import type { Computer } from '@/types/Computer';
   import { useComputerStore } from '@/stores/computers';
   import type { AxiosError } from 'axios';
+  import OfficeButton from "@/components/OfficeButton.vue";
 
   const props = defineProps<{
     visible: boolean;
