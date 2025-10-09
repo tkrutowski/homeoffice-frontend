@@ -16,6 +16,7 @@ import PaymentsView from '@/views/finance/PaymentsView.vue';
 import PaymentFeeView from '@/views/finance/PaymentFeeView.vue';
 import PaymentLoanView from '@/views/finance/PaymentLoanView.vue';
 import PurchasesCurrentView from '@/views/finance/PurchasesCurrentView.vue';
+import PurchasesView from '@/views/finance/PurchasesView.vue';
 import PurchaseView from '@/views/finance/PurchaseView.vue';
 import CardsView from '@/views/finance/CardsView.vue';
 import CardView from '@/views/finance/CardView.vue';
@@ -207,6 +208,12 @@ const routes = [
     props: true,
   },
   //---------------------------------------------------------------PURCHASE
+  {
+    path: '/finance/purchase/all',
+    name: 'Purchases',
+    component: PurchasesView,
+    props: true,
+  },
   {
     path: '/finance/purchase/current',
     name: 'PurchasesCurrent',

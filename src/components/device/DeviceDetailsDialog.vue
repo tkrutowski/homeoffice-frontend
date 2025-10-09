@@ -6,7 +6,6 @@
   defineProps<{
     device: DeviceDto | null;
   }>();
-
 </script>
 
 <template>

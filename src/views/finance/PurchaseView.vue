@@ -189,7 +189,33 @@
       showError('Uzupełnij brakujące elementy');
     } else {
       btnSaveDisabled.value = true;
+      btnShowBusy.value = true;
       console.log('editPurchase()');
+      await purchaseStore
+        .updatePurchaseDb(purchase.value)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zaktualizowano zakup: ' + purchase.value?.name,
+            life: 3000,
+          });
+          btnShowBusy.value = false;
+          btnSaveDisabled.value = false;
+          setTimeout(() => {
+            router.push({ name: 'Purchases' });
+          }, 3000);
+        })
+        .catch((reason: AxiosError) => {
+          btnShowBusy.value = false;
+          btnSaveDisabled.value = false;
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas aktualizacji zakupu: ' + purchase.value?.name,
+            life: 3000,
+          });
+        });
     }
   }
 
@@ -213,7 +239,7 @@
       console.log('onMounted NEW PURCHASE');
     } else {
       console.log('onMounted EDIT PURCHASE');
-      const purchaseId = Number(route.params.feeId as string);
+      const purchaseId = Number(route.params.purchaseId as string);
       purchaseStore
         .getPurchaseFromDb(purchaseId)
         .then((data: Purchase | null) => {
@@ -318,9 +344,14 @@
       <Panel>
         <template #header>
           <OfficeIconButton
-            title="Powrót do listy zakupów"
+            title="Powrót do listy aktualnych zakupów"
             icon="pi pi-fw pi-list"
             @click="() => router.push({ name: 'PurchasesCurrent' })"
+          />
+          <OfficeIconButton
+            title="Powrót do listy wszystkich zakupów"
+            icon="pi pi-fw pi-list"
+            @click="() => router.push({ name: 'Purchases' })"
           />
           <div class="w-full flex justify-center">
             <p class="text-2xl">

@@ -47,11 +47,9 @@
       label: 'Tablica',
       icon: 'pi pi-fw pi-clipboard',
       class: `${activeMenu.value === 'dashboard' ? 'active' : ''}`,
-      // disabled: !authorizationStore.hasAccessLibrary,
-      // to: { name: "Home" },
-      // command: () => {
-      //   router.push({ name: "LibraryHome" });
-      // },
+      command: () => {
+        router.push({ name: 'FinanceHome' });
+      },
     },
     {
       label: 'Kredyty',
@@ -142,6 +140,18 @@
               name: 'Purchase',
               params: { isEdit: 'false', purchaseId: 0 },
             });
+          },
+        },
+        {
+          label: 'Lista zakupów',
+          icon: 'pi pi-fw pi-list',
+          command: () => {
+            if (window.location.href.includes(router.resolve({ name: 'Purchases' }).href)) {
+              const redirect = JSON.stringify({ name: 'Purchases' });
+              router.push({ path: '/refresh', query: { redirect: redirect } });
+            } else {
+              router.push({ name: 'Purchases' });
+            }
           },
         },
         {
