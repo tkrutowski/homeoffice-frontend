@@ -125,15 +125,45 @@ export const usePurchasesStore = defineStore('purchase', {
       // const paymentDeadline = res.paymentDeadline && res.paymentDeadline instanceof Date ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01'
       const paymentDeadline = res.paymentDeadline ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01';
 
-      if (this.purchasesCurrent.has(paymentDeadline)) {
-        const purchaseArray = this.purchasesCurrent.get(paymentDeadline);
-        if (purchaseArray) {
-          purchaseArray.push(res);
-          this.purchasesCurrent.set(paymentDeadline, purchaseArray);
-        }
+      // Logika dodawania zakupu do purchasesCurrent
+      let shouldAddToCurrent = false;
+
+      // Sprawdzamy czy purchasesCurrent jest puste
+      if (this.purchasesCurrent.size === 0) {
+        shouldAddToCurrent = true;
       } else {
-        this.purchasesCurrent.set(paymentDeadline, new Array(res));
+        // Sprawdzamy czy purchasesCurrent zawiera zakupy tego samego użytkownika
+        let existingUserId: number | null = null;
+        
+        // Pobieramy pierwszego użytkownika z purchasesCurrent
+        for (const [, purchases] of this.purchasesCurrent.entries()) {
+          if (purchases.length > 0) {
+            existingUserId = purchases[0].idUser;
+            break;
+          }
+        }
+
+        // Jeśli znaleziono istniejące zakupy i użytkownik się zgadza - dodaj
+        if (existingUserId !== null && existingUserId === res.idUser) {
+          shouldAddToCurrent = true;
+        }
       }
+
+      if (shouldAddToCurrent) {
+        if (this.purchasesCurrent.has(paymentDeadline)) {
+          const purchaseArray = this.purchasesCurrent.get(paymentDeadline);
+          if (purchaseArray) {
+            purchaseArray.push(res);
+            this.purchasesCurrent.set(paymentDeadline, purchaseArray);
+          }
+        } else {
+          this.purchasesCurrent.set(paymentDeadline, new Array(res));
+        }
+        console.log('Zakup dodany do purchasesCurrent dla użytkownika:', res.idUser);
+      } else {
+        console.log('Zakup NIE został dodany do purchasesCurrent (inny użytkownik)');
+      }
+      
       console.log('END - addPurchaseDb()');
     },
     //
@@ -250,7 +280,6 @@ export const usePurchasesStore = defineStore('purchase', {
       if (this.filters.paymentStatus?.value) {
         params.append('status', this.filters.paymentStatus.value);
       }
-
       const response = await httpCommon.get(`/v1/finance/purchase/page?${params.toString()}`);
       console.log('getPurchasesFromDb() - Ilość[]: ' + response.data.content.length);
       this.purchases = response.data.content;
