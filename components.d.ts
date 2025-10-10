@@ -81,7 +81,6 @@ declare module 'vue' {
     TheMenuFinance: typeof import('./src/components/finance/TheMenuFinance.vue')['default']
     TheMenuLibrary: typeof import('./src/components/library/TheMenuLibrary.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
-    Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
     UserBookLarge: typeof import('./src/components/library/UserBookLarge.vue')['default']
     UserBookSmall: typeof import('./src/components/library/UserBookSmall.vue')['default']

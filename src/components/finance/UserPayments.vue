@@ -213,10 +213,7 @@
 
   const changeStatusConfirmationMessage = computed(() => {
     if (selectedPaymentTemp.value) {
-      const status =
-        selectedPaymentTemp.value.paymentType === 'LOAN'
-          ? selectedPaymentTemp.value.loanStatus
-          : selectedPaymentTemp.value.feeStatus;
+      const status = selectedPaymentTemp.value.paymentStatus;
       return `Czy chcesz zmienić status ${selectedPaymentTemp.value.paymentType === 'LOAN' ? 'kredytu' : 'opłaty'}: <b>${selectedPaymentTemp.value.name}</b> na <b>${
         status === PaymentStatus.PAID ? 'Do spłaty' : 'Spłacony'
       }</b>?`;
@@ -227,13 +224,7 @@
   const submitChangeStatus = async () => {
     if (selectedPaymentTemp.value) {
       const newStatus =
-        selectedPaymentTemp.value.paymentType === 'LOAN'
-          ? selectedPaymentTemp.value.loanStatus === PaymentStatus.PAID
-            ? PaymentStatus.TO_PAY
-            : PaymentStatus.PAID
-          : selectedPaymentTemp.value.feeStatus === PaymentStatus.PAID
-            ? PaymentStatus.TO_PAY
-            : PaymentStatus.PAID;
+        selectedPaymentTemp.value.paymentStatus === PaymentStatus.PAID ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
 
       try {
         if (selectedPaymentTemp.value.paymentType === 'LOAN') {
@@ -241,6 +232,18 @@
         } else {
           await feeStore.updateFeeStatusDb(selectedPaymentTemp.value.id, newStatus);
         }
+
+        // Aktualizacja statusu w paymentStore
+        paymentStore.updatePaymentStatus(
+          selectedPaymentTemp.value.id,
+          props.idUser,
+          selectedPaymentTemp.value.paymentType,
+          newStatus
+        );
+
+        // Odświeżenie danych z paymentStore aby mieć pewność synchronizacji
+        await nextTick();
+        payments.value = [...paymentStore.getPaymentsByUserID(props.idUser?.toString())];
 
         toast.add({
           severity: 'success',

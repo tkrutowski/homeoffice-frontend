@@ -9,8 +9,7 @@ export interface Payment {
   name: string;
   paymentDay: number;
   paymentType: 'LOAN' | 'FEE';
-  loanStatus?: PaymentStatus;
-  feeStatus?: PaymentStatus;
+  paymentStatus: PaymentStatus;
   installments: Installment[];
 }
 

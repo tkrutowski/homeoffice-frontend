@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import type { Payment, PaymentType } from '@/types/Payment';
+import { PaymentStatus } from '@/types/Payment';
 import type { Fee } from '@/types/Fee';
 import type { Loan } from '@/types/Loan';
 import httpCommon from '@/config/http-common';
@@ -12,6 +13,7 @@ export const usePaymentStore = defineStore('payment', {
     loadingPayments: false,
     paymentDetails: String,
     paymentSelectedYear: new Date().getFullYear(),
+    paymentSelectedFilter: 'ALL' as string,
 
     payments: new Map<string, Payment[]>(),
   }),
@@ -56,6 +58,39 @@ export const usePaymentStore = defineStore('payment', {
       }
     },
     //
+    //UPDATE PAYMENT STATUS
+    //
+    updatePaymentStatus(paymentId: number, userId: number, type: PaymentType, status: PaymentStatus) {
+      console.log('START - updatePaymentStatus() ');
+      const idUser = userId.toString();
+      if (this.payments) {
+        const userPayments = this.payments.get(idUser);
+        if (userPayments) {
+          const paymentIndex = userPayments.findIndex(
+            (payment: Payment) => payment.id === paymentId && payment.paymentType === type
+          );
+
+          if (paymentIndex !== -1) {
+            const payment = userPayments[paymentIndex];
+
+            // Aktualizacja statusu
+            payment.paymentStatus = status;
+
+            // Jeśli filtr jest ustawiony i nowy status nie pasuje do filtru, usuń płatność z listy
+            const shouldRemove =
+              (this.paymentSelectedFilter === 'TO_PAY' && status === PaymentStatus.PAID) ||
+              (this.paymentSelectedFilter === 'PAID' && status === PaymentStatus.TO_PAY);
+
+            if (shouldRemove) {
+              userPayments.splice(paymentIndex, 1);
+              console.log('Payment removed from list due to filter mismatch');
+            }
+          }
+        }
+        console.log('END - updatePaymentStatus() ');
+      }
+    },
+    //
     //DELETE PAYMENT
     //
     deletePayment(payment: Fee | Loan, type: PaymentType | string) {
@@ -78,12 +113,13 @@ export const usePaymentStore = defineStore('payment', {
     async getPaymentsFromDb(paymentStatus: string): Promise<void> {
       console.log('START - getPaymentsFromDb(' + paymentStatus + ', ' + this.paymentSelectedYear + ')');
       this.loadingPayments = true;
+      this.paymentSelectedFilter = paymentStatus;
 
       // if (this.payments.size === 0) {
       const response = await httpCommon.get(
         `/v1/finance/payment?status=` + paymentStatus + '&date=' + this.paymentSelectedYear
       );
-      console.log('getPaymentsFromDb() - Ilosc[]: ' + response.data);
+      console.log('getPaymentsFromDb() - Ilosc[]: ' + response.data.length);
       const paymentsTemp = new Map(Object.entries(response.data));
       this.payments = paymentsTemp as Map<string, Payment[]>;
       this.loadingPayments = false;
