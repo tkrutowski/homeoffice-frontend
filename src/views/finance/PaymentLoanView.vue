@@ -230,7 +230,7 @@
         <Fieldset class="" legend="Ogólne informacje">
           <p class="mb-1"><small>Nazwa banku:</small> {{ loan?.bank?.name }}</p>
           <p class="mb-1"><small>Nr kredytu:</small> {{ loan?.loanNumber }}</p>
-          <p class="mb-1"><small>Z dnia:</small> {{ loan?.date }}</p>
+          <p class="mb-1"><small>Z dnia:</small> {{ UtilsService.formatDateToString(loan?.date ?? undefined) }}</p>
           <p class="mb-1"><small>Data pierwszej raty:</small> {{ loan?.firstPaymentDate }}</p>
           <p class="mb-1"><small>Termin całkowitej spłaty:</small> {{ countDeadLine }}</p>
           <p class="mb-5"><small>Nr konta:</small> {{ loan?.accountNumber }}</p>
@@ -367,16 +367,16 @@
     max-width: 1200px;
   }
 
-  .p-datatable >>> .p-datatable-column-header-content {
+  .p-datatable :deep(.p-datatable-column-header-content) {
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .p-datatable >>> .p-datatable-tbody > tr > td {
+  .p-datatable :deep(.p-datatable-tbody > tr > td) {
     text-align: center;
-    //border: 1px solid black;
-    //border-width: 0 1px 1px 0;
-    //padding: 0;
+    /* border: 1px solid black; */
+    /* border-width: 0 1px 1px 0; */
+    /* padding: 0; */
   }
 </style>

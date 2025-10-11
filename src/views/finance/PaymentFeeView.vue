@@ -220,7 +220,7 @@
         <Fieldset class="" legend="Ogólne informacje">
           <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm?.name }}</p>
           <p class="mb-1"><small>Nr umowy:</small> {{ fee?.feeNumber }}</p>
-          <p class="mb-1"><small>Z dnia:</small> {{ fee?.date }}</p>
+          <p class="mb-1"><small>Z dnia:</small> {{ UtilsService.formatDateToString(fee?.date ?? undefined) }}</p>
           <p class="mb-1"><small>Data pierwszej opłaty:</small> {{ fee?.firstPaymentDate }}</p>
           <p class="mb-1"><small>Termin całkowitej spłaty:</small> {{ countDeadLine }}</p>
           <p class="mb-5"><small>Nr konta:</small> {{ fee?.accountNumber }}</p>
@@ -327,7 +327,7 @@
     max-width: 1000px;
   }
 
-  .p-datatable >>> .p-datatable-column-header-content {
+  .p-datatable :deep(.p-datatable-column-header-content) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -337,10 +337,10 @@
     color: #dc3545;
   }
 
-  .p-datatable >>> .p-datatable-tbody > tr > td {
+  .p-datatable :deep(.p-datatable-tbody > tr > td) {
     text-align: center;
-    //border: 1px solid black;
-    //border-width: 0 1px 1px 0;
-    //padding: 0;
+    /* border: 1px solid black; */
+    /* border-width: 0 1px 1px 0; */
+    /* padding: 0; */
   }
 </style>

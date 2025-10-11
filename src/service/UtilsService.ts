@@ -20,6 +20,7 @@ export const UtilsService = {
   },
 
   formatDateToString(value: Date | string | undefined): string {
+    // console.log('formatDateToString', value);
     if (value) {
       const date = moment(value).format('YYYY-MM-DD');
       return date === '0001-01-01' ? '' : date;
