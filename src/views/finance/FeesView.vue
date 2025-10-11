@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, type DefineComponent, ref } from 'vue';
-  import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
+  import { FilterMatchMode } from '@primevue/core/api';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
 
@@ -18,7 +18,6 @@
   import moment from 'moment';
   import type { AxiosError } from 'axios';
   import type { DataTablePageEvent } from 'primevue/datatable';
-  import type { LoanInstallment } from '@/types/Loan.ts';
 
   const toast = useToast();
   const feeStore = useFeeStore();
@@ -30,7 +29,7 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS }, //nie dziala z IN
+      'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
       date: {
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
       },
@@ -40,8 +39,9 @@
     };
   };
   initFilters();
-  const clearFilter = () => {
+  const clearFilter = async () => {
     initFilters();
+    await feeStore.filterFees(filters.value);
   };
   const firmFilter = computed(() => {
     return [...new Set(feeStore.fees.filter((fee: Fee) => fee.firm).map((fee: Fee) => fee.firm?.name ?? ''))].sort(
@@ -54,7 +54,6 @@
 
   const expandedRows = ref([]);
   const feeTemp = ref<Fee | null>(null);
-  feeStore.getFees('ALL');
   const calculatePlannedCost = (installments: FeeInstallment[]): number => {
     return installments
       .map(installment => installment.installmentAmountToPay)
@@ -71,28 +70,34 @@
   //
   //--------------------------------DISPLAY FILTER
   //
-  const filter = ref<StatusType>('ALL');
-  const setFilter = (selectedFilter: StatusType) => {
-    filter.value = selectedFilter;
-    localStorage.setItem('selectedFilterFees', selectedFilter);
-  };
+  // Initialize filter from localStorage or default to 'ALL'
+  const savedFilter = localStorage.getItem('selectedFilterFees') as StatusType | null;
+  const filter = ref<StatusType>(savedFilter || 'ALL');
 
-  const savedFilter = localStorage.getItem('selectedFilterFees');
-  if (savedFilter) {
-    filter.value = savedFilter as StatusType;
+  // Apply saved filter to filters object on initialization
+  if (savedFilter && (savedFilter === 'TO_PAY' || savedFilter === 'PAID')) {
+    filters.value.feeStatus = { value: savedFilter, matchMode: FilterMatchMode.EQUALS };
   }
 
-  const filteredData = computed(() => {
-    switch (filter.value) {
-      case 'TO_PAY':
-        return feeStore.getFeesToPay;
-      case 'PAID':
-        return feeStore.getFeesPaid;
-      case 'ALL':
-      default:
-        return feeStore.fees;
+  const setFilter = async (selectedFilter: StatusType) => {
+    filter.value = selectedFilter;
+    localStorage.setItem('selectedFilterFees', selectedFilter);
+
+    // Add status filter to filters
+    if (selectedFilter === 'TO_PAY' || selectedFilter === 'PAID') {
+      filters.value.feeStatus = { value: selectedFilter, matchMode: FilterMatchMode.EQUALS };
+    } else {
+      delete filters.value.feeStatus;
     }
-  });
+
+    await feeStore.filterFees(filters.value);
+  };
+
+  // Load initial data
+  if (feeStore.fees.length === 0 && !feeStore.loadingFees) {
+    feeStore.filterFees(filters.value);
+  }
+  feeStore.getFeesSumToPayFromDb();
 
   //
   //-------------SELECTED FEES
@@ -112,14 +117,15 @@
 
   const dataTableRef = ref<DefineComponent | null>(null);
   const filteredFeeAmount = computed(() => {
-    const processedData = dataTableRef.value?.processedData;
     let sum = 0;
-    processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
-      const installmentSum = loan.installmentList
-        .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
-        .map(value => value.installmentAmountToPay)
-        .reduce((acc, currentValue) => acc + currentValue, 0);
-      sum += installmentSum;
+    feeStore.fees.forEach((fee: Fee) => {
+      if (fee.feeStatus === PaymentStatus.TO_PAY) {
+        const installmentSum = fee.installmentList
+          .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
+          .map(value => value.installmentAmountToPay)
+          .reduce((acc, currentValue) => acc + currentValue, 0);
+        sum += installmentSum;
+      }
     });
     return sum;
   });
@@ -229,9 +235,41 @@
     });
   };
 
-  const handleRowsPerPageChange = (event: DataTablePageEvent) => {
-    localStorage.setItem('rowsPerPageLoans', event.rows.toString());
+  const handlePageChange = async (event: DataTablePageEvent) => {
+    console.log('handlePageChange()', event);
+    await feeStore.loadPage(event.page, event.rows);
   };
+
+  const handleSort = async (event: any) => {
+    console.log('handleSort()', event);
+    await feeStore.sortFees(event.sortField, event.sortOrder);
+  };
+
+  const handleFilter = async () => {
+    console.log('handleFilter()', filters.value);
+    await feeStore.filterFees(filters.value);
+  };
+
+  // Obsługa wyszukiwania globalnego z debounce
+  import { watch } from 'vue';
+  let searchTimeout: NodeJS.Timeout | null = null;
+
+  watch(
+    () => filters.value.global.value,
+    newValue => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Search when value has more than 3 letters or is empty
+      if (!newValue || newValue.length >= 3) {
+        searchTimeout = setTimeout(async () => {
+          console.log('Global search:', newValue);
+          await feeStore.filterFees(filters.value);
+        }, 500); // 500ms debounce
+      }
+    }
+  );
 </script>
 <template>
   <TheMenuFinance />
@@ -255,22 +293,27 @@
       ref="dataTableRef"
       v-model:expandedRows="expandedRows"
       v-model:filters="filters"
-      :value="filteredData"
+      :value="feeStore.fees"
       v-model:selection="selectedFees"
       selectionMode="multiple"
       metaKeySelection
       removable-sort
       paginator
+      lazy
+      :sort-mode="'single'"
       :rows="feeStore.rowsPerPage"
+      :total-records="feeStore.totalFees"
       :rows-per-page-options="[5, 10, 20, 50]"
       table-style="min-width: 50rem"
       filter-display="menu"
       :global-filter-fields="['name', 'firm.name', 'date']"
-      sort-field="date"
-      :sort-order="-1"
       row-hover
       size="small"
-      @page="handleRowsPerPageChange"
+      @page="handlePageChange"
+      @sort="handleSort"
+      @filter="handleFilter"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      current-page-report-template="Od {first} do {last} (Wszystkich opłat: {totalRecords})"
     >
       <template #header>
         <div class="flex justify-between">
@@ -313,14 +356,30 @@
       </Column>
 
       <!--   FIRM   -->
-      <Column field="firm.name" header="Nazwa firmy" sortable>
+      <Column
+        field="firm.name"
+        header="Nazwa firmy"
+        :sortable="true"
+        filter-field="firm.name"
+        :show-filter-match-modes="false"
+      >
+        <template #body="{ data }">
+          {{ data.firm.name }}
+        </template>
         <template #filter="{ filterModel }">
           <Select v-model="filterModel.value" :options="firmFilter" placeholder="Wybierz..." class="p-column-filter" />
         </template>
       </Column>
 
       <!--DATA-->
-      <Column field="date" header="Data" :sortable="true" data-type="date" :show-filter-match-modes="true">
+      <Column
+        field="date"
+        header="Data"
+        :sortable="true"
+        data-type="date"
+        filter-field="date"
+        :show-filter-match-modes="true"
+      >
         <template #body="{ data }">
           {{ formatDate(data.date) }}
         </template>
@@ -330,7 +389,15 @@
       </Column>
 
       <!--AMOUNT-->
-      <Column field="amount" header="Kwota" style="min-width: 120px" data-type="numeric" filter-field="amount">
+      <Column
+        field="amount"
+        header="Kwota"
+        style="min-width: 120px"
+        data-type="numeric"
+        filter-field="amount"
+        :show-filter-match-modes="true"
+        :show-filter-operator="true"
+      >
         <template #body="slotProps">
           {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
         </template>
@@ -472,7 +539,7 @@
         title="Odświerz listę opłat"
         :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
         class="mr-2"
-        @click="feeStore.getFeesFromDb('ALL', true)"
+        @click="feeStore.refreshFees()"
       />
     </template>
 

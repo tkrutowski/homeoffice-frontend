@@ -16,6 +16,11 @@ export const useFeeStore = defineStore('fee', {
     feeFrequencyTypes: [] as FeeFrequency[],
 
     fees: [] as Fee[],
+    totalFees: 0,
+    currentPage: 0,
+    sortField: 'date',
+    sortOrder: -1, // 1 = ASC, -1 = DESC - domyślnie sortujemy po dacie malejąco
+    filters: {} as any,
   }),
 
   //getters = computed
@@ -47,19 +52,55 @@ export const useFeeStore = defineStore('fee', {
     //
     //REFRESH FEES
     //
-    async refreshLoans() {
-      await this.getFeesFromDb('ALL', true);
+    async refreshFees() {
+      await this.getFeesFromDb(this.currentPage);
+      await this.getFeesSumToPayFromDb();
+    },
+    //
+    //LOAD PAGE
+    //
+    async loadPage(page: number, rows?: number) {
+      if (rows !== undefined) {
+        this.rowsPerPage = rows;
+        localStorage.setItem('rowsPerPageFees', rows.toString());
+      }
+      await this.getFeesFromDb(page);
+    },
+    //
+    //SORT FEES
+    //
+    async sortFees(sortField: string, sortOrder: number) {
+      console.log('sortFees()', sortField, sortOrder);
+      this.sortField = sortField;
+      this.sortOrder = sortOrder;
+      await this.loadPage(0); // Reset to first page after sort
+    },
+    //
+    //FILTER FEES
+    //
+    async filterFees(filters: any) {
+      console.log('filterFees()', filters);
+      this.filters = filters;
+      await this.loadPage(0); // Reset to first page after filter
     },
     //
     //GET FEES FROM DB BY PAYMENT_STATUS
     //
     async getFees(status: StatusType) {
       console.log('START - getFees(' + status + ')');
-
       if (this.fees.length === 0) {
-        await this.getFeesFromDb('ALL', true);
+        const filters: any = {
+          global: { value: null, matchMode: 'contains' },
+        };
+
+        if (status === 'TO_PAY' || status === 'PAID') {
+          filters.feeStatus = { value: status, matchMode: 'equals' };
+        }
+
+        await this.filterFees(filters);
       }
       console.log('END - getFees(' + status + ')');
+
       switch (status) {
         case 'TO_PAY':
           return this.fees.filter((item: Fee) => item.feeStatus === PaymentStatus.TO_PAY);
@@ -75,19 +116,84 @@ export const useFeeStore = defineStore('fee', {
     },
     //----------------------------------------------DATABASE--------------------------------------------
     //
-    //GET FEES FROM DB BY PAYMENT_STATUS
+    //GET FEES FROM DB WITH PAGINATION
     //
-    async getFeesFromDb(paymentStatus: string, installment: boolean): Promise<void> {
-      console.log('START - getFeesFromDb(' + paymentStatus + ', ' + installment + ')');
+    async getFeesFromDb(page: number = 0, size?: number): Promise<void> {
+      const pageSize = size || this.rowsPerPage;
+      console.log(`START - getFeesFromDb(page: ${page}, size: ${pageSize})`);
       this.loadingFees = true;
 
-      const response = await httpCommon.get(
-        `/v1/finance/fee/status?status=` + paymentStatus + '&installment=' + installment
-      );
-      console.log('getFeesFromDb() - Ilosc[]: ' + response.data.length);
-      this.fees = response.data.map((fee: any) => this.convertResponse(fee));
+      // parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: pageSize.toString(),
+        sort: this.sortField,
+        direction: this.sortOrder > 0 ? 'ASC' : 'DESC',
+      });
+
+      // filters
+      if (this.filters.global?.value) {
+        params.append('globalFilter', this.filters.global.value);
+      }
+      if (this.filters.name?.value) {
+        params.append('name', this.filters.name.value);
+      }
+      if (this.filters['firm.name']?.value) {
+        params.append('firmName', this.filters['firm.name'].value);
+      }
+      if (this.filters.date?.constraints?.[0]?.value) {
+        const date = new Date(this.filters.date.constraints[0].value);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        params.append('date', `${year}-${month}-${day}`);
+
+        // Map PrimeVue FilterMatchMode to backend dateComparisonType
+        const matchMode = this.filters.date.constraints[0].matchMode;
+        let dateComparisonType = 'EQUALS';
+
+        if (matchMode === 'dateIs') {
+          dateComparisonType = 'EQUALS';
+        } else if (matchMode === 'dateBefore') {
+          dateComparisonType = 'BEFORE';
+        } else if (matchMode === 'dateAfter') {
+          dateComparisonType = 'AFTER';
+        }
+
+        params.append('dateComparisonType', dateComparisonType);
+      }
+      if (this.filters.amount?.constraints?.[0]?.value) {
+        params.append('amount', this.filters.amount.constraints[0].value.toString());
+
+        // Map PrimeVue FilterMatchMode to backend amountComparisonType
+        const matchMode = this.filters.amount.constraints[0].matchMode;
+        let amountComparisonType = 'EQUALS';
+
+        if (matchMode === 'equals') {
+          amountComparisonType = 'EQUALS';
+        } else if (matchMode === 'lt') {
+          amountComparisonType = 'LESS_THAN';
+        } else if (matchMode === 'lte') {
+          amountComparisonType = 'LESS_THAN_OR_EQUAL';
+        } else if (matchMode === 'gt') {
+          amountComparisonType = 'GREATER_THAN';
+        } else if (matchMode === 'gte') {
+          amountComparisonType = 'GREATER_THAN_OR_EQUAL';
+        }
+
+        params.append('amountComparisonType', amountComparisonType);
+      }
+      if (this.filters.feeStatus?.value) {
+        params.append('status', this.filters.feeStatus.value);
+      }
+
+      const response = await httpCommon.get(`/v1/finance/fee/page?${params.toString()}`);
+      console.log('getFeesFromDb() - Ilość[]: ' + response.data.content.length);
+      this.fees = response.data.content.map((fee: any) => this.convertResponse(fee));
+      this.totalFees = response.data.totalElements;
+      this.currentPage = response.data.number;
       this.loadingFees = false;
-      console.log('END - getFeesFromDb(' + paymentStatus + ', ' + installment + ')');
+      console.log('END - getFeesFromDb()');
     },
     //
     //GET FEE FROM DB BY ID
@@ -98,10 +204,21 @@ export const useFeeStore = defineStore('fee', {
 
       const response = await httpCommon.get(`/v1/finance/fee/` + feeId);
       this.loadingFees = false;
-      console.log('END - getFeesFromDb()');
+      console.log('END - getFeeFromDb()');
       if (response.data) {
         return this.convertResponse(response.data);
       } else return null;
+    },
+    //
+    //GET SUM TO PAY FROM DB
+    //
+    async getFeesSumToPayFromDb(): Promise<number> {
+      console.log('START - getFeesSumToPayFromDb()');
+
+      // Since we already have feesSumToPay getter that calculates from loaded fees,
+      // we can just return it. If backend has endpoint, implement it here.
+      console.log('END - getFeesSumToPayFromDb(), suma:', this.feesSumToPay);
+      return this.feesSumToPay;
     },
     //
     //CHANGE PAYMENT_STATUS

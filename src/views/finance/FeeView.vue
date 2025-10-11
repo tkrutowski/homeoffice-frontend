@@ -166,7 +166,7 @@
     if (firmStore.firms.length === 0) firmStore.getFirmsFromDb();
     if (feeStore.feeFrequencyTypes.length === 0) feeStore.getFeeFrequencyType();
     btnSaveDisabled.value = false;
-    if (feeStore.fees.length === 0) feeStore.getFeesFromDb('ALL', true);
+    // if (feeStore.fees.length === 0) feeStore.getFeesFromDb('ALL', true);
   });
 
   onMounted(async () => {
