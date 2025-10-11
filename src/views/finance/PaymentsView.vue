@@ -28,8 +28,8 @@
   onMounted(async () => {
     console.log('onMounted PaymentView');
     if (userStore.users.length === 0) await userStore.refreshUsers();
-    if (loansStore.loans.length === 0) await loansStore.refreshLoans();
-    if (feeStore.fees.length === 0) await feeStore.refreshLoans();
+    // if (loansStore.loans.length === 0) await loansStore.refreshLoans();
+    // if (feeStore.fees.length === 0) await feeStore.refreshLoans();
     if (paymentStore.payments.size !== 0) refreshKey.value = true;
   });
 

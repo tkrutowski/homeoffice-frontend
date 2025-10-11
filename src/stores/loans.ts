@@ -18,7 +18,12 @@ export const useLoansStore = defineStore('loan', {
     loadingFile: false,
     loadingWait: false,
     loans: [] as Loan[],
+    totalLoans: 0,
+    currentPage: 0,
     paymentTypes: [] as PaymentMethod[],
+    sortField: 'date',
+    sortOrder: -1, // 1 = ASC, -1 = DESC - domyślnie sortujemy po dacie malejąco
+    filters: {} as any,
   }),
 
   //getters = computed
@@ -51,7 +56,35 @@ export const useLoansStore = defineStore('loan', {
     //REFRESH LOANS
     //
     async refreshLoans() {
-      await this.getLoansFromDb('ALL', true);
+      await this.getLoansFromDb(this.currentPage);
+      await this.getLoansSumToPayFromDb();
+    },
+    //
+    //LOAD PAGE
+    //
+    async loadPage(page: number, rows?: number) {
+      if (rows !== undefined) {
+        this.rowsPerPage = rows;
+        localStorage.setItem('rowsPerPageLoans', rows.toString());
+      }
+      await this.getLoansFromDb(page);
+    },
+    //
+    //SORT LOANS
+    //
+    async sortLoans(sortField: string, sortOrder: number) {
+      console.log('sortLoans()', sortField, sortOrder);
+      this.sortField = sortField;
+      this.sortOrder = sortOrder;
+      await this.loadPage(0); // Reset to first page after sort
+    },
+    //
+    //FILTER LOANS
+    //
+    async filterLoans(filters: any) {
+      console.log('filterLoans()', filters);
+      this.filters = filters;
+      await this.loadPage(0); // Reset to first page after filter
     },
     //
     //GET LOANS
@@ -59,7 +92,15 @@ export const useLoansStore = defineStore('loan', {
     async getLoans(status: StatusType) {
       console.log('START - getLoans(' + status + ')');
       if (this.loans.length === 0) {
-        await this.getLoansFromDb('ALL', true);
+        const filters: any = {
+          global: { value: null, matchMode: 'contains' },
+        };
+
+        if (status === 'TO_PAY' || status === 'PAID') {
+          filters.loanStatus = { value: status, matchMode: 'equals' };
+        }
+
+        await this.filterLoans(filters);
       }
       console.log('END - getLoans(' + status + ')');
 
@@ -78,18 +119,84 @@ export const useLoansStore = defineStore('loan', {
     },
     //------------------------------------------------DATABASE--------------------------------
     //
-    //GET LOANS FROM DB BY PAYMENT_STATUS
+    //GET LOANS FROM DB WITH PAGINATION
     //
-    async getLoansFromDb(paymentStatus: string, installment: boolean): Promise<void> {
-      console.log('START - getLoansFromDb(' + paymentStatus + ', ' + installment + ')');
+    async getLoansFromDb(page: number = 0, size?: number): Promise<void> {
+      const pageSize = size || this.rowsPerPage;
+      console.log(`START - getLoansFromDb(page: ${page}, size: ${pageSize})`);
       this.loadingLoans = true;
-      const response = await httpCommon.get(
-        `/v1/finance/loan/status?status=` + paymentStatus + '&installment=' + installment
-      );
-      console.log('getLoansFromDb() - Ilosc[]: ' + response.data.length);
-      this.loans = response.data.map((loan: any) => this.convertResponse(loan));
+
+      // parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: pageSize.toString(),
+        sort: this.sortField,
+        direction: this.sortOrder > 0 ? 'ASC' : 'DESC',
+      });
+
+      // filters
+      if (this.filters.global?.value) {
+        params.append('globalFilter', this.filters.global.value);
+      }
+      if (this.filters.name?.value) {
+        params.append('name', this.filters.name.value);
+      }
+      if (this.filters['bank.name']?.value) {
+        params.append('bankName', this.filters['bank.name'].value);
+      }
+      if (this.filters.date?.constraints?.[0]?.value) {
+        const date = new Date(this.filters.date.constraints[0].value);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        params.append('date', `${year}-${month}-${day}`);
+
+        // Map PrimeVue FilterMatchMode to backend dateComparisonType
+        const matchMode = this.filters.date.constraints[0].matchMode;
+        let dateComparisonType = 'EQUALS';
+
+        if (matchMode === 'dateIs') {
+          dateComparisonType = 'EQUALS';
+        } else if (matchMode === 'dateBefore') {
+          dateComparisonType = 'BEFORE';
+        } else if (matchMode === 'dateAfter') {
+          dateComparisonType = 'AFTER';
+        }
+
+        params.append('dateComparisonType', dateComparisonType);
+      }
+      if (this.filters.amount?.constraints?.[0]?.value) {
+        params.append('amount', this.filters.amount.constraints[0].value.toString());
+
+        // Map PrimeVue FilterMatchMode to backend amountComparisonType
+        const matchMode = this.filters.amount.constraints[0].matchMode;
+        let amountComparisonType = 'EQUALS';
+
+        if (matchMode === 'equals') {
+          amountComparisonType = 'EQUALS';
+        } else if (matchMode === 'lt') {
+          amountComparisonType = 'LESS_THAN';
+        } else if (matchMode === 'lte') {
+          amountComparisonType = 'LESS_THAN_OR_EQUAL';
+        } else if (matchMode === 'gt') {
+          amountComparisonType = 'GREATER_THAN';
+        } else if (matchMode === 'gte') {
+          amountComparisonType = 'GREATER_THAN_OR_EQUAL';
+        }
+
+        params.append('amountComparisonType', amountComparisonType);
+      }
+      if (this.filters.loanStatus?.value) {
+        params.append('status', this.filters.loanStatus.value);
+      }
+
+      const response = await httpCommon.get(`/v1/finance/loan/page?${params.toString()}`);
+      console.log('getLoansFromDb() - Ilość[]: ' + response.data.content.length);
+      this.loans = response.data.content.map((loan: any) => this.convertResponse(loan));
+      this.totalLoans = response.data.totalElements;
+      this.currentPage = response.data.number;
       this.loadingLoans = false;
-      console.log('END - etLoansFromDb(' + paymentStatus + ', ' + installment + ')');
+      console.log('END - getLoansFromDb()');
     },
     //
     //GET  LOAN FROM DB BY ID
@@ -101,12 +208,23 @@ export const useLoansStore = defineStore('loan', {
       const response = await httpCommon.get(`/v1/finance/loan/` + loanId);
       this.loadingLoans = false;
       if (response.data) {
-        console.log('END - getLoansFromDb()');
+        console.log('END - getLoanFromDb()');
         return this.convertResponse(response.data);
       } else {
-        console.log('END - getLoansFromDb()');
+        console.log('END - getLoanFromDb()');
         return null;
       }
+    },
+    //
+    //GET SUM TO PAY FROM DB
+    //
+    async getLoansSumToPayFromDb(): Promise<number> {
+      console.log('START - getLoansSumToPayFromDb()');
+
+      // Since we already have loansSumToPay getter that calculates from loaded loans,
+      // we can just return it. If backend has endpoint, implement it here.
+      console.log('END - getLoansSumToPayFromDb(), suma:', this.loansSumToPay);
+      return this.loansSumToPay;
     },
     //
     //CHANGE PAYMENT_STATUS

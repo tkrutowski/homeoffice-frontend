@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
+  import { FilterMatchMode } from '@primevue/core/api';
   import { computed, type DefineComponent, ref } from 'vue';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
@@ -28,20 +28,19 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'bank.name': { value: null, matchMode: FilterMatchMode.CONTAINS }, //nie dziala z IN
+      'bank.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
       date: {
-        operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
       },
       amount: {
-        operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
       },
     };
   };
   initFilters();
-  const clearFilter = () => {
+  const clearFilter = async () => {
     initFilters();
+    await loansStore.filterLoans(filters.value);
   };
   const bankFilter = computed(() => {
     return [
@@ -51,7 +50,6 @@
 
   const expandedRows = ref([]);
   const loanTemp = ref<Loan | null>(null);
-  loansStore.getLoans('ALL');
 
   const calculateInstallmentToPayAmount = (installments: LoanInstallment[]): number => {
     return installments
@@ -85,38 +83,45 @@
   //
   //--------------------------------DISPLAY FILTER
   //
-  const filter = ref<StatusType>('ALL');
-  const setFilter = (selectedFilter: StatusType) => {
-    filter.value = selectedFilter;
-    localStorage.setItem('selectedFilterLoans', selectedFilter);
-  };
+  // Initialize filter from localStorage or default to 'ALL'
+  const savedFilter = localStorage.getItem('selectedFilterLoans') as StatusType | null;
+  const filter = ref<StatusType>(savedFilter || 'ALL');
 
-  const savedFilter = localStorage.getItem('selectedFilterLoans');
-  if (savedFilter) {
-    filter.value = savedFilter as StatusType;
+  // Apply saved filter to filters object on initialization
+  if (savedFilter && (savedFilter === 'TO_PAY' || savedFilter === 'PAID')) {
+    filters.value.loanStatus = { value: savedFilter, matchMode: FilterMatchMode.EQUALS };
   }
 
-  const filteredData = computed(() => {
-    switch (filter.value) {
-      case 'TO_PAY':
-        return loansStore.getLoansToPay;
-      case 'PAID':
-        return loansStore.getLoansPaid;
-      case 'ALL':
-      default:
-        return loansStore.loans;
+  const setFilter = async (selectedFilter: StatusType) => {
+    filter.value = selectedFilter;
+    localStorage.setItem('selectedFilterLoans', selectedFilter);
+
+    // Add status filter to filters
+    if (selectedFilter === 'TO_PAY' || selectedFilter === 'PAID') {
+      filters.value.loanStatus = { value: selectedFilter, matchMode: FilterMatchMode.EQUALS };
+    } else {
+      delete filters.value.loanStatus;
     }
-  });
+
+    await loansStore.filterLoans(filters.value);
+  };
+
+  // Load initial data
+  if (loansStore.loans.length === 0 && !loansStore.loadingLoans) {
+    loansStore.filterLoans(filters.value);
+  }
+  loansStore.getLoansSumToPayFromDb();
   const dataTableRef = ref<DefineComponent | null>(null);
   const filteredLoanAmount = computed(() => {
-    const processedData = dataTableRef.value?.processedData;
     let sum = 0;
-    processedData?.forEach((loan: { installmentList: LoanInstallment[] }) => {
-      const installmentSum = loan.installmentList
-        .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
-        .map(value => value.installmentAmountToPay)
-        .reduce((acc, currentValue) => acc + currentValue, 0);
-      sum += installmentSum;
+    loansStore.loans.forEach((loan: Loan) => {
+      if (loan.loanStatus === PaymentStatus.TO_PAY) {
+        const installmentSum = loan.installmentList
+          .filter(value => value.paymentStatus === PaymentStatus.TO_PAY)
+          .map(value => value.installmentAmountToPay)
+          .reduce((acc, currentValue) => acc + currentValue, 0);
+        sum += installmentSum;
+      }
     });
     return sum;
   });
@@ -218,8 +223,19 @@
     });
   };
 
-  const handleRowsPerPageChange = (event: DataTablePageEvent) => {
-    localStorage.setItem('rowsPerPageLoans', event.rows.toString());
+  const handlePageChange = async (event: DataTablePageEvent) => {
+    console.log('handlePageChange()', event);
+    await loansStore.loadPage(event.page, event.rows);
+  };
+
+  const handleSort = async (event: any) => {
+    console.log('handleSort()', event);
+    await loansStore.sortLoans(event.sortField, event.sortOrder);
+  };
+
+  const handleFilter = async () => {
+    console.log('handleFilter()', filters.value);
+    await loansStore.filterLoans(filters.value);
   };
 
   //
@@ -237,6 +253,27 @@
     });
     return sum;
   });
+
+  // Obsługa wyszukiwania globalnego z debounce
+  import { watch } from 'vue';
+  let searchTimeout: NodeJS.Timeout | null = null;
+
+  watch(
+    () => filters.value.global.value,
+    newValue => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Search when value has more than 3 letters or is empty
+      if (!newValue || newValue.length >= 3) {
+        searchTimeout = setTimeout(async () => {
+          console.log('Global search:', newValue);
+          await loansStore.filterLoans(filters.value);
+        }, 500); // 500ms debounce
+      }
+    }
+  );
 </script>
 <template>
   <TheMenuFinance />
@@ -260,22 +297,27 @@
       ref="dataTableRef"
       v-model:expanded-rows="expandedRows"
       v-model:filters="filters"
-      :value="filteredData"
+      :value="loansStore.loans"
       v-model:selection="selectedLoans"
       selectionMode="multiple"
       metaKeySelection
       removable-sort
       paginator
+      lazy
+      :sort-mode="'single'"
       :rows="loansStore.rowsPerPage"
+      :total-records="loansStore.totalLoans"
       :rows-per-page-options="[5, 10, 20, 50]"
       table-style="min-width: 50rem"
       filter-display="menu"
       :global-filter-fields="['name', 'bank.name', 'date']"
-      sort-field="date"
-      :sort-order="-1"
       row-hover
       size="small"
-      @page="handleRowsPerPageChange"
+      @page="handlePageChange"
+      @sort="handleSort"
+      @filter="handleFilter"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      current-page-report-template="Od {first} do {last} (Wszystkich kredytów: {totalRecords})"
     >
       <template #header>
         <div class="flex justify-between">
@@ -334,7 +376,7 @@
       </Column>
 
       <!--DATA-->
-      <Column field="date" header="Data" :sortable="true" data-type="date">
+      <Column field="date" header="Data" :sortable="true" data-type="date" :show-filter-match-modes="true">
         <template #body="{ data }">
           {{ UtilsService.formatDateToString(data.date) }}
         </template>
@@ -344,7 +386,15 @@
       </Column>
 
       <!--AMOUNT-->
-      <Column field="amount" header="Kwota" style="min-width: 120px" data-type="numeric" filter-field="amount">
+      <Column
+        field="amount"
+        header="Kwota"
+        style="min-width: 120px"
+        data-type="numeric"
+        filter-field="amount"
+        :show-filter-match-modes="true"
+        :show-filter-operator="true"
+      >
         <template #body="slotProps">
           {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
         </template>

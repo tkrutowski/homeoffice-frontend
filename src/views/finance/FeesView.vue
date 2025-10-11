@@ -32,11 +32,9 @@
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
       'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS }, //nie dziala z IN
       date: {
-        operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
       },
       amount: {
-        operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
       },
     };
@@ -322,7 +320,7 @@
       </Column>
 
       <!--DATA-->
-      <Column field="date" header="Data" :sortable="true" data-type="date">
+      <Column field="date" header="Data" :sortable="true" data-type="date" :show-filter-match-modes="true">
         <template #body="{ data }">
           {{ formatDate(data.date) }}
         </template>
