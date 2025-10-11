@@ -220,6 +220,17 @@
     });
   };
 
+  //
+  //-------------------------------------------------COPY FEE-------------------------------------------------
+  //
+  const copyItem = (item: Fee) => {
+    router.push({
+      name: 'Fee',
+      params: { isEdit: 'false', feeId: 0 },
+      query: { copyFromId: item.id.toString() },
+    });
+  };
+
   const handleRowsPerPageChange = (event: DataTablePageEvent) => {
     localStorage.setItem('rowsPerPageLoans', event.rows.toString());
   };
@@ -348,11 +359,12 @@
           />
         </template>
       </Column>
-      <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="min-width: 8rem">
+      <!--                EDIT, COPY, DELETE-->
+      <Column header="Akcja" :exportable="false" style="min-width: 10rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-content-end">
             <OfficeIconButton title="Edytuj opłatę" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+            <OfficeIconButton title="Kopiuj opłatę" icon="pi pi-copy" @click="copyItem(slotProps.data)" />
             <OfficeIconButton
               title="Usuń opłatę"
               icon="pi pi-trash"

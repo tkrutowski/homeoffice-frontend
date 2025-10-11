@@ -173,7 +173,38 @@
     // console.log("onMounted EDIT", route.params);
     btnSaveDisabled.value = true;
     isEdit.value = route.params.isEdit === 'true';
-    if (isEdit.value === false) {
+
+    // Sprawdź czy jest parametr copyFromId (kopiowanie opłaty)
+    const copyFromId = route.query.copyFromId;
+
+    if (copyFromId) {
+      console.log('onMounted COPY FEE from ID:', copyFromId);
+      const sourceFeeId = Number(copyFromId as string);
+      feeStore
+        .getFeeFromDb(sourceFeeId)
+        .then((data: Fee | null) => {
+          if (data) {
+            // Kopiuj dane z opłaty źródłowej, ale resetuj ID i listy
+            fee.value = {
+              ...data,
+              id: 0, // Nowa opłata musi mieć ID = 0
+              installmentList: [], // Czyścimy listę rat - będą wygenerowane na nowo
+            };
+            selectedFirm.value = fee.value.firm;
+            selectedUser.value = userStore.getUser(fee.value.idUser);
+            selectedFeeFrequency.value = fee.value.feeFrequency;
+          }
+        })
+        .catch((error: AxiosError) => {
+          console.error('Błąd podczas pobierania opłaty do skopiowania:', error);
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się pobrać danych opłaty do skopiowania',
+            life: 3000,
+          });
+        });
+    } else if (isEdit.value === false) {
       console.log('onMounted NEW FEE');
     } else {
       console.log('onMounted EDIT FEE');
@@ -294,7 +325,9 @@
           />
           <div class="w-full flex justify-center">
             <span class="text-3xl">
-              {{ isEdit ? `Edycja opłaty: ${fee?.name}` : 'Nowa opłata' }}
+              {{
+                isEdit ? `Edycja opłaty: ${fee?.name}` : route.query.copyFromId ? 'Nowa opłata (kopia)' : 'Nowa opłata'
+              }}
             </span>
           </div>
         </template>

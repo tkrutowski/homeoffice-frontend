@@ -134,7 +134,7 @@ export const usePurchasesStore = defineStore('purchase', {
       } else {
         // Sprawdzamy czy purchasesCurrent zawiera zakupy tego samego użytkownika
         let existingUserId: number | null = null;
-        
+
         // Pobieramy pierwszego użytkownika z purchasesCurrent
         for (const [, purchases] of this.purchasesCurrent.entries()) {
           if (purchases.length > 0) {
@@ -163,7 +163,7 @@ export const usePurchasesStore = defineStore('purchase', {
       } else {
         console.log('Zakup NIE został dodany do purchasesCurrent (inny użytkownik)');
       }
-      
+
       console.log('END - addPurchaseDb()');
     },
     //
