@@ -12,6 +12,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useLoansStore } from '@/stores/loans';
   import { usePaymentStore } from '@/stores/payments';
+  import { useBanksStore } from '@/stores/banks';
 
   import type { StatusType } from '@/types/StatusType';
   import type { DataTablePageEvent } from 'primevue/datatable';
@@ -21,6 +22,7 @@
   const toast = useToast();
   const loansStore = useLoansStore();
   const paymentStore = usePaymentStore();
+  const bankStore = useBanksStore();
 
   //filter
   const filters = ref();
@@ -28,7 +30,7 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'bank.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+      idBank: { value: null, matchMode: FilterMatchMode.EQUALS },
       date: {
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
       },
@@ -43,9 +45,7 @@
     await loansStore.filterLoans(filters.value);
   };
   const bankFilter = computed(() => {
-    return [
-      ...new Set(loansStore.loans.filter((loan: Loan) => loan.bank).map((loan: Loan) => loan.bank?.name || '')),
-    ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''));
+    return bankStore.banks.sort((a, b) => a.name.localeCompare(b.name));
   });
 
   const expandedRows = ref([]);
@@ -111,6 +111,7 @@
     loansStore.filterLoans(filters.value);
   }
   loansStore.getLoansSumToPayFromDb();
+  bankStore.getBanksFromDb();
   const dataTableRef = ref<DefineComponent | null>(null);
   const filteredLoanAmount = computed(() => {
     let sum = 0;
@@ -364,14 +365,21 @@
         field="bank.name"
         header="Nazwa banku"
         :sortable="true"
-        filter-field="bank.name"
+        filter-field="idBank"
         :show-filter-match-modes="false"
       >
         <template #body="{ data }">
           {{ data.bank.name }}
         </template>
         <template #filter="{ filterModel }">
-          <Select v-model="filterModel.value" :options="bankFilter" placeholder="Wybierz..." class="p-column-filter" />
+          <Select
+            v-model="filterModel.value"
+            :options="bankFilter"
+            option-label="name"
+            option-value="id"
+            placeholder="Wybierz..."
+            class="p-column-filter"
+          />
         </template>
       </Column>
 

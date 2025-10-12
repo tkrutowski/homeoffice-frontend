@@ -141,8 +141,8 @@ export const useLoansStore = defineStore('loan', {
       if (this.filters.name?.value) {
         params.append('name', this.filters.name.value);
       }
-      if (this.filters['bank.name']?.value) {
-        params.append('bankName', this.filters['bank.name'].value);
+      if (this.filters.idBank?.value) {
+        params.append('bankId', this.filters.idBank.value.toString());
       }
       if (this.filters.date?.constraints?.[0]?.value) {
         const date = new Date(this.filters.date.constraints[0].value);

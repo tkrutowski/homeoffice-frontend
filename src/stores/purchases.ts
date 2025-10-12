@@ -277,6 +277,9 @@ export const usePurchasesStore = defineStore('purchase', {
       if (this.filters.idFirm?.value) {
         params.append('firmId', this.filters.idFirm.value.toString());
       }
+      if (this.filters.idCard?.value) {
+        params.append('cardId', this.filters.idCard.value.toString());
+      }
       if (this.filters.paymentStatus?.value) {
         params.append('status', this.filters.paymentStatus.value);
       }

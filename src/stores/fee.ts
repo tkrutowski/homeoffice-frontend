@@ -138,8 +138,8 @@ export const useFeeStore = defineStore('fee', {
       if (this.filters.name?.value) {
         params.append('name', this.filters.name.value);
       }
-      if (this.filters['firm.name']?.value) {
-        params.append('firmName', this.filters['firm.name'].value);
+      if (this.filters.idFirm?.value) {
+        params.append('firmId', this.filters.idFirm.value.toString());
       }
       if (this.filters.date?.constraints?.[0]?.value) {
         const date = new Date(this.filters.date.constraints[0].value);

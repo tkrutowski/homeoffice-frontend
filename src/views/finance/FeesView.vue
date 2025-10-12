@@ -14,6 +14,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useFeeStore } from '@/stores/fee';
   import { usePaymentStore } from '@/stores/payments';
+  import { useFirmsStore } from '@/stores/firms';
   import type { StatusType } from '@/types/StatusType';
   import moment from 'moment';
   import type { AxiosError } from 'axios';
@@ -22,6 +23,7 @@
   const toast = useToast();
   const feeStore = useFeeStore();
   const paymentStore = usePaymentStore();
+  const firmsStore = useFirmsStore();
 
   //filter
   const filters = ref();
@@ -29,7 +31,7 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+      idFirm: { value: null, matchMode: FilterMatchMode.EQUALS },
       date: {
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_AFTER }],
       },
@@ -44,9 +46,7 @@
     await feeStore.filterFees(filters.value);
   };
   const firmFilter = computed(() => {
-    return [...new Set(feeStore.fees.filter((fee: Fee) => fee.firm).map((fee: Fee) => fee.firm?.name ?? ''))].sort(
-      (a: string, b: string) => (a ?? '').localeCompare(b ?? '')
-    );
+    return firmsStore.firms.sort((a, b) => a.name.localeCompare(b.name));
   });
   const formatDate = (value: Date) => {
     return moment(value).format('YYYY-MM-DD');
@@ -98,6 +98,7 @@
     feeStore.filterFees(filters.value);
   }
   feeStore.getFeesSumToPayFromDb();
+  firmsStore.getFirmsFromDb();
 
   //
   //-------------SELECTED FEES
@@ -360,14 +361,21 @@
         field="firm.name"
         header="Nazwa firmy"
         :sortable="true"
-        filter-field="firm.name"
+        filter-field="idFirm"
         :show-filter-match-modes="false"
       >
         <template #body="{ data }">
           {{ data.firm.name }}
         </template>
         <template #filter="{ filterModel }">
-          <Select v-model="filterModel.value" :options="firmFilter" placeholder="Wybierz..." class="p-column-filter" />
+          <Select
+            v-model="filterModel.value"
+            :options="firmFilter"
+            option-label="name"
+            option-value="id"
+            placeholder="Wybierz..."
+            class="p-column-filter"
+          />
         </template>
       </Column>
 
