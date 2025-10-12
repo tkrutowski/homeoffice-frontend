@@ -59,12 +59,12 @@ export const useFeeStore = defineStore('fee', {
     //
     //LOAD PAGE
     //
-    async loadPage(page: number, rows?: number) {
+    async updateRowsPerPage(rows: number) {
+      console.log(`updateRowsPerPage(rows: ${rows})`);
       if (rows !== undefined) {
         this.rowsPerPage = rows;
         localStorage.setItem('rowsPerPageFees', rows.toString());
       }
-      await this.getFeesFromDb(page);
     },
     //
     //SORT FEES
@@ -73,21 +73,25 @@ export const useFeeStore = defineStore('fee', {
       console.log('sortFees()', sortField, sortOrder);
       this.sortField = sortField;
       this.sortOrder = sortOrder;
-      await this.loadPage(0); // Reset to first page after sort
+      await this.getFeesFromDb(0); // Reset to first page after sort
     },
     //
     //FILTER FEES
     //
-    async filterFees(filters: any) {
-      console.log('filterFees()', filters);
+    async filterFees(filters: any, rows?: number) {
+      console.log(`filterFees(${filters.toString()}, rows: ${rows})`);
       this.filters = filters;
-      await this.loadPage(0); // Reset to first page after filter
+      if (rows !== undefined) {
+        await this.getFeesFromDb(0, rows); // Reset to first page after filter
+      } else {
+        await this.getFeesFromDb(0); // Reset to first page after filter
+      }
     },
     //
     //GET FEES FROM DB BY PAYMENT_STATUS
     //
-    async getFees(status: StatusType) {
-      console.log('START - getFees(' + status + ')');
+    async getFees(status: StatusType, userId?: number, rows?: number) {
+      console.log(`START - getFees(status: ${status}, userId: ${userId}, rows: ${rows} ')`);
       if (this.fees.length === 0) {
         const filters: any = {
           global: { value: null, matchMode: 'contains' },
@@ -97,7 +101,15 @@ export const useFeeStore = defineStore('fee', {
           filters.feeStatus = { value: status, matchMode: 'equals' };
         }
 
-        await this.filterFees(filters);
+        if (userId) {
+          filters.idUser = { value: userId, matchMode: 'equals' };
+        }
+
+        if (rows !== undefined) {
+          await this.filterFees(filters, rows);
+        } else {
+          await this.filterFees(filters);
+        }
       }
       console.log('END - getFees(' + status + ')');
 
@@ -113,6 +125,36 @@ export const useFeeStore = defineStore('fee', {
     },
     getFee(idFee: number) {
       return this.fees.find(item => item.id === idFee);
+    },
+
+    //
+    //GET FEES BY YEAR AND USER
+    //
+    async getFeesByYearAndStatusAndUser(year: number, status: StatusType, userId?: number): Promise<Fee[]> {
+      console.log(`START - getFeesByYearAndStatusAndUser(${year}, ${status}, ${userId})`);
+
+      this.loadingFees = true;
+
+      // Clear existing fees to ensure fresh data
+      this.fees = [];
+
+      // Get all fees first (we'll filter by year on frontend)
+      await this.getFees(status, userId, 1000); // Get large page size to get all fees
+
+      // Filter fees that have installments in the specified year
+      const filteredFees = this.fees.filter(fee => {
+        return fee.installmentList.some(installment => {
+          if (installment.paymentDeadline) {
+            const installmentYear = new Date(installment.paymentDeadline).getFullYear();
+            return installmentYear === year;
+          }
+          return false;
+        });
+      });
+
+      this.loadingFees = false;
+      console.log(`END - getFeesByYearAndUser(), found ${filteredFees.length} fees`);
+      return filteredFees;
     },
     //----------------------------------------------DATABASE--------------------------------------------
     //
@@ -139,7 +181,10 @@ export const useFeeStore = defineStore('fee', {
         params.append('name', this.filters.name.value);
       }
       if (this.filters.idFirm?.value) {
-        params.append('firmId', this.filters.idFirm.value.toString());
+        params.append('idFirm', this.filters.idFirm.value.toString());
+      }
+      if (this.filters.idUser?.value) {
+        params.append('idUser', this.filters.idUser.value.toString());
       }
       if (this.filters.date?.constraints?.[0]?.value) {
         const date = new Date(this.filters.date.constraints[0].value);

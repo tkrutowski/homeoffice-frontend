@@ -5,13 +5,9 @@
 
   import { usePaymentStore } from '@/stores/payments';
   import { useUsersStore } from '@/stores/users';
-  import { useLoansStore } from '@/stores/loans';
-  import { useFeeStore } from '@/stores/fee';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { StatusType } from '@/types/StatusType.ts';
 
-  const loansStore = useLoansStore();
-  const feeStore = useFeeStore();
   const paymentStore = usePaymentStore();
   const userStore = useUsersStore();
 

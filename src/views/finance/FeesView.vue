@@ -238,7 +238,8 @@
 
   const handlePageChange = async (event: DataTablePageEvent) => {
     console.log('handlePageChange()', event);
-    await feeStore.loadPage(event.page, event.rows);
+    feeStore.updateRowsPerPage(event.rows);
+    await feeStore.getFeesFromDb(event.page, event.rows);
   };
 
   const handleSort = async (event: any) => {
@@ -554,14 +555,14 @@
     <template #center>
       <OfficeIconButton
         title="Wyświetl niespłacone"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-stop'"
+        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
         class="mr-2"
         :active="filter === 'TO_PAY'"
         @click="setFilter('TO_PAY')"
       />
       <OfficeIconButton
         title="Wyświetl spłacone"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-check-square'"
+        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
         class="mr-2"
         :active="filter === 'PAID'"
         @click="setFilter('PAID')"

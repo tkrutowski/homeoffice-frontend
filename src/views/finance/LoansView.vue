@@ -226,7 +226,8 @@
 
   const handlePageChange = async (event: DataTablePageEvent) => {
     console.log('handlePageChange()', event);
-    await loansStore.loadPage(event.page, event.rows);
+    loansStore.updateRowsPerPage(event.rows);
+    await loansStore.getLoansFromDb(event.page, event.rows);
   };
 
   const handleSort = async (event: any) => {

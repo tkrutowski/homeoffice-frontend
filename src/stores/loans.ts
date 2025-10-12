@@ -62,12 +62,12 @@ export const useLoansStore = defineStore('loan', {
     //
     //LOAD PAGE
     //
-    async loadPage(page: number, rows?: number) {
+    async updateRowsPerPage(rows: number) {
+      console.log(`updateRowsPerPage(rows: ${rows})`);
       if (rows !== undefined) {
         this.rowsPerPage = rows;
         localStorage.setItem('rowsPerPageLoans', rows.toString());
       }
-      await this.getLoansFromDb(page);
     },
     //
     //SORT LOANS
@@ -76,21 +76,25 @@ export const useLoansStore = defineStore('loan', {
       console.log('sortLoans()', sortField, sortOrder);
       this.sortField = sortField;
       this.sortOrder = sortOrder;
-      await this.loadPage(0); // Reset to first page after sort
+      await this.getLoansFromDb(0); // Reset to first page after sort
     },
     //
     //FILTER LOANS
     //
-    async filterLoans(filters: any) {
-      console.log('filterLoans()', filters);
+    async filterLoans(filters: any, rows?: number) {
+      console.log(`filterLoans(${filters.toString()}, rows: ${rows})`);
       this.filters = filters;
-      await this.loadPage(0); // Reset to first page after filter
+      if (rows !== undefined) {
+        await this.getLoansFromDb(0, rows); // Reset to first page after filter
+      } else {
+        await this.getLoansFromDb(0); // Reset to first page after filter
+      }
     },
     //
     //GET LOANS
     //
-    async getLoans(status: StatusType) {
-      console.log('START - getLoans(' + status + ')');
+    async getLoans(status: StatusType, userId?: number, rows?: number) {
+      console.log(`START - getLoans(status: ${status}, userId: ${userId}, rows: ${rows} ')`);
       if (this.loans.length === 0) {
         const filters: any = {
           global: { value: null, matchMode: 'contains' },
@@ -100,7 +104,14 @@ export const useLoansStore = defineStore('loan', {
           filters.loanStatus = { value: status, matchMode: 'equals' };
         }
 
-        await this.filterLoans(filters);
+        if (userId) {
+          filters.idUser = { value: userId, matchMode: 'equals' };
+        }
+        if (rows !== undefined) {
+          await this.filterLoans(filters, rows);
+        } else {
+          await this.filterLoans(filters);
+        }
       }
       console.log('END - getLoans(' + status + ')');
 
@@ -116,6 +127,33 @@ export const useLoansStore = defineStore('loan', {
     },
     getLoan(idLoan: number) {
       return this.loans.find((item: Loan) => item.id === idLoan);
+    },
+
+    //
+    //GET LOANS BY YEAR, STATUS AND USER
+    //
+    async getLoansByYearAndStatusAndUser(year: number, status: StatusType, userId?: number): Promise<Loan[]> {
+      console.log(`START - getLoansByYearAndStatusAndUser(${year}, ${status}, ${userId})`);
+      this.loadingLoans = true;
+      // Clear existing loans to ensure fresh data
+      this.loans = [];
+
+      await this.getLoans(status, userId, 1000);
+
+      // Filter loans that have installments in the specified year
+      const filteredLoans = this.loans.filter(loan => {
+        return loan.installmentList.some(installment => {
+          if (installment.paymentDeadline) {
+            const installmentYear = new Date(installment.paymentDeadline).getFullYear();
+            return installmentYear === year;
+          }
+          return false;
+        });
+      });
+
+      this.loadingLoans = false;
+      console.log(`END - getLoansByYearAndUser(), found ${filteredLoans.length} loans`);
+      return filteredLoans;
     },
     //------------------------------------------------DATABASE--------------------------------
     //
@@ -142,7 +180,10 @@ export const useLoansStore = defineStore('loan', {
         params.append('name', this.filters.name.value);
       }
       if (this.filters.idBank?.value) {
-        params.append('bankId', this.filters.idBank.value.toString());
+        params.append('idBank', this.filters.idBank.value.toString());
+      }
+      if (this.filters.idUser?.value) {
+        params.append('idUser', this.filters.idUser.value.toString());
       }
       if (this.filters.date?.constraints?.[0]?.value) {
         const date = new Date(this.filters.date.constraints[0].value);
@@ -190,6 +231,7 @@ export const useLoansStore = defineStore('loan', {
         params.append('status', this.filters.loanStatus.value);
       }
 
+      console.log('LOANS params: ' + params.toString());
       const response = await httpCommon.get(`/v1/finance/loan/page?${params.toString()}`);
       console.log('getLoansFromDb() - Ilość[]: ' + response.data.content.length);
       this.loans = response.data.content.map((loan: any) => this.convertResponse(loan));

@@ -364,5 +364,46 @@ export const usePurchasesStore = defineStore('purchase', {
       }
       console.log('END - deletePurchaseDb()');
     },
+
+    //
+    //GET PURCHASES BY YEAR AND USER
+    //
+    async getPurchasesByYearAndUser(year: number, username?: string): Promise<Map<string, Purchase[]>> {
+      console.log(`START - getPurchasesByYearAndUser(${year}, ${username})`);
+      this.loadingPurchasesCurrent = true;
+
+      let purchasesMap = new Map<string, Purchase[]>();
+
+      if (username) {
+        // Get purchases for specific user
+        const response = await httpCommon.get(`/v1/finance/purchase/current/${username}`);
+        const allPurchases = new Map(Object.entries(response.data));
+
+        // Filter purchases by year
+        allPurchases.forEach((purchases, deadline) => {
+          const purchaseList = purchases as Purchase[];
+          const filteredPurchases = purchaseList.filter((purchase: Purchase) => {
+            if (purchase.paymentDeadline) {
+              const purchaseYear = new Date(purchase.paymentDeadline).getFullYear();
+              return purchaseYear === year;
+            }
+            return false;
+          });
+
+          if (filteredPurchases.length > 0) {
+            purchasesMap.set(deadline, filteredPurchases);
+          }
+        });
+      } else {
+        // Get purchases for all users (if user has permission)
+        // For now, we'll need to get purchases for each user individually
+        // TODO: Backend should support getting all users' purchases at once
+        console.log('Getting purchases for all users not implemented yet');
+      }
+
+      this.loadingPurchasesCurrent = false;
+      console.log(`END - getPurchasesByYearAndUser(), found ${purchasesMap.size} deadlines`);
+      return purchasesMap;
+    },
   },
 });

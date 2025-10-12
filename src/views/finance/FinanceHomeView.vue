@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted, computed, watch } from 'vue';
   import { useLoansStore } from '@/stores/loans';
   import { useFeeStore } from '@/stores/fee';
   import { useUsersStore } from '@/stores/users';
@@ -22,6 +22,12 @@
   const currentYear = new Date().getFullYear();
   const selectedYear = ref(currentYear);
   const showOnlyLoggedUser = ref<boolean>(true);
+
+  // Loading states
+  const isLoadingData = ref<boolean>(true);
+  const isLoadingLoans = ref<boolean>(false);
+  const isLoadingFees = ref<boolean>(false);
+  const isLoadingPurchases = ref<boolean>(false);
 
   // Check if user has access to all payments
   const hasAccessToAllPayments = computed(() => {
@@ -354,14 +360,6 @@
     locale: 'pl-PL',
   });
 
-  const changeYear = (increment: number) => {
-    const newYear = selectedYear.value + increment;
-    if (newYear >= 2020 && newYear <= currentYear + 5) {
-      selectedYear.value = newYear;
-      calculateMonthlyPayments();
-    }
-  };
-
   // Create purchase chart data for each user
   const usersPurchaseChartData = ref<Map<number, ChartData>>(new Map());
   const userPurchases = ref<Map<number, Map<string, Purchase[]>>>(new Map());
@@ -473,8 +471,8 @@
   const loadUserPurchases = async () => {
     userPurchases.value.clear();
     for (const user of usersToDisplay.value) {
-      console.log('Loading purchases for user:', user.username);
-      const purchases = await purchasesStore.getPurchaseCurrentFromDb(user.username);
+      console.log('Loading purchases for user:', user.username, 'year:', selectedYear.value);
+      const purchases = await purchasesStore.getPurchasesByYearAndUser(selectedYear.value, user.username);
       console.log('Loaded purchases for user:', user.username, purchases);
       userPurchases.value.set(user.id, purchases);
     }
@@ -673,26 +671,78 @@
   });
 
   const onYearChange = async () => {
-    calculateMonthlyPayments();
-    await loadUserPurchases();
-    calculateMonthlyPurchases();
+    await loadDataForYear();
+  };
+
+  // Load data for selected year and users
+  const loadDataForYear = async () => {
+    console.log('Loading data for year:', selectedYear.value);
+    console.log(
+      'Users to display:',
+      usersToDisplay.value.map(u => u.username)
+    );
+
+    // Set loading states
+    isLoadingData.value = true;
+    isLoadingLoans.value = true;
+    isLoadingFees.value = true;
+    isLoadingPurchases.value = true;
+
+    try {
+      // Load basic data (users and cards) - these don't change with year
+      await Promise.all([usersStore.getUsersFromDb(), cardsStore.getCardsFromDb('ALL')]);
+
+      // Load year-specific data
+      const promises = [];
+
+      if (showOnlyLoggedUser.value) {
+        // Load data only for logged user
+        const loggedUser = usersToDisplay.value[0];
+        if (loggedUser) {
+          promises.push(
+            loansStore.getLoansByYearAndStatusAndUser(selectedYear.value, PaymentStatus.TO_PAY, loggedUser.id),
+            feeStore.getFeesByYearAndStatusAndUser(selectedYear.value, PaymentStatus.TO_PAY, loggedUser.id)
+          );
+        }
+      } else {
+        promises.push(
+          loansStore.getLoansByYearAndStatusAndUser(selectedYear.value, PaymentStatus.TO_PAY),
+          feeStore.getFeesByYearAndStatusAndUser(selectedYear.value, PaymentStatus.TO_PAY)
+        );
+      }
+
+      await Promise.all(promises);
+
+      // Mark loans and fees as loaded
+      isLoadingLoans.value = false;
+      isLoadingFees.value = false;
+
+      console.log('Year-specific data loaded');
+      console.log('Loans:', loansStore.loans.length);
+      console.log('Fees:', feeStore.fees.length);
+
+      // Load purchases and calculate charts
+      await loadUserPurchases();
+      isLoadingPurchases.value = false;
+
+      calculateMonthlyPayments();
+      calculateMonthlyPurchases();
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      isLoadingData.value = false;
+    }
   };
 
   onMounted(async () => {
     console.log('Component mounted');
-    await Promise.all([
-      loansStore.getLoans('ALL'),
-      feeStore.getFees('ALL'),
-      usersStore.getUsersFromDb(),
-      cardsStore.getCardsFromDb('ALL'),
-    ]);
-    console.log('Data loaded');
-    console.log('Users:', usersStore.users);
-    console.log('Cards:', cardsStore.cards);
+    await loadDataForYear();
+  });
 
-    await loadUserPurchases();
-    calculateMonthlyPayments();
-    calculateMonthlyPurchases();
+  // Watch for changes in showOnlyLoggedUser
+  watch(showOnlyLoggedUser, async () => {
+    console.log('showOnlyLoggedUser changed to:', showOnlyLoggedUser.value);
+    await loadDataForYear();
   });
 </script>
 
@@ -704,24 +754,12 @@
       <div class="w-1/4"></div>
       <!-- Empty div for spacing -->
       <div class="flex items-center gap-4">
-        <Button
-          icon="pi pi-chevron-left"
-          @click="changeYear(-1)"
-          :disabled="selectedYear <= 2020"
-          class="p-button-rounded"
-        />
         <Select
           v-model="selectedYear"
           :options="availableYears"
           @change="onYearChange"
           class="w-32"
           placeholder="Wybierz rok"
-        />
-        <Button
-          icon="pi pi-chevron-right"
-          @click="changeYear(1)"
-          :disabled="selectedYear >= currentYear + 5"
-          class="p-button-rounded"
         />
       </div>
       <div class="flex items-center gap-2 w-1/4 justify-end">
@@ -730,19 +768,76 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-8">
+    <!-- Loading State for Initial Load -->
+    <div v-if="isLoadingData" class="flex flex-col gap-8">
+      <!-- Summary Charts Skeleton -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card border-2 border-primary rounded-lg">
+          <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+          <div class="h-30rem px-3">
+            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+          </div>
+        </div>
+        <div class="card border-2 border-primary rounded-lg">
+          <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+          <div class="h-30rem px-3">
+            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Charts Skeleton -->
+      <div v-for="n in 2" :key="n" class="flex flex-col gap-4">
+        <Skeleton width="40%" height="2rem" class="mx-auto"></Skeleton>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card border-2 border-primary rounded-lg">
+            <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+            <div class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
+          </div>
+          <div class="card border-2 border-primary rounded-lg">
+            <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+            <div class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
+          </div>
+          <div class="card border-2 border-primary rounded-lg md:col-span-2">
+            <Skeleton width="80%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+            <div class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actual Content -->
+    <div v-else class="flex flex-col gap-8">
       <!-- Summary Charts -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Loans Chart -->
         <div class="card border-2 border-primary rounded-lg">
           <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Kredyty do spłaty</h3>
-          <Chart type="bar" :data="summaryChartData.loans" :options="summaryChartOptions" class="h-30rem px-3" />
+          <div v-if="isLoadingLoans" class="h-30rem px-3">
+            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+          </div>
+          <Chart v-else type="bar" :data="summaryChartData.loans" :options="summaryChartOptions" class="h-30rem px-3" />
         </div>
 
         <!-- Purchases Chart -->
         <div class="card border-2 border-primary rounded-lg">
           <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Zakupy do spłaty</h3>
-          <Chart type="bar" :data="summaryChartData.purchases" :options="summaryChartOptions" class="h-30rem px-3" />
+          <div v-if="isLoadingPurchases" class="h-30rem px-3">
+            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+          </div>
+          <Chart
+            v-else
+            type="bar"
+            :data="summaryChartData.purchases"
+            :options="summaryChartOptions"
+            class="h-30rem px-3"
+          />
         </div>
       </div>
 
@@ -754,7 +849,11 @@
             <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
               Płatności kredytów w {{ selectedYear }}
             </h3>
+            <div v-if="isLoadingLoans" class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
             <Chart
+              v-else
               :id="'loans-' + user.id"
               type="bar"
               :data="usersChartData.get(user.id)?.loans"
@@ -766,7 +865,11 @@
           <!-- Fees Chart -->
           <div class="card border-2 border-primary rounded-lg">
             <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Płatności opłat w {{ selectedYear }}</h3>
+            <div v-if="isLoadingFees" class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
             <Chart
+              v-else
               :id="'fees-' + user.id"
               type="bar"
               :data="usersChartData.get(user.id)?.fees"
@@ -780,7 +883,11 @@
             <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
               Niespłacone zakupy w {{ selectedYear }}
             </h3>
+            <div v-if="isLoadingPurchases" class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
             <Chart
+              v-else
               :id="'purchases-' + user.id"
               type="line"
               :data="usersPurchaseChartData.get(user.id)"

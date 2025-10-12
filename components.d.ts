@@ -72,6 +72,7 @@ declare module 'vue' {
     SeriesBook: typeof import('./src/components/library/SeriesBook.vue')['default']
     SeriesCarouselInfoDialog: typeof import('./src/components/library/SeriesCarouselInfoDialog.vue')['default']
     SeriesCarusel: typeof import('./src/components/library/SeriesCarusel.vue')['default']
+    Skeleton: typeof import('primevue/skeleton')['default']
     StatusButton: typeof import('./src/components/StatusButton.vue')['default']
     Tag: typeof import('primevue/tag')['default']
     Textarea: typeof import('primevue/textarea')['default']
