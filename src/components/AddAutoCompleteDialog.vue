@@ -45,7 +45,7 @@
 </script>
 
 <template>
-  <Dialog :style="{ width: '550px' }" :modal="true" @hide="cancel">
+  <Dialog :visible="props.visible" :style="{ width: '550px' }" :modal="true" @hide="cancel">
     <template #header>
       <p class="text-2xl">Wybierz</p>
     </template>

@@ -22,7 +22,7 @@
 
   onMounted(async () => {
     console.log('onMounted GET');
-    if (deviceStore.devices.length === 0) await deviceStore.getDevices();
+    if (deviceStore.devices.length === 0) deviceStore.getDevices();
     if (computerStore.computers.length === 0) await computerStore.getComputers();
   });
 
@@ -47,11 +47,34 @@
   //refresh view
   const refreshKey = ref<boolean>(false);
 
-  function selectedComputerChanged(event: SelectChangeEvent) {
+  async function selectedComputerChanged(event: SelectChangeEvent) {
     console.log('selectedComputerChanged', event);
+
+    // Wyczyść poprzedni stan
     refreshKey.value = false;
     hasChange.value = false;
     deviceDetailsMap.value = new Map<ComponentType, Device[]>();
+
+    // Ustaw wybrany komputer
+    selectedComputer.value = event.value as Computer | null;
+
+    // Jeśli wybrano komputer, pobierz jego pełne dane i zaktualizuj w store
+    if (event.value && typeof event.value === 'object' && 'id' in event.value) {
+      const computer = event.value as Computer;
+
+      const fullComputer = await computerStore.getComputerFromDb(computer.id);
+      if (fullComputer) {
+        // Zaktualizuj komputer w store, aby Select mógł go znaleźć
+        const index = computerStore.computers.findIndex(comp => comp.id === computer.id);
+        if (index !== -1) {
+          computerStore.computers[index] = fullComputer;
+        }
+        selectedComputer.value = fullComputer;
+      }
+    } else {
+      selectedComputer.value = null;
+    }
+
     setTimeout(() => {
       refreshKey.value = true;
     }, 300);
@@ -98,20 +121,25 @@
   //CATEGORY
   //
   const addToDisplayMap = async (componentType: ComponentType) => {
+    console.log('START - addToDisplayMap dla typu:', componentType.name);
+
     if (selectedComputer.value != null) {
-      const idOrIds = selectedComputer.value[componentType.column];
+      const oneDeviceOrListOfDevices: Device | Device[] | null = selectedComputer.value[componentType.column];
+
       let devices: Device[] = [];
-      if (Array.isArray(idOrIds)) {
-        const devicesOrNull = await Promise.all(
-          idOrIds.filter((id: number) => id > 0).map((id: number) => deviceStore.getDevice(id))
-        );
-        devices = devicesOrNull.filter((dev: Device | null) => dev != null);
-      } else if (typeof idOrIds === 'number' && idOrIds > 0) {
-        const newDevice: Device | null = await deviceStore.getDevice(idOrIds);
-        if (newDevice !== null) devices.push(newDevice);
+
+      if (Array.isArray(oneDeviceOrListOfDevices)) {
+        devices = oneDeviceOrListOfDevices;
+      } else if (oneDeviceOrListOfDevices) {
+        devices.push(oneDeviceOrListOfDevices);
       }
+
       deviceDetailsMap.value.set(componentType, devices);
+    } else {
+      console.log('Brak wybranego komputera');
     }
+
+    console.log('KONIEC - addToDisplayMap');
   };
 
   const removeFromDisplayMap = async (componentType: ComponentType) => {
@@ -140,10 +168,18 @@
   }
 
   async function addComponent(id: number) {
-    console.log('addComponent', id);
     showAddModal.value = false;
+
     if (selectedComputer.value !== null && componentType.value !== null) {
+      const device = await deviceStore.getDeviceFromDb(id);
+
+      if (!device) {
+        console.error('Nie znaleziono urządzenia o ID:', id);
+        return;
+      }
+
       let columnValue = selectedComputer.value[componentType.value.column];
+
       if (
         componentType.value.column === 'ram' ||
         componentType.value.column === 'disk' ||
@@ -152,30 +188,28 @@
         componentType.value.column === 'graphicCard' ||
         componentType.value.column === 'usb'
       ) {
-        // To są tablice
-        const arr = columnValue as number[];
-        if (!arr.includes(id)) {
-          arr.push(id);
+        const arr = columnValue as Device[];
+        const deviceExists = arr.some(d => d.id === id);
+
+        if (!deviceExists) {
+          arr.push(device);
           selectedComputer.value[componentType.value.column] = [...arr];
         }
       } else {
-        // To są liczby
-        selectedComputer.value[componentType.value.column] = id as number;
+        selectedComputer.value[componentType.value.column] = device;
       }
 
       if (deviceDetailsMap.value.has(componentType.value)) {
-        // Jeśli klucz istnieje, aktualizujemy istniejącą listę
         const existingDevices: Device[] = deviceDetailsMap.value.get(componentType.value) || [];
-        const newDevice: Device | null = await deviceStore.getDevice(id);
-        if (newDevice !== null) existingDevices.push(newDevice);
+
+        if (!existingDevices.includes(device)) {
+          existingDevices.push(device);
+        }
         deviceDetailsMap.value.set(componentType.value, existingDevices);
-      } else {
-        // Jeśli klucz nie istnieje, tworzymy nową listę
-        const newDevice: Device | null = await deviceStore.getDevice(id);
-        if (newDevice !== null) deviceDetailsMap.value.set(componentType.value, [newDevice]);
-        else deviceDetailsMap.value.set(componentType.value, []);
       }
+
       hasChange.value = true;
+      console.log('Ustawiono flagę zmiany');
     }
   }
 
@@ -186,16 +220,16 @@
       const arrayFields = ['ram', 'disk', 'cooling', 'display', 'graphicCard', 'usb'] as const;
 
       if (arrayFields.includes(part.column as (typeof arrayFields)[number])) {
-        // To są tablice
-        const arr = selectedComputer.value[part.column] as number[];
-        const index = arr.findIndex(id => id === device.id);
+        // To są tablice Device[]
+        const arr = selectedComputer.value[part.column] as Device[];
+        const index = arr.findIndex(d => d.id === device.id);
         if (index !== -1) {
           arr.splice(index, 1);
-          selectedComputer.value[part.column] = [...arr] as any; // <- dodaj as any
+          selectedComputer.value[part.column] = [...arr] as any;
         }
       } else {
-        // To są liczby
-        selectedComputer.value[part.column] = -1 as any; // <- dodaj as any
+        // To są pojedyncze Device - ustawiamy na null
+        selectedComputer.value[part.column] = null as any;
       }
 
       // Usuwamy z displayMap
@@ -224,7 +258,6 @@
 
   const handleSave = async () => {
     const currentComputerId = selectedComputer.value?.id;
-    await computerStore.getComputers();
     if (currentComputerId) {
       // Znajdź zaktualizowany komputer i ustaw go jako wybrany
       selectedComputer.value = computerStore.computers.find(comp => comp.id === currentComputerId) || null;

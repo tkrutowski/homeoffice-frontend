@@ -3,7 +3,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useUsersStore } from '@/stores/users';
   import type { User } from '@/types/User';
-  import type { Computer } from '@/types/Computer';
+  import { ComputerType, type Computer } from '@/types/Computer';
   import { useComputerStore } from '@/stores/computers';
   import type { AxiosError } from 'axios';
   import OfficeButton from '@/components/OfficeButton.vue';
@@ -58,6 +58,7 @@
 
   const closeDialog = () => {
     resetForm();
+    emit('cancel');
   };
 
   // Load users if not loaded
@@ -118,20 +119,21 @@
         idUser: selectedUser.value?.id || 0,
         name: computerName.value,
         activeStatus: 'ACTIVE',
-        computerCase: -1,
+        computerCase: null,
         cooling: [],
-        power: -1,
+        power: null,
         disk: [],
         display: [],
-        keyboard: -1,
-        motherboard: -1,
-        mouse: -1,
+        keyboard: null,
+        motherboard: null,
+        mouse: null,
         ram: [],
         info: computerInfo.value,
-        processor: -1,
-        soundCard: -1,
+        processor: null,
+        soundCard: null,
         graphicCard: [],
         usb: [],
+        computerType: ComputerType.DESKTOP,
       };
     }
 
@@ -180,6 +182,7 @@
 
 <template>
   <Dialog
+    :visible="props.visible"
     :modal="true"
     :style="{ width: '500px' }"
     :header="props.computer ? 'Edycja komputera' : 'Nowy komputer'"

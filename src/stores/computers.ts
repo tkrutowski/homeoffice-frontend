@@ -7,6 +7,7 @@ export const useComputerStore = defineStore('computer', {
   state: () => ({
     loadingComputers: false,
     computers: [] as Computer[],
+    selectedComputer: null as Computer | null,
   }),
 
   //getters = computed
@@ -134,7 +135,7 @@ export const useComputerStore = defineStore('computer', {
       return response.data;
     },
     //
-    //GET  DEVICE FROM DB BY ID
+    //GET  COMPUTER FROM DB BY ID
     //
     async getComputerFromDb(computerId: number): Promise<Computer | null> {
       console.log('START - getComputerFromDb(' + computerId + ')');
@@ -143,8 +144,7 @@ export const useComputerStore = defineStore('computer', {
       const response = await httpCommon.get(`/v1/computer/` + computerId);
       this.loadingComputers = false;
       console.log('END - getComputerFromDb()');
-      if (response.data) return response.data;
-      else return null;
+      return response.data || null;
     },
     //
     //DELETE COMPUTER

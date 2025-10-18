@@ -35,15 +35,19 @@
   const selected = ref<boolean>(false);
 
   const calculateQuantity = computed(() => {
-    if (props.computer && props.componentType) {
-      const component = props.computer[props.componentType.column];
-      if (Array.isArray(component)) {
-        return component.filter((id: number) => id > 0).length;
-      } else {
-        return component > 0 ? 1 : 0;
-      }
+    if (!props.computer || !props.componentType) {
+      console.log('Missing required props, returning 0');
+      return 0;
     }
-    return 0;
+
+    const component = props.computer[props.componentType.column];
+
+    if (Array.isArray(component)) {
+      return component.length;
+    } else {
+      if (component) return 1;
+      else return 0;
+    }
   });
 
   const getIcon = computed(() => {

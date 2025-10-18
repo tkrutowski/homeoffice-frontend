@@ -42,8 +42,9 @@ export enum ComputerType {
   ALL = 'ALL',
 }
 
-export interface ComputerDto {
+export interface Computer {
   id: number;
+  idUser: number;
   name: string;
   processor: Device | null;
   motherboard: Device | null;
@@ -55,30 +56,10 @@ export interface ComputerDto {
   keyboard: Device | null;
   mouse: Device | null;
   computerCase: Device | null;
-  graphicCard: Device | null;
   soundCard: Device | null;
+  graphicCard: Device[];
   usb: Device[];
   info: string;
   activeStatus: ActiveStatus;
-}
-
-export interface Computer {
-  id: number;
-  idUser: number;
-  name: string;
-  processor: number;
-  motherboard: number;
-  ram: number[];
-  disk: number[];
-  power: number;
-  cooling: number[];
-  display: number[];
-  keyboard: number;
-  mouse: number;
-  computerCase: number;
-  soundCard: number;
-  graphicCard: number[];
-  usb: number[];
-  info: string;
-  activeStatus: ActiveStatus;
+  computerType: ComputerType;
 }

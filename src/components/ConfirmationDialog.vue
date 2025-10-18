@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import OfficeButton from '@/components/OfficeButton.vue';
 
-  defineProps({
+  const props = defineProps({
+    visible: {
+      type: Boolean,
+      required: true,
+    },
     msg: {
       type: String,
       required: true,
@@ -28,7 +32,7 @@
 </script>
 
 <template>
-  <Dialog :style="{ width: '550px' }" header="Potwierdzenie" :modal="true">
+  <Dialog :visible="props.visible" :style="{ width: '550px' }" header="Potwierdzenie" :modal="true">
     <div class="confirmation-content">
       <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
       <span v-html="msg"></span>
