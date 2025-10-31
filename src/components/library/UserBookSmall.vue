@@ -84,7 +84,7 @@
       <!--      COVER     -->
       <div class="pt-4 flex justify-center">
         <img
-          v-if="userbook?.book?.cover != 'https://focikhome.synology.me/covers/'"
+          v-if="userbook?.book?.cover.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com')"
           :src="userbook.book?.cover"
           height="375"
           width="250"

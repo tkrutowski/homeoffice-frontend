@@ -1,11 +1,19 @@
 <script setup lang="ts">
-  import type { DeviceDto } from '@/types/Devices';
+  import type { Device } from '@/types/Devices';
   import { FileService } from '@/service/FileService';
   import OfficeButton from '@/components/OfficeButton.vue';
 
   defineProps<{
-    device: DeviceDto | null;
+    device: Device | null;
   }>();
+
+  const emit = defineEmits<{
+    'update:visible': [value: boolean];
+  }>();
+
+  const closeDialog = () => {
+    emit('update:visible', false);
+  };
 </script>
 
 <template>
@@ -14,6 +22,8 @@
     :style="{ width: '70vw' }"
     :maximizable="true"
     :modal="true"
+    :closable="true"
+    :closeOnEscape="true"
   >
     <div v-if="device" class="flex flex-col gap-4">
       <Fieldset v-if="device.files" class="w-full" legend="Pliki" :toggleable="true">
@@ -64,15 +74,15 @@
       </Fieldset>
 
       <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
-        <DataTable :value="Array.from(device.details)" tableStyle="min-width: 50rem" size="small">
-          <Column field="0" header="Klucz" style="width: 40%"></Column>
-          <Column field="1" header="Wartość" style="width: 40%"></Column>
+        <DataTable :value="Object.entries(device.details)" tableStyle="min-width: 50rem" size="small">
+          <Column field="0" header="Klucz" style="width: 30%"></Column>
+          <Column field="1" header="Wartość" style="width: 50%"></Column>
         </DataTable>
       </Fieldset>
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <OfficeButton btn-type="office-regular" text="OK" icon="pi pi-check" icon-pos="left" />
+        <OfficeButton btn-type="office-regular" text="OK" icon="pi pi-check" icon-pos="left" @click="closeDialog" />
       </div>
     </template>
   </Dialog>

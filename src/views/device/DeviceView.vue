@@ -178,7 +178,8 @@
             router.go(-1);
           }, 3000);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.log(err)
           toast.add({
             severity: 'error',
             summary: 'Błąd',
@@ -210,7 +211,10 @@
         .getDeviceFromDb(deviceId)
         .then((data: Device | null) => {
           if (data) {
-            device.value = data;
+            device.value = {
+              ...data,
+              details: new Map(Object.entries(data.details))
+            };
           }
         })
         .catch((error: AxiosError) => {

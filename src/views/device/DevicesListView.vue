@@ -7,7 +7,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useDevicesStore } from '@/stores/devices';
   import { UtilsService } from '@/service/UtilsService';
-  import type { Device, DeviceDto } from '@/types/Devices';
+  import type { Device } from '@/types/Devices';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
   import type { ActiveStatus } from '@/types/Bank';
   import StatusButton from '@/components/StatusButton.vue';
@@ -28,7 +28,7 @@
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       deviceType: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      firm: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
       purchaseDate: {
         operator: FilterOperator.AND,
@@ -76,7 +76,7 @@
   });
 
   const expandedRows = ref([]);
-  const deviceTemp = ref<DeviceDto>();
+  const deviceTemp = ref<Device>();
 
   const dataTableRef = ref<DefineComponent | null>(null);
   const selectedBooks = computed(() => {
@@ -91,7 +91,7 @@
   //-------------------------------------------------DELETE -------------------------------------------------
   //
   const showDeleteConfirmationDialog = ref<boolean>(false);
-  const confirmDelete = (device: DeviceDto) => {
+  const confirmDelete = (device: Device) => {
     deviceTemp.value = device;
     showDeleteConfirmationDialog.value = true;
   };
@@ -135,8 +135,8 @@
   //
   //-------------------------------------------------EDIT -------------------------------------------------
   //
-  const editItem = (item: DeviceDto) => {
-    const deviceItem: DeviceDto = JSON.parse(JSON.stringify(item));
+  const editItem = (item: Device) => {
+    const deviceItem: Device = JSON.parse(JSON.stringify(item));
     router.push({
       name: 'Device',
       params: { isEdit: 'true', deviceId: deviceItem.id },
@@ -158,12 +158,12 @@
   const filteredData = computed(() => {
     switch (filter.value) {
       case 'ACTIVE':
-        return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'ACTIVE');
+        return deviceStore.devices.filter((item: Device) => item.activeStatus === 'ACTIVE');
       case 'INACTIVE':
-        return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'INACTIVE');
+        return deviceStore.devices.filter((item: Device) => item.activeStatus === 'INACTIVE');
       case 'ALL':
       default:
-        return deviceStore.getDevicesDtos;
+        return deviceStore.devices;
     }
   });
 
@@ -171,7 +171,7 @@
   //---------------------------------------------STATUS CHANGE--------------------------------------------------
   //
   const showStatusChangeConfirmationDialog = ref<boolean>(false);
-  const confirmStatusChange = (deviceDto: DeviceDto) => {
+  const confirmStatusChange = (deviceDto: Device) => {
     deviceTemp.value = deviceDto;
     showStatusChangeConfirmationDialog.value = true;
   };

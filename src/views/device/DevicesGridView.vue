@@ -7,7 +7,7 @@
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useDevicesStore } from '@/stores/devices';
   import { UtilsService } from '@/service/UtilsService';
-  import type { DeviceDto } from '@/types/Devices';
+  import type { Device } from '@/types/Devices';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
   import type { ActiveStatus } from '@/types/Bank';
   import type { AxiosError } from 'axios';
@@ -27,17 +27,17 @@
     }
   });
 
-  const deviceTemp = ref<DeviceDto>();
+  const deviceTemp = ref<Device>();
 
   // Zmienne dla dialogu wgrywania plików
   const showUploadDialog = ref<boolean>(false);
-  const selectedDevice = ref<DeviceDto | null>(null);
+  const selectedDevice = ref<Device | null>(null);
 
   //
   //-------------------------------------------------DELETE -------------------------------------------------
   //
   const showDeleteConfirmationDialog = ref<boolean>(false);
-  const confirmDelete = (device: DeviceDto) => {
+  const confirmDelete = (device: Device) => {
     deviceTemp.value = device;
     showDeleteConfirmationDialog.value = true;
   };
@@ -81,8 +81,8 @@
   //
   //-------------------------------------------------EDIT -------------------------------------------------
   //
-  const editItem = (item: DeviceDto) => {
-    const deviceItem: DeviceDto = JSON.parse(JSON.stringify(item));
+  const editItem = (item: Device) => {
+    const deviceItem: Device = JSON.parse(JSON.stringify(item));
     router.push({
       name: 'Device',
       params: { isEdit: 'true', deviceId: deviceItem.id },
@@ -105,26 +105,26 @@
     console.log('fileredData - START');
     switch (filter.value) {
       case 'ACTIVE':
-        return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'ACTIVE');
+        return deviceStore.devices.filter((item: Device) => item.activeStatus === 'ACTIVE');
       case 'INACTIVE':
-        return deviceStore.getDevicesDtos.filter((item: DeviceDto) => item.activeStatus === 'INACTIVE');
+        return deviceStore.devices.filter((item: Device) => item.activeStatus === 'INACTIVE');
       case 'ALL':
       default:
-        return deviceStore.getDevicesDtos;
+        return deviceStore.devices;
     }
   });
 
   const searchQuery = ref<string>('');
-  const filteredDevices = ref<DeviceDto[]>(filteredData.value);
+  const filteredDevices = ref<Device[]>(filteredData.value);
   watch(filteredData, newFilteredData => {
     filteredDevices.value = newFilteredData; // Dynamicznie przypisuje dane po ich załadowaniu
   });
   const filterDevices = () => {
     if (searchQuery.value.length >= 3) {
       filteredDevices.value = filteredDevices.value.filter(
-        (device: DeviceDto) =>
+        (device: Device) =>
           device.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          device.firm?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          device.firm?.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
           device.purchaseDate?.toString().includes(searchQuery.value)
       );
     } else {
@@ -139,7 +139,7 @@
   //---------------------------------------------STATUS CHANGE--------------------------------------------------
   //
   const showStatusChangeConfirmationDialog = ref<boolean>(false);
-  const confirmStatusChange = (deviceDto: DeviceDto) => {
+  const confirmStatusChange = (deviceDto: Device) => {
     deviceTemp.value = deviceDto;
     showStatusChangeConfirmationDialog.value = true;
   };
@@ -181,7 +181,7 @@
   };
 
   // Funkcja do wyświetlania dialogu do wgrywania plików
-  const showUploadFilesDialog = (device: DeviceDto) => {
+  const showUploadFilesDialog = (device: Device) => {
     selectedDevice.value = device;
     showUploadDialog.value = true;
   };
@@ -213,13 +213,13 @@
   const layout = ref<'list' | 'grid' | undefined>('list');
   const options = ref<string[]>(['list', 'grid']);
 
-  const getSeverity = (item: DeviceDto) => {
+  const getSeverity = (item: Device) => {
     if (item.activeStatus === 'ACTIVE') {
       return 'success';
     }
     return 'danger';
   };
-  const getStatus = (item: DeviceDto) => {
+  const getStatus = (item: Device) => {
     if (item.sellDate) {
       return 'SPRZEDANE';
     }
@@ -280,9 +280,10 @@
   };
 
   const showDetailsDialog = ref<boolean>(false);
-  const selectedDeviceForDetails = ref<DeviceDto | null>(null);
+  const selectedDeviceForDetails = ref<Device | null>(null);
 
-  const displayDetails = (device: DeviceDto) => {
+  const displayDetails = (device: Device) => {
+    console.log("DETAILS",device)
     selectedDeviceForDetails.value = device;
     showDetailsDialog.value = true;
   };
@@ -403,7 +404,7 @@
               </div>
               <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
-                  <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.deviceType }}</span>
+                  <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.deviceType.name }}</span>
                   <div class="text-lg font-medium mt-2">{{ item.name }}</div>
                   <div class="text-sm font-medium mt-2">
                     {{ item.otherInfo }}
@@ -411,7 +412,7 @@
                 </div>
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
                   <div>
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ item.firm }}</span>
+                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ item.firm.name }}</span>
                     <div class="text-sm font-medium mt-2">
                       {{ UtilsService.formatDateToString(item.purchaseDate) }}
                     </div>

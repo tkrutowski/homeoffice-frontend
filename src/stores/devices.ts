@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import type { Device, DeviceDto, DeviceType } from '@/types/Devices.ts';
+import type { Device, DeviceType } from '@/types/Devices.ts';
 import type { ActiveStatus } from '@/types/Bank.ts';
 import moment from 'moment';
 import type { FileInfo, Module } from '@/types/FileInfo.ts';
@@ -21,29 +21,29 @@ export const useDevicesStore = defineStore('device', {
     // getSortedSeries: (state) =>
     //     state.series.filter(serie => serie.id != 2)
     //         .sort((a, b) => a.title.localeCompare(b.title)),
-    getDevicesDtos: state => {
-      const devices: Device[] = JSON.parse(JSON.stringify(state.devices));
-      return devices.map(dev => {
-        const dto: DeviceDto = {
-          id: dev.id,
-          deviceType: dev.deviceType?.name,
-          firm: dev.firm!.name,
-          name: dev.name,
-          purchaseDate: dev.purchaseDate,
-          purchaseAmount: dev.purchaseAmount,
-          sellDate: dev.sellDate,
-          sellAmount: dev.sellAmount,
-          warrantyEndDate: dev.warrantyEndDate,
-          insuranceEndDate: dev.insuranceEndDate,
-          otherInfo: dev.otherInfo,
-          activeStatus: dev.activeStatus,
-          details: new Map(Object.entries(dev.details)),
-          imageUrl: dev.imageUrl,
-          files: dev.files || [],
-        };
-        return dto;
-      });
-    },
+    // getDevicesDtos: state => {
+    //   const devices: Device[] = JSON.parse(JSON.stringify(state.devices));
+    //   return devices.map(dev => {
+    //     const dto: DeviceDto = {
+    //       id: dev.id,
+    //       deviceType: dev.deviceType?.name,
+    //       firm: dev.firm!.name,
+    //       name: dev.name,
+    //       purchaseDate: dev.purchaseDate,
+    //       purchaseAmount: dev.purchaseAmount,
+    //       sellDate: dev.sellDate,
+    //       sellAmount: dev.sellAmount,
+    //       warrantyEndDate: dev.warrantyEndDate,
+    //       insuranceEndDate: dev.insuranceEndDate,
+    //       otherInfo: dev.otherInfo,
+    //       activeStatus: dev.activeStatus,
+    //       details: new Map(Object.entries(dev.details)),
+    //       imageUrl: dev.imageUrl,
+    //       files: dev.files || [],
+    //     };
+    //     return dto;
+    //   });
+    // },
   },
 
   //actions = metody w komponentach
@@ -66,27 +66,27 @@ export const useDevicesStore = defineStore('device', {
       console.log('END - getDevices()');
       return this.devices;
     },
-    async getDevice(idDevice: number): Promise<Device | null> {
-      console.log('START - getDevice()', idDevice);
-      let dev = this.devices.find((dev: Device) => dev.id === idDevice);
+    // async getDevice(idDevice: number): Promise<Device | null> {
+    //   console.log('START - getDevice()', idDevice);
+    //   let dev = this.devices.find((dev: Device) => dev.id === idDevice);
 
-      if (!dev) {
-        const dev2 = await this.getDeviceFromDb(idDevice);
-        return dev2
-          ? {
-              ...dev2,
-              details: new Map(Object.entries(dev2.details)),
-            }
-          : null;
-      }
-      console.log('END - getDevices()');
-      return dev
-        ? {
-            ...dev,
-            details: new Map(Object.entries(dev.details)),
-          }
-        : null;
-    },
+    //   if (!dev) {
+    //     const dev2 = await this.getDeviceFromDb(idDevice);
+    //     return dev2
+    //       ? {
+    //           ...dev2,
+    //           details: new Map(Object.entries(dev2.details)),
+    //         }
+    //       : null;
+    //   }
+    //   console.log('END - getDevices()');
+    //   return dev
+    //     ? {
+    //         ...dev,
+    //         details: new Map(Object.entries(dev.details)),
+    //       }
+    //     : null;
+    // },
     //-------------------------------------------------------DATABASE
     //
     //GET DEVICES FROM DB
@@ -112,11 +112,13 @@ export const useDevicesStore = defineStore('device', {
       this.loadingDevices = false;
 
       console.log('END - getDeviceFromDb()');
-      if (response.data) {
-        let dev = response.data;
-        dev.details = new Map(Object.entries(dev.details));
-        return dev;
-      } else return null;
+      // if (response.data) {
+      //   let dev = response.data;
+      //   dev.details = new Map(Object.entries(dev.details));
+      //   console.log('getDeviceFromDb()',dev);
+      //   return dev;
+      // } else return null;
+      return response.data || null
     },
     //
     //DELETE DEVICE
