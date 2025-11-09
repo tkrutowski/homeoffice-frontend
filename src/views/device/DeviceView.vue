@@ -178,8 +178,8 @@
             router.go(-1);
           }, 3000);
         })
-        .catch((err) => {
-          console.log(err)
+        .catch(err => {
+          console.log(err);
           toast.add({
             severity: 'error',
             summary: 'Błąd',
@@ -213,7 +213,7 @@
           if (data) {
             device.value = {
               ...data,
-              details: new Map(Object.entries(data.details))
+              details: new Map(Object.entries(data.details)),
             };
           }
         })

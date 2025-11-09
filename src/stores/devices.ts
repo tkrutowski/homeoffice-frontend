@@ -118,7 +118,7 @@ export const useDevicesStore = defineStore('device', {
       //   console.log('getDeviceFromDb()',dev);
       //   return dev;
       // } else return null;
-      return response.data || null
+      return response.data || null;
     },
     //
     //DELETE DEVICE

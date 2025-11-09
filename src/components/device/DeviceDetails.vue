@@ -73,7 +73,7 @@
               <img
                 :src="dev.imageUrl?.length > 0 ? dev.imageUrl : '../../assets/images/no_image.png'"
                 alt="Image"
-                style="max-width: 300px; object-fit: contain;"
+                style="max-width: 300px; object-fit: contain"
               />
               <div class="ml-10">
                 <div v-for="[key, value] in Object.entries(dev.details)" :key="key">

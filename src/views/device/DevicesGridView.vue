@@ -283,7 +283,6 @@
   const selectedDeviceForDetails = ref<Device | null>(null);
 
   const displayDetails = (device: Device) => {
-    console.log("DETAILS",device)
     selectedDeviceForDetails.value = device;
     showDetailsDialog.value = true;
   };
@@ -404,7 +403,9 @@
               </div>
               <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
-                  <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.deviceType.name }}</span>
+                  <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
+                    item.deviceType.name
+                  }}</span>
                   <div class="text-lg font-medium mt-2">{{ item.name }}</div>
                   <div class="text-sm font-medium mt-2">
                     {{ item.otherInfo }}
