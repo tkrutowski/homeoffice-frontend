@@ -5,8 +5,9 @@ import axios from 'axios';
 import router from '../router';
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "https://goahead.focikhome.synology.me/api",
+  // baseURL: "https://goahead.focikhome.synology.me/api",
   // baseURL: 'http://localhost:8077/api',
+  baseURL: 'https://pxcm6vnuy9.execute-api.eu-central-1.amazonaws.com/prod/api',
   headers: {
     'Content-type': 'application/json',
   },
@@ -16,8 +17,9 @@ apiClient.interceptors.request.use(
   config => {
     if (
       config.url?.endsWith('/login') ||
-      config.url?.endsWith('/refresh')
-      // config.url?.endsWith('/test')
+      config.url?.endsWith('/refresh') ||
+      config.url?.endsWith('/test') ||
+      config.url?.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com/homeoffice/')
     ) {
       console.log('Żądanie do /login, pomijanie nagłówka Authorization');
     } else {
