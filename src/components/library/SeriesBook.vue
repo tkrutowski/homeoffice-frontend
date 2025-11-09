@@ -229,7 +229,7 @@
     <div class="mb-4 flex justify-center">
       <div class="relative mx-auto">
         <img
-          v-if="props.book?.cover != 'https://focikhome.synology.me/covers/'"
+          v-if="props.book?.cover.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com')"
           :src="props.book.cover"
           :alt="props.book.title"
           class="w-full rounded cover"
