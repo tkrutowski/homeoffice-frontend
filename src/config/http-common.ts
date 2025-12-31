@@ -8,7 +8,7 @@ const apiClient: AxiosInstance = axios.create({
   // baseURL: "https://goahead.focikhome.synology.me/api",
   // baseURL: 'http://localhost:8077/api',
   // baseURL: 'http://pxcm6vnuy9.execute-api.eu-central-1.amazonaws.com/prod/api',
-  baseURL: "https://ec2-3-76-109-222.eu-central-1.compute.amazonaws.com:8077/api",
+  baseURL: "http://ec2-3-76-109-222.eu-central-1.compute.amazonaws.com:8077/api",
   headers: {
     'Content-type': 'application/json',
   },
