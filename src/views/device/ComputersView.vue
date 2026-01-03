@@ -100,11 +100,11 @@
           // Pobierz najnowsze dane komputera z bazy danych
           return computerStore.getComputerFromDb(selectedComputer.value!.id);
         })
-        .then((updatedComputer) => {
+        .then(updatedComputer => {
           if (updatedComputer) {
             selectedComputer.value = updatedComputer;
           }
-          
+
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
