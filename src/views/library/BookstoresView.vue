@@ -193,11 +193,11 @@
       <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
         <template #body="slotProps">
           <div class="flex flex-row justify-between">
-            <OfficeIconButton title="Edytuj księgarnię" icon="pi pi-file-edit" @click="editBookstore(slotProps.data)" />
+            <OfficeIconButton class="text-orange-500" title="Edytuj księgarnię" icon="pi pi-file-edit" @click="editBookstore(slotProps.data)" />
             <OfficeIconButton
               title="Usuń księgarnię"
               icon="pi pi-trash"
-              severity="danger"
+              class="text-red-500"
               @click="confirmDelete(slotProps.data)"
             />
           </div>

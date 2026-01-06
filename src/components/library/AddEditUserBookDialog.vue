@@ -276,7 +276,7 @@
                   title="Dodaj księgarnię"
                   :icon="bookstoreStore.loadingBookstore ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
                   style="height: 35px; width: 35px; padding: 0"
-                  class="self-center"
+                  class="self-center text-primary-500"
                   @click="showAddBookstoreModal = true"
                 />
               </div>

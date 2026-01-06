@@ -60,21 +60,20 @@
             v-if="userbook.book?.series"
             title="Wyświetl książki w serii"
             icon="pi pi-list"
-            class="pr-0"
+            class="pr-0 text-primary-500"
             @click="showSeriesInfoDialog = true"
           />
           <OfficeIconButton
             title="Edycja książki na półce"
             icon="pi pi-file-edit"
-            class="pr-0"
+            class="pr-0 text-orange-500"
             @click="emit('edit', userbook)"
           />
 
           <OfficeIconButton
             title="Usunięcie książki z półki"
             icon="pi pi-trash"
-            severity="danger"
-            class="mr-2"
+            class="mr-2 text-red-500"
             @click="emit('delete', userbook)"
           />
         </div>

@@ -264,9 +264,8 @@
     <template #end>
       <div class="flex flex-row gap-4">
         <OfficeIconButton
-          class="cursor-default"
+          class="cursor-default text-green-500"
           icon="pi pi-check-square"
-          severity="success"
           :loading="allLoading"
           title="Określa, czy wyświetlane dane są aktualne."
         />

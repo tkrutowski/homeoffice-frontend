@@ -444,11 +444,11 @@
       <Column header="Akcja" :exportable="false" style="width: 8rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-start">
-            <OfficeIconButton title="Edytuj kredyt" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+            <OfficeIconButton class="text-orange-500" title="Edytuj kredyt" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
             <OfficeIconButton
               title="Usuń kredyt"
               icon="pi pi-trash"
-              severity="danger"
+              class="text-red-500"
               @click="confirmDeleteLoan(slotProps.data)"
             />
           </div>
@@ -591,21 +591,21 @@
       <OfficeIconButton
         title="Wyświetl niespłacone"
         :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
+        class="mr-2 text-red-500"
         :active="filter === 'TO_PAY'"
         @click="setFilter('TO_PAY')"
       />
       <OfficeIconButton
         title="Wyświetl spłacone"
         :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
+        class="mr-2 text-green-500"
         :active="filter === 'PAID'"
         @click="setFilter('PAID')"
       />
       <OfficeIconButton
         title="Wyświetl wszystkie"
         :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
+        class="mr-2 text-orange-500"
         :active="filter === 'ALL'"
         @click="setFilter('ALL')"
       />

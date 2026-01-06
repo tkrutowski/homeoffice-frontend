@@ -66,7 +66,7 @@
         <Card>
           <template #title
             ><span class="text-2xl">{{ dev.name }}</span>
-            <OfficeIconButton title="Usuń urządzenie" icon="pi pi-trash" severity="danger" @click="remove(dev)" />
+            <OfficeIconButton title="Usuń urządzenie" icon="pi pi-trash" class="text-red-500" @click="remove(dev)" />
           </template>
           <template #content>
             <div class="flex flex-row w-full">

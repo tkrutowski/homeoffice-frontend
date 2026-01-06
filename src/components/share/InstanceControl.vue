@@ -5,6 +5,7 @@
 
   const props = defineProps<{
     idInstance: string;
+    nameInstance: string;
   }>();
 
   const { loading, getInstanceStatus, startInstance, stopInstance } = useEc2Control();
@@ -49,12 +50,6 @@
         await startInstance(props.idInstance);
         // Po sukcesie ustawiamy na running (zielony)
         status.value = 'running';
-        toast.add({
-          severity: 'success',
-          summary: 'Sukces',
-          detail: 'Instancja została uruchomiona',
-          life: 3000,
-        });
         // Odśwież status po dłuższej chwili aby zweryfikować rzeczywisty status
         setTimeout(async () => {
           await fetchStatus();
@@ -89,42 +84,15 @@
     }
   }
 
-
-  const buttonIcon = computed(() => {
-    // Gdy instancja działa, pokazujemy ikonę stop
+  const buttonTitle = computed(() => {
     if (status.value === 'running') {
-      return 'pi pi-pause';
+      return `Naciścnij aby wyłączyć EC2 ${props.nameInstance}`;
     }
-    // W pozostałych przypadkach (stopped, pending, error, null) pokazujemy ikonę play
-    return 'pi pi-play';
-  });
-
-  const buttonBackground = computed(() => {
-    if (status.value === 'running') {
-      return 'bg-green-50 dark:bg-green-900/20';
-    }
-    if (status.value === 'pending' || loading.value) {
-      return 'bg-yellow-50 dark:bg-yellow-900/20';
-    }
-    if (status.value === 'error') {
-      return 'bg-red-50 dark:bg-red-900/20';
+    if (status.value === 'stopped') {
+      return `Naciścnij aby uruchomić EC2 ${props.nameInstance}`;
     }
     // stopped lub null
-    return 'bg-orange-50 dark:bg-orange-900/20';
-  });
-
-  const buttonBorder = computed(() => {
-    if (status.value === 'running') {
-      return 'border-green-300 dark:border-green-700';
-    }
-    if (status.value === 'pending' || loading.value) {
-      return 'border-yellow-300 dark:border-yellow-700';
-    }
-    if (status.value === 'error') {
-      return 'border-red-300 dark:border-red-700';
-    }
-    // stopped lub null
-    return 'border-orange-300 dark:border-orange-700';
+    return 'EC2 ${props.nameInstance}';
   });
 
   const buttonIconColor = computed(() => {
@@ -147,20 +115,11 @@
 </script>
 
 <template>
-  <div class="inline-flex items-center gap-2 px-2 py-1.5 rounded-lg border border-primary">
-    <div
-      class="w-8 h-8 rounded-lg flex items-center justify-center border transition-colors cursor-default"
-      :class="[buttonBackground, buttonBorder]"
-    >
-      <i class="pi pi-server text-base" :class="buttonIconColor" />
-    </div>
-    <button
-      @click="handleToggle"
-      :disabled="loading"
-      class="w-10 h-8 rounded-lg flex items-center justify-center border transition-colors hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
-      :class="[buttonBackground, buttonBorder]"
-    >
-      <i :class="[buttonIcon, buttonIconColor, 'text-base']" />
-    </button>
-  </div>
+  <OfficeIconButton
+    :title="buttonTitle"
+    icon="pi pi-server"
+    :class="buttonIconColor"
+    :loading="loading"
+    @click="handleToggle"
+  />
 </template>

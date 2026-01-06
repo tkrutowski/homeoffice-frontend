@@ -221,7 +221,7 @@
                       title="Zmień status na AKTYWNY"
                       icon="pi pi-times-circle"
                       :rounded="false"
-                      severity="danger"
+                      class="text-red-500"
                       @click="confirmStatusChange(item)"
                     />
                     <OfficeIconButton
@@ -229,21 +229,21 @@
                       title="Zmień status na NIEAKTYWNY"
                       icon="pi pi-check-circle"
                       :rounded="false"
-                      severity="secondary"
+                      class="text-green-500"
                       @click="confirmStatusChange(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-file-edit"
                       title="`Edytuj kartę: ${item.name}`"
                       :rounded="false"
-                      severity="primary"
+                      class="text-orange-500"
                       @click="editCard(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-trash"
                       title="`Usuń kartę: ${item.name}`"
                       :rounded="false"
-                      severity="danger"
+                      class="text-red-500"
                       @click="confirmDeleteCard(item)"
                     />
                     <OfficeButton

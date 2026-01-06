@@ -223,8 +223,8 @@
           <Column header="Akcje" style="width: 100px">
             <template #body="slotProps">
               <div class="flex gap-2">
-                <OfficeIconButton icon="pi pi-download" @click="downloadFile(slotProps.data)" />
-                <OfficeIconButton icon="pi pi-trash" severity="danger" @click="confirmDeleteFile(slotProps.data)" />
+                <OfficeIconButton class="text-blue-500" icon="pi pi-download" @click="downloadFile(slotProps.data)" />
+                <OfficeIconButton class="text-red-500" icon="pi pi-trash" @click="confirmDeleteFile(slotProps.data)" />
               </div>
             </template>
           </Column>

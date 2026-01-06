@@ -429,7 +429,7 @@
                       title="Zmień status na AKTYWNY"
                       icon="pi pi-times-circle"
                       :rounded="false"
-                      severity="danger"
+                      class="text-red-500"
                       @click="confirmStatusChange(item)"
                     />
                     <OfficeIconButton
@@ -437,28 +437,28 @@
                       title="Zmień status na NIEAKTYWNY"
                       icon="pi pi-check-circle"
                       :rounded="false"
-                      severity="success"
+                      class="text-green-500"
                       @click="confirmStatusChange(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-file-edit"
                       title=""
                       :rounded="false"
-                      severity="primary"
+                      class="text-orange-500"
                       @click="editItem(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-cloud-upload"
                       :title="`Wgraj pliki dla urządzenia: ${item.name}`"
                       :rounded="false"
-                      severity="info"
+                      class="text-blue-500"
                       @click="showUploadFilesDialog(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-trash"
                       :title="`Usuń urządzenie: ${item.name}`"
                       :rounded="false"
-                      severity="danger"
+                      class="text-red-500"
                       @click="confirmDelete(item)"
                     />
                     <ButtonOutlined

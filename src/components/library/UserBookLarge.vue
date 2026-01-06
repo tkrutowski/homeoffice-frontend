@@ -52,7 +52,7 @@
             v-if="userbook.book?.series?.id != 2"
             title="Wyświetl książki w serii"
             icon="pi pi-list"
-            class="mr-2"
+            class="mr-2 text-primary-500"
             @click="showSeriesInfoDialog = true"
           />
         </div>
