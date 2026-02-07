@@ -1,7 +1,8 @@
 <script lang="ts" setup>
   import { useAuthorizationStore } from '@/stores/authorization';
   import ThemeSwitcher from './ThemeSwitcher.vue';
-  import InstanceControl from "@/components/share/InstanceControl.vue";
+  import InstanceControl from '@/components/share/InstanceControl.vue';
+  import { EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
 
   const authStore = useAuthorizationStore();
 </script>
@@ -13,7 +14,7 @@
     <div class="flex flex-col align-items-end">
       <div class="flex justify-end">
         <InstanceControl :idInstance="'i-0c84ab8759cefd840'" :nameInstance="'Smartgaz'" />
-        <InstanceControl :idInstance="'i-09a67c6323c0bd240'" :nameInstance="'Home Office'" />
+        <InstanceControl :idInstance="EC2_INSTANCE_ID" :nameInstance="EC2_INSTANCE_NAME" />
       </div>
       <theme-switcher />
       <h5 v-if="authStore.isAuthenticatedOrToken" class="flex justify-end font-bold pr-1 text-primary">
