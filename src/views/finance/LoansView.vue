@@ -444,7 +444,12 @@
       <Column header="Akcja" :exportable="false" style="width: 8rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-start">
-            <OfficeIconButton class="text-orange-500" title="Edytuj kredyt" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+            <OfficeIconButton
+              class="text-orange-500"
+              title="Edytuj kredyt"
+              icon="pi pi-file-edit"
+              @click="editItem(slotProps.data)"
+            />
             <OfficeIconButton
               title="Usuń kredyt"
               icon="pi pi-trash"

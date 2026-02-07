@@ -3,12 +3,27 @@
   import router from '@/router';
   import { useAuthorizationStore } from '@/stores/authorization';
   import { useToast } from 'primevue/usetoast';
+  import ProgressBar from 'primevue/progressbar';
+  import { useEc2Control } from '@/composables/useEc2Control';
+  import { EC2_INSTANCE_ID } from '@/config/ec2';
 
   const authorizationStore = useAuthorizationStore();
 
   const username = ref<string>('');
   const password = ref<string>('');
   const toast = useToast();
+  const { ensureInstanceRunning } = useEc2Control();
+
+  type LoginPhase = 'idle' | 'checking' | 'starting' | 'waiting' | 'waiting_app' | 'logging_in';
+  const loginPhase = ref<LoginPhase>('idle');
+
+  const phaseMessage: Record<Exclude<LoginPhase, 'idle'>, string> = {
+    checking: 'Sprawdzam serwer…',
+    starting: 'Uruchamiam serwer…',
+    waiting: 'Oczekiwanie na uruchomienie (może zająć 1–2 min)…',
+    waiting_app: 'Czekam na gotowość aplikacji…',
+    logging_in: 'Logowanie…',
+  };
 
   onMounted(() => {
     console.log('MOUNTED');
@@ -16,9 +31,33 @@
   });
 
   async function login() {
-    const result = await authorizationStore.login(username.value, password.value);
-    if (result) {
-      goBack();
+    loginPhase.value = 'checking';
+
+    try {
+      await ensureInstanceRunning(EC2_INSTANCE_ID, {
+        onPhase: p => {
+          loginPhase.value = p;
+        },
+        waitForAppPing: async () => {
+          await authorizationStore.testPing();
+        },
+      });
+
+      loginPhase.value = 'logging_in';
+      const result = await authorizationStore.login(username.value, password.value);
+      if (result) {
+        goBack();
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Nie udało się uruchomić serwera.';
+      toast.add({
+        severity: 'error',
+        summary: 'Logowanie',
+        detail: message,
+        life: 5000,
+      });
+    } finally {
+      loginPhase.value = 'idle';
     }
   }
 
@@ -84,6 +123,15 @@
       label="ZALOGUJ"
       icon-pos="right"
     />
+
+    <!-- EC2 / login progress -->
+    <div v-if="loginPhase !== 'idle'" class="mt-2 mb-2 w-full">
+      <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+        {{ phaseMessage[loginPhase] }}
+      </p>
+      <ProgressBar mode="indeterminate" class="w-full" />
+    </div>
+
     <p class="text-right mb-4">
       <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
     </p>

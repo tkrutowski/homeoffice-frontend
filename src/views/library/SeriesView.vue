@@ -368,7 +368,12 @@
             <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
               <template #body="slotProps">
                 <div class="flex flex-row justify-between">
-                  <OfficeIconButton class="text-orange-500" title="Edytuj cykl" icon="pi pi-file-edit" @click="editSeries(slotProps.data)" />
+                  <OfficeIconButton
+                    class="text-orange-500"
+                    title="Edytuj cykl"
+                    icon="pi pi-file-edit"
+                    @click="editSeries(slotProps.data)"
+                  />
                   <OfficeIconButton
                     title="Usuń cykl"
                     icon="pi pi-trash"

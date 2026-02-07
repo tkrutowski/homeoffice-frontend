@@ -437,8 +437,18 @@
       <Column header="Akcja" :exportable="false" style="min-width: 10rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-content-end">
-            <OfficeIconButton class="text-orange-500" title="Edytuj opłatę" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
-            <OfficeIconButton class="text-orange-500" title="Kopiuj opłatę" icon="pi pi-copy" @click="copyItem(slotProps.data)" />
+            <OfficeIconButton
+              class="text-orange-500"
+              title="Edytuj opłatę"
+              icon="pi pi-file-edit"
+              @click="editItem(slotProps.data)"
+            />
+            <OfficeIconButton
+              class="text-orange-500"
+              title="Kopiuj opłatę"
+              icon="pi pi-copy"
+              @click="copyItem(slotProps.data)"
+            />
             <OfficeIconButton
               class="text-red-500"
               title="Usuń opłatę"

@@ -185,7 +185,12 @@
       <Column header="Akcja" :exportable="false" style="max-width: 3rem">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-content-end">
-            <OfficeIconButton class="text-orange-500" title="Edytuj bank" icon="pi pi-file-edit" @click="editBank(slotProps.data)" />
+            <OfficeIconButton
+              class="text-orange-500"
+              title="Edytuj bank"
+              icon="pi pi-file-edit"
+              @click="editBank(slotProps.data)"
+            />
             <OfficeIconButton
               title="Usuń bank"
               icon="pi pi-trash"

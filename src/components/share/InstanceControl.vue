@@ -1,13 +1,19 @@
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+  import { useRoute } from 'vue-router';
   import { useEc2Control } from '@/composables/useEc2Control';
   import { useToast } from 'primevue/usetoast';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
+
+  /** Odświeżanie statusu EC2 co N minut (AWS wyłącza po 15 min bezczynności). 20 min żeby zapytanie nie „budziło” EC2. */
+  const STATUS_POLL_INTERVAL_MS = 20 * 60 * 1000;
 
   const props = defineProps<{
     idInstance: string;
     nameInstance: string;
   }>();
 
+  const route = useRoute();
   const { loading, getInstanceStatus, startInstance, stopInstance } = useEc2Control();
   const toast = useToast();
 
@@ -86,18 +92,18 @@
 
   const buttonTitle = computed(() => {
     if (status.value === 'running') {
-      return `Naciścnij aby wyłączyć EC2 ${props.nameInstance}`;
+      return `Naciśnij aby wyłączyć EC2 ${props.nameInstance}`;
     }
     if (status.value === 'stopped') {
-      return `Naciścnij aby uruchomić EC2 ${props.nameInstance}`;
+      return `Naciśnij aby uruchomić EC2 ${props.nameInstance}`;
     }
     // stopped lub null
-    return 'EC2 ${props.nameInstance}';
+    return `EC2 ${props.nameInstance}`;
   });
 
   const buttonIconColor = computed(() => {
     if (status.value === 'running') {
-      return 'text-green-600 dark:text-green-400';
+      return 'text-green-800 dark:text-green-400';
     }
     if (status.value === 'pending' || loading.value) {
       return 'text-yellow-600 dark:text-yellow-400';
@@ -109,9 +115,29 @@
     return 'text-orange-600 dark:text-orange-400';
   });
 
+  let statusPollTimer: ReturnType<typeof setInterval> | null = null;
+
   onMounted(() => {
     fetchStatus();
+    statusPollTimer = setInterval(() => {
+      fetchStatus();
+    }, STATUS_POLL_INTERVAL_MS);
   });
+
+  onUnmounted(() => {
+    if (statusPollTimer) {
+      clearInterval(statusPollTimer);
+      statusPollTimer = null;
+    }
+  });
+
+  // Po przekierowaniu (np. z Error503 po uruchomieniu EC2) odśwież ikonę
+  watch(
+    () => route.fullPath,
+    () => {
+      fetchStatus();
+    }
+  );
 </script>
 
 <template>
