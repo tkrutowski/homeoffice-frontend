@@ -328,8 +328,8 @@
       @page="handleRowsPerPageChange"
     >
       <template #header>
-        <div class="flex justify-between gap-3">
-          <div class="">
+        <div class="grid grid-cols-3 gap-4 items-center">
+          <div class="flex">
             <router-link
               :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }"
               style="text-decoration: none"
@@ -354,7 +354,42 @@
               </template>
             </Select>
           </div>
-          <div class="flex gap-4">
+          <div class="flex justify-center items-center gap-2">
+            <div class="flex gap-2">
+              <OfficeIconButton
+                title="Wyświetl nieaktywne"
+                :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+                class="text-red-500"
+                :active="filter === 'INACTIVE'"
+                @click="setFilter('INACTIVE')"
+              />
+              <OfficeIconButton
+                title="Wyświetl aktywne"
+                :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+                class="text-green-500"
+                :active="filter === 'ACTIVE'"
+                @click="setFilter('ACTIVE')"
+              />
+              <OfficeIconButton
+                title="Wyświetl wszystkie"
+                :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+                class="text-orange-500"
+                :active="filter === 'ALL'"
+                @click="setFilter('ALL')"
+              />
+            </div>
+            <div
+              class="border-l border-surface-300 dark:border-surface-600 pl-3 ml-1 flex items-center"
+              aria-hidden="true"
+            >
+              <SelectButton v-model="layout" :options="options" :allowEmpty="false">
+                <template #option="{ option }">
+                  <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
+                </template>
+              </SelectButton>
+            </div>
+          </div>
+          <div class="flex justify-end gap-4">
             <IconField icon-position="left">
               <InputIcon>
                 <i class="pi pi-search" />
@@ -363,13 +398,6 @@
             </IconField>
             <Button type="button" icon="pi pi-filter-slash" outlined title="Wyczyść filtry" @click="clearFilter()" />
           </div>
-        </div>
-        <div class="flex justify-end mt-2">
-          <SelectButton v-model="layout" :options="options" :allowEmpty="false">
-            <template #option="{ option }">
-              <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
-            </template>
-          </SelectButton>
         </div>
       </template>
 
@@ -489,29 +517,6 @@
         :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
         class="mr-2"
         @click="deviceStore.refreshDevices()"
-      />
-    </template>
-    <template #center>
-      <OfficeIconButton
-        title="Wyświetl aktywne"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
-        :active="filter === 'ACTIVE'"
-        @click="setFilter('ACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl nieaktywne"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
-        :active="filter === 'INACTIVE'"
-        @click="setFilter('INACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl wszystkie"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
-        :active="filter === 'ALL'"
-        @click="setFilter('ALL')"
       />
     </template>
     <template #end>

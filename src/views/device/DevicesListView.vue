@@ -250,14 +250,42 @@
       @page="handleRowsPerPageChange"
     >
       <template #header>
-        <div class="flex justify-between">
-          <router-link :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }" style="text-decoration: none">
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowe urządzenie" />
-          </router-link>
-          <div v-if="deviceStore.loadingDevices">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+        <div class="grid grid-cols-3 gap-4 items-center">
+          <div class="flex">
+            <router-link :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }" style="text-decoration: none">
+              <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowe urządzenie" />
+            </router-link>
           </div>
-          <div class="flex gap-4">
+          <div class="flex justify-center gap-2">
+            <OfficeIconButton
+              title="Wyświetl nieaktywne"
+              :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+              class="text-red-500"
+              :active="filter === 'INACTIVE'"
+              @click="setFilter('INACTIVE')"
+            />
+            <OfficeIconButton
+              title="Wyświetl aktywne"
+              :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+              class="text-green-500"
+              :active="filter === 'ACTIVE'"
+              @click="setFilter('ACTIVE')"
+            />
+            <OfficeIconButton
+              title="Wyświetl wszystkie"
+              :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+              class="text-orange-500"
+              :active="filter === 'ALL'"
+              @click="setFilter('ALL')"
+            />
+          </div>
+          <div class="flex justify-end gap-4">
+            <ProgressSpinner
+              v-if="deviceStore.loadingDevices"
+              class="ml-3"
+              style="width: 35px; height: 35px"
+              stroke-width="5"
+            />
             <IconField icon-position="left">
               <InputIcon>
                 <i class="pi pi-search" />
@@ -465,29 +493,6 @@
         :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
         class="mr-2"
         @click="deviceStore.refreshDevices()"
-      />
-    </template>
-    <template #center>
-      <OfficeIconButton
-        title="Wyświetl aktywne"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
-        :active="filter === 'ACTIVE'"
-        @click="setFilter('ACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl nieaktywne"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
-        :active="filter === 'INACTIVE'"
-        @click="setFilter('INACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl wszystkie"
-        :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
-        :active="filter === 'ALL'"
-        @click="setFilter('ALL')"
       />
     </template>
     <template #end>
