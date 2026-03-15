@@ -103,7 +103,7 @@
 
   const buttonIconColor = computed(() => {
     if (status.value === 'running') {
-      return 'text-green-800 dark:text-green-400';
+      return 'text-green-600 dark:text-green-400';
     }
     if (status.value === 'pending' || loading.value) {
       return 'text-yellow-600 dark:text-yellow-400';

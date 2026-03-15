@@ -382,24 +382,24 @@
                 'border-t border-surface-200 dark:border-surface-700': index !== 0,
               }"
             >
-              <div class="md:w-40 relative">
+              <div class="md:w-40 flex flex-col gap-1">
+                <div class="flex justify-center mb-1">
+                  <Tag :value="getStatus(item)" :severity="getSeverity(item)" class="text-xs" />
+                </div>
                 <img
                   v-if="item.imageUrl && item.imageUrl.length > 0"
-                  class="block xl:block mx-auto rounded w-full"
+                  class="block xl:block mx-auto rounded w-full object-contain bg-surface-100 dark:bg-surface-800"
                   :src="item.imageUrl"
                   :alt="item.imageUrl"
-                  style="max-width: 90px"
+                  style="max-width: 90px; min-height: 60px"
                 />
                 <img
                   v-else
-                  class="block xl:block mx-auto rounded w-full"
+                  class="block xl:block mx-auto rounded w-full object-contain bg-surface-100 dark:bg-surface-800"
                   src="../../assets/images/no_image.png"
                   alt="no image"
-                  style="max-width: 90px"
+                  style="max-width: 90px; min-height: 60px"
                 />
-                <div class="absolute bg-black/70 rounded-border" style="left: 4px; top: 4px">
-                  <Tag :value="getStatus(item)" :severity="getSeverity(item)"></Tag>
-                </div>
               </div>
               <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
