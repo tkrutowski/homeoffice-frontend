@@ -16,12 +16,13 @@
   import moment from 'moment/moment';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
-  import type { DataTableRowReorderEvent } from 'primevue';
+  import type { DataTableRowClickEvent, DataTableRowReorderEvent } from 'primevue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddMultipleDialog from '@/components/AddMultipleDialog.vue';
   import { FileService } from '@/service/FileService.ts';
   import type { FileInfo } from '@/types/FileInfo.ts';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
+  import FileUrlsPreviewDialog from '@/components/FileUrlsPreviewDialog.vue';
 
   const deviceStore = useDevicesStore();
   const firmStore = useFirmsStore();
@@ -417,6 +418,21 @@
     }
   };
 
+  const filePreviewVisible = ref(false);
+  const filePreviewStartIndex = ref(0);
+
+  function onFilesRowClick(event: DataTableRowClickEvent) {
+    const file = event.data as FileInfo;
+    if (!device.value.files?.length) return;
+    const idx = device.value.files.findIndex(f => f.id === file.id);
+    filePreviewStartIndex.value = idx >= 0 ? idx : 0;
+    filePreviewVisible.value = true;
+  }
+
+  function openFileUrlInNewTab(url: string) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
   const downloadFile = async (file: FileInfo) => {
     try {
       const blob = await filesStore.downloadFileDb('DEVICE_FILES', file.name);
@@ -501,7 +517,12 @@
     @save="deleteFile"
     @cancel="showDeleteFileDialog = false"
   />
-  <div class="m-4 max-w-5xl mx-auto">
+  <FileUrlsPreviewDialog
+    v-model:visible="filePreviewVisible"
+    :items="device.files ?? []"
+    :initial-index="filePreviewStartIndex"
+  />
+  <div class="m-4 max-w-7xl mx-auto">
     <form @submit.stop.prevent="saveDevice">
       <Panel>
         <template #header>
@@ -691,14 +712,19 @@
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
             :rowsPerPageOptions="[5, 10, 20, 50]"
             responsiveLayout="scroll"
+            @row-click="onFilesRowClick"
           >
             <Column field="name" header="Nazwa pliku" :sortable="true">
               <template #body="slotProps">
-                <div class="flex items-center">
-                  <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2"></i>
-                  <a :href="slotProps.data.url" target="_blank" class="text-blue-600 hover:text-blue-800">
-                    {{ slotProps.data.name }}
-                  </a>
+                <div class="flex items-center gap-2">
+                  <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2 shrink-0"></i>
+                  <span class="text-primary-600 dark:text-primary-400 cursor-pointer truncate">{{ slotProps.data.name }}</span>
+                  <OfficeIconButton
+                    icon="pi pi-external-link"
+                    class="shrink-0 text-blue-500"
+                    title="Otwórz w nowej karcie"
+                    @click.stop="openFileUrlInNewTab(slotProps.data.url)"
+                  />
                 </div>
               </template>
             </Column>
@@ -722,14 +748,16 @@
             </Column>
             <Column field="description" header="Opis" style="width: 200px">
               <template #body="slotProps">
-                <InputText v-model="slotProps.data.description" placeholder="Dodaj opis..." />
+                <div @click.stop>
+                  <InputText v-model="slotProps.data.description" placeholder="Dodaj opis..." />
+                </div>
               </template>
             </Column>
             <Column header="Akcje" style="width: 100px">
               <template #body="slotProps">
-                <div class="flex gap-2">
-                  <OfficeIconButton icon="pi pi-download" @click="downloadFile(slotProps.data)" />
-                  <OfficeIconButton icon="pi pi-trash" severity="danger" @click="confirmDeleteFile(slotProps.data)" />
+                <div class="flex gap-2" @click.stop>
+                  <OfficeIconButton icon="pi pi-download" class="text-blue-500" @click="downloadFile(slotProps.data)" />
+                  <OfficeIconButton icon="pi pi-trash" class="text-red-500" @click="confirmDeleteFile(slotProps.data)" />
                 </div>
               </template>
             </Column>
@@ -756,10 +784,10 @@
               <template #body="slotProps">
                 <OfficeIconButton
                   icon="pi pi-pencil"
-                  class="mr-2"
+                  class="mr-2 text-orange-500"
                   @click="editDetails(slotProps.data, slotProps.index)"
                 />
-                <OfficeIconButton icon="pi pi-trash" severity="danger" @click="confirmDelete(slotProps.data)" />
+                <OfficeIconButton icon="pi pi-trash" class="text-red-500" @click="confirmDelete(slotProps.data)" />
               </template>
             </Column>
           </DataTable>
