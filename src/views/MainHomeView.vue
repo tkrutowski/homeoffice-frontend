@@ -4,6 +4,7 @@
   // import { useBooksStore } from '@/stores/books'
   // import { useDevicesStore } from '@/stores/devices'
   import AppCard from '@/components/AppCard.vue';
+  import FinanceHomeEntryCard from '@/components/home/FinanceHomeEntryCard.vue';
   import router from '@/router';
 
   const authorizationStore = useAuthorizationStore();
@@ -48,25 +49,28 @@
   <h1 v-if="!authorizationStore.isAuthenticatedOrToken" class="color-office flex justify-center mt-8">
     Musisz się najpierw zalogować... ;)
   </h1>
-  <div v-else class="flex flex-row justify-center gap-4 mt-5">
-    <AppCard
-      text-content="Kredyty, płatności i zakupy"
-      text-title="Finanse"
-      :disabled="!authorizationStore.hasAccessFinance"
-      @clicked="runFinance"
-    />
-    <AppCard
-      text-content="Książki, audiobooki, ebooki"
-      text-title="Biblioteka"
-      :disabled="!authorizationStore.hasAccessLibrary"
-      @clicked="runLibrary"
-    />
-    <AppCard
-      text-content="Kopmputery, tablety i inne"
-      text-title="Urządzenia"
-      :disabled="!authorizationStore.hasAccessDevice"
-      @clicked="runDevice"
-    />
+  <div v-else class="mt-5 flex flex-col items-center gap-6 px-3">
+    <div class="flex flex-row flex-wrap justify-center gap-4">
+      <AppCard
+        text-content="Kredyty, płatności i zakupy"
+        text-title="Finanse"
+        :disabled="!authorizationStore.hasAccessFinance"
+        @clicked="runFinance"
+      />
+      <AppCard
+        text-content="Książki, audiobooki, ebooki"
+        text-title="Biblioteka"
+        :disabled="!authorizationStore.hasAccessLibrary"
+        @clicked="runLibrary"
+      />
+      <AppCard
+        text-content="Kopmputery, tablety i inne"
+        text-title="Urządzenia"
+        :disabled="!authorizationStore.hasAccessDevice"
+        @clicked="runDevice"
+      />
+    </div>
+    <FinanceHomeEntryCard />
   </div>
 </template>
 
