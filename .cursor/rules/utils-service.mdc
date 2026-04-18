@@ -1,0 +1,11 @@
+---
+description: Współdzielone utili — src/service/UtilsService.ts (używaj i rozszerzaj).
+globs:
+alwaysApply: true
+---
+
+# UtilsService
+
+- **Przed** napisaniem lokalnej funkcji pomocniczej (format daty, waluty, powtarzalne mapowania enumów itd.) sprawdź `src/service/UtilsService.ts` i **użyj istniejącej metody**, jeśli pasuje do przypadku.
+- **Nowe** funkcje, które mogą się przydać w więcej niż jednym miejscu (komponent, widok, store), **dodawaj do `UtilsService`** z czytelną nazwą i spójną sygnaturą z resztą pliku, zamiast duplikować logikę w wielu plikach.
+- Import: `import { UtilsService } from '@/service/UtilsService'` (ścieżka jak w projekcie).
