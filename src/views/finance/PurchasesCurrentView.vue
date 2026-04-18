@@ -6,6 +6,7 @@
   import { computed, onMounted, ref, watch } from 'vue';
   import { PaymentStatus } from '@/types/Payment';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Purchase } from '@/types/Purchase.ts';
   import type { User } from '@/types/User.ts';
@@ -163,67 +164,57 @@
       @cancel="showStatusChangeConfirmationDialog = false"
     />
     <Toolbar
-      class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 pt-2 dark:border-surface-700 dark:bg-surface-950"
+      class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 py-2 dark:border-surface-700 dark:bg-surface-950"
     >
       <template #start>
-        <p>
-          RAZEM:
-          {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
-        </p>
+        <div class="flex flex-row items-center gap-1">
+          <OfficeIconButton
+            class="text-amber-500"
+            title="Dodaj nowy zakup."
+            icon="pi pi-plus"
+            @click="goToNewPurchase"
+          />
+          <OfficeIconButton
+            title="Odświerz listę zakupów"
+            class="text-green-500"
+            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+            :btn-disabled="selectedUser === null"
+            @click="getCurrentPurchaseByUser"
+          />
+          <OfficeIconButton
+            class="text-red-500"
+            title="Oznacz wybrane zakupy jako opłacone."
+            icon="pi pi-save"
+            :btn-disabled="purchasesStore.purchasesToPay.length == 0"
+            @click="showStatusChangeConfirmationDialog = true"
+          />
+        </div>
       </template>
 
       <template #center>
-        <Select
-          id="input-customer"
-          v-model="selectedUser"
-          :options="userStore.getUserByPrivileges"
-          :option-label="user => user.firstName + ' ' + user.lastName"
-          :loading="userStore.loadingUsers"
-          @change="onUserSelectChange"
-          required
-        />
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <Select
+            id="input-customer"
+            v-model="selectedUser"
+            :options="userStore.getUserByPrivileges"
+            :option-label="user => user.firstName + ' ' + user.lastName"
+            :loading="userStore.loadingUsers"
+            @change="onUserSelectChange"
+            required
+          />
+          <OfficeIconButton
+            title="Wyszukaj zakupy dla wybranego użytkownika"
+            class="text-orange-500"
+            icon="pi pi-search"
+            :btn-disabled="purchasesStore.loadingPurchases || selectedUser === null"
+            :loading="purchasesStore.loadingPurchases"
+            @click="getCurrentPurchaseByUser"
+          />
+        </div>
       </template>
 
       <template #end>
-        <Button
-          outlined
-          class="font-bold uppercase tracking-wider"
-          label="WYSZUKAJ"
-          :disabled="purchasesStore.loadingPurchases || selectedUser === null"
-          :loading="purchasesStore.loadingPurchases"
-          @click="getCurrentPurchaseByUser"
-        />
-      </template>
-    </Toolbar>
-    <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
-      <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
-        <PurchaseCurrentItemGroup :deadline-date="key" />
-      </div>
-      <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
-    </div>
-    <Toolbar
-      class="shrink-0 border-t border-surface-200 bg-surface-0 px-6 pb-2 pt-2 shadow-[0_-4px_12px_-2px_rgb(0_0_0/0.08)] dark:border-surface-700 dark:bg-surface-950 dark:shadow-[0_-4px_14px_-2px_rgb(0_0_0/0.35)]"
-    >
-      <template #start>
-        <Button class="mr-2" title="Dodaj nowy zakup." severity="warn" icon="pi pi-plus" @click="goToNewPurchase" />
-        <Button
-          title="Odświerz listę zakupów"
-          :icon="purchasesStore.loadingPurchases ? 'pi  pi-spin pi-spinner' : 'pi pi-refresh'"
-          class="mr-2"
-          :disabled="selectedUser === null"
-          @click="getCurrentPurchaseByUser"
-        />
-        <Button
-          title="Oznacz wybrane zakupy jako opłacone."
-          icon="pi pi-save"
-          severity="danger"
-          :disabled="purchasesStore.purchasesToPay.length == 0"
-          @click="showStatusChangeConfirmationDialog = true"
-        />
-      </template>
-
-      <template #end>
-        <div class="flex flex-col">
+        <div class="flex flex-col text-sm">
           <p class="mb-1">
             <small>Zaznaczone:</small>
             {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
@@ -235,5 +226,11 @@
         </div>
       </template>
     </Toolbar>
+    <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
+      <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
+        <PurchaseCurrentItemGroup :deadline-date="key" />
+      </div>
+      <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
+    </div>
   </div>
 </template>
