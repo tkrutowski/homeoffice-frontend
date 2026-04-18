@@ -7,6 +7,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { AxiosError } from 'axios';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import { useBanksStore } from '@/stores/banks.ts';
   import type { Bank } from '@/types/Bank.ts';
   import type { ResponseData } from '@/types/User.ts';
@@ -99,7 +100,6 @@
   });
 </script>
 <template>
-  <TheMenuFinance />
   <ConfirmationDialog
     v-model:visible="showDeleteConfirmationDialog"
     :msg="deleteConfirmationMessage"
@@ -108,114 +108,120 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-3 mx-2">
-    <DataTable
-      v-model:filters="filters"
-      v-model:expanded-rows="expandedRows"
-      :value="bankStore.banks"
-      striped-rows
-      removable-sort
-      paginator
-      :rows="10"
-      :rows-per-page-options="[5, 10, 20, 50]"
-      size="small"
-      table-style="min-width: 50rem"
-      filter-display="menu"
-      :global-filter-fields="['name', 'address.street', 'address.city']"
-    >
-      <template #header>
-        <div class="flex justify-between">
-          <router-link
-            :to="{
-              name: 'Bank',
-              params: { isEdit: 'false', bankId: 0 },
-            }"
-            style="text-decoration: none"
-          >
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy bank" />
-          </router-link>
-          <div v-if="bankStore.loadingBanks">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
-          <div class="flex gap-4">
-            <IconField icon-position="left">
-              <InputIcon>
-                <i class="pi pi-search" />
-              </InputIcon>
-              <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-            </IconField>
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              outlined
-              size="small"
-              title="Wyczyść filtry"
-              @click="clearFilter()"
-            />
-          </div>
-        </div>
-      </template>
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-      <template #empty>
-        <p v-if="!bankStore.loadingBanks" class="text-red-500">Nie znaleziono banków...</p>
-      </template>
-
-      <Column expander style="width: 5rem" />
-
-      <!--   NAME   -->
-      <Column field="name" header="Nazwa" :sortable="true" style="text-align: left">
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--  ADDRESS    -->
-      <Column field="address.street" header="Ulica" sortable>
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-      <Column field="address.city" header="Miasto" sortable>
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="max-width: 3rem">
-        <template #body="slotProps">
-          <div class="flex flex-row gap-1 justify-content-end">
-            <OfficeIconButton
-              class="text-orange-500"
-              title="Edytuj bank"
-              icon="pi pi-file-edit"
-              @click="editBank(slotProps.data)"
-            />
-            <OfficeIconButton
-              title="Usuń bank"
-              icon="pi pi-trash"
-              class="text-red-500"
-              @click="confirmDeleteBank(slotProps.data)"
-            />
+    <Panel class="my-3 mx-2">
+      <DataTable
+        v-model:filters="filters"
+        v-model:expanded-rows="expandedRows"
+        :value="bankStore.banks"
+        striped-rows
+        removable-sort
+        paginator
+        :rows="10"
+        :rows-per-page-options="[5, 10, 20, 50]"
+        size="small"
+        table-style="min-width: 50rem"
+        filter-display="menu"
+        :global-filter-fields="['name', 'address.street', 'address.city']"
+      >
+        <template #header>
+          <div class="flex justify-between">
+            <router-link
+              :to="{
+                name: 'Bank',
+                params: { isEdit: 'false', bankId: 0 },
+              }"
+              style="text-decoration: none"
+            >
+              <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy bank" />
+            </router-link>
+            <div v-if="bankStore.loadingBanks">
+              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+            </div>
+            <div class="flex gap-4">
+              <IconField icon-position="left">
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+              </IconField>
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined
+                size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+              />
+            </div>
           </div>
         </template>
-      </Column>
-      <template #expansion="slotProps">
-        <div class="p-3">
-          <p class="text-lg text-center">Szczególy banku</p>
 
-          <p class="mt-2 ml-8" style="text-align: left">
-            <b>Adres:</b> ul. {{ slotProps.data.address.street }}, {{ slotProps.data.address.zip }}
-            {{ slotProps.data.address.city }}
-          </p>
-          <p class="mt-2 ml-8" style="text-align: left"><b>E-mail:</b> {{ slotProps.data.mail }}</p>
-          <p class="mt-2 ml-8" style="text-align: left"><b>WWW:</b> {{ slotProps.data.www }}</p>
-          <p class="mt-2 ml-8" style="text-align: left"><b>Telefon:</b> {{ slotProps.data.phone }}</p>
-          <p class="mt-2 ml-8" style="text-align: left"><b>Info:</b> {{ slotProps.data.otherInfo }}</p>
-        </div>
-      </template>
-    </DataTable>
-  </Panel>
+        <template #empty>
+          <p v-if="!bankStore.loadingBanks" class="text-red-500">Nie znaleziono banków...</p>
+        </template>
+
+        <Column expander style="width: 5rem" />
+
+        <!--   NAME   -->
+        <Column field="name" header="Nazwa" :sortable="true" style="text-align: left">
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+
+        <!--  ADDRESS    -->
+        <Column field="address.street" header="Ulica" sortable>
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+        <Column field="address.city" header="Miasto" sortable>
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+
+        <!--                EDIT, DELETE-->
+        <Column header="Akcja" :exportable="false" style="max-width: 3rem">
+          <template #body="slotProps">
+            <div class="flex flex-row gap-1 justify-content-end">
+              <OfficeIconButton
+                class="text-orange-500"
+                title="Edytuj bank"
+                icon="pi pi-file-edit"
+                @click="editBank(slotProps.data)"
+              />
+              <OfficeIconButton
+                title="Usuń bank"
+                icon="pi pi-trash"
+                class="text-red-500"
+                @click="confirmDeleteBank(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+        <template #expansion="slotProps">
+          <div class="p-3">
+            <p class="text-lg text-center">Szczególy banku</p>
+
+            <p class="mt-2 ml-8" style="text-align: left">
+              <b>Adres:</b> ul. {{ slotProps.data.address.street }}, {{ slotProps.data.address.zip }}
+              {{ slotProps.data.address.city }}
+            </p>
+            <p class="mt-2 ml-8" style="text-align: left"><b>E-mail:</b> {{ slotProps.data.mail }}</p>
+            <p class="mt-2 ml-8" style="text-align: left"><b>WWW:</b> {{ slotProps.data.www }}</p>
+            <p class="mt-2 ml-8" style="text-align: left"><b>Telefon:</b> {{ slotProps.data.phone }}</p>
+            <p class="mt-2 ml-8" style="text-align: left"><b>Info:</b> {{ slotProps.data.otherInfo }}</p>
+          </div>
+        </template>
+      </DataTable>
+    </Panel>
+  </DataTablePageShell>
 </template>
 
 <style scoped>

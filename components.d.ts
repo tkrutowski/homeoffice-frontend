@@ -29,6 +29,7 @@ declare module 'vue' {
     ConfirmationDialog: typeof import('./src/components/ConfirmationDialog.vue')['default']
     CustomDatePicker: typeof import('./src/components/CustomDatePicker.vue')['default']
     DataTable: typeof import('primevue/datatable')['default']
+    DataTablePageShell: typeof import('./src/components/layout/DataTablePageShell.vue')['default']
     DataView: typeof import('primevue/dataview')['default']
     DatePicker: typeof import('primevue/datepicker')['default']
     DeviceDetails: typeof import('./src/components/device/DeviceDetails.vue')['default']

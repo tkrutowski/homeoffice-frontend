@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useBooksStore } from '@/stores/books';
@@ -220,7 +221,6 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <AddBookToShellDialog
     v-model:visible="showUserbookDialog"
     :id-book="tempIdBook"
@@ -235,161 +235,180 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-3 mx-2">
-    <DataTable
-      ref="dataTableRef"
-      v-model:expanded-rows="expandedRows"
-      v-model:filters="filters"
-      :value="booksDto"
-      removable-sort
-      paginator
-      lazy
-      :sort-mode="'single'"
-      :rows="bookStore.rowsPerPage"
-      :total-records="bookStore.totalBooks"
-      :rows-per-page-options="[5, 10, 20, 50]"
-      table-style="min-width: 50rem"
-      filter-display="menu"
-      :global-filter-fields="['authors', 'series', 'categories', 'title']"
-      row-hover
-      size="small"
-      @page="handlePageChange"
-      @sort="handleSort"
-      @filter="handleFilter"
-      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      current-page-report-template="Od {first} do {last} (Wszystkich książek: {totalRecords})"
-    >
-      <template #header>
-        <div class="flex justify-between">
-          <router-link :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }" style="text-decoration: none">
-            <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową książkę" />
-          </router-link>
-          <div v-if="bookStore.loadingBooks">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
-          <div class="flex gap-4">
-            <IconField icon-position="left">
-              <InputIcon>
-                <i class="pi pi-search" />
-              </InputIcon>
-              <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-            </IconField>
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              outlined
-              size="small"
-              title="Wyczyść filtry"
-              @click="clearFilter()"
-            />
-          </div>
-        </div>
-      </template>
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
 
-      <template #empty>
-        <p v-if="!bookStore.loadingBooks" class="text-red-500">Nie znaleziono książek...</p>
-      </template>
-
-      <!--      AUTHOR        -->
-      <Column expander style="width: 5rem" />
-      <Column field="authors" header="Autor" style="max-width: 120px" :sortable="true" :show-filter-match-modes="false">
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--      TITLE     -->
-      <Column field="title" header="Tytuł" sortable>
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--  CATEGORY  -->
-      <Column
-        field="categories"
-        filter-field="categories"
-        header="Kategoria"
-        style="max-width: 120px"
-        :sortable="true"
-        :show-filter-match-modes="false"
+    <Panel class="my-3 mx-2">
+      <DataTable
+        ref="dataTableRef"
+        v-model:expanded-rows="expandedRows"
+        v-model:filters="filters"
+        :value="booksDto"
+        removable-sort
+        paginator
+        lazy
+        :sort-mode="'single'"
+        :rows="bookStore.rowsPerPage"
+        :total-records="bookStore.totalBooks"
+        :rows-per-page-options="[5, 10, 20, 50]"
+        table-style="min-width: 50rem"
+        filter-display="menu"
+        :global-filter-fields="['authors', 'series', 'categories', 'title']"
+        row-hover
+        size="small"
+        @page="handlePageChange"
+        @sort="handleSort"
+        @filter="handleFilter"
+        paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+        current-page-report-template="Od {first} do {last} (Wszystkich książek: {totalRecords})"
       >
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] }}
+        <template #header>
+          <div class="flex justify-between">
+            <router-link :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }" style="text-decoration: none">
+              <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową książkę" />
+            </router-link>
+            <div v-if="bookStore.loadingBooks">
+              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+            </div>
+            <div class="flex gap-4">
+              <IconField icon-position="left">
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+              </IconField>
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined
+                size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+              />
+            </div>
+          </div>
         </template>
-        <template #filter="{ filterModel }">
-          <MultiSelect
-            v-model="filterModel.value"
-            :options="categoriesFilter"
-            placeholder="Wybierz..."
-            class="p-column-filter"
-            :max-selected-labels="2"
-          />
-        </template>
-      </Column>
 
-      <!--      SERIES    -->
-      <Column field="series" filter-field="series" header="Cykl" sortable :show-filter-match-modes="false">
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] }}
+        <template #empty>
+          <p v-if="!bookStore.loadingBooks" class="text-red-500">Nie znaleziono książek...</p>
         </template>
-        <template #filter="{ filterModel }">
-          <MultiSelect
-            v-model="filterModel.value"
-            :options="seriesFilter"
-            placeholder="Wybierz..."
-            class="p-column-filter"
-            :max-selected-labels="2"
-          />
-        </template>
-      </Column>
 
-      <!--      BOOK IN SERIES  -->
-      <Column field="bookInSeriesNo" header="Część" style="max-width: 20px">
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] === 0 ? '-' : slotProps.data[slotProps.field] }}
-        </template>
-      </Column>
+        <!--      AUTHOR        -->
+        <Column expander style="width: 5rem" />
+        <Column
+          field="authors"
+          header="Autor"
+          style="max-width: 120px"
+          :sortable="true"
+          :show-filter-match-modes="false"
+        >
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
 
-      <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
-        <template #body="slotProps">
-          <div class="flex flex-row justify-between">
-            <OfficeIconButton
-              title="Dodaj książkę na półkę"
-              icon="pi pi-book"
-              @click="addUserbook(slotProps.data.id)"
+        <!--      TITLE     -->
+        <Column field="title" header="Tytuł" sortable>
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+
+        <!--  CATEGORY  -->
+        <Column
+          field="categories"
+          filter-field="categories"
+          header="Kategoria"
+          style="max-width: 120px"
+          :sortable="true"
+          :show-filter-match-modes="false"
+        >
+          <template #body="slotProps">
+            {{ slotProps.data[slotProps.field] }}
+          </template>
+          <template #filter="{ filterModel }">
+            <MultiSelect
+              v-model="filterModel.value"
+              :options="categoriesFilter"
+              placeholder="Wybierz..."
+              class="p-column-filter"
+              :max-selected-labels="2"
             />
-            <OfficeIconButton title="Edytuj książkę" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
-            <OfficeIconButton
-              title="Usuń książkę"
-              icon="pi pi-trash"
-              severity="danger"
+          </template>
+        </Column>
+
+        <!--      SERIES    -->
+        <Column field="series" filter-field="series" header="Cykl" sortable :show-filter-match-modes="false">
+          <template #body="slotProps">
+            {{ slotProps.data[slotProps.field] }}
+          </template>
+          <template #filter="{ filterModel }">
+            <MultiSelect
+              v-model="filterModel.value"
+              :options="seriesFilter"
+              placeholder="Wybierz..."
+              class="p-column-filter"
+              :max-selected-labels="2"
+            />
+          </template>
+        </Column>
+
+        <!--      BOOK IN SERIES  -->
+        <Column field="bookInSeriesNo" header="Część" style="max-width: 20px">
+          <template #body="slotProps">
+            {{ slotProps.data[slotProps.field] === 0 ? '-' : slotProps.data[slotProps.field] }}
+          </template>
+        </Column>
+
+        <!--                EDIT, DELETE-->
+        <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
+          <template #body="slotProps">
+            <div class="flex flex-row justify-between">
+              <OfficeIconButton
+                title="Dodaj książkę na półkę"
+                icon="pi pi-book"
+                @click="addUserbook(slotProps.data.id)"
+              />
+              <OfficeIconButton title="Edytuj książkę" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+              <OfficeIconButton
+                title="Usuń książkę"
+                icon="pi pi-trash"
+                severity="danger"
+                class=""
+                @click="confirmDelete(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+
+        <template #expansion="slotProps">
+          <div class="flex">
+            <div class="flex flex-col p-3 w-full">
+              <label class="text-left">Opis:</label>
+              <Textarea v-model="slotProps.data.description" rows="11" auto-resize fluid readonly />
+            </div>
+            <Image
+              v-if="slotProps.data.cover"
+              class="mt-2"
+              :src="slotProps.data.cover"
+              alt="Okładka do książki"
+              width="250"
+            />
+            <Image
+              v-else
               class=""
-              @click="confirmDelete(slotProps.data)"
+              src="../../assets/HomeOffice.png"
+              height="250"
+              width="250"
+              alt="Okładka do książki"
             />
           </div>
         </template>
-      </Column>
-
-      <template #expansion="slotProps">
-        <div class="flex">
-          <div class="flex flex-col p-3 w-full">
-            <label class="text-left">Opis:</label>
-            <Textarea v-model="slotProps.data.description" rows="11" auto-resize fluid readonly />
-          </div>
-          <Image
-            v-if="slotProps.data.cover"
-            class="mt-2"
-            :src="slotProps.data.cover"
-            alt="Okładka do książki"
-            width="250"
-          />
-          <Image v-else class="" src="../../assets/HomeOffice.png" height="250" width="250" alt="Okładka do książki" />
-        </div>
-      </template>
-    </DataTable>
-  </Panel>
+      </DataTable>
+    </Panel>
+  </DataTablePageShell>
 </template>
 <style scoped>
   :deep(.p-panel-header) {

@@ -4,6 +4,7 @@
   import { useToast } from 'primevue/usetoast';
   import type { Privilege, Role, User } from '@/types/User';
   import TheMenu from '@/components/TheMenu.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import type { SelectChangeEvent } from 'primevue/select';
   import type { DataTableRowEditSaveEvent } from 'primevue/datatable';
@@ -135,84 +136,89 @@
 </script>
 
 <template>
-  <TheMenu />
-  <div class="card flex flex-col justify-center items-center">
-    <Select
-      v-model="selectedUser"
-      :options="userStore.users"
-      :optionLabel="user => user.lastName + ' ' + user.firstName"
-      placeholder="Wybierz użytkownika"
-      :loading="userStore.loadingUsers"
-      @change="onUserChange"
-      class="w-full md:w-56 mt-5"
-    />
-    <Toolbar class="mt-6" style="width: 50rem">
-      <template #start>
-        <OfficeButton
-          btn-type="office-regular"
-          text="Dodaj"
-          icon="pi pi-plus"
-          class="mr-2"
-          @click="addExistingRole"
-          :disabled="selectedUser === null"
-        />
-        <OfficeButton
-          btn-type="office-save"
-          text="usuń"
-          icon="pi pi-trash"
-          @click="confirmDeletePrivilege"
-          :disabled="!selectedPrivilege"
-        />
-      </template>
-    </Toolbar>
-    <DataTable
-      v-model:editingRows="editingRows"
-      :value="privileges"
-      editMode="row"
-      dataKey="role.name"
-      @row-edit-save="onRowEditSave"
-      v-model:selection="selectedPrivilege"
-      :loading="userStore.loadingPrivileges"
-      :pt="{
-        table: { style: 'width: 50rem' },
-        column: {},
-      }"
-    >
-      <Column selectionMode="single" style="width: 3rem" :exportable="false"></Column>
-      <Column field="role.name" header="Rola" style="width: 30%"></Column>
-      <Column field="read" header="Odczyt" style="width: 20%">
-        <template #editor="{ data, field }">
-          <Select
-            v-model="data[field]"
-            :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('READ'))"
-            placeholder="Wybierz..."
-            fluid
+  <DataTablePageShell>
+    <template #top>
+      <TheMenu />
+    </template>
+
+    <div class="card flex flex-col justify-center items-center">
+      <Select
+        v-model="selectedUser"
+        :options="userStore.users"
+        :optionLabel="user => user.lastName + ' ' + user.firstName"
+        placeholder="Wybierz użytkownika"
+        :loading="userStore.loadingUsers"
+        @change="onUserChange"
+        class="w-full md:w-56 mt-5"
+      />
+      <Toolbar class="mt-6" style="width: 50rem">
+        <template #start>
+          <OfficeButton
+            btn-type="office-regular"
+            text="Dodaj"
+            icon="pi pi-plus"
+            class="mr-2"
+            @click="addExistingRole"
+            :disabled="selectedUser === null"
+          />
+          <OfficeButton
+            btn-type="office-save"
+            text="usuń"
+            icon="pi pi-trash"
+            @click="confirmDeletePrivilege"
+            :disabled="!selectedPrivilege"
           />
         </template>
-      </Column>
-      <Column field="write" header="Zapis" style="width: 20%">
-        <template #editor="{ data, field }">
-          <Select
-            v-model="data[field]"
-            :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('WRITE'))"
-            placeholder="Wybierz..."
-            fluid
-          />
-        </template>
-      </Column>
-      <Column field="delete" header="Usuwanie" style="width: 20%">
-        <template #editor="{ data, field }">
-          <Select
-            v-model="data[field]"
-            :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('DELETE'))"
-            placeholder="Wybierz..."
-            fluid
-          />
-        </template>
-      </Column>
-      <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
-    </DataTable>
-  </div>
+      </Toolbar>
+      <DataTable
+        v-model:editingRows="editingRows"
+        :value="privileges"
+        editMode="row"
+        dataKey="role.name"
+        @row-edit-save="onRowEditSave"
+        v-model:selection="selectedPrivilege"
+        :loading="userStore.loadingPrivileges"
+        :pt="{
+          table: { style: 'width: 50rem' },
+          column: {},
+        }"
+      >
+        <Column selectionMode="single" style="width: 3rem" :exportable="false"></Column>
+        <Column field="role.name" header="Rola" style="width: 30%"></Column>
+        <Column field="read" header="Odczyt" style="width: 20%">
+          <template #editor="{ data, field }">
+            <Select
+              v-model="data[field]"
+              :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('READ'))"
+              placeholder="Wybierz..."
+              fluid
+            />
+          </template>
+        </Column>
+        <Column field="write" header="Zapis" style="width: 20%">
+          <template #editor="{ data, field }">
+            <Select
+              v-model="data[field]"
+              :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('WRITE'))"
+              placeholder="Wybierz..."
+              fluid
+            />
+          </template>
+        </Column>
+        <Column field="delete" header="Usuwanie" style="width: 20%">
+          <template #editor="{ data, field }">
+            <Select
+              v-model="data[field]"
+              :options="statuses.filter((s: string) => s === 'NULL' || s.startsWith('DELETE'))"
+              placeholder="Wybierz..."
+              fluid
+            />
+          </template>
+        </Column>
+        <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
+      </DataTable>
+    </div>
+  </DataTablePageShell>
 
   <Dialog
     v-model:visible="addExistingRoleToUserDialog"

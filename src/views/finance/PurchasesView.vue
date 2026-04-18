@@ -7,6 +7,7 @@
   import type { Purchase } from '@/types/Purchase';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
 
   import { useToast } from 'primevue/usetoast';
@@ -273,7 +274,6 @@
   );
 </script>
 <template>
-  <TheMenuFinance />
   <ConfirmationDialog
     v-model:visible="showStatusChangeConfirmationDialog"
     :msg="changeStatusConfirmationMessage"
@@ -289,293 +289,298 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-3 mx-2">
-    <DataTable
-      ref="dataTableRef"
-      v-model:expanded-rows="expandedRows"
-      v-model:filters="filters"
-      :value="purchasesStore.purchases"
-      v-model:selection="selectedPurchases"
-      selectionMode="multiple"
-      metaKeySelection
-      removable-sort
-      paginator
-      lazy
-      :sort-mode="'single'"
-      :rows="purchasesStore.rowsPerPage"
-      :total-records="purchasesStore.totalPurchases"
-      :rows-per-page-options="[5, 10, 20, 50]"
-      table-style="min-width: 50rem"
-      filter-display="menu"
-      :global-filter-fields="['name', 'firm.name', 'purchaseDate']"
-      row-hover
-      size="small"
-      @page="handlePageChange"
-      @sort="handleSort"
-      @filter="handleFilter"
-      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      current-page-report-template="Od {first} do {last} (Wszystkich zakupów: {totalRecords})"
-    >
-      <template #header>
-        <div class="flex justify-between">
-          <Button
-            outlined
-            label="Dodaj"
-            icon="pi pi-plus"
-            title="Dodaj nowy zakup"
-            @click="goToNewPurchase"
-          />
-          <div v-if="purchasesStore.loadingPurchases">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
-          <div class="flex gap-4">
-            <IconField icon-position="left">
-              <InputIcon>
-                <i class="pi pi-search" />
-              </InputIcon>
-              <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-            </IconField>
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              outlined
-              size="small"
-              title="Wyczyść filtry"
-              @click="clearFilter()"
-            />
-          </div>
-        </div>
-      </template>
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-      <template #empty>
-        <h4 class="text-red-500" v-if="!purchasesStore.loadingPurchases">Nie znaleziono zakupów...</h4>
-      </template>
-
-      <Column expander style="width: 5rem" />
-
-      <!--  USER  -->
-      <Column
-        field="idUser"
-        header="Użytkownik"
-        :sortable="true"
-        filter-field="idUser"
-        :show-filter-match-modes="false"
-        style="max-width: 150px"
+    <Panel class="my-3 mx-2">
+      <DataTable
+        ref="dataTableRef"
+        v-model:expanded-rows="expandedRows"
+        v-model:filters="filters"
+        :value="purchasesStore.purchases"
+        v-model:selection="selectedPurchases"
+        selectionMode="multiple"
+        metaKeySelection
+        removable-sort
+        paginator
+        lazy
+        :sort-mode="'single'"
+        :rows="purchasesStore.rowsPerPage"
+        :total-records="purchasesStore.totalPurchases"
+        :rows-per-page-options="[5, 10, 20, 50]"
+        table-style="min-width: 50rem"
+        filter-display="menu"
+        :global-filter-fields="['name', 'firm.name', 'purchaseDate']"
+        row-hover
+        size="small"
+        @page="handlePageChange"
+        @sort="handleSort"
+        @filter="handleFilter"
+        paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+        current-page-report-template="Od {first} do {last} (Wszystkich zakupów: {totalRecords})"
       >
-        <template #body="{ data }">
-          {{ getUserFullName(data.idUser) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <Select v-model="filterModel.value" :options="userFilter" placeholder="Wybierz..." class="p-column-filter">
-            <template #value="slotProps">
-              <span v-if="slotProps.value">{{ slotProps.value.firstName }} {{ slotProps.value.lastName }}</span>
-              <span v-else>{{ slotProps.placeholder }}</span>
-            </template>
-            <template #option="slotProps"> {{ slotProps.option.firstName }} {{ slotProps.option.lastName }} </template>
-          </Select>
-        </template>
-      </Column>
-
-      <!--  NAME  -->
-      <Column field="name" header="Nazwa" sortable>
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--  FIRM-->
-      <Column
-        field="idFirm"
-        header="Nazwa firmy"
-        :sortable="true"
-        filter-field="idFirm"
-        :show-filter-match-modes="false"
-      >
-        <template #body="{ data }">
-          {{ getFirmName(data.idFirm) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <Select
-            v-model="filterModel.value"
-            :options="firmFilter"
-            option-label="name"
-            option-value="id"
-            placeholder="Wybierz..."
-            class="p-column-filter"
-          />
-        </template>
-      </Column>
-
-      <!--  CARD-->
-      <Column field="idCard" header="Karta" :sortable="true" filter-field="idCard" :show-filter-match-modes="false">
-        <template #body="{ data }">
-          {{ getCardName(data.idCard) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <Select
-            v-model="filterModel.value"
-            :options="cardFilter"
-            option-label="name"
-            option-value="id"
-            placeholder="Wybierz..."
-            class="p-column-filter"
-          />
-        </template>
-      </Column>
-
-      <!--DATA ZAKUPU-->
-      <Column
-        field="purchaseDate"
-        header="Data zakupu"
-        :sortable="true"
-        data-type="date"
-        filter-field="purchaseDate"
-        :show-filter-match-modes="true"
-      >
-        <template #body="{ data }">
-          {{ UtilsService.formatDateToString(data.purchaseDate) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
-        </template>
-      </Column>
-
-      <!--TERMIN PŁATNOŚCI-->
-      <Column field="paymentDeadline" header="Termin płatności" :sortable="true" data-type="date">
-        <template #body="{ data }">
-          {{ UtilsService.formatDateToString(data.paymentDeadline) }}
-        </template>
-      </Column>
-
-      <!--AMOUNT-->
-      <Column field="amount" header="Kwota" style="min-width: 120px">
-        <template #body="slotProps">
-          {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
-        </template>
-      </Column>
-
-      <Column field="paymentStatus" header="Status" style="width: 100px">
-        <template #body="{ data, field }">
-          <StatusButton
-            title="Zmień status zakupu"
-            :btn-type="data[field]"
-            :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
-            @click="confirmStatusChange(data)"
-          />
-        </template>
-      </Column>
-      <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="width: 8rem">
-        <template #body="slotProps">
-          <div class="flex flex-row gap-1 justify-start">
-            <OfficeIconButton title="Edytuj zakup" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
-            <OfficeIconButton
-              title="Usuń zakup"
-              icon="pi pi-trash"
-              severity="danger"
-              @click="confirmDeletePurchase(slotProps.data)"
-            />
-          </div>
-        </template>
-      </Column>
-
-      <template #expansion="slotProps">
-        <div class="p-3 justify-center">
-          <p class="mb-3 text-center text-xl font-bold">Szczególy zakupu {{ slotProps.data.name }}</p>
-          <hr />
-          <div class="flex flex-col md:flex-row gap-4">
-            <div class="basis-1/2">
-              <Fieldset legend="Ogólne informacje" class="">
-                <p class="mb-1 mt-3 text-left">
-                  <small>Użytkownik:</small> {{ getUserFullName(slotProps.data.idUser) }}
-                </p>
-                <p class="mb-1 text-left"><small>Nazwa zakupu:</small> {{ slotProps.data.name }}</p>
-                <p class="text-left mb-1"><small>Nazwa firmy:</small> {{ getFirmName(slotProps.data.idFirm) }}</p>
-                <p class="mb-1 text-left"><small>Karta:</small> {{ getCardName(slotProps.data.idCard) }}</p>
-                <p class="mb-1 text-left">
-                  <small>Data zakupu:</small>
-                  {{ UtilsService.formatDateToString(slotProps.data.purchaseDate) }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Termin płatności:</small>
-                  {{ UtilsService.formatDateToString(slotProps.data.paymentDeadline) }}
-                </p>
-                <p class="mb-5 text-left">
-                  <small>Data płatności:</small>
-                  {{ UtilsService.formatDateToString(slotProps.data.paymentDate) }}
-                </p>
-
-                <p class="mb-1 text-left">
-                  <small>Kwota zakupu:</small>
-                  {{ UtilsService.formatCurrency(slotProps.data.amount) }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Raty: </small>
-                  <span :class="slotProps.data.installment ? 'text-green-500' : 'text-red-500'">
-                    {{ slotProps.data.installment ? 'TAK' : 'NIE' }}
-                  </span>
-                </p>
-              </Fieldset>
-              <Fieldset legend="Dodatkowe informacje">
-                <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" readonly />
-              </Fieldset>
+        <template #header>
+          <div class="flex justify-between">
+            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy zakup" @click="goToNewPurchase" />
+            <div v-if="purchasesStore.loadingPurchases">
+              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+            </div>
+            <div class="flex gap-4">
+              <IconField icon-position="left">
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+              </IconField>
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined
+                size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+              />
             </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
-  </Panel>
-  <Toolbar class="sticky-toolbar mx-2">
-    <template #start>
-      <OfficeIconButton
-        title="Odświerz listę zakupów"
-        :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-        class="mr-2"
-        @click="purchasesStore.refreshPurchases()"
-      />
-    </template>
+        </template>
 
-    <template #center>
-      <OfficeIconButton
-        title="Wyświetl niespłacone"
-        :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
-        :active="filter === 'TO_PAY'"
-        @click="setFilter('TO_PAY')"
-      />
-      <OfficeIconButton
-        title="Wyświetl spłacone"
-        :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
-        :active="filter === 'PAID'"
-        @click="setFilter('PAID')"
-      />
-      <OfficeIconButton
-        title="Wyświetl wszystkie"
-        :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
-        :active="filter === 'ALL'"
-        @click="setFilter('ALL')"
-      />
-    </template>
+        <template #empty>
+          <h4 class="text-red-500" v-if="!purchasesStore.loadingPurchases">Nie znaleziono zakupów...</h4>
+        </template>
 
-    <template #end>
-      <div class="flex flex-col gap-2">
-        <p class="">
-          <span class="">Przefiltrowane:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(filteredPurchaseAmount) }}</span>
-        </p>
-        <p class="">
-          <span class="">Wybrane:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(selectedPurchaseAmount) }}</span>
-        </p>
-        <p class="">
-          <span class="">DO SPŁATY RAZEM:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(purchasesStore.sumToPay) }}</span>
-        </p>
-      </div>
+        <Column expander style="width: 5rem" />
+
+        <!--  USER  -->
+        <Column
+          field="idUser"
+          header="Użytkownik"
+          :sortable="true"
+          filter-field="idUser"
+          :show-filter-match-modes="false"
+          style="max-width: 150px"
+        >
+          <template #body="{ data }">
+            {{ getUserFullName(data.idUser) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <Select v-model="filterModel.value" :options="userFilter" placeholder="Wybierz..." class="p-column-filter">
+              <template #value="slotProps">
+                <span v-if="slotProps.value">{{ slotProps.value.firstName }} {{ slotProps.value.lastName }}</span>
+                <span v-else>{{ slotProps.placeholder }}</span>
+              </template>
+              <template #option="slotProps">
+                {{ slotProps.option.firstName }} {{ slotProps.option.lastName }}
+              </template>
+            </Select>
+          </template>
+        </Column>
+
+        <!--  NAME  -->
+        <Column field="name" header="Nazwa" sortable>
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+
+        <!--  FIRM-->
+        <Column
+          field="idFirm"
+          header="Nazwa firmy"
+          :sortable="true"
+          filter-field="idFirm"
+          :show-filter-match-modes="false"
+        >
+          <template #body="{ data }">
+            {{ getFirmName(data.idFirm) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <Select
+              v-model="filterModel.value"
+              :options="firmFilter"
+              option-label="name"
+              option-value="id"
+              placeholder="Wybierz..."
+              class="p-column-filter"
+            />
+          </template>
+        </Column>
+
+        <!--  CARD-->
+        <Column field="idCard" header="Karta" :sortable="true" filter-field="idCard" :show-filter-match-modes="false">
+          <template #body="{ data }">
+            {{ getCardName(data.idCard) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <Select
+              v-model="filterModel.value"
+              :options="cardFilter"
+              option-label="name"
+              option-value="id"
+              placeholder="Wybierz..."
+              class="p-column-filter"
+            />
+          </template>
+        </Column>
+
+        <!--DATA ZAKUPU-->
+        <Column
+          field="purchaseDate"
+          header="Data zakupu"
+          :sortable="true"
+          data-type="date"
+          filter-field="purchaseDate"
+          :show-filter-match-modes="true"
+        >
+          <template #body="{ data }">
+            {{ UtilsService.formatDateToString(data.purchaseDate) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
+          </template>
+        </Column>
+
+        <!--TERMIN PŁATNOŚCI-->
+        <Column field="paymentDeadline" header="Termin płatności" :sortable="true" data-type="date">
+          <template #body="{ data }">
+            {{ UtilsService.formatDateToString(data.paymentDeadline) }}
+          </template>
+        </Column>
+
+        <!--AMOUNT-->
+        <Column field="amount" header="Kwota" style="min-width: 120px">
+          <template #body="slotProps">
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+          </template>
+        </Column>
+
+        <Column field="paymentStatus" header="Status" style="width: 100px">
+          <template #body="{ data, field }">
+            <StatusButton
+              title="Zmień status zakupu"
+              :btn-type="data[field]"
+              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
+              @click="confirmStatusChange(data)"
+            />
+          </template>
+        </Column>
+        <!--                EDIT, DELETE-->
+        <Column header="Akcja" :exportable="false" style="width: 8rem">
+          <template #body="slotProps">
+            <div class="flex flex-row gap-1 justify-start">
+              <OfficeIconButton title="Edytuj zakup" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+              <OfficeIconButton
+                title="Usuń zakup"
+                icon="pi pi-trash"
+                severity="danger"
+                @click="confirmDeletePurchase(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+
+        <template #expansion="slotProps">
+          <div class="p-3 justify-center">
+            <p class="mb-3 text-center text-xl font-bold">Szczególy zakupu {{ slotProps.data.name }}</p>
+            <hr />
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="basis-1/2">
+                <Fieldset legend="Ogólne informacje" class="">
+                  <p class="mb-1 mt-3 text-left">
+                    <small>Użytkownik:</small> {{ getUserFullName(slotProps.data.idUser) }}
+                  </p>
+                  <p class="mb-1 text-left"><small>Nazwa zakupu:</small> {{ slotProps.data.name }}</p>
+                  <p class="text-left mb-1"><small>Nazwa firmy:</small> {{ getFirmName(slotProps.data.idFirm) }}</p>
+                  <p class="mb-1 text-left"><small>Karta:</small> {{ getCardName(slotProps.data.idCard) }}</p>
+                  <p class="mb-1 text-left">
+                    <small>Data zakupu:</small>
+                    {{ UtilsService.formatDateToString(slotProps.data.purchaseDate) }}
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Termin płatności:</small>
+                    {{ UtilsService.formatDateToString(slotProps.data.paymentDeadline) }}
+                  </p>
+                  <p class="mb-5 text-left">
+                    <small>Data płatności:</small>
+                    {{ UtilsService.formatDateToString(slotProps.data.paymentDate) }}
+                  </p>
+
+                  <p class="mb-1 text-left">
+                    <small>Kwota zakupu:</small>
+                    {{ UtilsService.formatCurrency(slotProps.data.amount) }}
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Raty: </small>
+                    <span :class="slotProps.data.installment ? 'text-green-500' : 'text-red-500'">
+                      {{ slotProps.data.installment ? 'TAK' : 'NIE' }}
+                    </span>
+                  </p>
+                </Fieldset>
+                <Fieldset legend="Dodatkowe informacje">
+                  <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" readonly />
+                </Fieldset>
+              </div>
+            </div>
+          </div>
+        </template>
+      </DataTable>
+    </Panel>
+
+    <template #bottom>
+      <Toolbar class="mx-2 border-t border-surface-200 bg-surface-0 pt-2 dark:border-surface-700 dark:bg-surface-950">
+        <template #start>
+          <OfficeIconButton
+            title="Odświerz listę zakupów"
+            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+            class="mr-2"
+            @click="purchasesStore.refreshPurchases()"
+          />
+        </template>
+
+        <template #center>
+          <OfficeIconButton
+            title="Wyświetl niespłacone"
+            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+            class="mr-2"
+            :active="filter === 'TO_PAY'"
+            @click="setFilter('TO_PAY')"
+          />
+          <OfficeIconButton
+            title="Wyświetl spłacone"
+            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+            class="mr-2"
+            :active="filter === 'PAID'"
+            @click="setFilter('PAID')"
+          />
+          <OfficeIconButton
+            title="Wyświetl wszystkie"
+            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+            class="mr-2"
+            :active="filter === 'ALL'"
+            @click="setFilter('ALL')"
+          />
+        </template>
+
+        <template #end>
+          <div class="flex flex-col gap-2">
+            <p class="">
+              <span class="">Przefiltrowane:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(filteredPurchaseAmount) }}</span>
+            </p>
+            <p class="">
+              <span class="">Wybrane:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(selectedPurchaseAmount) }}</span>
+            </p>
+            <p class="">
+              <span class="">DO SPŁATY RAZEM:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(purchasesStore.sumToPay) }}</span>
+            </p>
+          </div>
+        </template>
+      </Toolbar>
     </template>
-  </Toolbar>
+  </DataTablePageShell>
 </template>
 
 <style scoped>

@@ -151,94 +151,89 @@
 </script>
 
 <template>
-  <TheMenuFinance />
-  <ConfirmationDialog
-    v-model:visible="showStatusChangeConfirmationDialog"
-    :msg="changeStatusConfirmationMessage"
-    @save="submitMultiChangeStatus"
-    @cancel="showStatusChangeConfirmationDialog = false"
-  />
-  <Toolbar class="m-6">
-    <template #start>
-      <p>
-        RAZEM:
-        {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
-      </p>
-    </template>
-
-    <template #center>
-      <Select
-        id="input-customer"
-        v-model="selectedUser"
-        :options="userStore.getUserByPrivileges"
-        :option-label="user => user.firstName + ' ' + user.lastName"
-        :loading="userStore.loadingUsers"
-        @change="onUserSelectChange"
-        required
-      />
-    </template>
-
-    <template #end>
-      <Button
-        outlined
-        class="font-bold uppercase tracking-wider"
-        label="WYSZUKAJ"
-        :disabled="purchasesStore.loadingPurchases || selectedUser === null"
-        :loading="purchasesStore.loadingPurchases"
-        @click="getCurrentPurchaseByUser"
-      />
-    </template>
-  </Toolbar>
-  <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
-    <PurchaseCurrentItemGroup :deadline-date="key" />
-  </div>
-  <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
-  <Toolbar class="sticky-toolbar">
-    <template #start>
-      <Button
-        class="mr-2"
-        title="Dodaj nowy zakup."
-        severity="warn"
-        icon="pi pi-plus"
-        @click="goToNewPurchase"
-      />
-      <Button
-        title="Odświerz listę zakupów"
-        :icon="purchasesStore.loadingPurchases ? 'pi  pi-spin pi-spinner' : 'pi pi-refresh'"
-        class="mr-2"
-        :disabled="selectedUser === null"
-        @click="getCurrentPurchaseByUser"
-      />
-      <Button
-        title="Oznacz wybrane zakupy jako opłacone."
-        icon="pi pi-save"
-        severity="danger"
-        :disabled="purchasesStore.purchasesToPay.length == 0"
-        @click="showStatusChangeConfirmationDialog = true"
-      />
-    </template>
-
-    <template #end>
-      <div class="flex flex-col">
-        <p class="mb-1">
-          <small>Zaznaczone:</small>
-          {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
-        </p>
-        <p class="mb-1">
+  <!-- Wysokość viewportu minus nagłówek aplikacji (ok. 140px); bez sztywnego layoutu w App.vue — DataTable na innych stronach zostaje bez zmian -->
+  <div
+    class="flex w-full max-w-full flex-col overflow-hidden h-[calc(100dvh-140px)] max-h-[calc(100dvh-140px)] min-h-0"
+  >
+    <TheMenuFinance class="shrink-0" />
+    <ConfirmationDialog
+      v-model:visible="showStatusChangeConfirmationDialog"
+      :msg="changeStatusConfirmationMessage"
+      @save="submitMultiChangeStatus"
+      @cancel="showStatusChangeConfirmationDialog = false"
+    />
+    <Toolbar
+      class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 pt-2 dark:border-surface-700 dark:bg-surface-950"
+    >
+      <template #start>
+        <p>
           RAZEM:
           {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
         </p>
-      </div>
-    </template>
-  </Toolbar>
-</template>
+      </template>
 
-<style scoped>
-  .sticky-toolbar {
-    position: sticky;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-  }
-</style>
+      <template #center>
+        <Select
+          id="input-customer"
+          v-model="selectedUser"
+          :options="userStore.getUserByPrivileges"
+          :option-label="user => user.firstName + ' ' + user.lastName"
+          :loading="userStore.loadingUsers"
+          @change="onUserSelectChange"
+          required
+        />
+      </template>
+
+      <template #end>
+        <Button
+          outlined
+          class="font-bold uppercase tracking-wider"
+          label="WYSZUKAJ"
+          :disabled="purchasesStore.loadingPurchases || selectedUser === null"
+          :loading="purchasesStore.loadingPurchases"
+          @click="getCurrentPurchaseByUser"
+        />
+      </template>
+    </Toolbar>
+    <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
+      <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
+        <PurchaseCurrentItemGroup :deadline-date="key" />
+      </div>
+      <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
+    </div>
+    <Toolbar
+      class="shrink-0 border-t border-surface-200 bg-surface-0 px-6 pb-2 pt-2 shadow-[0_-4px_12px_-2px_rgb(0_0_0/0.08)] dark:border-surface-700 dark:bg-surface-950 dark:shadow-[0_-4px_14px_-2px_rgb(0_0_0/0.35)]"
+    >
+      <template #start>
+        <Button class="mr-2" title="Dodaj nowy zakup." severity="warn" icon="pi pi-plus" @click="goToNewPurchase" />
+        <Button
+          title="Odświerz listę zakupów"
+          :icon="purchasesStore.loadingPurchases ? 'pi  pi-spin pi-spinner' : 'pi pi-refresh'"
+          class="mr-2"
+          :disabled="selectedUser === null"
+          @click="getCurrentPurchaseByUser"
+        />
+        <Button
+          title="Oznacz wybrane zakupy jako opłacone."
+          icon="pi pi-save"
+          severity="danger"
+          :disabled="purchasesStore.purchasesToPay.length == 0"
+          @click="showStatusChangeConfirmationDialog = true"
+        />
+      </template>
+
+      <template #end>
+        <div class="flex flex-col">
+          <p class="mb-1">
+            <small>Zaznaczone:</small>
+            {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
+          </p>
+          <p class="mb-1">
+            RAZEM:
+            {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
+          </p>
+        </div>
+      </template>
+    </Toolbar>
+  </div>
+</template>

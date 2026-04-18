@@ -9,6 +9,7 @@
   import StatusButton from '@/components/StatusButton.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import type { Fee, FeeInstallment } from '@/types/Fee';
 
   import { useToast } from 'primevue/usetoast';
@@ -274,7 +275,6 @@
   );
 </script>
 <template>
-  <TheMenuFinance />
   <ConfirmationDialog
     v-model:visible="showStatusChangeConfirmationDialog"
     :msg="changeStatusConfirmationMessage"
@@ -290,319 +290,327 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-3 mx-2">
-    <DataTable
-      ref="dataTableRef"
-      v-model:expandedRows="expandedRows"
-      v-model:filters="filters"
-      :value="feeStore.fees"
-      v-model:selection="selectedFees"
-      selectionMode="multiple"
-      metaKeySelection
-      removable-sort
-      paginator
-      lazy
-      :sort-mode="'single'"
-      :rows="feeStore.rowsPerPage"
-      :total-records="feeStore.totalFees"
-      :rows-per-page-options="[5, 10, 20, 50]"
-      table-style="min-width: 50rem"
-      filter-display="menu"
-      :global-filter-fields="['name', 'firm.name', 'date']"
-      row-hover
-      size="small"
-      @page="handlePageChange"
-      @sort="handleSort"
-      @filter="handleFilter"
-      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      current-page-report-template="Od {first} do {last} (Wszystkich opłat: {totalRecords})"
-    >
-      <template #header>
-        <div class="flex justify-between">
-          <router-link :to="{ name: 'Fee', params: { isEdit: 'false', feeId: 0 } }" style="text-decoration: none">
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nową opłatę" />
-          </router-link>
-          <div v-if="feeStore.loadingFees">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
-          <div class="flex gap-4">
-            <IconField icon-position="left">
-              <InputIcon>
-                <i class="pi pi-search" />
-              </InputIcon>
-              <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-            </IconField>
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              outlined
-              size="small"
-              title="Wyczyść filtry"
-              @click="clearFilter()"
-            />
-          </div>
-        </div>
-      </template>
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-      <template #empty>
-        <h4 class="text-red-500" v-if="!feeStore.loadingFees">Nie znaleziono opłat...</h4>
-      </template>
-
-      <Column expander style="width: 5rem" />
-
-      <!--   NAME   -->
-      <Column field="name" header="Nazwa" sortable>
-        <template #filter="{ filterModel }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
-        </template>
-      </Column>
-
-      <!--   FIRM   -->
-      <Column
-        field="firm.name"
-        header="Nazwa firmy"
-        :sortable="true"
-        filter-field="idFirm"
-        :show-filter-match-modes="false"
+    <Panel class="my-3 mx-2">
+      <DataTable
+        ref="dataTableRef"
+        v-model:expandedRows="expandedRows"
+        v-model:filters="filters"
+        :value="feeStore.fees"
+        v-model:selection="selectedFees"
+        selectionMode="multiple"
+        metaKeySelection
+        removable-sort
+        paginator
+        lazy
+        :sort-mode="'single'"
+        :rows="feeStore.rowsPerPage"
+        :total-records="feeStore.totalFees"
+        :rows-per-page-options="[5, 10, 20, 50]"
+        table-style="min-width: 50rem"
+        filter-display="menu"
+        :global-filter-fields="['name', 'firm.name', 'date']"
+        row-hover
+        size="small"
+        @page="handlePageChange"
+        @sort="handleSort"
+        @filter="handleFilter"
+        paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+        current-page-report-template="Od {first} do {last} (Wszystkich opłat: {totalRecords})"
       >
-        <template #body="{ data }">
-          {{ data.firm.name }}
-        </template>
-        <template #filter="{ filterModel }">
-          <Select
-            v-model="filterModel.value"
-            :options="firmFilter"
-            option-label="name"
-            option-value="id"
-            placeholder="Wybierz..."
-            class="p-column-filter"
-          />
-        </template>
-      </Column>
-
-      <!--DATA-->
-      <Column
-        field="date"
-        header="Data"
-        :sortable="true"
-        data-type="date"
-        filter-field="date"
-        :show-filter-match-modes="true"
-      >
-        <template #body="{ data }">
-          {{ formatDate(data.date) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
-        </template>
-      </Column>
-
-      <!--AMOUNT-->
-      <Column
-        field="amount"
-        header="Kwota"
-        style="min-width: 120px"
-        data-type="numeric"
-        filter-field="amount"
-        :show-filter-match-modes="true"
-        :show-filter-operator="true"
-      >
-        <template #body="slotProps">
-          {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
-        </template>
-      </Column>
-
-      <!--   FEE FREQUENCY   -->
-      <Column field="feeFrequency.viewName" header="Częstotliwość opłat" sortable />
-      <Column header="Data zakończenia" sortable>
-        <template #body="slotProps">
-          {{ calculateEndDate(slotProps.data.installmentList) }}
-        </template>
-      </Column>
-
-      <Column field="feeStatus" header="Status" style="width: 100px">
-        <template #body="{ data, field }">
-          <StatusButton
-            title="Zmień status opłaty"
-            :btn-type="data[field]"
-            :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
-            @click="confirmStatusChange(data)"
-          />
-        </template>
-      </Column>
-      <!--                EDIT, COPY, DELETE-->
-      <Column header="Akcja" :exportable="false" style="min-width: 10rem">
-        <template #body="slotProps">
-          <div class="flex flex-row gap-1 justify-content-end">
-            <OfficeIconButton
-              class="text-orange-500"
-              title="Edytuj opłatę"
-              icon="pi pi-file-edit"
-              @click="editItem(slotProps.data)"
-            />
-            <OfficeIconButton
-              class="text-orange-500"
-              title="Kopiuj opłatę"
-              icon="pi pi-copy"
-              @click="copyItem(slotProps.data)"
-            />
-            <OfficeIconButton
-              class="text-red-500"
-              title="Usuń opłatę"
-              icon="pi pi-trash"
-              @click="confirmDeleteLoan(slotProps.data)"
-            />
-          </div>
-        </template>
-      </Column>
-
-      <template #expansion="slotProps">
-        <div class="p-3">
-          <p class="mb-3 text-center text-xl font-bold">>Szczególy opłaty {{ slotProps.data.name }}</p>
-          <hr />
-          <div class="flex flex-col md:flex-row gap-4">
-            <div class="basis-1/2">
-              <Fieldset legend="Ogólne informacje" class="">
-                <p class="mb-1 mt-3 text-left"><small>Nazwa opłaty:</small> {{ slotProps.data.name }}</p>
-                <p class="mb-1 text-left"><small>Nazwa firmy:</small> {{ slotProps.data.firm.name }}</p>
-                <p class="mb-1 text-left"><small>Nr umowy:</small> {{ slotProps.data.feeNumber }}</p>
-                <p class="mb-1 text-left"><small>Z dnia:</small> {{ slotProps.data.date }}</p>
-                <p class="mb-1 text-left">
-                  <small>Data pierwszej raty:</small>
-                  {{ slotProps.data.firstPaymentDate }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Termin całkowitej spłaty:</small>
-                  {{ calculateEndDate(slotProps.data.installmentList) }}
-                </p>
-                <p class="mb-5 text-left"><small>Nr konta:</small> {{ slotProps.data.accountNumber }}</p>
-
-                <p class="mb-1 text-left">
-                  <small>Kwota opłaty:</small>
-                  {{ UtilsService.formatCurrency(slotProps.data.amount) }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Częstotliwość opłat:</small>
-                  <span class="text-red-500 ml-1">
-                    {{ slotProps.data.feeFrequency.viewName }}
-                  </span>
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Ilość opłat:</small>
-                  {{ slotProps.data.numberOfInstallments }}
-                </p>
-                <p class="mb-1 text-left">
-                  <small>Planowany koszt:</small>
-                  <span class="text-red-500 ml-1">
-                    {{ UtilsService.formatCurrency(calculatePlannedCost(slotProps.data.installmentList)) }}
-                  </span>
-                </p>
-                <p class="mb-3 text-left">
-                  <small>Rzeczywisty koszt:</small>
-                  <span class="text-red-500 ml-1">
-                    {{ UtilsService.formatCurrency(calculateActualCost(slotProps.data.installmentList)) }}
-                  </span>
-                </p>
-              </Fieldset>
-              <Fieldset legend="Dodatkowe informacje">
-                <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" />
-              </Fieldset>
+        <template #header>
+          <div class="flex justify-between">
+            <router-link :to="{ name: 'Fee', params: { isEdit: 'false', feeId: 0 } }" style="text-decoration: none">
+              <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nową opłatę" />
+            </router-link>
+            <div v-if="feeStore.loadingFees">
+              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
             </div>
-
-            <div class="basis-1/2">
-              <Fieldset legend="Szczegóły wpłat">
-                <DataTable :value="slotProps.data.installmentList" size="small">
-                  <Column field="paymentDeadline" header="Termin płatności">
-                    <template #body="{ data, field }">
-                      <div class="" style="text-align: center">
-                        {{ data[field] }}
-                      </div>
-                    </template>
-                  </Column>
-                  <Column field="installmentAmountToPay" header="Kwota">
-                    <template #body="{ data, field }">
-                      <span class="">
-                        {{ UtilsService.formatCurrency(data[field]) }}
-                      </span>
-                    </template>
-                  </Column>
-                  <Column field="paymentDate" header="Data płatności">
-                    <template #body="{ data, field }">
-                      <div class="" style="text-align: center">
-                        {{ data[field] }}
-                      </div>
-                    </template>
-                  </Column>
-                  <Column field="installmentAmountPaid" header="Kwota zapł.">
-                    <template #body="{ data, field }">
-                      <div class="" style="text-align: center">
-                        {{ UtilsService.formatCurrency(data[field]) }}
-                      </div>
-                    </template>
-                  </Column>
-                </DataTable>
-              </Fieldset>
+            <div class="flex gap-4">
+              <IconField icon-position="left">
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+              </IconField>
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                outlined
+                size="small"
+                title="Wyczyść filtry"
+                @click="clearFilter()"
+              />
             </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
-  </Panel>
+        </template>
 
-  <Toolbar class="sticky-toolbar mx-2">
-    <template #start>
-      <OfficeIconButton
-        title="Odświerz listę opłat"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-        class="mr-2"
-        @click="feeStore.refreshFees()"
-      />
-    </template>
+        <template #empty>
+          <h4 class="text-red-500" v-if="!feeStore.loadingFees">Nie znaleziono opłat...</h4>
+        </template>
 
-    <template #center>
-      <OfficeIconButton
-        title="Wyświetl niespłacone"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
-        :active="filter === 'TO_PAY'"
-        @click="setFilter('TO_PAY')"
-      />
-      <OfficeIconButton
-        title="Wyświetl spłacone"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
-        :active="filter === 'PAID'"
-        @click="setFilter('PAID')"
-      />
-      <OfficeIconButton
-        title="Wyświetl wszystkie"
-        :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
-        :active="filter === 'ALL'"
-        @click="setFilter('ALL')"
-      />
-    </template>
+        <Column expander style="width: 5rem" />
 
-    <template #end>
-      <div class="flex flex-col gap-2">
-        <p class="">
-          <span class="">Przefiltrowane:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(filteredFeeAmount) }}</span>
-        </p>
-        <p class="">
-          <span class="">Wybrane:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(selectedFeesAmount) }}</span>
-        </p>
-        <p class="">
-          <span class="">DO SPŁATY RAZEM:</span>
-          <span class="ml-3">{{ UtilsService.formatCurrency(feeStore.feesSumToPay) }}</span>
-        </p>
-      </div>
+        <!--   NAME   -->
+        <Column field="name" header="Nazwa" sortable>
+          <template #filter="{ filterModel }">
+            <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..." />
+          </template>
+        </Column>
+
+        <!--   FIRM   -->
+        <Column
+          field="firm.name"
+          header="Nazwa firmy"
+          :sortable="true"
+          filter-field="idFirm"
+          :show-filter-match-modes="false"
+        >
+          <template #body="{ data }">
+            {{ data.firm.name }}
+          </template>
+          <template #filter="{ filterModel }">
+            <Select
+              v-model="filterModel.value"
+              :options="firmFilter"
+              option-label="name"
+              option-value="id"
+              placeholder="Wybierz..."
+              class="p-column-filter"
+            />
+          </template>
+        </Column>
+
+        <!--DATA-->
+        <Column
+          field="date"
+          header="Data"
+          :sortable="true"
+          data-type="date"
+          filter-field="date"
+          :show-filter-match-modes="true"
+        >
+          <template #body="{ data }">
+            {{ formatDate(data.date) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
+          </template>
+        </Column>
+
+        <!--AMOUNT-->
+        <Column
+          field="amount"
+          header="Kwota"
+          style="min-width: 120px"
+          data-type="numeric"
+          filter-field="amount"
+          :show-filter-match-modes="true"
+          :show-filter-operator="true"
+        >
+          <template #body="slotProps">
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+          </template>
+          <template #filter="{ filterModel }">
+            <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
+          </template>
+        </Column>
+
+        <!--   FEE FREQUENCY   -->
+        <Column field="feeFrequency.viewName" header="Częstotliwość opłat" sortable />
+        <Column header="Data zakończenia" sortable>
+          <template #body="slotProps">
+            {{ calculateEndDate(slotProps.data.installmentList) }}
+          </template>
+        </Column>
+
+        <Column field="feeStatus" header="Status" style="width: 100px">
+          <template #body="{ data, field }">
+            <StatusButton
+              title="Zmień status opłaty"
+              :btn-type="data[field]"
+              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
+              @click="confirmStatusChange(data)"
+            />
+          </template>
+        </Column>
+        <!--                EDIT, COPY, DELETE-->
+        <Column header="Akcja" :exportable="false" style="min-width: 10rem">
+          <template #body="slotProps">
+            <div class="flex flex-row gap-1 justify-content-end">
+              <OfficeIconButton
+                class="text-orange-500"
+                title="Edytuj opłatę"
+                icon="pi pi-file-edit"
+                @click="editItem(slotProps.data)"
+              />
+              <OfficeIconButton
+                class="text-orange-500"
+                title="Kopiuj opłatę"
+                icon="pi pi-copy"
+                @click="copyItem(slotProps.data)"
+              />
+              <OfficeIconButton
+                class="text-red-500"
+                title="Usuń opłatę"
+                icon="pi pi-trash"
+                @click="confirmDeleteLoan(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+
+        <template #expansion="slotProps">
+          <div class="p-3">
+            <p class="mb-3 text-center text-xl font-bold">>Szczególy opłaty {{ slotProps.data.name }}</p>
+            <hr />
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="basis-1/2">
+                <Fieldset legend="Ogólne informacje" class="">
+                  <p class="mb-1 mt-3 text-left"><small>Nazwa opłaty:</small> {{ slotProps.data.name }}</p>
+                  <p class="mb-1 text-left"><small>Nazwa firmy:</small> {{ slotProps.data.firm.name }}</p>
+                  <p class="mb-1 text-left"><small>Nr umowy:</small> {{ slotProps.data.feeNumber }}</p>
+                  <p class="mb-1 text-left"><small>Z dnia:</small> {{ slotProps.data.date }}</p>
+                  <p class="mb-1 text-left">
+                    <small>Data pierwszej raty:</small>
+                    {{ slotProps.data.firstPaymentDate }}
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Termin całkowitej spłaty:</small>
+                    {{ calculateEndDate(slotProps.data.installmentList) }}
+                  </p>
+                  <p class="mb-5 text-left"><small>Nr konta:</small> {{ slotProps.data.accountNumber }}</p>
+
+                  <p class="mb-1 text-left">
+                    <small>Kwota opłaty:</small>
+                    {{ UtilsService.formatCurrency(slotProps.data.amount) }}
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Częstotliwość opłat:</small>
+                    <span class="text-red-500 ml-1">
+                      {{ slotProps.data.feeFrequency.viewName }}
+                    </span>
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Ilość opłat:</small>
+                    {{ slotProps.data.numberOfInstallments }}
+                  </p>
+                  <p class="mb-1 text-left">
+                    <small>Planowany koszt:</small>
+                    <span class="text-red-500 ml-1">
+                      {{ UtilsService.formatCurrency(calculatePlannedCost(slotProps.data.installmentList)) }}
+                    </span>
+                  </p>
+                  <p class="mb-3 text-left">
+                    <small>Rzeczywisty koszt:</small>
+                    <span class="text-red-500 ml-1">
+                      {{ UtilsService.formatCurrency(calculateActualCost(slotProps.data.installmentList)) }}
+                    </span>
+                  </p>
+                </Fieldset>
+                <Fieldset legend="Dodatkowe informacje">
+                  <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" />
+                </Fieldset>
+              </div>
+
+              <div class="basis-1/2">
+                <Fieldset legend="Szczegóły wpłat">
+                  <DataTable :value="slotProps.data.installmentList" size="small">
+                    <Column field="paymentDeadline" header="Termin płatności">
+                      <template #body="{ data, field }">
+                        <div class="" style="text-align: center">
+                          {{ data[field] }}
+                        </div>
+                      </template>
+                    </Column>
+                    <Column field="installmentAmountToPay" header="Kwota">
+                      <template #body="{ data, field }">
+                        <span class="">
+                          {{ UtilsService.formatCurrency(data[field]) }}
+                        </span>
+                      </template>
+                    </Column>
+                    <Column field="paymentDate" header="Data płatności">
+                      <template #body="{ data, field }">
+                        <div class="" style="text-align: center">
+                          {{ data[field] }}
+                        </div>
+                      </template>
+                    </Column>
+                    <Column field="installmentAmountPaid" header="Kwota zapł.">
+                      <template #body="{ data, field }">
+                        <div class="" style="text-align: center">
+                          {{ UtilsService.formatCurrency(data[field]) }}
+                        </div>
+                      </template>
+                    </Column>
+                  </DataTable>
+                </Fieldset>
+              </div>
+            </div>
+          </div>
+        </template>
+      </DataTable>
+    </Panel>
+
+    <template #bottom>
+      <Toolbar class="mx-2 border-t border-surface-200 bg-surface-0 pt-2 dark:border-surface-700 dark:bg-surface-950">
+        <template #start>
+          <OfficeIconButton
+            title="Odświerz listę opłat"
+            :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+            class="mr-2"
+            @click="feeStore.refreshFees()"
+          />
+        </template>
+
+        <template #center>
+          <OfficeIconButton
+            title="Wyświetl niespłacone"
+            :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+            class="mr-2"
+            :active="filter === 'TO_PAY'"
+            @click="setFilter('TO_PAY')"
+          />
+          <OfficeIconButton
+            title="Wyświetl spłacone"
+            :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+            class="mr-2"
+            :active="filter === 'PAID'"
+            @click="setFilter('PAID')"
+          />
+          <OfficeIconButton
+            title="Wyświetl wszystkie"
+            :icon="feeStore.loadingFees ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+            class="mr-2"
+            :active="filter === 'ALL'"
+            @click="setFilter('ALL')"
+          />
+        </template>
+
+        <template #end>
+          <div class="flex flex-col gap-2">
+            <p class="">
+              <span class="">Przefiltrowane:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(filteredFeeAmount) }}</span>
+            </p>
+            <p class="">
+              <span class="">Wybrane:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(selectedFeesAmount) }}</span>
+            </p>
+            <p class="">
+              <span class="">DO SPŁATY RAZEM:</span>
+              <span class="ml-3">{{ UtilsService.formatCurrency(feeStore.feesSumToPay) }}</span>
+            </p>
+          </div>
+        </template>
+      </Toolbar>
     </template>
-  </Toolbar>
+  </DataTablePageShell>
 </template>
 
 <style scoped>

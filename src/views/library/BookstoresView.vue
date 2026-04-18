@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
@@ -135,7 +136,6 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <AddDialog
     v-model:visible="showAddDialog"
     :msg="dialogTitle"
@@ -154,62 +154,79 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel class="my-3 mx-2">
-    <DataTable :value="bookstoreStore.bookstores" removable-sort table-style="min-width: 50rem" row-hover size="small">
-      <template #header>
-        <div class="flex justify-between">
-          <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową księgarnię" @click="addBookstore()" />
-          <div v-if="bookstoreStore.loadingBookstore">
-            <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
-        </div>
-      </template>
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
 
-      <template #empty>
-        <p v-if="!bookstoreStore.loadingBookstore" class="text-red-500">Nie znaleziono księgarni...</p>
-      </template>
-
-      <!--      NAME        -->
-      <Column field="name" header="Nazwa" sortable></Column>
-
-      <!--      URL     -->
-      <Column field="url" header="URL" sortable>
-        <template #body="slotProps">
-          <a v-if="slotProps.data.url" :href="slotProps.data.url" target="_blank" class="text-blue-600 hover:underline">
-            {{ slotProps.data.url }}
-          </a>
-          <span v-else>-</span>
-        </template>
-      </Column>
-
-      <!--  BOOK COUNT  -->
-      <Column field="bookCount" header="Ilość książek" sortable style="max-width: 120px">
-        <template #body="slotProps">
-          {{ getCounter(slotProps.data) }}
-        </template>
-      </Column>
-
-      <!--                EDIT, DELETE-->
-      <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
-        <template #body="slotProps">
-          <div class="flex flex-row justify-between">
-            <OfficeIconButton
-              class="text-orange-500"
-              title="Edytuj księgarnię"
-              icon="pi pi-file-edit"
-              @click="editBookstore(slotProps.data)"
-            />
-            <OfficeIconButton
-              title="Usuń księgarnię"
-              icon="pi pi-trash"
-              class="text-red-500"
-              @click="confirmDelete(slotProps.data)"
-            />
+    <Panel class="my-3 mx-2">
+      <DataTable
+        :value="bookstoreStore.bookstores"
+        removable-sort
+        table-style="min-width: 50rem"
+        row-hover
+        size="small"
+      >
+        <template #header>
+          <div class="flex justify-between">
+            <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową księgarnię" @click="addBookstore()" />
+            <div v-if="bookstoreStore.loadingBookstore">
+              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+            </div>
           </div>
         </template>
-      </Column>
-    </DataTable>
-  </Panel>
+
+        <template #empty>
+          <p v-if="!bookstoreStore.loadingBookstore" class="text-red-500">Nie znaleziono księgarni...</p>
+        </template>
+
+        <!--      NAME        -->
+        <Column field="name" header="Nazwa" sortable></Column>
+
+        <!--      URL     -->
+        <Column field="url" header="URL" sortable>
+          <template #body="slotProps">
+            <a
+              v-if="slotProps.data.url"
+              :href="slotProps.data.url"
+              target="_blank"
+              class="text-blue-600 hover:underline"
+            >
+              {{ slotProps.data.url }}
+            </a>
+            <span v-else>-</span>
+          </template>
+        </Column>
+
+        <!--  BOOK COUNT  -->
+        <Column field="bookCount" header="Ilość książek" sortable style="max-width: 120px">
+          <template #body="slotProps">
+            {{ getCounter(slotProps.data) }}
+          </template>
+        </Column>
+
+        <!--                EDIT, DELETE-->
+        <Column header="Akcja" :exportable="false" style="max-width: 70px; justify-items: center">
+          <template #body="slotProps">
+            <div class="flex flex-row justify-between">
+              <OfficeIconButton
+                class="text-orange-500"
+                title="Edytuj księgarnię"
+                icon="pi pi-file-edit"
+                @click="editBookstore(slotProps.data)"
+              />
+              <OfficeIconButton
+                title="Usuń księgarnię"
+                icon="pi pi-trash"
+                class="text-red-500"
+                @click="confirmDelete(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+    </Panel>
+  </DataTablePageShell>
 </template>
 
 <style scoped>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddEditSeriesDialog from '@/components/library/AddEditSeriesDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
@@ -269,10 +270,12 @@
 </script>
 
 <template>
-  <div class="h-[calc(100vh-150px)] overflow-hidden">
-    <TheMenuLibrary />
-    <div class="flex">
-      <div class="w-1/3">
+  <DataTablePageShell :scroll-default-slot="false">
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+    <div class="flex min-h-0 min-w-0 flex-1 flex-row">
+      <div class="flex min-h-0 min-w-0 w-1/3 flex-col">
         <AddEditSeriesDialog
           v-model:visible="showAddDialog"
           :id-series="editingSeriesId"
@@ -302,10 +305,10 @@
           @cancel="showAddNewBookDialog = false"
         />
 
-        <Panel class="my-3 mx-2 h-[calc(100vh-240px)] overflow-hidden">
+        <Panel class="series-panel my-3 mx-2 flex min-h-0 flex-1 flex-col overflow-hidden">
           <DataTable
             scrollable
-            scrollHeight="calc(100vh - 370px)"
+            scrollHeight="flex"
             :value="filteredSeries"
             removable-sort
             v-model:filters="filters"
@@ -406,9 +409,9 @@
         </Panel>
       </div>
 
-      <!-- Books container -->
-      <div class="w-2/3 h-[calc(100vh-240px)] overflow-y-auto p-4">
-        <div v-if="selectedSeries" class="flex flex-wrap gap-4">
+      <!-- Books container: bez display:flex na zewnątrz — brak rozciągania kart na wysokość kolumny -->
+      <div class="min-h-0 min-w-0 w-2/3 flex-1 overflow-y-auto p-4">
+        <div v-if="selectedSeries" class="flex flex-wrap content-start items-start gap-4">
           <BookSmall
             v-for="book in seriesBooks"
             :key="book.id"
@@ -423,11 +426,40 @@
         </div>
       </div>
     </div>
-  </div>
+  </DataTablePageShell>
 </template>
 
 <style scoped>
   :deep(.p-panel-header) {
     padding: 0.25rem !important;
+  }
+
+  :deep(.series-panel.p-panel) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+  :deep(.series-panel .p-panel-content-container) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  :deep(.series-panel .p-panel-content) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  :deep(.series-panel .p-datatable) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 </style>
