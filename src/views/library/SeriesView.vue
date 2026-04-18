@@ -4,7 +4,8 @@
   import AddEditSeriesDialog from '@/components/library/AddEditSeriesDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useBooksStore } from '@/stores/books';
-  import { computed, ref, onMounted } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import type { Series } from '@/types/Book';
   import { useToast } from 'primevue/usetoast';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
@@ -19,6 +20,8 @@
   const booksStore = useBooksStore();
   const userbookStore = useUserbooksStore();
   const toast = useToast();
+  const route = useRoute();
+  const router = useRouter();
 
   // filters
   const filters = ref();
@@ -150,6 +153,22 @@
     editingSeriesId.value = 0;
     showAddDialog.value = true;
   };
+
+  function isNewSeriesQuery(v: unknown): boolean {
+    if (v === '1' || v === 1) return true;
+    if (Array.isArray(v) && v[0] != null) return String(v[0]) === '1';
+    return false;
+  }
+
+  watch(
+    () => route.query.new,
+    (v) => {
+      if (!isNewSeriesQuery(v)) return;
+      addSeries();
+      router.replace({ name: 'Series', query: {} });
+    },
+    { immediate: true },
+  );
 
   const editSeries = (item: Series) => {
     isEditMode.value = true;

@@ -50,6 +50,7 @@ declare module 'vue' {
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
     InstanceControl: typeof import('./src/components/share/InstanceControl.vue')['default']
+    LibraryHomeEntryCard: typeof import('./src/components/home/LibraryHomeEntryCard.vue')['default']
     Menu: typeof import('primevue/menu')['default']
     Menubar: typeof import('primevue/menubar')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']

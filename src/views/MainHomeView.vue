@@ -5,6 +5,7 @@
   // import { useDevicesStore } from '@/stores/devices'
   import AppCard from '@/components/AppCard.vue';
   import FinanceHomeEntryCard from '@/components/home/FinanceHomeEntryCard.vue';
+  import LibraryHomeEntryCard from '@/components/home/LibraryHomeEntryCard.vue';
   import DeviceHomeEntryCard from '@/components/home/DeviceHomeEntryCard.vue';
   import router from '@/router';
 
@@ -72,6 +73,7 @@
       />
     </div>
     <FinanceHomeEntryCard />
+    <LibraryHomeEntryCard />
     <DeviceHomeEntryCard />
   </div>
 </template>
