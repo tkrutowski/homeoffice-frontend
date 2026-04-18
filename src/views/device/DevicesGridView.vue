@@ -229,6 +229,17 @@
     return 'NIEAKTYWNE';
   };
 
+  /** Styl „pill” z obwódką i poświatą — warianty: sprzedane / aktywne / nieaktywne. */
+  const getGridStatusBadgeClass = (item: Device): string => {
+    if (item.sellDate) {
+      return 'border border-amber-500/80 text-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/40';
+    }
+    if (item.activeStatus === 'ACTIVE') {
+      return 'border border-emerald-500 text-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.45)] ring-1 ring-emerald-400/50';
+    }
+    return 'border border-red-500/80 text-red-400 shadow-[0_0_14px_rgba(248,113,113,0.35)] ring-1 ring-red-400/40';
+  };
+
   const sortKey = ref<object>({
     label: 'Data: od najnowszych',
     value: '!purchaseDate',
@@ -504,8 +515,100 @@
         </div>
       </template>
 
-      <template #grid="">
-        <p class="text-2xl text-primary text-center">W trakcie realizacji...</p>
+      <template #grid="slotProps">
+        <div
+          class="grid auto-rows-fr grid-cols-1 items-stretch gap-3 p-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+        >
+          <div
+            v-for="item in slotProps.items"
+            :key="item.id"
+            class="mx-auto flex h-full min-h-0 w-[80%] max-w-full flex-col gap-3 rounded-xl border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-900"
+          >
+            <div class="flex shrink-0 items-center justify-between gap-1.5">
+              <span class="truncate text-base font-semibold text-orange-500 dark:text-orange-400">
+                {{ UtilsService.formatCurrency(item.purchaseAmount) }}
+              </span>
+              <span
+                class="inline-flex shrink-0 items-center rounded-full px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase leading-tight tracking-wide sm:text-xs"
+                :class="getGridStatusBadgeClass(item)"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </div>
+
+            <div class="flex min-h-0 flex-1 flex-col gap-2">
+              <div
+                class="flex min-h-0 flex-1 items-center justify-center rounded-lg bg-surface-100 p-2 dark:bg-surface-800"
+              >
+                <img
+                  v-if="item.imageUrl && item.imageUrl.length > 0"
+                  class="max-h-full w-full max-w-full object-contain"
+                  :src="item.imageUrl"
+                  :alt="item.name"
+                />
+                <img
+                  v-else
+                  class="max-h-full w-full max-w-full object-contain"
+                  src="../../assets/images/no_image.png"
+                  alt="no image"
+                />
+              </div>
+
+              <div class="line-clamp-2 shrink-0 text-sm font-medium text-surface-900 dark:text-surface-0">
+                {{ item.name }}
+              </div>
+            </div>
+
+            <div class="shrink-0 border-t border-surface-200 dark:border-surface-700" role="presentation" />
+
+            <div class="flex shrink-0 flex-wrap items-center justify-center gap-1 pt-0.5">
+              <OfficeIconButton
+                v-if="item.activeStatus == 'INACTIVE'"
+                title="Zmień status na AKTYWNY"
+                icon="pi pi-times-circle"
+                :rounded="false"
+                class="text-red-500"
+                @click="confirmStatusChange(item)"
+              />
+              <OfficeIconButton
+                v-else
+                title="Zmień status na NIEAKTYWNY"
+                icon="pi pi-check-circle"
+                :rounded="false"
+                class="text-green-500"
+                @click="confirmStatusChange(item)"
+              />
+              <OfficeIconButton
+                icon="pi pi-file-edit"
+                title=""
+                :rounded="false"
+                class="text-orange-500"
+                @click="editItem(item)"
+              />
+              <OfficeIconButton
+                icon="pi pi-cloud-upload"
+                :title="`Wgraj pliki dla urządzenia: ${item.name}`"
+                :rounded="false"
+                class="text-blue-500"
+                @click="showUploadFilesDialog(item)"
+              />
+              <OfficeIconButton
+                icon="pi pi-trash"
+                :title="`Usuń urządzenie: ${item.name}`"
+                :rounded="false"
+                class="text-red-500"
+                @click="confirmDelete(item)"
+              />
+              <ButtonOutlined
+                icon="pi pi-info"
+                title="Wyświetl szczegóły."
+                class="whitespace-nowrap"
+                text=""
+                @click="displayDetails(item)"
+              />
+            </div>
+          </div>
+        </div>
       </template>
     </DataView>
   </Panel>

@@ -718,7 +718,9 @@
               <template #body="slotProps">
                 <div class="flex items-center gap-2">
                   <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2 shrink-0"></i>
-                  <span class="text-primary-600 dark:text-primary-400 cursor-pointer truncate">{{ slotProps.data.name }}</span>
+                  <span class="text-primary-600 dark:text-primary-400 cursor-pointer truncate">{{
+                    slotProps.data.name
+                  }}</span>
                   <OfficeIconButton
                     icon="pi pi-external-link"
                     class="shrink-0 text-blue-500"
@@ -757,7 +759,11 @@
               <template #body="slotProps">
                 <div class="flex gap-2" @click.stop>
                   <OfficeIconButton icon="pi pi-download" class="text-blue-500" @click="downloadFile(slotProps.data)" />
-                  <OfficeIconButton icon="pi pi-trash" class="text-red-500" @click="confirmDeleteFile(slotProps.data)" />
+                  <OfficeIconButton
+                    icon="pi pi-trash"
+                    class="text-red-500"
+                    @click="confirmDeleteFile(slotProps.data)"
+                  />
                 </div>
               </template>
             </Column>

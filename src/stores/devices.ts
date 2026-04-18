@@ -120,6 +120,14 @@ export const useDevicesStore = defineStore('device', {
       // } else return null;
       return response.data || null;
     },
+    /**
+     * Pełny rekord urządzenia (m.in. `details`, `files`) — bez ustawiania `loadingDevices`,
+     * np. przy rozwinięciu wiersza na liście.
+     */
+    async fetchDeviceById(deviceId: number): Promise<Device | null> {
+      const response = await httpCommon.get(`/v1/devices/` + deviceId);
+      return response.data ?? null;
+    },
     //
     //DELETE DEVICE
     //

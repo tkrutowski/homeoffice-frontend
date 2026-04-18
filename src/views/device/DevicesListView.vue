@@ -8,6 +8,10 @@
   import { useDevicesStore } from '@/stores/devices';
   import { UtilsService } from '@/service/UtilsService';
   import type { Device } from '@/types/Devices';
+  import type { FileInfo } from '@/types/FileInfo';
+  import type { DataTableRowClickEvent } from 'primevue';
+  import { FileService } from '@/service/FileService';
+  import FileUrlsPreviewDialog from '@/components/FileUrlsPreviewDialog.vue';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
   import type { ActiveStatus } from '@/types/Bank';
   import StatusButton from '@/components/StatusButton.vue';
@@ -27,8 +31,8 @@
   const initFilters = () => {
     filters.value = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      deviceType: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'firm.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+      'deviceType.name': { value: null, matchMode: FilterMatchMode.IN },
+      'firm.name': { value: null, matchMode: FilterMatchMode.IN },
       name: { value: null, matchMode: FilterMatchMode.CONTAINS },
       purchaseDate: {
         operator: FilterOperator.AND,
@@ -38,19 +42,11 @@
         operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
       },
-      sellDate: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-      },
       sellAmount: {
         operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
       },
       warrantyEndDate: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-      },
-      insuranceEndDate: {
         operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
       },
@@ -75,7 +71,15 @@
     ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''));
   });
 
-  const expandedRows = ref([]);
+  const expandedRows = ref<Device[]>([]);
+  /** Pełne dane z GET /devices/:id (lista często nie ma `details` ani `files`). */
+  const expansionDetails = ref<Record<number, Device>>({});
+  const expansionLoading = ref<Record<number, boolean>>({});
+
+  const filePreviewVisible = ref(false);
+  const filePreviewStartIndex = ref(0);
+  const filePreviewDevice = ref<Device | null>(null);
+
   const deviceTemp = ref<Device>();
 
   const dataTableRef = ref<DefineComponent | null>(null);
@@ -167,6 +171,15 @@
     }
   });
 
+  /** Wiersze z datami jako `Date` — filtr DATE_IS w PrimeVue wymaga `.toDateString()` na wartości z API (często string). */
+  const devicesForDataTable = computed((): Device[] =>
+    filteredData.value.map(d => ({
+      ...d,
+      purchaseDate: d.purchaseDate != null ? (UtilsService.formatDate(d.purchaseDate) ?? null) : null,
+      warrantyEndDate: d.warrantyEndDate != null ? (UtilsService.formatDate(d.warrantyEndDate) ?? null) : null,
+    }))
+  );
+
   //
   //---------------------------------------------STATUS CHANGE--------------------------------------------------
   //
@@ -211,6 +224,66 @@
   const handleRowsPerPageChange = (event: DataTablePageEvent) => {
     localStorage.setItem('rowsPerPageDevicesList', event.rows.toString());
   };
+
+  /** `details` z API może być `Map` lub zwykłym obiektem po deserializacji JSON. */
+  const getExpansionDevice = (row: Device): Device => expansionDetails.value[row.id] ?? row;
+
+  const onRowExpand = async (event: { data: Device }) => {
+    const id = event.data.id;
+    if (expansionDetails.value[id]) return;
+    expansionLoading.value = { ...expansionLoading.value, [id]: true };
+    try {
+      const full = await deviceStore.fetchDeviceById(id);
+      if (full) {
+        expansionDetails.value = { ...expansionDetails.value, [id]: full };
+      }
+    } catch {
+      toast.add({
+        severity: 'error',
+        summary: 'Błąd',
+        detail: 'Nie udało się wczytać szczegółów urządzenia.',
+        life: 4000,
+      });
+    } finally {
+      const next = { ...expansionLoading.value };
+      delete next[id];
+      expansionLoading.value = next;
+    }
+  };
+
+  const refreshDevicesList = async () => {
+    expansionDetails.value = {};
+    expansionLoading.value = {};
+    await deviceStore.refreshDevices();
+  };
+
+  function onFilesRowClick(event: DataTableRowClickEvent, device: Device) {
+    const file = event.data as FileInfo;
+    if (!device.files?.length) return;
+    const idx = device.files.findIndex(f => f.id === file.id);
+    filePreviewStartIndex.value = idx >= 0 ? idx : 0;
+    filePreviewDevice.value = device;
+    filePreviewVisible.value = true;
+  }
+
+  function openFileUrlInNewTab(url: string) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  const getDetailPairs = (device: Device): { key: string; value: string }[] => {
+    const raw = device.details as unknown;
+    if (raw == null) return [];
+    if (raw instanceof Map) {
+      return Array.from(raw.entries()).map(([key, value]) => ({ key, value: String(value) }));
+    }
+    if (typeof raw === 'object') {
+      return Object.entries(raw as Record<string, string>).map(([key, value]) => ({
+        key,
+        value: String(value ?? ''),
+      }));
+    }
+    return [];
+  };
 </script>
 
 <template>
@@ -234,25 +307,29 @@
       ref="dataTableRef"
       v-model:expanded-rows="expandedRows"
       v-model:filters="filters"
-      :value="filteredData"
+      :value="devicesForDataTable"
       :loading="deviceStore.loadingDevices"
       striped-rows
       removable-sort
       paginator
       :rows="deviceStore.rowsPerPageList"
       :rows-per-page-options="[5, 10, 20, 50]"
-      table-style="min-width: 50rem"
+      table-style="min-width: 45rem"
       filter-display="menu"
       :global-filter-fields="['name', 'firm.name']"
-      sort-field="date"
+      sort-field="purchaseDate"
       :sort-order="-1"
       row-hover
       @page="handleRowsPerPageChange"
+      @row-expand="onRowExpand"
     >
       <template #header>
         <div class="grid grid-cols-3 gap-4 items-center">
           <div class="flex">
-            <router-link :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }" style="text-decoration: none">
+            <router-link
+              :to="{ name: 'Device', params: { isEdit: 'false', deviceId: 0 } }"
+              style="text-decoration: none"
+            >
               <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowe urządzenie" />
             </router-link>
           </div>
@@ -280,12 +357,6 @@
             />
           </div>
           <div class="flex justify-end gap-4">
-            <ProgressSpinner
-              v-if="deviceStore.loadingDevices"
-              class="ml-3"
-              style="width: 35px; height: 35px"
-              stroke-width="5"
-            />
             <IconField icon-position="left">
               <InputIcon>
                 <i class="pi pi-search" />
@@ -314,12 +385,12 @@
         field="deviceType"
         header="Rodzaj urządzenia"
         style="max-width: 220px"
-        filter-field="deviceType"
+        filter-field="deviceType.name"
         :sortable="true"
         :show-filter-match-modes="false"
       >
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] }}
+        <template #body="{ data }">
+          {{ data.deviceType?.name ?? '' }}
         </template>
         <template #filter="{ filterModel }">
           <MultiSelect
@@ -344,12 +415,12 @@
         field="firm"
         header="Gdzie kupiono"
         style="max-width: 220px"
-        filter-field="firm"
+        filter-field="firm.name"
         :sortable="true"
         :show-filter-match-modes="false"
       >
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] }}
+        <template #body="{ data }">
+          {{ data.firm?.name ?? '' }}
         </template>
         <template #filter="{ filterModel }">
           <MultiSelect
@@ -405,32 +476,6 @@
         </template>
       </Column>
 
-      <!-- INSURRANCE END DATE-->
-      <Column
-        field="insuranceEndDate"
-        header="Data ubezpieczenia"
-        :sortable="true"
-        data-type="date"
-        filter-field="insuranceEndDate"
-      >
-        <template #body="{ data }">
-          {{ UtilsService.formatDateToString(data.insuranceEndDate) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
-        </template>
-      </Column>
-
-      <!-- SELL DATA-->
-      <Column field="sellDate" header="Data sprzedaży" :sortable="true" data-type="date">
-        <template #body="{ data }">
-          {{ UtilsService.formatDateToString(data.sellDate) }}
-        </template>
-        <template #filter="{ filterModel }">
-          <DatePicker v-model="filterModel.value" date-format="yy-mm-dd" placeholder="yyyy-dd-mm" />
-        </template>
-      </Column>
-
       <!-- SELL AMOUNT-->
       <Column
         field="sellAmount"
@@ -448,7 +493,7 @@
       </Column>
 
       <!-- ACTIVE STATUS     -->
-      <Column field="activeStatus" header="Status" style="width: 100px">
+      <Column field="activeStatus" header="Status" style="width: 80px">
         <template #body="{ data, field }">
           <StatusButton
             title="Zmień status urządzenia na (Aktywny/Nieaktywny)"
@@ -463,24 +508,149 @@
       <Column header="Akcja" :exportable="false" style="max-width: 70px">
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-start mt-2 mb-2">
-            <OfficeIconButton title="Edytuj urządzenie" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+            <OfficeIconButton
+              title="Edytuj urządzenie"
+              icon="pi pi-file-edit"
+              class="text-orange-500"
+              @click="editItem(slotProps.data)"
+            />
             <OfficeIconButton
               title="Usuń urządzenie"
               icon="pi pi-trash"
-              severity="danger"
-              class=""
+              class="text-red-500"
               @click="confirmDelete(slotProps.data)"
             />
           </div>
         </template>
       </Column>
 
-      <template #expansion="slotProps">
-        <div class="flex">
-          <div class="flex flex-col p-3 col-9 w-full">
-            <label class="text-left">Opis:</label>
-            <Textarea v-model="slotProps.data.otherInfo" rows="7" auto-resize fluid readonly />
+      <template #expansion="{ data }">
+        <div
+          class="flex flex-col gap-6 border-t border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900/50"
+        >
+          <div v-if="expansionLoading[data.id] && !expansionDetails[data.id]" class="flex justify-center py-6">
+            <ProgressSpinner style="width: 42px; height: 42px" stroke-width="4" />
           </div>
+          <template v-else>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-medium text-surface-500 dark:text-surface-400">ID</span>
+                <span class="text-surface-900 dark:text-surface-0">{{ getExpansionDevice(data).id }}</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-medium text-surface-500 dark:text-surface-400">Data ubezpieczenia</span>
+                <span class="text-surface-900 dark:text-surface-0">{{
+                  UtilsService.formatDateToString(getExpansionDevice(data).insuranceEndDate ?? undefined)
+                }}</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-medium text-surface-500 dark:text-surface-400">Data sprzedaży</span>
+                <span class="text-surface-900 dark:text-surface-0">{{
+                  UtilsService.formatDateToString(getExpansionDevice(data).sellDate ?? undefined)
+                }}</span>
+              </div>
+            </div>
+
+            <div v-if="getExpansionDevice(data).imageUrl" class="flex flex-col gap-2">
+              <span class="text-sm font-medium text-surface-500 dark:text-surface-400">Obraz</span>
+              <a
+                :href="getExpansionDevice(data).imageUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="break-all text-sm text-primary hover:underline"
+                >{{ getExpansionDevice(data).imageUrl }}</a
+              >
+              <img
+                :src="getExpansionDevice(data).imageUrl"
+                :alt="getExpansionDevice(data).name"
+                class="max-h-48 max-w-full rounded-md border border-surface-200 object-contain dark:border-surface-600"
+              />
+            </div>
+
+            <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
+              <div v-if="getDetailPairs(getExpansionDevice(data)).length > 0" class="mt-2 flex flex-col gap-2">
+                <div
+                  v-for="pair in getDetailPairs(getExpansionDevice(data))"
+                  :key="pair.key"
+                  class="flex flex-col gap-0.5 border-b border-surface-100 pb-2 last:border-0 dark:border-surface-700 sm:flex-row sm:gap-4"
+                >
+                  <span class="shrink-0 text-sm font-medium text-surface-600 dark:text-surface-300 sm:w-40">{{
+                    pair.key
+                  }}</span>
+                  <span class="break-words text-sm text-surface-900 dark:text-surface-0">{{ pair.value }}</span>
+                </div>
+              </div>
+              <p v-else class="mt-2 text-sm text-surface-600 dark:text-surface-400">Brak zapisanych szczegółów.</p>
+            </Fieldset>
+
+            <div class="flex flex-col gap-2">
+              <Fieldset v-if="getExpansionDevice(data).files?.length" class="w-full" legend="Pliki" :toggleable="true">
+                <DataTable
+                  :value="getExpansionDevice(data).files"
+                  class="mt-2"
+                  :rows="10"
+                  :paginator="true"
+                  paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                  :rows-per-page-options="[5, 10, 20, 50]"
+                  responsive-layout="scroll"
+                  @row-click="e => onFilesRowClick(e, getExpansionDevice(data))"
+                >
+                  <Column field="name" header="Nazwa pliku" :sortable="true">
+                    <template #body="slotProps">
+                      <div class="flex min-w-0 items-center gap-2">
+                        <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2 shrink-0"></i>
+                        <span class="cursor-pointer truncate text-primary-600 dark:text-primary-400">
+                          {{ slotProps.data.name }}
+                        </span>
+                        <OfficeIconButton
+                          icon="pi pi-external-link"
+                          class="shrink-0 text-blue-500"
+                          title="Otwórz w nowej karcie"
+                          @click.stop="openFileUrlInNewTab(slotProps.data.url)"
+                        />
+                      </div>
+                    </template>
+                  </Column>
+                  <Column field="type" header="Typ" :sortable="true" style="width: 150px">
+                    <template #body="slotProps">
+                      <Tag
+                        :value="FileService.getFileTypeLabel(slotProps.data.type)"
+                        :severity="FileService.getFileTypeSeverity(slotProps.data.type)"
+                      />
+                    </template>
+                  </Column>
+                  <Column field="size" header="Rozmiar" :sortable="true" style="width: 150px">
+                    <template #body="slotProps">
+                      {{ FileService.formatFileSize(slotProps.data.size) }}
+                    </template>
+                  </Column>
+                  <Column field="uploadDate" header="Data dodania" :sortable="true" style="width: 200px">
+                    <template #body="slotProps">
+                      {{ FileService.formatDate(slotProps.data.uploadDate) }}
+                    </template>
+                  </Column>
+                  <Column field="description" header="Opis" style="width: 200px">
+                    <template #body="slotProps">
+                      {{ slotProps.data.description }}
+                    </template>
+                  </Column>
+                </DataTable>
+              </Fieldset>
+              <p v-else class="text-sm text-surface-600 dark:text-surface-400">Brak załączonych plików.</p>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <span class="text-left text-sm font-medium text-surface-500 dark:text-surface-400">Opis</span>
+              <Textarea
+                :model-value="getExpansionDevice(data).otherInfo"
+                rows="7"
+                auto-resize
+                fluid
+                readonly
+                class="w-full"
+              />
+            </div>
+          </template>
         </div>
       </template>
     </DataTable>
@@ -492,7 +662,7 @@
         title="Odświerz listę książek"
         :icon="deviceStore.loadingDevices ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
         class="mr-2"
-        @click="deviceStore.refreshDevices()"
+        @click="refreshDevicesList()"
       />
     </template>
     <template #end>
@@ -508,6 +678,12 @@
       </div>
     </template>
   </Toolbar>
+
+  <FileUrlsPreviewDialog
+    v-model:visible="filePreviewVisible"
+    :items="filePreviewDevice?.files ?? []"
+    :initial-index="filePreviewStartIndex"
+  />
 </template>
 
 <style scoped>
@@ -516,5 +692,9 @@
   }
   :deep(.p-panel-header) {
     padding: 0.25rem !important;
+  }
+  /* Domyślny wrapper PrimeVue ma overflow-x: auto — przy szerokiej tabeli pojawiał się poziomy pasek. */
+  :deep(.p-datatable-wrapper) {
+    overflow-x: hidden;
   }
 </style>
