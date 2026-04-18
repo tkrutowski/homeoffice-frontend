@@ -10,13 +10,16 @@ import type { LoanInstallment } from '../types/Loan';
 import { TranslationService } from '@/service/TranslationService.ts';
 
 export const UtilsService = {
-  formatCurrency(value: number | undefined) {
-    // console.log("FORMAT_CURRENCY: ", value);
-    if (value !== undefined && !Number.isNaN(value))
-      return value.toLocaleString('pl-PL', {
-        style: 'currency',
-        currency: 'PLN',
-      });
+  /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
+  formatCurrency(value: number | string | undefined | null) {
+    if (value === undefined || value === null) return undefined;
+    const n = Number(value);
+    if (Number.isNaN(n)) return undefined;
+    const formatted = n.toLocaleString('pl-PL', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `${formatted} zł`;
   },
 
   formatDateToString(value: Date | string | undefined): string {
@@ -33,6 +36,26 @@ export const UtilsService = {
       const date = moment(value).format('YYYY-MM-DD');
       return date === '0001-01-01' ? undefined : new Date(date);
     }
+  },
+
+  /** Liczba pełnych dni kalendarzowych po terminie spłaty (względem dziś). `null` gdy brak daty lub termin jeszcze nie minął. */
+  daysPastDeadline(deadline: Date | string | null | undefined): number | null {
+    if (deadline === null || deadline === undefined) return null;
+    const end = moment(deadline).startOf('day');
+    if (!end.isValid()) return null;
+    const today = moment().startOf('day');
+    const diff = today.diff(end, 'days');
+    return diff > 0 ? diff : null;
+  },
+
+  /** Pełne dni kalendarzowe do terminu (włącznie z dziś = 0). `null` gdy brak daty lub termin już minął. */
+  daysUntilDeadline(deadline: Date | string | null | undefined): number | null {
+    if (deadline === null || deadline === undefined) return null;
+    const end = moment(deadline).startOf('day');
+    if (!end.isValid()) return null;
+    const today = moment().startOf('day');
+    const diff = end.diff(today, 'days');
+    return diff >= 0 ? diff : null;
   },
 
   //zaznacza tekst po kliknięciu
