@@ -152,10 +152,7 @@
 </script>
 
 <template>
-  <!-- Wysokość viewportu minus nagłówek aplikacji (ok. 140px); bez sztywnego layoutu w App.vue — DataTable na innych stronach zostaje bez zmian -->
-  <div
-    class="flex w-full max-w-full flex-col overflow-hidden h-[calc(100dvh-140px)] max-h-[calc(100dvh-140px)] min-h-0"
-  >
+  <div class="flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden">
     <TheMenuFinance class="shrink-0" />
     <ConfirmationDialog
       v-model:visible="showStatusChangeConfirmationDialog"
