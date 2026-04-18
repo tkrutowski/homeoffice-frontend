@@ -162,12 +162,12 @@
 
   watch(
     () => route.query.new,
-    (v) => {
+    v => {
       if (!isNewSeriesQuery(v)) return;
       addSeries();
       router.replace({ name: 'Series', query: {} });
     },
-    { immediate: true },
+    { immediate: true }
   );
 
   const editSeries = (item: Series) => {

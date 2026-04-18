@@ -66,13 +66,13 @@
 
 <template>
   <div
-    class="w-full max-w-[400px] mx-auto overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 text-surface-900 shadow-lg dark:border-primary/50 dark:bg-surface-950 dark:text-surface-0 dark:shadow-xl"
+    class="flex h-full min-h-0 w-full max-w-[400px] flex-col justify-self-center overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 text-surface-900 shadow-lg dark:border-primary/50 dark:bg-surface-950 dark:text-surface-0 dark:shadow-xl"
   >
-    <div class="flex min-w-0 flex-col md:flex-row">
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row md:items-stretch">
       <!-- Lewy panel -->
       <button
         type="button"
-        class="flex flex-col items-center gap-4 pt-7 text-left transition hover:bg-surface-100 disabled:pointer-events-none disabled:opacity-45 dark:hover:bg-white/5 md:min-w-0 md:flex-1 md:items-start md:gap-5 md:border-surface-200 md:pl-7 md:py-7 dark:md:border-primary/30"
+        class="flex min-h-0 flex-col items-center gap-4 py-7 text-left transition hover:bg-surface-100 disabled:pointer-events-none disabled:opacity-45 dark:hover:bg-white/5 md:h-full md:min-w-0 md:flex-1 md:items-start md:justify-between md:gap-5 md:pl-7 md:py-7"
         :disabled="!authorizationStore.hasAccessFinance"
         @click="enterFinance"
       >
@@ -93,7 +93,7 @@
 
       <!-- Prawa kolumna -->
       <div
-        class="flex w-full shrink-0 flex-col gap-3 border-t border-surface-200 p-3 dark:border-primary/20 md:w-[170px] md:min-w-0 md:grow-0 md:border-t-0 md:border-surface-200 md:p-3 dark:md:border-primary/30"
+        class="flex w-full shrink-0 flex-col gap-3 border-t border-surface-200 p-3 dark:border-primary/20 md:h-full md:min-h-0 md:w-[170px] md:min-w-0 md:grow-0 md:border-t-0 md:border-surface-200 md:p-3 dark:md:border-primary/30"
       >
         <!-- Lista kredytów -->
         <div
@@ -107,11 +107,9 @@
             @click="pushListOrRefresh('Loans')"
           >
             <i class="pi pi-credit-card mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight">
-              Lista kredytów
-            </span>
+            <span class="block break-words text-sm font-semibold md:leading-tight"> Lista kredytów </span>
             <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
-              Ostatnia aktualizacja: 2 min temu
+              Aktualizacja:...
             </span>
           </button>
           <div
@@ -119,7 +117,11 @@
             title="Nowy kredyt"
             @click.stop="onAddLoanClick"
           >
-            <OfficeIconButton icon="pi pi-plus" :btn-disabled="!authorizationStore.hasAccessFinanceLoan" class="text-green-600 dark:text-green-400"/>
+            <OfficeIconButton
+              icon="pi pi-plus"
+              :btn-disabled="!authorizationStore.hasAccessFinanceLoan"
+              class="text-green-600 dark:text-green-400"
+            />
           </div>
         </div>
 
@@ -137,7 +139,7 @@
             <i class="pi pi-money-bill mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
             <span class="block break-words text-sm font-semibold md:leading-tight">Lista opłat</span>
             <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
-              Ostatnia aktualizacja: 1 godz. temu
+              Aktualizacja: dziś
             </span>
           </button>
           <div
@@ -145,7 +147,11 @@
             title="Nowa opłata"
             @click.stop="onAddFeeClick"
           >
-            <OfficeIconButton icon="pi pi-plus" :btn-disabled="!authorizationStore.hasAccessFinanceFee" class="text-green-600 dark:text-green-400"/>
+            <OfficeIconButton
+              icon="pi pi-plus"
+              :btn-disabled="!authorizationStore.hasAccessFinanceFee"
+              class="text-green-600 dark:text-green-400"
+            />
           </div>
         </div>
 
@@ -161,11 +167,9 @@
             @click="pushListOrRefresh('Purchases')"
           >
             <i class="pi pi-shopping-cart mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight">
-              Lista zakupów
-            </span>
+            <span class="block break-words text-sm font-semibold md:leading-tight"> Lista zakupów </span>
             <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
-              Ostatnia aktualizacja: dziś
+              Aktualizacja: dziś
             </span>
           </button>
           <div
@@ -173,7 +177,11 @@
             title="Nowy zakup"
             @click.stop="onAddPurchaseClick"
           >
-            <OfficeIconButton icon="pi pi-plus" :btn-disabled="!authorizationStore.hasAccessFinancePurchase" class="text-green-600 dark:text-green-400"/>
+            <OfficeIconButton
+              icon="pi pi-plus"
+              :btn-disabled="!authorizationStore.hasAccessFinancePurchase"
+              class="text-green-600 dark:text-green-400"
+            />
           </div>
         </div>
 
@@ -189,11 +197,9 @@
             @click="goPayments"
           >
             <i class="pi pi-list mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight">
-              Płatności bieżące
-            </span>
+            <span class="block break-words text-sm font-semibold md:leading-tight"> Płatności bieżące </span>
             <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
-              Ostatnia aktualizacja: dziś
+              Aktualizacja: dziś
             </span>
           </button>
         </div>
