@@ -33,6 +33,7 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     DeviceDetails: typeof import('./src/components/device/DeviceDetails.vue')['default']
     DeviceDetailsDialog: typeof import('./src/components/device/DeviceDetailsDialog.vue')['default']
+    DeviceHomeEntryCard: typeof import('./src/components/home/DeviceHomeEntryCard.vue')['default']
     Dialog: typeof import('primevue/dialog')['default']
     Divider: typeof import('primevue/divider')['default']
     Fieldset: typeof import('primevue/fieldset')['default']

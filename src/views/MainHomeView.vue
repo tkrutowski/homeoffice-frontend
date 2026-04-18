@@ -5,6 +5,7 @@
   // import { useDevicesStore } from '@/stores/devices'
   import AppCard from '@/components/AppCard.vue';
   import FinanceHomeEntryCard from '@/components/home/FinanceHomeEntryCard.vue';
+  import DeviceHomeEntryCard from '@/components/home/DeviceHomeEntryCard.vue';
   import router from '@/router';
 
   const authorizationStore = useAuthorizationStore();
@@ -71,6 +72,7 @@
       />
     </div>
     <FinanceHomeEntryCard />
+    <DeviceHomeEntryCard />
   </div>
 </template>
 
