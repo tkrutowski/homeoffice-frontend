@@ -7,9 +7,11 @@
   import { useFeeStore } from '@/stores/fee.ts';
   import { usePaymentStore } from '@/stores/payments.ts';
   import { useCardsStore } from '@/stores/cards.ts';
+  import { usePurchasesStore } from '@/stores/purchases';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
 
   const loansStore = useLoansStore();
+  const purchasesStore = usePurchasesStore();
   const feeStore = useFeeStore();
   const paymentStore = usePaymentStore();
   const cardsStore = useCardsStore();
@@ -136,6 +138,7 @@
           label: 'Nowy zakup',
           icon: 'pi pi-fw pi-file',
           command: () => {
+            purchasesStore.clearPurchaseAddContext();
             router.push({
               name: 'Purchase',
               params: { isEdit: 'false', purchaseId: 0 },

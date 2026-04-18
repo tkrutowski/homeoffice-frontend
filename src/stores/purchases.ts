@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
 import type { PaymentStatus } from '@/types/Payment';
-import type { Purchase } from '@/types/Purchase';
+import { defaultPurchaseAddContext, type Purchase, type PurchaseAddContext } from '@/types/Purchase';
 import moment from 'moment';
 
 export const usePurchasesStore = defineStore('purchase', {
@@ -24,6 +24,9 @@ export const usePurchasesStore = defineStore('purchase', {
     sortField: 'id',
     sortOrder: -1, // 1 = ASC, -1 = DESC - domyślnie sortujemy po ID malejąco
     filters: {} as any,
+
+    /** Skąd otwarto formularz nowego zakupu — steruje lokalnym odświeżeniem po zapisie */
+    purchaseAddContext: defaultPurchaseAddContext(),
   }),
 
   //getters = computed
@@ -48,6 +51,23 @@ export const usePurchasesStore = defineStore('purchase', {
 
   //actions = metody w komponentach
   actions: {
+    setPurchaseAddContext(ctx: PurchaseAddContext) {
+      this.purchaseAddContext = {
+        origin: ctx.origin,
+        currentListUserId: ctx.currentListUserId ?? null,
+      };
+    },
+    clearPurchaseAddContext() {
+      this.purchaseAddContext = defaultPurchaseAddContext();
+    },
+    consumePurchaseAddContext(): PurchaseAddContext {
+      const snapshot = { ...this.purchaseAddContext };
+      this.purchaseAddContext = defaultPurchaseAddContext();
+      return snapshot;
+    },
+    clearPurchasesCurrentMap() {
+      this.purchasesCurrent = new Map();
+    },
     clearPurchasesToPay() {
       this.purchasesToPay = [];
     },
@@ -119,37 +139,13 @@ export const usePurchasesStore = defineStore('purchase', {
       };
 
       const response = await httpCommon.post(`/v1/finance/purchase`, transformedPurchase);
-      //TODO sprawdzić czy można dodać bezpośrednio do tablicy
       const res: Purchase = response.data;
 
-      // const paymentDeadline = res.paymentDeadline && res.paymentDeadline instanceof Date ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01'
       const paymentDeadline = res.paymentDeadline ? moment(res.paymentDeadline).format('YYYY-MM-DD') : '0001-01-01';
 
-      // Logika dodawania zakupu do purchasesCurrent
-      let shouldAddToCurrent = false;
+      const ctx = this.consumePurchaseAddContext();
 
-      // Sprawdzamy czy purchasesCurrent jest puste
-      if (this.purchasesCurrent.size === 0) {
-        shouldAddToCurrent = true;
-      } else {
-        // Sprawdzamy czy purchasesCurrent zawiera zakupy tego samego użytkownika
-        let existingUserId: number | null = null;
-
-        // Pobieramy pierwszego użytkownika z purchasesCurrent
-        for (const [, purchases] of this.purchasesCurrent.entries()) {
-          if (purchases.length > 0) {
-            existingUserId = purchases[0].idUser;
-            break;
-          }
-        }
-
-        // Jeśli znaleziono istniejące zakupy i użytkownik się zgadza - dodaj
-        if (existingUserId !== null && existingUserId === res.idUser) {
-          shouldAddToCurrent = true;
-        }
-      }
-
-      if (shouldAddToCurrent) {
+      if (ctx.origin === 'current' && ctx.currentListUserId != null && res.idUser === ctx.currentListUserId) {
         if (this.purchasesCurrent.has(paymentDeadline)) {
           const purchaseArray = this.purchasesCurrent.get(paymentDeadline);
           if (purchaseArray) {
@@ -159,9 +155,13 @@ export const usePurchasesStore = defineStore('purchase', {
         } else {
           this.purchasesCurrent.set(paymentDeadline, new Array(res));
         }
-        console.log('Zakup dodany do purchasesCurrent dla użytkownika:', res.idUser);
+        console.log('Zakup dodany do purchasesCurrent (origin current, ten sam użytkownik listy):', res.idUser);
+      } else if (ctx.origin === 'all') {
+        await this.getPurchasesFromDb(0);
+        await this.getPurchasesSumToPayFromDb();
+        console.log('Lista zakupów (all) odświeżona po dodaniu');
       } else {
-        console.log('Zakup NIE został dodany do purchasesCurrent (inny użytkownik)');
+        console.log('addPurchaseDb: brak lokalnej aktualizacji list (origin inny lub brak dopasowania current)');
       }
 
       console.log('END - addPurchaseDb()');

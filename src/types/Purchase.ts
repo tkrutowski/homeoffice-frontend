@@ -1,5 +1,19 @@
 import type { PaymentStatus } from './Payment.ts';
 
+export type PurchaseAddOrigin = 'current' | 'all' | null;
+
+export type PurchaseAddContext = {
+  origin: PurchaseAddOrigin;
+  currentListUserId: number | null;
+};
+
+export function defaultPurchaseAddContext(): PurchaseAddContext {
+  return {
+    origin: null,
+    currentListUserId: null,
+  };
+}
+
 export interface Purchase {
   id: number;
   idCard: number;

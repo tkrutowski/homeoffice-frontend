@@ -3,7 +3,7 @@
   import PurchaseCurrentItemGroup from '@/components/finance/PurchaseCurrentItemGroup.vue';
   import { UtilsService } from '@/service/UtilsService';
   import { usePurchasesStore } from '@/stores/purchases';
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import { PaymentStatus } from '@/types/Payment';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import { useToast } from 'primevue/usetoast';
@@ -11,24 +11,84 @@
   import type { User } from '@/types/User.ts';
   import { useUsersStore } from '@/stores/users.ts';
   import router from '@/router';
+  import { useRoute } from 'vue-router';
+
+  const route = useRoute();
   const purchasesStore = usePurchasesStore();
   const toast = useToast();
   const userStore = useUsersStore();
 
+  /** Ostatnia osoba z listy „bieżących” — po powrocie z formularza (router.back) odtwarzamy Select i odświeżamy dane */
+  const PURCHASES_CURRENT_USER_STORAGE_KEY = 'purchasesCurrentSelectedUsername';
+
   UtilsService.getTypesForFinance();
-  onMounted(() => {
+  onMounted(async () => {
     purchasesStore.clearPurchasesToPay();
-    if (userStore.users.length <= 0) userStore.getUsersFromDb();
+    if (userStore.users.length <= 0) await userStore.getUsersFromDb();
+    await restorePurchasesCurrentUser();
   });
   const selectedUser = ref<User | null>(userStore.getLoggedUser);
   const purchases = ref<Map<string, Purchase[]>>(new Map<string, Purchase[]>());
+
+  async function restorePurchasesCurrentUser() {
+    const saved = sessionStorage.getItem(PURCHASES_CURRENT_USER_STORAGE_KEY);
+    if (!saved) return;
+    const user = userStore.users.find((u: User) => u.username === saved);
+    if (!user) {
+      sessionStorage.removeItem(PURCHASES_CURRENT_USER_STORAGE_KEY);
+      return;
+    }
+    selectedUser.value = user;
+    await getCurrentPurchaseByUser();
+  }
+
+  function onUserSelectChange() {
+    purchases.value.clear();
+    purchasesStore.clearPurchasesCurrentMap();
+  }
+
+  function goToNewPurchase() {
+    if (selectedUser.value?.username) {
+      sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);
+    }
+    purchasesStore.setPurchaseAddContext({
+      origin: 'current',
+      currentListUserId: selectedUser.value?.id ?? null,
+    });
+    router.push({ name: 'Purchase', params: { isEdit: 'false', purchaseId: 0 } });
+  }
+
   //--------------------------------------GET PURCHASE
   async function getCurrentPurchaseByUser() {
     purchases.value.clear();
     if (selectedUser.value) {
       purchases.value = await purchasesStore.getPurchaseCurrentFromDb(selectedUser.value?.username);
+      sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);
     }
   }
+
+  async function applyUsernameFromRouteQuery() {
+    const raw = route.query.username;
+    const username = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+    if (!username || typeof username !== 'string') return;
+
+    if (userStore.users.length === 0) await userStore.getUsersFromDb();
+    const user = userStore.users.find((u: User) => u.username === username);
+    if (user) {
+      selectedUser.value = user;
+      await getCurrentPurchaseByUser();
+    }
+    await router.replace({ name: 'PurchasesCurrent', query: {} });
+  }
+
+  watch(
+    () => route.query.username,
+    q => {
+      const username = typeof q === 'string' ? q : Array.isArray(q) ? q[0] : null;
+      if (username) void applyUsernameFromRouteQuery();
+    },
+    { immediate: true }
+  );
 
   //
   //----------------------------------------PAY SELECTED-------------------------------------------
@@ -113,7 +173,7 @@
         :options="userStore.getUserByPrivileges"
         :option-label="user => user.firstName + ' ' + user.lastName"
         :loading="userStore.loadingUsers"
-        @change="() => purchases.clear()"
+        @change="onUserSelectChange"
         required
       />
     </template>
@@ -140,21 +200,14 @@
         title="Dodaj nowy zakup."
         severity="warn"
         icon="pi pi-plus"
-        @click="
-          () => {
-            router.push({
-              name: 'Purchase',
-              params: { isEdit: 'false', purchaseId: 0 },
-            });
-          }
-        "
+        @click="goToNewPurchase"
       />
       <Button
         title="Odświerz listę zakupów"
         :icon="purchasesStore.loadingPurchases ? 'pi  pi-spin pi-spinner' : 'pi pi-refresh'"
         class="mr-2"
         :disabled="selectedUser === null"
-        @click="purchasesStore.getPurchaseCurrentFromDb(selectedUser?.username!)"
+        @click="getCurrentPurchaseByUser"
       />
       <Button
         title="Oznacz wybrane zakupy jako opłacone."

@@ -135,6 +135,21 @@
   //
   //SAVE
   //
+  /** Po zapisie: cofnięcie w historii, albo tablica finansów przy braku sensownego „wstecz”. */
+  function closePurchaseFormAfterSave() {
+    const state = window.history.state as { back?: string | null } | undefined;
+    const hasInAppBack = typeof state?.back === 'string' && state.back.length > 0;
+    if (hasInAppBack) {
+      router.back();
+      return;
+    }
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push({ name: 'FinanceHome' });
+  }
+
   function savePurchase() {
     submitted.value = true;
     if (isEdit.value) {
@@ -165,10 +180,11 @@
           });
           btnShowBusy.value = false;
           setTimeout(() => {
-            router.push({ name: 'PurchasesCurrent' });
+            closePurchaseFormAfterSave();
           }, 3000);
         })
         .catch((reason: AxiosError) => {
+          btnShowBusy.value = false;
           toast.add({
             severity: 'error',
             summary: reason?.message,
@@ -203,7 +219,7 @@
           btnShowBusy.value = false;
           btnSaveDisabled.value = false;
           setTimeout(() => {
-            router.push({ name: 'Purchases' });
+            closePurchaseFormAfterSave();
           }, 3000);
         })
         .catch((reason: AxiosError) => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { FilterMatchMode } from '@primevue/core/api';
-  import { computed, type DefineComponent, ref } from 'vue';
+  import { computed, watch, type DefineComponent, ref } from 'vue';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
   import StatusButton from '@/components/StatusButton.vue';
@@ -218,6 +218,11 @@
     });
   };
 
+  const goToNewPurchase = () => {
+    purchasesStore.setPurchaseAddContext({ origin: 'all', currentListUserId: null });
+    router.push({ name: 'Purchase', params: { isEdit: 'false', purchaseId: 0 } });
+  };
+
   const handlePageChange = async (event: DataTablePageEvent) => {
     console.log('handlePageChange()', event);
     await purchasesStore.loadPage(event.page, event.rows);
@@ -248,7 +253,6 @@
   });
 
   // Obsługa wyszukiwania globalnego z debounce
-  import { watch } from 'vue';
   let searchTimeout: NodeJS.Timeout | null = null;
 
   watch(
@@ -314,12 +318,13 @@
     >
       <template #header>
         <div class="flex justify-between">
-          <router-link
-            :to="{ name: 'Purchase', params: { isEdit: 'false', purchaseId: 0 } }"
-            style="text-decoration: none"
-          >
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy zakup" />
-          </router-link>
+          <Button
+            outlined
+            label="Dodaj"
+            icon="pi pi-plus"
+            title="Dodaj nowy zakup"
+            @click="goToNewPurchase"
+          />
           <div v-if="purchasesStore.loadingPurchases">
             <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
           </div>
