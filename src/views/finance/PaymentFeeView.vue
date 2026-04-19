@@ -208,16 +208,33 @@
       <TheMenuFinance />
     </template>
 
-    <Panel id="fee-panel" class="my-3 mx-2">
+    <Panel id="fee-panel" class="my-3 mx-auto w-full px-2 sm:px-4">
     <template #header>
-      <OfficeIconButton title="Powrót do listy" icon="pi pi-fw pi-list" @click="() => router.push({ name: 'Fees' })" />
-      <div class="w-full flex justify-center gap-4">
-        <h3>
-          {{ `Szczegóły opłaty: ${fee?.name}` }}
-        </h3>
-        <div v-if="feeStore.loadingFees">
-          <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5" />
+      <div class="flex w-full min-w-0 items-center gap-2 sm:gap-4">
+        <OfficeIconButton
+          title="Powrót do listy"
+          icon="pi pi-fw pi-list"
+          class="shrink-0 text-orange-500"
+          @click="() => router.push({ name: 'Fees' })"
+        />
+        <div class="flex min-w-0 flex-1 items-center justify-center gap-4">
+          <h3
+            class="m-0 min-w-0 text-center text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
+          >
+            {{ `Szczegóły opłaty: ${fee?.name}` }}
+          </h3>
+          <div v-if="feeStore.loadingFees" class="shrink-0">
+            <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5" />
+          </div>
         </div>
+        <OfficeButton
+          class="shrink-0"
+          text="zamknij"
+          btn-type="office-regular"
+          :btn-disabled="isBusy"
+          :loading="isBusy"
+          @click="() => router.back()"
+        />
       </div>
     </template>
     <div class="grid grid-cols-1 md:grid-cols-8 gap-4 h-full">
@@ -259,9 +276,9 @@
       </div>
 
       <!--      RIGHT TABLE -->
-      <div class="col-span-md:col-span-5">
+      <div class="md:col-span-5">
         <Fieldset legend="Szczegóły wpłat">
-          <DataTable :value="installments" size="small">
+          <DataTable v-if="!feeStore.loadingFees" scroll-height="68vh" :value="installments" size="small">
             <Column field="paymentDeadline" header="Termin płatności" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div style="text-align: center">
@@ -269,7 +286,7 @@
                 </div>
               </template>
             </Column>
-            <Column field="installmentAmountToPay" header="Kwota">
+            <Column field="installmentAmountToPay" header="Kwota" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div>
                   {{ UtilsService.formatCurrency(data[field]) }}
@@ -283,7 +300,7 @@
                 </div>
               </template>
             </Column>
-            <Column field="installmentAmountPaid" header="Kwota">
+            <Column field="installmentAmountPaid" header="Kwota" header-style="min-width:120px">
               <template #body="{ data, field }">
                 <div>
                   {{ data[field] !== 0 ? UtilsService.formatCurrency(data[field]) : '' }}
@@ -297,12 +314,13 @@
                   <OfficeIconButton
                     title="Edytuj wpłatę"
                     icon="pi pi-file-edit"
+                    class="text-orange-500"
                     @click="openPaymentModal(slotProps.data)"
                   />
                   <OfficeIconButton
                     title="Usuń wpłatę"
                     icon="pi pi-trash"
-                    severity="danger"
+                    class="text-red-500"
                     :disabled="slotProps.data.installmentAmountPaid === 0"
                     @click="confirmDeletePayment(slotProps.data)"
                   />
@@ -313,25 +331,13 @@
         </Fieldset>
       </div>
     </div>
-
-    <template #footer>
-      <div class="flex justify-center">
-        <OfficeButton
-          text="zamknij"
-          btn-type="office-regular"
-          :btn-disabled="isBusy"
-          :loading="isBusy"
-          @click="() => router.back()"
-        />
-      </div>
-    </template>
   </Panel>
   </MainPageShell>
 </template>
 
 <style scoped>
   #fee-panel {
-    max-width: 1000px;
+    max-width: 1200px;
   }
 
   .p-datatable :deep(.p-datatable-column-header-content) {
