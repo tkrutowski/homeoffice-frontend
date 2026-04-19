@@ -149,6 +149,20 @@
       params: { isEdit: 'true', cardId: item.id },
     });
   };
+
+  const goToNewCard = () => {
+    router.push({
+      name: 'Card',
+      params: { isEdit: 'false', cardId: 0 },
+    });
+  };
+
+  const toolbarLoading = computed(() => bankStore.loadingBanks || cardStore.loadingCards);
+
+  const refreshCards = async () => {
+    await bankStore.getBanksFromDb();
+    await cardStore.getCardsFromDb('ALL');
+  };
 </script>
 
 <template>
@@ -168,6 +182,55 @@
   />
   <Panel class="max-w-screen-xl m-auto mt-5">
     <DataView :value="filteredData" dataKey="id">
+      <template #header>
+        <div class="flex flex-wrap items-center gap-2">
+          <OfficeIconButton
+            class="text-amber-500"
+            title="Dodaj nową kartę"
+            icon="pi pi-plus"
+            @click="goToNewCard"
+          />
+          <div
+            class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+            role="presentation"
+            aria-hidden="true"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <OfficeIconButton
+              title="Wyświetl nieaktywne"
+              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+              class="text-red-500"
+              :active="filter === 'INACTIVE'"
+              @click="setFilter('INACTIVE')"
+            />
+            <OfficeIconButton
+              title="Wyświetl aktywne"
+              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+              class="text-green-500"
+              :active="filter === 'ACTIVE'"
+              @click="setFilter('ACTIVE')"
+            />
+            <OfficeIconButton
+              title="Wyświetl wszystkie"
+              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+              class="text-orange-500"
+              :active="filter === 'ALL'"
+              @click="setFilter('ALL')"
+            />
+            <div
+              class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+              role="presentation"
+              aria-hidden="true"
+            />
+            <OfficeIconButton
+              title="Odśwież listę kart"
+              class="text-orange-500"
+              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+              @click="refreshCards"
+            />
+          </div>
+        </div>
+      </template>
       <template #list="slotProps">
         <div class="flex flex-col">
           <div v-for="(item, index) in slotProps.items" :key="index">
@@ -215,7 +278,7 @@
                   <span class="text-xl font-semibold text-surface-500 dark:text-surface-400">{{
                     UtilsService.formatCurrency(item.limit)
                   }}</span>
-                  <div class="flex flex-row-reverse md:flex-row gap-2">
+                  <div class="flex flex-row-reverse md:flex-row flex-wrap items-center gap-1">
                     <OfficeIconButton
                       v-if="item.activeStatus == 'INACTIVE'"
                       title="Zmień status na AKTYWNY"
@@ -234,16 +297,16 @@
                     />
                     <OfficeIconButton
                       icon="pi pi-file-edit"
-                      title="`Edytuj kartę: ${item.name}`"
+                      :title="'Edytuj kartę: ' + item.name"
                       :rounded="false"
                       class="text-orange-500"
                       @click="editCard(item)"
                     />
                     <OfficeIconButton
                       icon="pi pi-trash"
-                      title="`Usuń kartę: ${item.name}`"
-                      :rounded="false"
                       class="text-red-500"
+                      :rounded="false"
+                      :title="'Usuń kartę: ' + item.name"
                       @click="confirmDeleteCard(item)"
                     />
                     <OfficeButton
@@ -262,40 +325,6 @@
       </template>
     </DataView>
   </Panel>
-  <Toolbar class="sticky-toolbar p-2 m-2">
-    <template #start>
-      <OfficeIconButton
-        title="Odświerz listę książek"
-        :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-        class="mr-2"
-        @click=""
-      />
-    </template>
-    <template #center>
-      <OfficeIconButton
-        title="Wyświetl nieaktywne"
-        :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-        class="mr-2"
-        :active="filter === 'INACTIVE'"
-        @click="setFilter('INACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl aktywne"
-        :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-        class="mr-2"
-        :active="filter === 'ACTIVE'"
-        @click="setFilter('ACTIVE')"
-      />
-      <OfficeIconButton
-        title="Wyświetl wszystkie"
-        :icon="bankStore.loadingBanks || cardStore.loadingCards ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-        class="mr-2"
-        :active="filter === 'ALL'"
-        @click="setFilter('ALL')"
-      />
-    </template>
-    <template #end></template>
-  </Toolbar>
 </template>
 
 <style scoped>

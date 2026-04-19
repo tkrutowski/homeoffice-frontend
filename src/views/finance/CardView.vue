@@ -262,13 +262,14 @@
         <template #header>
           <IconButton
             title="Powrót do listy kart"
+            class="text-orange-500"
             icon="pi pi-fw pi-list"
             @click="() => router.push({ name: 'Cards' })"
           />
           <div class="w-full flex justify-center">
-            <h2>
+            <h1  class="min-w-0 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl">
               {{ isEdit ? `Edycja karty: ${card?.name}` : 'Nowa karta' }}
-            </h2>
+            </h1>
           </div>
         </template>
 
