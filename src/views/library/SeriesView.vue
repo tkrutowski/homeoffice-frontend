@@ -17,6 +17,9 @@
   import { useUserbooksStore } from '@/stores/userbooks';
   import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue';
   import NewBookDialog from '@/components/library/NewBookDialog.vue';
+  import legimiLogo from '@/assets/images/legimi.png';
+  import upolujebookaLogo from '@/assets/images/upolujebooka.png';
+  import lubimyczytacLogo from '@/assets/images/lubimyczytac.png';
 
   const booksStore = useBooksStore();
   const userbookStore = useUserbooksStore();
@@ -74,11 +77,11 @@
     const lowerUrl = url.toLowerCase();
 
     if (lowerUrl.includes('legimi')) {
-      return '/src/assets/images/legimi.png';
+      return legimiLogo;
     } else if (lowerUrl.includes('upolujebooka')) {
-      return '/src/assets/images/upolujebooka.png';
+      return upolujebookaLogo;
     } else if (lowerUrl.includes('lubimyczytac')) {
-      return '/src/assets/images/lubimyczytac.png';
+      return lubimyczytacLogo;
     }
 
     // Domyślna ikona dla innych URL-i
