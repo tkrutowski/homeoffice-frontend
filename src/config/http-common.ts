@@ -1,6 +1,6 @@
 // import axios, { AxiosInstance } from "axios";
 import { useAuthorizationStore } from '../stores/authorization';
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import router from '../router';
 
@@ -20,10 +20,11 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   config => {
+    const path = config.url?.split('?')[0] ?? '';
     if (
-      config.url?.endsWith('/login') ||
-      config.url?.endsWith('/refresh') ||
-      config.url?.endsWith('/test') ||
+      path.endsWith('/login') ||
+      path.endsWith('/refresh') ||
+      path === '/v1/auth/test' ||
       config.url?.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com/homeoffice/')
     ) {
       console.log('Żądanie do /login, pomijanie nagłówka Authorization');
@@ -49,6 +50,13 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
       const message = error.response.data?.message;
 
+      const requestConfig = error.config as
+        | (InternalAxiosRequestConfig & { _retryAfterRefresh?: boolean })
+        | undefined;
+      if (!requestConfig) {
+        return Promise.reject(error);
+      }
+
       // 🛑 Obsługa błędnego logowania (niepoprawne dane logowania)
       if (status === 401 && message === 'INVALID_CREDENTIALS') {
         console.log('Niepoprawne dane logowania!');
@@ -63,10 +71,17 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      // Jedno ponowienie po refresh – unikamy nieskończonej pętli przy trwałym 401 (np. błąd w interceptorze żądania)
+      if (requestConfig._retryAfterRefresh) {
+        console.log('401 po ponowieniu żądania – przerywam bez kolejnego odświeżania tokenu.');
+        return Promise.reject(error);
+      }
+
       try {
         const response = await authStore.refresh();
         if (response.status === 200) {
-          return apiClient(error.config); // Ponowne wysłanie oryginalnego żądania
+          requestConfig._retryAfterRefresh = true;
+          return apiClient(requestConfig);
         }
       } catch (err) {
         console.log('Błąd odświeżania tokena', err);
