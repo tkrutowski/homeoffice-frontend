@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+  import moment from 'moment';
   import type { Fee, FeeInstallment } from '@/types/Fee';
   import { UtilsService } from '@/service/UtilsService';
   import router from '@/router';
@@ -32,23 +33,43 @@
     },
   });
 
-  const getOtherInfo = computed(() => {
-    if (fee.value) {
-      return fee.value.otherInfo;
-    }
-    return '';
-  });
+  const scheduleFilter = ref<'ALL' | 'PAID' | 'TO_PAY'>('TO_PAY');
+  const scheduleFilterOptions = [
+    { label: 'Wszystkie', value: 'ALL' },
+    { label: 'Spłacone', value: 'PAID' },
+    { label: 'Do zapłaty', value: 'TO_PAY' },
+  ];
 
-  const countDeadLine = computed(() => {
-    return fee.value?.installmentList[fee.value?.installmentList.length - 1].paymentDeadline;
-  });
+  const chartPalette = ref({ primary: 'rgb(249, 115, 22)', track: 'rgb(212, 212, 216)' });
+  const chartKey = ref(0);
+
+  function refreshChartPalette() {
+    if (typeof document === 'undefined') return;
+    const wrap = document.createElement('div');
+    wrap.className = document.documentElement.className;
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;pointer-events:none;opacity:0';
+    const primaryEl = document.createElement('div');
+    primaryEl.className = 'bg-primary h-2 w-2 shrink-0';
+    const trackEl = document.createElement('div');
+    trackEl.className = 'bg-surface-300 dark:bg-surface-700 h-2 w-2 shrink-0';
+    wrap.append(primaryEl, trackEl);
+    document.body.appendChild(wrap);
+    chartPalette.value = {
+      primary: getComputedStyle(primaryEl).backgroundColor || chartPalette.value.primary,
+      track: getComputedStyle(trackEl).backgroundColor || chartPalette.value.track,
+    };
+    document.body.removeChild(wrap);
+    chartKey.value += 1;
+  }
+
   const plannedInterest = computed(() => {
     if (fee.value)
-      return fee.value?.installmentList
+      return fee.value.installmentList
         .map((installment: FeeInstallment) => installment.installmentAmountToPay)
         .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
     return 0;
   });
+
   const currentInterest = computed(() => {
     if (fee.value)
       return fee.value.installmentList
@@ -57,18 +78,179 @@
         .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
     return 0;
   });
+
   const realInterest = computed(() => {
     if (fee.value) {
-      let length = fee.value.installmentList.filter(
+      const length = fee.value.installmentList.filter(
         (installment: FeeInstallment) => installment.installmentAmountPaid !== 0
       ).length;
       if (length === fee.value.numberOfPayments)
-        return fee.value?.installmentList
+        return fee.value.installmentList
           .map((installment: FeeInstallment) => installment.installmentAmountPaid)
           .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, 0);
     }
     return 0;
   });
+
+  const calculatePaid = computed(() => {
+    if (fee.value)
+      return fee.value.installmentList.filter((i: FeeInstallment) => i.paymentStatus === PaymentStatus.PAID).length;
+    return 0;
+  });
+
+  const paidSum = computed(() => {
+    if (!fee.value) return 0;
+    return fee.value.installmentList
+      .filter((i: FeeInstallment) => i.paymentStatus === PaymentStatus.PAID)
+      .reduce((s, i) => s + (Number(i.installmentAmountPaid) || 0), 0);
+  });
+
+  const remainingScheduled = computed(() => {
+    if (!fee.value) return 0;
+    return fee.value.installmentList
+      .filter((i: FeeInstallment) => i.paymentStatus !== PaymentStatus.PAID)
+      .reduce((s, i) => {
+        const toPay = Number(i.installmentAmountToPay) || 0;
+        const paidPart = Number(i.installmentAmountPaid) || 0;
+        return s + Math.max(0, toPay - paidPart);
+      }, 0);
+  });
+
+  /** Udział spłaty wg harmonogramu (spójny z donutem), nie `paidSum / fee.amount` — kwota umowy bywa inna niż suma wpłat. */
+  const principalPercent = computed(() => {
+    const paid = paidSum.value;
+    const rem = remainingScheduled.value;
+    const total = paid + rem;
+    if (total <= 0) return 0;
+    return Math.min(100, Math.max(0, (paid / total) * 100));
+  });
+
+  const monthsLeft = computed(() => {
+    if (!fee.value) return 0;
+    return fee.value.installmentList.filter((i: FeeInstallment) => i.paymentStatus !== PaymentStatus.PAID).length;
+  });
+
+  const maturityDeadline = computed(() => {
+    const list = fee.value?.installmentList;
+    if (!list?.length) return null as Date | string | null;
+    let max: moment.Moment | null = null;
+    for (const i of list) {
+      const m = i.paymentDeadline ? moment(i.paymentDeadline) : null;
+      if (m?.isValid() && (max === null || m.isAfter(max))) max = m;
+    }
+    return max?.toDate() ?? list[list.length - 1]?.paymentDeadline ?? null;
+  });
+
+  const nextInstallment = computed((): FeeInstallment | null => {
+    const list = fee.value?.installmentList;
+    if (!list?.length) return null;
+    const unpaid = list.filter((i: FeeInstallment) => i.paymentStatus !== PaymentStatus.PAID);
+    if (unpaid.length === 0) return null;
+    return [...unpaid].sort((a, b) => {
+      const ma = a.paymentDeadline ? moment(a.paymentDeadline).valueOf() : Number.POSITIVE_INFINITY;
+      const mb = b.paymentDeadline ? moment(b.paymentDeadline).valueOf() : Number.POSITIVE_INFINITY;
+      if (ma !== mb) return ma - mb;
+      return (a.idFeeInstallment ?? 0) - (b.idFeeInstallment ?? 0);
+    })[0];
+  });
+
+  const nextUnpaidInstallmentId = computed(() => nextInstallment.value?.idFeeInstallment ?? null);
+
+  const feeStatusLabel = computed(() => {
+    const s = fee.value?.feeStatus;
+    if (s === PaymentStatus.PAID) return 'Spłacony';
+    if (s === PaymentStatus.OVER_DUE) return 'Po terminie';
+    if (s === PaymentStatus.TO_PAY) return 'Aktywna spłata';
+    return '—';
+  });
+
+  const installmentsSorted = computed(() => {
+    const list = [...installments.value];
+    return list.sort((a, b) => {
+      const ma = a.paymentDeadline ? moment(a.paymentDeadline).valueOf() : 0;
+      const mb = b.paymentDeadline ? moment(b.paymentDeadline).valueOf() : 0;
+      if (mb !== ma) return mb - ma;
+      return (b.idFeeInstallment ?? 0) - (a.idFeeInstallment ?? 0);
+    });
+  });
+
+  const filteredInstallments = computed(() => {
+    const sorted = installmentsSorted.value;
+    if (scheduleFilter.value === 'ALL') return sorted;
+    if (scheduleFilter.value === 'PAID') return sorted.filter(i => i.paymentStatus === PaymentStatus.PAID);
+    return sorted.filter(i => i.paymentStatus !== PaymentStatus.PAID);
+  });
+
+  const donutChartData = computed(() => {
+    const paid = paidSum.value;
+    const rem = remainingScheduled.value;
+    if (paid <= 0 && rem <= 0) {
+      return {
+        labels: ['Brak danych'],
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: [chartPalette.value.track],
+            borderWidth: 0,
+          },
+        ],
+      };
+    }
+    return {
+      labels: ['Spłacono', 'Pozostało'],
+      datasets: [
+        {
+          data: [paid, rem],
+          backgroundColor: [chartPalette.value.primary, chartPalette.value.track],
+          borderWidth: 0,
+          hoverOffset: 4,
+        },
+      ],
+    };
+  });
+
+  const donutChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '72%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label(ctx: { raw: number; dataset: { data?: number[] } }) {
+            const raw = ctx.raw;
+            if (ctx.dataset.data?.length === 1) return '';
+            return UtilsService.formatCurrency(raw) ?? String(raw);
+          },
+        },
+      },
+    },
+  };
+
+  function isNextUnpaid(row: FeeInstallment) {
+    return nextUnpaidInstallmentId.value !== null && row.idFeeInstallment === nextUnpaidInstallmentId.value;
+  }
+
+  function installmentRowClass(data: FeeInstallment) {
+    return isNextUnpaid(data) ? 'bg-primary/5 dark:bg-primary/10' : '';
+  }
+
+  function formatInstallmentDeadline(data: FeeInstallment) {
+    return UtilsService.formatDateToString(data.paymentDeadline ?? undefined) || '—';
+  }
+
+  function formatInstallmentPaymentDate(data: FeeInstallment) {
+    if (data.paymentStatus !== PaymentStatus.PAID) return '';
+    return UtilsService.formatDateToString(data.paymentDate ?? undefined) || '—';
+  }
+
+  const dataTablePt = {
+    root: { class: 'border-0' },
+    header: { class: 'border-surface-200 bg-surface-50 dark:border-surface-700 dark:bg-surface-900' },
+    column: { headerCell: { class: 'text-surface-700 dark:text-surface-200' } },
+    tbody: { class: 'text-surface-800 dark:text-surface-100' },
+  };
+
   // ---------------------------------------------EDIT PAYMENT---------------------------------
   const showPaymentModal = ref(false);
   const installment = ref<FeeInstallment>();
@@ -79,36 +261,39 @@
   }
 
   async function savePayment(date: Date, amount: number) {
-    if (installment.value) {
-      isBusy.value = true;
-      installment.value.paymentDate = new Date(date);
-      installment.value.installmentAmountPaid = amount;
-      installment.value.paymentStatus = PaymentStatus.PAID;
-      showPaymentModal.value = false;
-      await feeStore
-        .updateFeeInstallmentDb(installment.value)
-        .then((savedFee: Fee | null) => {
-          if (savedFee) {
-            installments.value = savedFee.installmentList;
-            paymentStore.updatePayment(savedFee, 'FEE');
-            toast.add({
-              severity: 'success',
-              summary: 'Potwierdzenie',
-              detail: 'Zaktualizowano płatność.',
-              life: 3000,
-            });
-          }
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas zapisywania płatności',
-            life: 3000,
-          });
+    if (!installment.value) return;
+    isBusy.value = true;
+    installment.value.paymentDate = new Date(date);
+    installment.value.installmentAmountPaid = amount;
+    installment.value.paymentStatus = PaymentStatus.PAID;
+    showPaymentModal.value = false;
+
+    await feeStore
+      .updateFeeInstallmentDb(installment.value)
+      .then((savedFee: Fee | null) => {
+        if (savedFee) {
+          installments.value = savedFee.installmentList;
+          paymentStore.updatePayment(savedFee, 'FEE');
+        }
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaktualizowano płatność.',
+          life: 3000,
         });
-    }
-    isBusy.value = false;
+      })
+      .catch((reason: AxiosError) => {
+        toast.add({
+          severity: 'error',
+          summary: reason?.message,
+          detail: 'Błąd podczas zapisywania płatności',
+          life: 3000,
+        });
+      })
+      .finally(() => {
+        isBusy.value = false;
+        refresh();
+      });
   }
 
   //---------------------------------------------DELETE PAYMENT-----------------------------
@@ -124,8 +309,8 @@
       return `Czy chcesz usunąc płatność z dnia: <b>${installment.value?.paymentDate}</b> </br>&emsp;&emsp;&emsp; na kwotę <b>${installment.value?.installmentAmountPaid} zł</b>?`;
     return 'No message';
   });
+
   const submitDelete = async () => {
-    console.log('submitDelete()', installment.value);
     isBusy.value = true;
     if (installment.value) {
       installment.value.paymentStatus = PaymentStatus.TO_PAY;
@@ -138,13 +323,13 @@
           if (savedFee) {
             installments.value = savedFee.installmentList;
             paymentStore.updatePayment(savedFee, 'FEE');
-            toast.add({
-              severity: 'success',
-              summary: 'Potwierdzenie',
-              detail: 'Usunięto płatność.',
-              life: 3000,
-            });
           }
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto płatność.',
+            life: 3000,
+          });
         })
         .catch((reason: AxiosError) => {
           toast.add({
@@ -153,10 +338,14 @@
             detail: 'Błąd podczas usuwania płatności',
             life: 3000,
           });
+        })
+        .finally(() => {
+          refresh();
+          isBusy.value = false;
         });
+    } else {
+      isBusy.value = false;
     }
-    await refresh();
-    isBusy.value = false;
   };
 
   const getAmount = computed(() => {
@@ -165,25 +354,77 @@
       : installment.value?.installmentAmountToPay;
   });
   const getDate = computed(() => {
-    if (installment.value?.paymentDate) return installment.value?.paymentDate;
+    if (installment.value?.paymentDate) return installment.value.paymentDate;
     return new Date();
   });
   const isEdit = computed(() => {
-    let isEdit = false;
-    if (installment.value) isEdit = installment.value.installmentAmountPaid > 0;
-    return isEdit;
+    if (installment.value) return installment.value.installmentAmountPaid > 0;
+    return false;
   });
 
-  //-----------------------------------------------------MOUNTED------------------------------------------
-  onMounted(async () => {
-    console.log('onMounted GET');
-    feeStore.getFees('ALL');
-    refresh();
-  });
   const refresh = async () => {
     fee.value = await feeStore.getFeeFromDb(+props.id);
-    installments.value = fee.value ? fee.value?.installmentList : [];
+    installments.value = fee.value ? fee.value.installmentList : [];
+    await nextTick();
+    refreshChartPalette();
   };
+
+  let themeObserver: MutationObserver | null = null;
+
+  onMounted(async () => {
+    feeStore.getFees('ALL');
+    await refresh();
+    themeObserver = new MutationObserver(() => {
+      nextTick(() => refreshChartPalette());
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  });
+
+  onBeforeUnmount(() => {
+    themeObserver?.disconnect();
+    themeObserver = null;
+  });
+
+  watch([() => fee.value?.id, paidSum, remainingScheduled], () => {
+    nextTick(() => refreshChartPalette());
+  });
+
+  interface InfoRow {
+    label: string;
+    value: string | undefined;
+    valueClass?: string;
+  }
+
+  const infoRows = computed((): InfoRow[] => {
+    const f = fee.value;
+    if (!f) return [];
+    return [
+      { label: 'Nazwa firmy', value: f.firm?.name ?? '—' },
+      { label: 'Nr umowy', value: f.feeNumber || '—' },
+      { label: 'Nr konta', value: UtilsService.maskAccountNumber(f.accountNumber) || '—' },
+      { label: 'Data umowy', value: UtilsService.formatDateToString(f.date ?? undefined) || '—' },
+      { label: 'Data pierwszej opłaty', value: UtilsService.formatDateToString(f.firstPaymentDate ?? undefined) || '—' },
+      { label: 'Termin całkowitej spłaty', value: UtilsService.formatDateToString(maturityDeadline.value ?? undefined) || '—' },
+      { label: 'Częstotliwość opłat', value: f.feeFrequency?.viewName ?? '—' },
+      { label: 'Ilość opłat', value: String(f.numberOfPayments ?? '—') },
+      {
+        label: 'Koszt planowany',
+        value: UtilsService.formatCurrency(plannedInterest.value),
+        valueClass: 'text-red-600 dark:text-red-400',
+      },
+      {
+        label: 'Obecna różnica',
+        value: UtilsService.formatCurrency(currentInterest.value),
+        valueClass: 'text-red-600 dark:text-red-400',
+      },
+      {
+        label: 'Koszt rzeczywisty',
+        value: UtilsService.formatCurrency(realInterest.value),
+        valueClass: 'text-red-600 dark:text-red-400 font-semibold',
+      },
+      { label: 'Spłacono (liczba wpłat)', value: `${calculatePaid.value} z ${f.numberOfPayments}` },
+    ];
+  });
 </script>
 
 <template>
@@ -208,23 +449,20 @@
       <TheMenuFinance />
     </template>
 
-    <Panel id="fee-panel" class="my-3 mx-auto w-full px-2 sm:px-4">
-    <template #header>
+    <div id="fee-dashboard" class="mx-auto my-3 w-full max-w-[1200px] space-y-4 px-2 sm:px-4">
       <div class="flex w-full min-w-0 items-center gap-2 sm:gap-4">
         <OfficeIconButton
           title="Powrót do listy"
           icon="pi pi-fw pi-list"
-          class="shrink-0 text-orange-500"
+          class="shrink-0 text-primary"
           @click="() => router.push({ name: 'Fees' })"
         />
-        <div class="flex min-w-0 flex-1 items-center justify-center gap-4">
-          <h3
-            class="m-0 min-w-0 text-center text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
-          >
-            {{ `Szczegóły opłaty: ${fee?.name}` }}
+        <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
+          <h3 class="m-0 min-w-0 text-center text-lg font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-xl">
+            Szczegóły opłaty
           </h3>
           <div v-if="feeStore.loadingFees" class="shrink-0">
-            <ProgressSpinner class="ml-3" style="width: 30px; height: 30px" stroke-width="5" />
+            <ProgressSpinner class="h-8 w-8" stroke-width="4" />
           </div>
         </div>
         <OfficeButton
@@ -236,91 +474,276 @@
           @click="() => router.back()"
         />
       </div>
-    </template>
-    <div class="grid grid-cols-1 md:grid-cols-8 gap-4 h-full">
-      <!--   LEFT   -->
-      <div class="col-span-1 md:col-span-3">
-        <Fieldset class="" legend="Ogólne informacje">
-          <p class="mb-1"><small>Nazwa firmy:</small> {{ fee?.firm?.name }}</p>
-          <p class="mb-1"><small>Nr umowy:</small> {{ fee?.feeNumber }}</p>
-          <p class="mb-1"><small>Z dnia:</small> {{ UtilsService.formatDateToString(fee?.date ?? undefined) }}</p>
-          <p class="mb-1"><small>Data pierwszej opłaty:</small> {{ fee?.firstPaymentDate }}</p>
-          <p class="mb-1"><small>Termin całkowitej spłaty:</small> {{ countDeadLine }}</p>
-          <p class="mb-5"><small>Nr konta:</small> {{ fee?.accountNumber }}</p>
 
-          <p class="mb-1"><small>Kwota opłaty:</small> {{ fee?.amount }} zł</p>
-          <p class="mb-1">
-            <small>Częstotliwość opłat:</small>
-            {{ fee?.feeFrequency?.viewName }}
-          </p>
+      <Card
+        :pt="{
+          root: {
+            class:
+              'border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950 overflow-hidden',
+          },
+          body: { class: 'p-4 sm:p-6' },
+        }"
+      >
+        <template #content>
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="min-w-0 flex-1 space-y-2">
+              <h2
+                class="m-0 break-words text-xl font-bold uppercase leading-tight tracking-wide text-surface-900 dark:text-surface-0 sm:text-2xl"
+              >
+                {{ fee?.name ?? '—' }}
+              </h2>
+              <p class="m-0 text-sm font-medium uppercase tracking-wide text-primary">Status: {{ feeStatusLabel }}</p>
+            </div>
+            <div class="shrink-0 text-left lg:text-right">
+              <p class="m-0 text-3xl font-bold tabular-nums text-primary sm:text-4xl">{{ principalPercent.toFixed(0) }}%</p>
+              <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                Spłacono wg harmonogramu
+              </p>
+            </div>
+          </div>
+          <div class="mt-4">
+            <ProgressBar :value="principalPercent" :show-value="false" class="h-3" />
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm">
+            <div class="text-surface-600 dark:text-surface-400">
+              <span class="font-semibold uppercase tracking-wide">Początek</span>
+              <p class="m-0 mt-1 tabular-nums">{{ UtilsService.formatDateToString(fee?.date ?? undefined) || '—' }}</p>
+            </div>
+            <div class="text-center sm:text-center">
+              <span class="font-semibold uppercase tracking-wide text-primary">Następna wpłata</span>
+              <p class="m-0 mt-1 tabular-nums text-primary">
+                {{ UtilsService.formatDateToString(nextInstallment?.paymentDeadline ?? undefined) || '—' }}
+              </p>
+            </div>
+            <div class="text-surface-600 dark:text-surface-400 sm:text-right">
+              <span class="font-semibold uppercase tracking-wide">Koniec</span>
+              <p class="m-0 mt-1 tabular-nums">{{ UtilsService.formatDateToString(maturityDeadline ?? undefined) || '—' }}</p>
+            </div>
+          </div>
+        </template>
+      </Card>
 
-          <p class="mb-1"><small>Ilość opłat:</small> {{ fee?.numberOfPayments }}</p>
-          <p class="mb-1">
-            <small>Koszt planowany:</small>
-            <span class="color-red ml-1"> {{ UtilsService.formatCurrency(plannedInterest) }}</span>
-          </p>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
+        <div class="flex min-h-0 min-w-0 flex-col lg:col-span-5">
+          <Card
+            :pt="{
+              root: {
+                class:
+                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+              },
+              body: { class: 'flex min-h-0 flex-1 flex-col gap-2 p-4 sm:p-5' },
+              title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
+              content: { class: 'flex min-h-0 min-w-0 flex-1 flex-col' },
+            }"
+          >
+            <template #title>
+              <span class="inline-flex items-center gap-2">
+                <i class="pi pi-info-circle text-primary" aria-hidden="true" />
+                Informacje ogólne
+              </span>
+            </template>
+            <template #content>
+              <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                  <dt class="text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">Kwota opłaty</dt>
+                  <dd class="m-0 mt-0.5 text-lg font-semibold tabular-nums text-primary">
+                    {{ UtilsService.formatCurrency(fee?.amount) }}
+                  </dd>
+                </div>
+                <template v-for="row in infoRows" :key="row.label">
+                  <div class="min-w-0 sm:col-span-1">
+                    <dt class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ row.label }}</dt>
+                    <dd
+                      class="m-0 mt-0.5 break-words text-sm text-surface-900 dark:text-surface-0"
+                      :class="row.valueClass"
+                    >
+                      {{ row.value }}
+                    </dd>
+                  </div>
+                </template>
+              </dl>
+            </template>
+          </Card>
+        </div>
 
-          <p class="mb-1">
-            <small>Obecna różnica:</small>
-            <span class="color-red ml-1">{{ UtilsService.formatCurrency(currentInterest) }} </span>
-          </p>
-
-          <p class="mb-3 color-orange">
-            <small>Koszt rzeczywisty:</small>
-            <span class="color-red ml-1">{{ UtilsService.formatCurrency(realInterest) }} </span>
-          </p>
-        </Fieldset>
-        <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="getOtherInfo" fluid rows="5" cols="30" />
-        </Fieldset>
+        <div class="flex min-h-0 min-w-0 flex-col lg:col-span-7">
+          <Card
+            :pt="{
+              root: {
+                class:
+                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+              },
+              body: { class: 'flex min-h-0 flex-1 flex-col gap-2 p-4 sm:p-5' },
+              title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
+              subtitle: { class: 'text-sm text-surface-600 dark:text-surface-400' },
+              content: { class: 'flex min-h-0 min-w-0 flex-1 flex-col' },
+            }"
+          >
+            <template #title>Postęp wpłat</template>
+            <template #subtitle>Wykres i skrócone saldo harmonogramu</template>
+            <template #content>
+              <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+                <div class="flex min-h-0 flex-1 flex-col items-center justify-center py-2">
+                  <div class="relative mx-auto aspect-square w-full max-w-[280px] sm:max-w-[320px]">
+                    <Chart
+                      :key="chartKey"
+                      type="doughnut"
+                      :data="donutChartData"
+                      :options="donutChartOptions"
+                      class="h-full w-full"
+                    />
+                    <div
+                      class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center"
+                      aria-hidden="true"
+                    >
+                      <p class="m-0 text-xl font-bold tabular-nums text-surface-900 dark:text-surface-0 sm:text-2xl">
+                        {{ UtilsService.formatCurrency(paidSum) }}
+                      </p>
+                      <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                        Spłacono łącznie
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-auto shrink-0 pt-2">
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div
+                      class="flex gap-3 rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-900"
+                    >
+                      <div class="w-1 shrink-0 rounded-full bg-primary" />
+                      <div>
+                        <p class="m-0 text-xs font-medium uppercase text-surface-600 dark:text-surface-400">
+                          Pozostało (harmonogram)
+                        </p>
+                        <p class="m-0 mt-1 text-lg font-semibold tabular-nums text-surface-900 dark:text-surface-0">
+                          {{ UtilsService.formatCurrency(remainingScheduled) }}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      class="flex gap-3 rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-900"
+                    >
+                      <div class="w-1 shrink-0 rounded-full bg-primary" />
+                      <div>
+                        <p class="m-0 text-xs font-medium uppercase text-surface-600 dark:text-surface-400">
+                          Pozostało wpłat
+                        </p>
+                        <p class="m-0 mt-1 text-lg font-semibold tabular-nums text-surface-900 dark:text-surface-0">
+                          {{ monthsLeft }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Card>
+        </div>
       </div>
 
-      <!--      RIGHT TABLE -->
-      <div class="md:col-span-5">
-        <Fieldset legend="Szczegóły wpłat">
-          <DataTable v-if="!feeStore.loadingFees" scroll-height="68vh" :value="installments" size="small">
-            <Column field="paymentDeadline" header="Termin płatności" header-style="min-width:120px">
-              <template #body="{ data, field }">
-                <div style="text-align: center">
-                  {{ data[field] }}
-                </div>
+      <Card
+        :pt="{
+          root: {
+            class: 'border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+          },
+          body: { class: 'p-4 sm:p-5' },
+          title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
+        }"
+      >
+        <template #title>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span class="inline-flex items-center gap-2">
+              <i class="pi pi-calendar text-primary" aria-hidden="true" />
+              Harmonogram wpłat
+            </span>
+            <SelectButton
+              v-model="scheduleFilter"
+              :options="scheduleFilterOptions"
+              option-label="label"
+              option-value="value"
+              :allow-empty="false"
+              class="shrink-0"
+            />
+          </div>
+        </template>
+        <template #content>
+          <DataTable
+            v-if="!feeStore.loadingFees"
+            data-key="idFeeInstallment"
+            scrollable
+            scroll-height="min(68vh, 520px)"
+            :value="filteredInstallments"
+            size="small"
+            :row-class="installmentRowClass"
+            :pt="dataTablePt"
+          >
+            <Column header="Lp." class="min-w-[3rem]">
+              <template #body="{ index }">
+                <span class="pl-1 text-left font-medium tabular-nums">{{ index + 1 }}</span>
               </template>
             </Column>
-            <Column field="installmentAmountToPay" header="Kwota" header-style="min-width:120px">
-              <template #body="{ data, field }">
-                <div>
-                  {{ UtilsService.formatCurrency(data[field]) }}
-                </div>
+            <Column header="Termin" class="min-w-[7rem]">
+              <template #body="{ data }">
+                <span
+                  class="tabular-nums"
+                  :class="isNextUnpaid(data) ? 'font-semibold text-primary' : 'text-surface-800 dark:text-surface-100'"
+                >
+                  {{ formatInstallmentDeadline(data) }}
+                </span>
               </template>
             </Column>
-            <Column field="paymentDate" header="Data płatności" header-style="min-width:120px">
-              <template #body="{ data, field }">
-                <div style="text-align: center">
-                  {{ data[field] }}
-                </div>
+            <Column field="installmentAmountToPay" header="Kwota zaplanowana" class="min-w-[8rem]">
+              <template #body="{ data }">
+                <span class="tabular-nums">{{ UtilsService.formatCurrency(data.installmentAmountToPay) }}</span>
               </template>
             </Column>
-            <Column field="installmentAmountPaid" header="Kwota" header-style="min-width:120px">
-              <template #body="{ data, field }">
-                <div>
-                  {{ data[field] !== 0 ? UtilsService.formatCurrency(data[field]) : '' }}
-                </div>
+            <Column header="Data wpłaty" class="min-w-[7rem]">
+              <template #body="{ data }">
+                <template v-if="data.paymentStatus === PaymentStatus.PAID">
+                  <span
+                    class="inline-block rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium tabular-nums text-primary"
+                  >
+                    {{ formatInstallmentPaymentDate(data) }}
+                  </span>
+                </template>
+                <span v-else class="text-surface-500 italic dark:text-surface-400">Nadchodząca</span>
               </template>
             </Column>
-            <!--                EDIT, DELETE-->
-            <Column header="Akcja" :exportable="false" style="min-width: 8rem">
+            <Column header="Kwota wpłacona" class="min-w-[8rem]">
+              <template #body="{ data }">
+                <span
+                  class="tabular-nums"
+                  :class="data.installmentAmountPaid ? 'font-medium text-primary' : 'text-surface-500 dark:text-surface-400'"
+                >
+                  {{
+                    data.installmentAmountPaid
+                      ? UtilsService.formatCurrency(data.installmentAmountPaid)
+                      : UtilsService.formatCurrency(0)
+                  }}
+                </span>
+              </template>
+            </Column>
+            <Column header="Akcje" :exportable="false" class="min-w-[10rem]">
               <template #body="slotProps">
-                <div class="flex flex-row gap-2 justify-center">
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <Button
+                    v-if="slotProps.data.paymentStatus !== PaymentStatus.PAID && isNextUnpaid(slotProps.data)"
+                    label="Opłać"
+                    size="small"
+                    severity="primary"
+                    :disabled="isBusy"
+                    @click="openPaymentModal(slotProps.data)"
+                  />
                   <OfficeIconButton
                     title="Edytuj wpłatę"
                     icon="pi pi-file-edit"
-                    class="text-orange-500"
+                    class="text-primary"
                     @click="openPaymentModal(slotProps.data)"
                   />
                   <OfficeIconButton
                     title="Usuń wpłatę"
                     icon="pi pi-trash"
-                    class="text-red-500"
+                    class="text-red-600 dark:text-red-400"
                     :disabled="slotProps.data.installmentAmountPaid === 0"
                     @click="confirmDeletePayment(slotProps.data)"
                   />
@@ -328,32 +751,8 @@
               </template>
             </Column>
           </DataTable>
-        </Fieldset>
-      </div>
+        </template>
+      </Card>
     </div>
-  </Panel>
   </MainPageShell>
 </template>
-
-<style scoped>
-  #fee-panel {
-    max-width: 1200px;
-  }
-
-  .p-datatable :deep(.p-datatable-column-header-content) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .color-red {
-    color: #dc3545;
-  }
-
-  .p-datatable :deep(.p-datatable-tbody > tr > td) {
-    text-align: center;
-    /* border: 1px solid black; */
-    /* border-width: 0 1px 1px 0; */
-    /* padding: 0; */
-  }
-</style>
