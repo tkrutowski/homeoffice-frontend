@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { computed, useSlots } from 'vue';
+
   const props = defineProps({
     icon: {
       type: String,
@@ -25,6 +27,9 @@
       default: true,
     },
   });
+
+  const slots = useSlots();
+  const hasCustomIcon = computed(() => !!slots.icon);
 </script>
 <template>
   <span v-if="props.loading" class="loading-spinner-container">
@@ -33,12 +38,18 @@
   <Button
     v-else
     class="icon-only"
-    :icon="props.icon"
+    text
+    :icon="hasCustomIcon ? undefined : props.icon"
     :rounded="props.rounded"
-    :class="{ isActive: active }"
+    :class="{ isActive: props.active }"
     :disabled="props.btnDisabled || props.loading"
     :loading="props.loading"
   >
+    <template v-if="hasCustomIcon" #icon="slotProps">
+      <span v-bind="slotProps" class="office-icon-button__custom-icon inline-flex items-center justify-center">
+        <slot name="icon" />
+      </span>
+    </template>
   </Button>
 </template>
 <style scoped>
@@ -55,6 +66,15 @@
   .icon-only :deep(.p-button-icon) {
     transition: transform 0.3s ease;
     font-size: 1.2rem;
+  }
+
+  .office-icon-button__custom-icon {
+    transition: transform 0.3s ease;
+  }
+
+  .office-icon-button__custom-icon :deep(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
   }
 
   .loading-spinner-container {
@@ -84,7 +104,8 @@
     box-shadow: none !important;
   }
 
-  .icon-only:hover :deep(.p-button-icon) {
+  .icon-only:hover :deep(.p-button-icon),
+  .icon-only:hover :deep(.office-icon-button__custom-icon) {
     transform: scale(1.4);
   }
 
