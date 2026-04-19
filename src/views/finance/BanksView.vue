@@ -93,6 +93,19 @@
     });
   };
 
+  const goToNewBank = () => {
+    router.push({
+      name: 'Bank',
+      params: { isEdit: 'false', bankId: 0 },
+    });
+  };
+
+  const toolbarLoading = computed(() => bankStore.loadingBanks);
+
+  const refreshBanks = async () => {
+    await bankStore.getBanksFromDb();
+  };
+
   //
   //-----------------------------------------------------MOUNTED---------------------------------
   onMounted(() => {
@@ -129,20 +142,30 @@
         :global-filter-fields="['name', 'address.street', 'address.city']"
       >
         <template #header>
-          <div class="flex justify-between">
-            <router-link
-              :to="{
-                name: 'Bank',
-                params: { isEdit: 'false', bankId: 0 },
-              }"
-              style="text-decoration: none"
-            >
-              <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy bank" />
-            </router-link>
-            <div v-if="bankStore.loadingBanks">
-              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <OfficeIconButton
+                class="text-amber-500"
+                title="Dodaj nowy bank"
+                icon="pi pi-plus"
+                @click="goToNewBank"
+              />
+              <div
+                class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                role="presentation"
+                aria-hidden="true"
+              />
+              <OfficeIconButton
+                title="Odśwież listę banków"
+                class="text-orange-500"
+                :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+                @click="refreshBanks"
+              />
             </div>
-            <div class="flex gap-4">
+            <div class="flex flex-wrap items-center justify-end gap-4">
+              <div v-if="bankStore.loadingBanks" class="flex items-center">
+                <ProgressSpinner class="shrink-0" style="width: 35px; height: 35px" stroke-width="5" />
+              </div>
               <IconField icon-position="left">
                 <InputIcon>
                   <i class="pi pi-search" />
@@ -189,17 +212,17 @@
         <!--                EDIT, DELETE-->
         <Column header="Akcja" :exportable="false" style="max-width: 3rem">
           <template #body="slotProps">
-            <div class="flex flex-row gap-1 justify-content-end">
+            <div class="flex flex-row gap-1 justify-start">
               <OfficeIconButton
                 class="text-orange-500"
-                title="Edytuj bank"
+                :title="'Edytuj bank: ' + slotProps.data.name"
                 icon="pi pi-file-edit"
                 @click="editBank(slotProps.data)"
               />
               <OfficeIconButton
-                title="Usuń bank"
-                icon="pi pi-trash"
                 class="text-red-500"
+                icon="pi pi-trash"
+                :title="'Usuń bank: ' + slotProps.data.name"
                 @click="confirmDeleteBank(slotProps.data)"
               />
             </div>

@@ -197,6 +197,7 @@
         <template #header>
           <OfficeIconButton
             title="Powrót do listy banków"
+            class="text-orange-500"
             icon="pi pi-fw pi-table"
             @click="() => router.push({ name: 'Banks' })"
           />
