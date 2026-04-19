@@ -3,6 +3,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useCardsStore } from '@/stores/cards';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useBanksStore } from '@/stores/banks';
@@ -166,7 +167,6 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <ConfirmationDialog
     v-model:visible="showStatusChangeConfirmationDialog"
     :msg="changeStatusConfirmationMessage"
@@ -180,7 +180,13 @@
     @save="submitDelete"
     @cancel="showDeleteConfirmationDialog = false"
   />
-  <Panel class="max-w-screen-xl m-auto mt-5">
+
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <Panel class="my-3 w-full max-w-screen-xl mx-auto px-2 sm:px-3">
     <DataView :value="filteredData" dataKey="id">
       <template #header>
         <div class="flex flex-wrap items-center gap-2">
@@ -324,7 +330,8 @@
         </div>
       </template>
     </DataView>
-  </Panel>
+    </Panel>
+  </DataTablePageShell>
 </template>
 
 <style scoped>

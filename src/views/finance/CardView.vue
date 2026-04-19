@@ -11,6 +11,7 @@
   import type { User } from '@/types/User';
   import type { Bank, Card } from '@/types/Bank';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
 
@@ -254,9 +255,12 @@
 </script>
 
 <template>
-  <TheMenuFinance />
+  <DataTablePageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-  <div class="m-4 max-w-4xl mx-auto">
+    <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
     <form @submit.stop.prevent="saveCard">
       <Panel>
         <template #header>
@@ -441,7 +445,8 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </DataTablePageShell>
 </template>
 
 <style scoped></style>
