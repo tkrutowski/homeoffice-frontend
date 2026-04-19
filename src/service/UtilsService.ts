@@ -31,6 +31,18 @@ export const UtilsService = {
     return '';
   },
 
+  /**
+   * Maska numeru konta: ostatnie 4 znaki alfanumeryczne, reszta jako gwiazdki w grupach.
+   * Pusty lub niepoprawny ciąg zwraca pusty string.
+   */
+  maskAccountNumber(account: string | null | undefined): string {
+    if (account == null || account.trim() === '') return '';
+    const digits = account.replace(/\s/g, '').replace(/[^0-9A-Za-z]/g, '');
+    if (digits.length === 0) return '';
+    const last = digits.slice(-4);
+    return `**** **** ${last}`;
+  },
+
   formatDate(value: Date | string | undefined): Date | undefined {
     if (value) {
       const date = moment(value).format('YYYY-MM-DD');
