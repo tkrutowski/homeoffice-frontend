@@ -9,6 +9,7 @@
   import type { AxiosError } from 'axios';
   import { useFirmsStore } from '@/stores/firms.ts';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
 
   const firmStore = useFirmsStore();
   const route = useRoute();
@@ -185,9 +186,12 @@
 </script>
 
 <template>
-  <TheMenuFinance />
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-  <div class="m-4 max-w-6xl mx-auto">
+    <div class="my-3 w-full max-w-6xl mx-auto px-2 sm:px-3">
     <form class="col-12 col-md-9 col-xl-6 align-self-center" @submit.stop.prevent="saveFirm">
       <Panel>
         <template #header>
@@ -279,5 +283,6 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>

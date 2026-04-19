@@ -4,7 +4,7 @@
   import { useToast } from 'primevue/usetoast';
   import type { Privilege, Role, User } from '@/types/User';
   import TheMenu from '@/components/TheMenu.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import type { SelectChangeEvent } from 'primevue/select';
   import type { DataTableRowEditSaveEvent } from 'primevue/datatable';
@@ -136,7 +136,7 @@
 </script>
 
 <template>
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenu />
     </template>
@@ -218,7 +218,7 @@
         <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
       </DataTable>
     </div>
-  </DataTablePageShell>
+  </MainPageShell>
 
   <Dialog
     v-model:visible="addExistingRoleToUserDialog"

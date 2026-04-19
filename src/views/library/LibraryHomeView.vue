@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { useUserbooksStore } from '@/stores/userbooks';
   import UserBookLarge from '@/components/library/UserBookLarge.vue';
   import { UtilsService } from '@/service/UtilsService';
@@ -37,11 +38,16 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <Dialog v-if="selectedSeries" v-model:visible="showSeriesDialog" header=" " modal style="max-width: 80vw">
     <series-carousel :series="selectedSeries" />
   </Dialog>
-  <div class="grid grid-cols-9 gap-4 m-6">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
+    <div class="grid grid-cols-9 gap-4 m-6">
     <Card class="col-span-2">
       <template #title>
         <div class="flex justify-center">
@@ -86,7 +92,8 @@
         </template>
       </Carousel>
     </Panel>
-  </div>
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

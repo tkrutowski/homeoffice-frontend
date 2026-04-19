@@ -7,7 +7,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { AxiosError } from 'axios';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { useBanksStore } from '@/stores/banks.ts';
   import type { Bank } from '@/types/Bank.ts';
   import type { ResponseData } from '@/types/User.ts';
@@ -108,7 +108,7 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuFinance />
     </template>
@@ -221,7 +221,7 @@
         </template>
       </DataTable>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped>

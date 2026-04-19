@@ -7,6 +7,7 @@
   import { useToast } from 'primevue/usetoast';
   import type { Firm } from '@/types/Firm';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Purchase } from '@//types/Purchase';
   import type { Card } from '@/types/Bank';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
@@ -438,9 +439,14 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <AddFirmDialog v-model:visible="showNewFirmModal" @save="newFirm" @cancel="showNewFirmModal = false" />
-  <div class="min-h-[calc(100vh-4rem)] bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
     <form class="mx-auto max-w-2xl" @submit.stop.prevent="savePurchase">
       <div
         class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
@@ -668,5 +674,6 @@
         </div>
       </div>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>

@@ -6,6 +6,7 @@
   import PayPaymentDialog from '@/components/finance/PayPaymentDialog.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
 
   import { useFeeStore } from '@/stores/fee';
@@ -186,7 +187,6 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <PayPaymentDialog
     v-model:visible="showPaymentModal"
     :amount="getAmount"
@@ -202,7 +202,13 @@
     @save="submitDelete"
     @cancel="showDeleteConfirmationDialog = false"
   />
-  <Panel id="fee-panel" class="mt-3 m-auto">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <Panel id="fee-panel" class="my-3 mx-2">
     <template #header>
       <OfficeIconButton title="Powrót do listy" icon="pi pi-fw pi-list" @click="() => router.push({ name: 'Fees' })" />
       <div class="w-full flex justify-center gap-4">
@@ -320,6 +326,7 @@
       </div>
     </template>
   </Panel>
+  </MainPageShell>
 </template>
 
 <style scoped>

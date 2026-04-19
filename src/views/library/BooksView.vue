@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useBooksStore } from '@/stores/books';
@@ -235,7 +235,7 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuLibrary />
     </template>
@@ -408,7 +408,7 @@
         </template>
       </DataTable>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 <style scoped>
   :deep(.p-panel-header) {

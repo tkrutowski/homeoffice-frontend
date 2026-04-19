@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { onMounted, ref } from 'vue';
   import router from '@/router';
   import { useRoute } from 'vue-router';
@@ -56,15 +57,17 @@
 </script>
 
 <template>
-  <div class="mt-5 pt-5 text-center">
-    <h2>Uruchamianie serwera…</h2>
-    <div v-if="phase !== 'idle'" class="mt-4 mx-auto max-w-md px-4">
-      <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
-        {{ phaseMessage[phase] }}
-      </p>
-      <ProgressBar mode="indeterminate" class="w-full" />
+  <MainPageShell>
+    <div class="mt-5 pt-5 text-center">
+      <h2>Uruchamianie serwera…</h2>
+      <div v-if="phase !== 'idle'" class="mt-4 mx-auto max-w-md px-4">
+        <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+          {{ phaseMessage[phase] }}
+        </p>
+        <ProgressBar mode="indeterminate" class="w-full" />
+      </div>
     </div>
-  </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

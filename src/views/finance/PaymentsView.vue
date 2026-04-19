@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import UserPayments from '@/components/finance/UserPayments.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { onMounted, ref, watch } from 'vue';
 
   import { usePaymentStore } from '@/stores/payments';
@@ -49,9 +50,12 @@
 </script>
 
 <template>
-  <TheMenuFinance />
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-  <Toolbar class="m-6">
+    <Toolbar class="m-6">
     <template #start>
       <p class="mt-auto mb-auto mr-5">ROK: {{ paymentStore.paymentSelectedYear }}</p>
       <OfficeIconButton
@@ -99,11 +103,12 @@
       />
     </template>
   </Toolbar>
-  <div v-if="refreshKey" class="ml-6 mr-6">
-    <div v-for="[userId] in paymentStore.payments" :key="userId">
-      <UserPayments :id-user="+userId" :year="+paymentStore.paymentSelectedYear" />
+    <div v-if="refreshKey" class="ml-6 mr-6">
+      <div v-for="[userId] in paymentStore.payments" :key="userId">
+        <UserPayments :id-user="+userId" :year="+paymentStore.paymentSelectedYear" />
+      </div>
     </div>
-  </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

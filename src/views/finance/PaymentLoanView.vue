@@ -7,6 +7,7 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
 
   import { useLoansStore } from '@/stores/loans';
   import { usePaymentStore } from '@/stores/payments';
@@ -196,7 +197,6 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <PayPaymentDialog
     v-model:visible="showPaymentModal"
     :amount="getAmount"
@@ -212,7 +212,12 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <Panel id="loan-panel" class="mt-3 m-auto">
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <Panel id="loan-panel" class="my-3 mx-2">
     <template #header>
       <OfficeIconButton title="Powrót do listy" icon="pi pi-fw pi-list" @click="() => router.push({ name: 'Loans' })" />
       <div class="w-full flex justify-center gap-4">
@@ -356,6 +361,7 @@
       </div>
     </template>
   </Panel>
+  </MainPageShell>
 </template>
 
 <style scoped>

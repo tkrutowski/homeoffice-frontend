@@ -11,7 +11,7 @@
   import type { User } from '@/types/User';
   import type { Bank, Card } from '@/types/Bank';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
 
@@ -255,7 +255,7 @@
 </script>
 
 <template>
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuFinance />
     </template>
@@ -446,7 +446,7 @@
       </Panel>
     </form>
     </div>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

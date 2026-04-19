@@ -7,7 +7,7 @@
   import type { Purchase } from '@/types/Purchase';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
 
   import { useToast } from 'primevue/usetoast';
@@ -288,7 +288,7 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuFinance />
     </template>
@@ -590,7 +590,7 @@
         </template>
       </DataTable>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped>

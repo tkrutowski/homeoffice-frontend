@@ -8,6 +8,7 @@
   import { useToast } from 'primevue/usetoast';
   import type { Author, Book, Category, Series } from '@/types/Book';
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { AxiosError } from 'axios';
@@ -448,7 +449,6 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <AddDialog
     v-model:visible="showAddModal"
     label2="Nazwisko:"
@@ -473,7 +473,12 @@
     @cancel="showAddCategoryModal = false"
   />
 
-  <div class="m-4 max-w-6xl mx-auto">
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
+    <div class="my-3 w-full max-w-6xl mx-auto px-2 sm:px-3">
     <form @submit.stop.prevent="saveBook">
       <Panel>
         <template #header>
@@ -650,7 +655,8 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

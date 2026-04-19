@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddEditSeriesDialog from '@/components/library/AddEditSeriesDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
@@ -273,7 +273,7 @@
 </script>
 
 <template>
-  <DataTablePageShell :scroll-default-slot="false">
+  <MainPageShell :scroll-default-slot="false">
     <template #top>
       <TheMenuLibrary />
     </template>
@@ -429,7 +429,7 @@
         </div>
       </div>
     </div>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped>

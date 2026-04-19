@@ -5,6 +5,7 @@
   import { useToast } from 'primevue/usetoast';
   import type { Device } from '@/types/Devices.ts';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
   import { useComputerStore } from '@/stores/computers.ts';
   import type { ComponentType, Computer } from '@/types/Computer.ts';
@@ -306,7 +307,6 @@
 </script>
 
 <template>
-  <TheMenuDevice />
   <AddAutoComplete
     v-model:visible="showAddModal"
     :msg="message"
@@ -328,7 +328,13 @@
     @save="deleteComputer"
     @cancel="() => (showDeleteConfirmation = false)"
   />
-  <Toolbar class="m-6">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuDevice />
+    </template>
+
+    <Toolbar class="m-6">
     <template #start>
       <OfficeButton
         btn-type="office-regular"
@@ -429,4 +435,5 @@
       </div>
     </Panel>
   </div>
+  </MainPageShell>
 </template>

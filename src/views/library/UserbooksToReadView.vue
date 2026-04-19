@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { useUserbooksStore } from '@/stores/userbooks';
   import UserBookSmall from '@/components/library/UserBookSmall.vue';
   import { useToast } from 'primevue/usetoast';
@@ -108,7 +109,6 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <AddEditUserBookDialog
     v-model:visible="showUserbookDialog"
     :id-book="tempUserbook?.id"
@@ -123,6 +123,12 @@
     @save="submitDelete"
     @cancel="showDeleteConfirmationDialog = false"
   />
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
   <div>
     <div class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4">
       <h2 class="text-3xl font-semibold text-primary">Moja półka - książki w poczekalni...</h2>
@@ -137,6 +143,7 @@
       </div>
     </div>
   </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
   import { ref, onMounted, computed, watch } from 'vue';
   import { useLoansStore } from '@/stores/loans';
@@ -747,8 +748,12 @@
 </script>
 
 <template>
-  <TheMenuFinance />
-  <div class="p-4">
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <div class="min-h-0 p-4">
     <!-- Year Selection and Filter -->
     <div class="flex justify-between items-center mb-4">
       <div class="w-1/4"></div>
@@ -899,6 +904,7 @@
       </div>
     </div>
   </div>
+  </MainPageShell>
 </template>
 
 <style scoped>

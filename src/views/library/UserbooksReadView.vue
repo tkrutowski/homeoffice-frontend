@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { useUserbooksStore } from '@/stores/userbooks';
   import UserBookSmall from '@/components/library/UserBookSmall.vue';
   import { computed, ref, watch } from 'vue';
@@ -132,7 +133,6 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
   <AddEditUserBookDialog
     v-model:visible="showUserbookDialog"
     :id-book="tempUserbook?.id"
@@ -147,6 +147,12 @@
     @save="submitDelete"
     @cancel="showDeleteConfirmationDialog = false"
   />
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
   <div>
     <Toolbar class="m-6 text-color">
       <template #start
@@ -215,6 +221,7 @@
       </p>
     </template>
   </Toolbar>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

@@ -13,6 +13,7 @@
   import type { Device } from '@/types/Devices';
   import type { Firm } from '@/types/Firm';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import moment from 'moment/moment';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
@@ -477,7 +478,6 @@
 </script>
 
 <template>
-  <TheMenuDevice />
   <AddDialog
     v-model:visible="showAddDeviceTypeModal"
     msg="Dodaj rodzaj urządzenia"
@@ -522,7 +522,13 @@
     :items="device.files ?? []"
     :initial-index="filePreviewStartIndex"
   />
-  <div class="m-4 max-w-7xl mx-auto">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuDevice />
+    </template>
+
+    <div class="my-3 w-full max-w-7xl mx-auto px-2 sm:px-3">
     <form @submit.stop.prevent="saveDevice">
       <Panel>
         <template #header>
@@ -845,7 +851,8 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped>

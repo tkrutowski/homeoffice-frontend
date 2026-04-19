@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue';
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { type BookStatistic } from '@/types/Book.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
 
@@ -141,8 +142,12 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
-  <div class="p-6">
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
+    <div class="p-6">
     <div class="grid gap-4 grid-cols-3">
       <Card class="shadow-lg p-4 col-span-2">
         <template #content>
@@ -180,5 +185,6 @@
         </p>
       </template>
     </Toolbar>
-  </div>
+    </div>
+  </MainPageShell>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { onMounted, ref, watch } from 'vue';
   import router from '@/router';
   import { useAuthorizationStore } from '@/stores/authorization';
@@ -90,7 +91,9 @@
   }
 </script>
 <template>
-  <form class="max-w-96 mx-auto mt-48" @submit.prevent="login()">
+  <MainPageShell>
+    <div class="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-10">
+  <form class="w-full max-w-96" @submit.prevent="login()">
     <p class="mb-5 mt-5 text-center text-3xl font-bold text-primary">Logowanie</p>
 
     <!-- USERNAME -->
@@ -136,4 +139,6 @@
       <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
     </p>
   </form>
+    </div>
+  </MainPageShell>
 </template>

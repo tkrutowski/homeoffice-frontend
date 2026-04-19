@@ -7,6 +7,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { AxiosError } from 'axios';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Bank } from '@/types/Bank.ts';
   import { useBanksStore } from '@/stores/banks.ts';
 
@@ -185,9 +186,12 @@
 </script>
 
 <template>
-  <TheMenuFinance />
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
 
-  <div class="m-4 max-w-6xl mx-auto">
+    <div class="my-3 w-full max-w-6xl mx-auto px-2 sm:px-3">
     <form class="col-12 col-md-9 col-xl-6 align-self-center" @submit.stop.prevent="saveBank">
       <Panel>
         <template #header>
@@ -279,5 +283,6 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>

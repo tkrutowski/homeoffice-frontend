@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import PurchaseCurrentItemGroup from '@/components/finance/PurchaseCurrentItemGroup.vue';
   import { UtilsService } from '@/service/UtilsService';
   import { usePurchasesStore } from '@/stores/purchases';
@@ -152,14 +153,19 @@
 </script>
 
 <template>
-  <div class="flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden">
-    <TheMenuFinance class="shrink-0" />
-    <ConfirmationDialog
-      v-model:visible="showStatusChangeConfirmationDialog"
-      :msg="changeStatusConfirmationMessage"
-      @save="submitMultiChangeStatus"
-      @cancel="showStatusChangeConfirmationDialog = false"
-    />
+  <ConfirmationDialog
+    v-model:visible="showStatusChangeConfirmationDialog"
+    :msg="changeStatusConfirmationMessage"
+    @save="submitMultiChangeStatus"
+    @cancel="showStatusChangeConfirmationDialog = false"
+  />
+
+  <MainPageShell :scroll-default-slot="false">
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
     <Toolbar
       class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 py-2 dark:border-surface-700 dark:bg-surface-950"
     >
@@ -229,5 +235,6 @@
       </div>
       <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
     </div>
-  </div>
+    </div>
+  </MainPageShell>
 </template>

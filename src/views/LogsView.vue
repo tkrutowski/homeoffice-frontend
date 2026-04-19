@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useLogsStore } from '@/stores/logs';
   import TheMenu from '@/components/TheMenu.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { onMounted, ref } from 'vue';
   import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
   import moment from 'moment';
@@ -78,7 +78,7 @@
 </script>
 
 <template>
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenu />
     </template>
@@ -204,7 +204,7 @@
         </template>
       </DataTable>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

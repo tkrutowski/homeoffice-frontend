@@ -13,7 +13,7 @@
   import { FileService } from '@/service/FileService';
   import FileUrlsPreviewDialog from '@/components/FileUrlsPreviewDialog.vue';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { ActiveStatus } from '@/types/Bank';
   import StatusButton from '@/components/StatusButton.vue';
   import type { AxiosError } from 'axios';
@@ -302,7 +302,7 @@
     @cancel="showStatusChangeConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuDevice />
     </template>
@@ -690,7 +690,7 @@
         </template>
       </Toolbar>
     </template>
-  </DataTablePageShell>
+  </MainPageShell>
 
   <FileUrlsPreviewDialog
     v-model:visible="filePreviewVisible"

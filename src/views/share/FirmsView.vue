@@ -9,7 +9,7 @@
   import type { AxiosError } from 'axios';
   import { useFirmsStore } from '@/stores/firms.ts';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { ResponseData } from '@/types/User.ts';
 
   const firmStore = useFirmsStore();
@@ -108,7 +108,7 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuFinance />
     </template>
@@ -216,7 +216,7 @@
         </template>
       </DataTable>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped>

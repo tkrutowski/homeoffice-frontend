@@ -9,6 +9,7 @@
   import { UtilsService } from '@/service/UtilsService';
   import type { Device } from '@/types/Devices';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { ActiveStatus } from '@/types/Bank';
   import type { AxiosError } from 'axios';
   import type { SelectChangeEvent } from 'primevue/select';
@@ -300,7 +301,6 @@
 </script>
 
 <template>
-  <TheMenuDevice />
   <ConfirmationDialog
     v-model:visible="showDeleteConfirmationDialog"
     :msg="deleteConfirmationMessage"
@@ -325,7 +325,13 @@
     :closeOnEscape="true"
     @save="saveFiles"
   />
-  <Panel class="mt-5 ml-2 mr-2">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuDevice />
+    </template>
+
+    <Panel class="mt-5 ml-2 mr-2">
     <DataView
       :value="filteredDevices"
       data-key="id"
@@ -635,6 +641,7 @@
       </div>
     </template>
   </Toolbar>
+  </MainPageShell>
 </template>
 <style scoped>
   :deep(.p-panel-header) {

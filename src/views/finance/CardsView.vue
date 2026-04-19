@@ -3,7 +3,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useCardsStore } from '@/stores/cards';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
-  import DataTablePageShell from '@/components/layout/DataTablePageShell.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useBanksStore } from '@/stores/banks';
@@ -181,7 +181,7 @@
     @cancel="showDeleteConfirmationDialog = false"
   />
 
-  <DataTablePageShell>
+  <MainPageShell>
     <template #top>
       <TheMenuFinance />
     </template>
@@ -331,7 +331,7 @@
       </template>
     </DataView>
     </Panel>
-  </DataTablePageShell>
+  </MainPageShell>
 </template>
 
 <style scoped>

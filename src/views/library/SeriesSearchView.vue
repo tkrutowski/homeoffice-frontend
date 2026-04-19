@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
   import TheMenuLibrary from '@/components/library/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Series } from '@/types/Book';
   import { useBooksStore } from '@/stores/books';
   import SeriesCarousel from '@/components/library/SeriesCarusel.vue';
@@ -18,8 +19,12 @@
 </script>
 
 <template>
-  <TheMenuLibrary />
-  <Toolbar class="m-6 text-color">
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
+    <Toolbar class="m-6 text-color">
     <template #start>
       <span>Wybrano {{ selectedSeries.length }} z {{ booksStore.getSortedSeries.length }} cykli</span>
     </template>
@@ -44,9 +49,10 @@
     <template #end></template>
   </Toolbar>
 
-  <div v-for="series in selectedSeries" :key="series.id" class="m-6">
-    <SeriesCarousel :series="series" class="mb-10" />
-  </div>
+    <div v-for="series in selectedSeries" :key="series.id" class="m-6">
+      <SeriesCarousel :series="series" class="mb-10" />
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

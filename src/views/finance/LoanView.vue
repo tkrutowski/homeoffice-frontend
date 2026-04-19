@@ -11,6 +11,7 @@
   import type { Bank } from '@/types/Bank';
   import type { User } from '@/types/User';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
@@ -271,10 +272,14 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <AddBankDialog v-model:visible="showNewBankModal" @save="newBank" @cancel="showNewBankModal = false" />
 
-  <div class="m-4 max-w-4xl mx-auto">
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
     <form @submit.stop.prevent="saveLoan" class="w-full">
       <Panel class="w-full">
         <template #header>
@@ -461,7 +466,8 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>

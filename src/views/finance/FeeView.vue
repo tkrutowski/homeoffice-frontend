@@ -12,6 +12,7 @@
   import type { Firm } from '@/types/Firm';
   import type { Fee, FeeFrequency } from '@/types/Fee';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
   import { PaymentStatus } from '@/types/Payment.ts';
@@ -312,9 +313,14 @@
 </script>
 
 <template>
-  <TheMenuFinance />
   <AddFirmDialog v-model:visible="showNewFirmModal" @save="newFirm" @cancel="showNewFirmModal = false" />
-  <div class="m-4 max-w-4xl mx-auto">
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuFinance />
+    </template>
+
+    <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
     <form @submit.stop.prevent="saveFee" class="w-full">
       <Panel>
         <template #header>
@@ -495,7 +501,8 @@
         </div>
       </Panel>
     </form>
-  </div>
+    </div>
+  </MainPageShell>
 </template>
 
 <style scoped></style>
