@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import moment from 'moment';
-  import { nextTick, onMounted, ref, computed } from 'vue';
+  import { nextTick, ref, computed, watch } from 'vue';
   import { UtilsService } from '@/service/UtilsService.ts';
   import router from '@/router';
   import { type Installment, type Payment, PaymentStatus } from '@/types/Payment.ts';
@@ -13,6 +13,17 @@
   import { useLoansStore } from '@/stores/loans.ts';
   import { useFeeStore } from '@/stores/fee.ts';
   import { TranslationService } from '@/service/TranslationService.ts';
+  import type { StatusType } from '@/types/StatusType.ts';
+  import type { Loan } from '@/types/Loan';
+  import type { Fee } from '@/types/Fee';
+
+  /** Kolejka: `getLoansByYearAndStatusAndUser` / `getFeesByYearAndStatusAndUser` zerują globalny stan store — nie mogą się przeplatać między instancjami `UserPayments`. */
+  let bankFirmColumnMutex = Promise.resolve();
+  function runBankFirmColumnLoadSequentially(fn: () => Promise<void>): Promise<void> {
+    const run = bankFirmColumnMutex.then(fn);
+    bankFirmColumnMutex = run.catch(() => {});
+    return run;
+  }
 
   const paymentStore = usePaymentStore();
   const userStore = useUsersStore();
@@ -40,7 +51,8 @@
 
   const dataTableRef = ref(null);
   const cm = ref<InstanceType<typeof ContextMenu> | null>(null);
-  const todayIndex = ref<number>(moment().month() * 2 + 3); //3 first columns to skip
+  /** Indeks `th` kolumny bieżącego miesiąca: Nazwa, Bank, Dzień, potem miesiące 1–12 */
+  const todayIndex = ref<number>(moment().month() + 3);
 
   const onRowSelect = (event: any) => {
     const payment = event.data.paymentType === 'LOAN' ? 'PaymentLoan' : 'PaymentFee';
@@ -57,6 +69,71 @@
     }
   };
 
+  /** Zielony / żółty / czerwony wg reguł biznesowych; neutralne stany bez tych trzech kolorów */
+  type MonthCellState =
+    | 'no-credit'
+    | 'paid-on-time'
+    | 'paid-late'
+    | 'unpaid-overdue'
+    | 'unpaid-pending';
+
+  const getMonthCellState = (installments: Installment[], month: number): MonthCellState => {
+    const installment: Installment | undefined = installments.find(
+      (pay: Installment) =>
+        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
+    );
+    const paymentDeadline = installment?.paymentDeadline;
+    if (!paymentDeadline) return 'no-credit';
+
+    const date = moment(installment?.paymentDate).format('yyyy-MM-DD');
+    const isPaid = !date.startsWith('Invalid');
+    if (isPaid) {
+      const deadline = moment(installment?.paymentDeadline);
+      const paymentDate = moment(installment?.paymentDate);
+      if (paymentDate.isAfter(deadline)) return 'paid-late';
+      return 'paid-on-time';
+    }
+    const deadline = moment(installment?.paymentDeadline);
+    if (moment().isAfter(deadline)) return 'unpaid-overdue';
+    return 'unpaid-pending';
+  };
+
+  const getPaymentCellWrapperClass = (state: MonthCellState): string => {
+    const base =
+      'flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-0.5 py-1 relative overflow-hidden px-0.5 text-sm tabular-nums';
+    switch (state) {
+      case 'no-credit':
+        return `${base} bg-surface-0 text-surface-400 dark:bg-surface-950 dark:text-surface-500`;
+      case 'paid-on-time':
+        return `${base} border-l-[3px] border-l-emerald-500 bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent bg-surface-0 text-emerald-700 dark:border-l-emerald-400 dark:from-emerald-400/15 dark:bg-surface-950 dark:text-emerald-300`;
+      case 'paid-late':
+        return `${base} border-l-[3px] border-l-amber-500 bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent bg-surface-0 text-amber-800 dark:border-l-amber-400 dark:from-amber-400/15 dark:bg-surface-950 dark:text-amber-200`;
+      case 'unpaid-overdue':
+        return `${base} border-l-[3px] border-l-red-500 bg-gradient-to-r from-red-500/20 via-red-500/5 to-transparent bg-surface-0 text-red-600 dark:border-l-red-400 dark:from-red-400/15 dark:bg-surface-950 dark:text-red-400`;
+      case 'unpaid-pending':
+        return `${base} border-l-[3px] border-l-surface-400 bg-gradient-to-r from-surface-400/15 via-surface-400/5 to-transparent bg-surface-0 text-surface-700 dark:border-l-surface-500 dark:from-surface-500/10 dark:bg-surface-950 dark:text-surface-300`;
+      default: {
+        const _exhaustive: never = state;
+        return _exhaustive;
+      }
+    }
+  };
+
+  const isCurrentCalendarMonth = (month: number) => month === moment().month() + 1;
+
+  const getMonthAmountHeaderShellClass = (month: number) => {
+    const shell =
+      'flex w-full flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-center min-h-[3.25rem]';
+    return isCurrentCalendarMonth(month)
+      ? `${shell} rounded-t-md border-b-2 border-primary bg-primary/10 dark:bg-primary/20`
+      : shell;
+  };
+
+  const getMonthAmountHeaderTitleClass = (month: number) =>
+    isCurrentCalendarMonth(month)
+      ? 'font-semibold text-primary'
+      : 'font-semibold text-surface-800 dark:text-surface-0';
+
   const getAmount = (installments: Installment[], month: number) => {
     const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
@@ -64,48 +141,10 @@
     );
 
     return installment === undefined
-      ? 'null'
+      ? ''
       : +installment.installmentAmountPaid === 0
         ? UtilsService.formatCurrency(installment.installmentAmountToPay)
         : UtilsService.formatCurrency(installment.installmentAmountPaid);
-  };
-
-  const getClassAmount = (installments: Installment[], month: number) => {
-    let result = getClassBorderLeftCurrentMonth(month);
-    const installment: Installment | undefined = installments.find(
-      (pay: Installment) =>
-        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
-    );
-    const paymentDeadline = installment?.paymentDeadline;
-    if (!paymentDeadline) return result + ' no-credit';
-
-    const date = moment(installment?.paymentDate).format('yyyy-MM-DD');
-    const isPaid = !date.startsWith('Invalid');
-    if (isPaid) {
-      const deadline = moment(installment?.paymentDeadline);
-      const paymentDate = moment(installment?.paymentDate);
-
-      if (paymentDate.isAfter(deadline)) return result + ' overdue';
-      else return result + ' paid';
-    } else {
-      const deadline = moment(installment?.paymentDeadline);
-      const now = moment();
-      if (now.isAfter(deadline)) return result + ' overdue';
-    }
-    return result + ' to-pay';
-  };
-
-  const getClassBorderLeftCurrentMonth = (month: number) => {
-    if (month === moment().month() + 1) {
-      return 'border-l-4 border-l-blue-500';
-    }
-    return '';
-  };
-  const getClassBorderRightLeftCurrentMonth = (month: number) => {
-    if (month === moment().month() + 1) {
-      return 'border-r-4 border-r-blue-500';
-    }
-    return '';
   };
 
   const getDate = (installments: Installment[], month: number) => {
@@ -113,7 +152,7 @@
       (pay: Installment) =>
         pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
     );
-    if (!installment) return 'null';
+    if (!installment) return '';
 
     const paymentDate = installment?.paymentDate;
     if (paymentDate) {
@@ -121,27 +160,7 @@
       const isPaid = !date.startsWith('Invalid');
       return isPaid ? date : '';
     }
-  };
-
-  const getClassDate = (installments: Installment[], month: number) => {
-    let result = getClassBorderRightLeftCurrentMonth(month);
-    const installment = installments.find(
-      (pay: Installment) =>
-        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
-    );
-    const paymentDeadline = installment?.paymentDeadline;
-    if (!paymentDeadline) return result + ' no-credit';
-
-    const date = moment(installment?.paymentDate).format('yyyy-MM-DD');
-    const isPaid = !date.startsWith('Invalid');
-    if (isPaid) {
-      const deadline = moment(installment?.paymentDeadline);
-      const paymentDate = moment(installment?.paymentDate);
-
-      if (paymentDate.isAfter(deadline)) return result + ' overdue';
-      else return result + ' paid';
-    }
-    return result + ' py-[0.7rem]';
+    return '';
   };
 
   const calculateTotal = (month: number) => {
@@ -178,25 +197,23 @@
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
   };
 
+  /** Nazwy z lokalnego wyniku API (patrz `loadLoansAndFeesForBankFirmColumn`), nie ze `getLoan`/`getFee` na pustym store. */
+  const bankNameByLoanId = ref<Map<number, string>>(new Map());
+  const firmNameByFeeId = ref<Map<number, string>>(new Map());
+
   const findBankOrFirmName = (payment: Payment) => {
     let result = '';
     if (payment.paymentType === 'LOAN' && payment.installments.length > 0) {
       const firstInstallment = payment.installments[0];
       if (UtilsService.isLoanInstallment(firstInstallment)) {
-        const loan = loansStore.getLoan(firstInstallment.idLoan);
-        if (loan && loan.bank) {
-          result = loan.bank.name;
-        }
+        result = bankNameByLoanId.value.get(firstInstallment.idLoan) ?? '';
       }
     }
 
     if (payment.paymentType === 'FEE' && payment.installments.length > 0) {
       const firstInstallment = payment.installments[0];
       if (UtilsService.isFeeInstallment(firstInstallment)) {
-        const fee = feeStore.getFee(firstInstallment.idFee);
-        if (fee && fee.firm) {
-          result = fee.firm.name;
-        }
+        result = firmNameByFeeId.value.get(firstInstallment.idFee) ?? '';
       }
     }
 
@@ -263,16 +280,37 @@
     showStatusChangeConfirmationDialog.value = false;
   };
 
-  //------------------------------------MOUNTED------------------------------
-  onMounted(() => {
-    console.log('onMounted UserPayments');
-    moment.locale('pl');
-    payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
-
-    nextTick(() => {
-      scrollToToday();
+  /** Ładuje kredyty/opłaty użytkownika dla roku i zapisuje nazwy banku/firmy w mapach (store list kredytów nie jest wypełniany na widoku płatności). */
+  const loadLoansAndFeesForBankFirmColumn = async () => {
+    const year = props.year;
+    const idUser = props.idUser;
+    await runBankFirmColumnLoadSequentially(async () => {
+      const status: StatusType = 'ALL';
+      const [loans, fees] = await Promise.all([
+        loansStore.getLoansByYearAndStatusAndUser(year, status, idUser),
+        feeStore.getFeesByYearAndStatusAndUser(year, status, idUser),
+      ]);
+      bankNameByLoanId.value = new Map(loans.map((l: Loan) => [l.id, l.bank?.name ?? '']));
+      firmNameByFeeId.value = new Map(fees.map((f: Fee) => [f.id, f.firm?.name ?? '']));
     });
-  });
+  };
+
+  const syncPaymentsAndScroll = async () => {
+    moment.locale('pl');
+    selectedYear.value = props.year;
+    payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
+    await loadLoansAndFeesForBankFirmColumn();
+    await nextTick();
+    scrollToToday();
+  };
+
+  watch(
+    () => [props.year, props.idUser] as const,
+    () => {
+      void syncPaymentsAndScroll();
+    },
+    { immediate: true }
+  );
 
   const scrollToToday = () => {
     if (dataTableRef.value) {
@@ -353,7 +391,15 @@
       </template>
 
       <!--  NAME    -->
-      <Column field="name" header="Nazwa" :sortable="true" frozen style="min-width: 200px">
+      <Column
+        field="name"
+        header="Nazwa"
+        :sortable="true"
+        style="min-width: 130px"
+        header-class="user-payment-leading"
+        class="user-payment-leading"
+        footer-class="user-payment-leading"
+      >
         <template #body="{ data, field }">
           <div class="name">
             {{ data[field] }}
@@ -362,7 +408,15 @@
       </Column>
 
       <!--  BANK/FIRM    -->
-      <Column field="bank" header="Bank/Firma" :sortable="true" frozen style="min-width: 150px">
+      <Column
+        field="bank"
+        header="Bank/Firma"
+        :sortable="true"
+        style="min-width: 150px"
+        header-class="user-payment-leading"
+        class="user-payment-leading"
+        footer-class="user-payment-leading"
+      >
         <template #body="{ data }">
           <div class="name">
             {{ findBankOrFirmName(data) }}
@@ -371,7 +425,15 @@
       </Column>
 
       <!--  PAYMENT DAY    -->
-      <Column field="paymentDay" header="Dzień" :sortable="true" style="width: 85px">
+      <Column
+        field="paymentDay"
+        header="Dzień"
+        :sortable="true"
+        style="width: 85px"
+        header-class="user-payment-leading"
+        class="user-payment-leading"
+        footer-class="user-payment-leading"
+      >
         <template #body="{ data, field }">
           <div class="day">
             {{ data[field] }}
@@ -379,34 +441,31 @@
         </template>
       </Column>
 
-      <!--  MONTHS    -->
+      <!--  MONTHS: kwota + data zapłaty w jednej kolumnie -->
       <div v-for="number in 12" :key="number">
-        <!--  AMOUNT -->
         <Column
           field="amount"
-          :header="TranslationService.translateMonth(number)"
-          headerStyle="min-width: 100px;"
-          headerClass="user-payment"
-          class="user-payment"
+          header-style="min-width: 120px;"
+          header-class="user-payment"
+          class="user-payment p-column-data-zapl"
         >
-          <template #body="slotProps">
-            <div :class="getClassAmount(slotProps.data.installments, number)">
-              {{ getAmount(slotProps.data.installments, number) }}
+          <template #header>
+            <div :class="getMonthAmountHeaderShellClass(number)">
+              <span :class="getMonthAmountHeaderTitleClass(number)">
+                {{ TranslationService.translateMonth(number) }}
+              </span>
             </div>
           </template>
-        </Column>
-
-        <!--   DATA     -->
-        <Column
-          header="Data zapł."
-          fefacrot
-          headerStyle="min-width: 110px;"
-          headerClass=" user-payment"
-          class="p-column-data-zapl user-payment"
-        >
           <template #body="slotProps">
-            <div :class="getClassDate(slotProps.data.installments, number)">
-              {{ getDate(slotProps.data.installments, number) }}&emsp;
+            <div
+              :class="
+                getPaymentCellWrapperClass(getMonthCellState(slotProps.data.installments, number))
+              "
+            >
+              <span>{{ getAmount(slotProps.data.installments, number) }}</span>
+              <span class="text-xs leading-tight opacity-90">{{
+                getDate(slotProps.data.installments, number)
+              }}</span>
             </div>
           </template>
         </Column>
@@ -414,33 +473,48 @@
 
       <ColumnGroup type="footer">
         <Row>
-          <Column footer="Razem:" :colspan="2" frozen footer-style="text-align:left" />
-          <Column />
+          <Column
+            footer="Razem:"
+            :colspan="2"
+            frozen
+            footer-style="text-align:left"
+            footer-class="user-payment-leading"
+          />
+          <Column footer-class="user-payment-leading" />
           <Column
             v-for="number in 12"
             :key="number"
             :footer="UtilsService.formatCurrency(calculateTotal(number))"
-            :colspan="2"
           />
         </Row>
         <Row>
-          <Column footer="Zapłacono:" :colspan="2" footer-style="text-align:left" footer-class="ml-5" frozen />
-          <Column />
+          <Column
+            footer="Zapłacono:"
+            :colspan="2"
+            footer-style="text-align:left"
+            footer-class="user-payment-leading ml-5"
+            frozen
+          />
+          <Column footer-class="user-payment-leading" />
           <Column
             v-for="number in 12"
             :key="number"
             :footer="UtilsService.formatCurrency(calculateTotalPaid(number))"
-            :colspan="2"
           />
         </Row>
         <Row>
-          <Column footer="Do zapłaty:" :colspan="2" frozen footer-style="text-align:left" />
-          <Column />
+          <Column
+            footer="Do zapłaty:"
+            :colspan="2"
+            frozen
+            footer-style="text-align:left"
+            footer-class="user-payment-leading"
+          />
+          <Column footer-class="user-payment-leading" />
           <Column
             v-for="number in 12"
             :key="number"
             :footer="UtilsService.formatCurrency(calculateTotalToPay(number))"
-            :colspan="2"
           />
         </Row>
       </ColumnGroup>
@@ -459,45 +533,11 @@
     text-align: center;
   }
 
-  .no-credit {
-    display: flex;
-    justify-content: center;
-    background-color: red;
-    color: red;
-    padding: 0.7rem 0;
-    min-width: 100%;
-  }
-
-  .paid {
-    display: flex;
-    justify-content: center;
-    background-color: #2ca083;
-    color: black;
-    padding: 0.7rem 0;
-    min-width: 100%;
-  }
-
-  .to-pay {
-    display: flex;
-    justify-content: center;
-    padding: 0.7rem 0;
-  }
-
-  .overdue {
-    display: flex;
-    justify-content: center;
-    background-color: yellow;
-    color: black;
-    padding: 0.7rem 0;
-    min-width: 100%;
-  }
-
-  .p-datatable >>> .p-datatable-column-footer {
+  :deep(.p-datatable-column-footer) {
     margin-left: 1rem;
   }
 
-  /* Styl podczas najechania myszką */
-  .p-datatable >>> .p-datatable-tbody > tr:hover {
-    filter: brightness(0.75); /* Przyciemnia każdy kolor o 25% */
+  :deep(.p-datatable-tbody > tr:hover > td) {
+    @apply bg-surface-100/70 dark:bg-surface-800/35 transition-colors duration-150;
   }
 </style>
