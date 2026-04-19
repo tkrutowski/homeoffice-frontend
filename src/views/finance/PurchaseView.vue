@@ -454,7 +454,7 @@
           <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
             <OfficeIconButton
               title="Powrót do listy aktualnych zakupów"
-              class="text-surface-500 hover:text-orange-500 dark:text-surface-400 dark:hover:text-orange-400"
+              class="text-orange-500"
               @click="() => router.push({ name: 'PurchasesCurrent' })"
             >
               <template #icon>
@@ -463,7 +463,7 @@
             </OfficeIconButton>
             <OfficeIconButton
               title="Powrót do listy wszystkich zakupów"
-              class="text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-0"
+              class="text-orange-500"
               @click="() => router.push({ name: 'Purchases' })"
             >
               <template #icon>

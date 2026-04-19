@@ -38,7 +38,6 @@
   <Button
     v-else
     class="icon-only"
-    text
     :icon="hasCustomIcon ? undefined : props.icon"
     :rounded="props.rounded"
     :class="{ isActive: props.active }"
