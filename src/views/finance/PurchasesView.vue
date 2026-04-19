@@ -322,26 +322,84 @@
         current-page-report-template="Od {first} do {last} (Wszystkich zakupów: {totalRecords})"
       >
         <template #header>
-          <div class="flex justify-between">
-            <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy zakup" @click="goToNewPurchase" />
-            <div v-if="purchasesStore.loadingPurchases">
-              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+          <div class="flex flex-col gap-3">
+            <div class="grid grid-cols-3 gap-4 items-center">
+              <div class="flex flex-wrap items-center gap-2">
+                <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy zakup" @click="goToNewPurchase" />
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-3">
+           
+             
+                <div class="flex gap-2">
+                  <OfficeIconButton
+                    title="Wyświetl niespłacone"
+                    :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+                    class="text-red-500"
+                    :active="filter === 'TO_PAY'"
+                    @click="setFilter('TO_PAY')"
+                  />
+                  <OfficeIconButton
+                    title="Wyświetl spłacone"
+                    :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+                    class="text-green-500"
+                    :active="filter === 'PAID'"
+                    @click="setFilter('PAID')"
+                  />
+                  <OfficeIconButton
+                    title="Wyświetl wszystkie"
+                    :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+                    class="text-orange-500"
+                    :active="filter === 'ALL'"
+                    @click="setFilter('ALL')"
+                  />
+                  <div
+                  class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                  role="presentation"
+                  aria-hidden="true"
+                />
+                <OfficeIconButton
+                  title="Odśwież listę zakupów"
+                  class="text-orange-500"
+                  :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+                  @click="purchasesStore.refreshPurchases()"
+                />
+                </div>
+              </div>
+              <div class="flex justify-end flex-wrap gap-4">
+                <div v-if="purchasesStore.loadingPurchases" class="flex items-center">
+                  <ProgressSpinner class="shrink-0" style="width: 35px; height: 35px" stroke-width="5" />
+                </div>
+                <IconField icon-position="left">
+                  <InputIcon>
+                    <i class="pi pi-search" />
+                  </InputIcon>
+                  <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                </IconField>
+                <Button
+                  type="button"
+                  icon="pi pi-filter-slash"
+                  outlined
+                  size="small"
+                  title="Wyczyść filtry"
+                  @click="clearFilter()"
+                />
+              </div>
             </div>
-            <div class="flex gap-4">
-              <IconField icon-position="left">
-                <InputIcon>
-                  <i class="pi pi-search" />
-                </InputIcon>
-                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-              </IconField>
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                outlined
-                size="small"
-                title="Wyczyść filtry"
-                @click="clearFilter()"
-              />
+            <div
+              class="flex flex-col gap-1 border-t border-surface-200 pt-3 text-sm dark:border-surface-700 md:flex-row md:flex-wrap md:items-baseline md:justify-end md:gap-x-6 md:gap-y-1"
+            >
+              <p>
+                <span>Przefiltrowane:</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(filteredPurchaseAmount) }}</span>
+              </p>
+              <p>
+                <span>Wybrane:</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(selectedPurchaseAmount) }}</span>
+              </p>
+              <p>
+                <span>DO SPŁATY RAZEM:</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(purchasesStore.sumToPay) }}</span>
+              </p>
             </div>
           </div>
         </template>
@@ -469,8 +527,9 @@
         <Column header="Akcja" :exportable="false" style="width: 8rem">
           <template #body="slotProps">
             <div class="flex flex-row gap-1 justify-start">
-              <OfficeIconButton title="Edytuj zakup" icon="pi pi-file-edit" @click="editItem(slotProps.data)" />
+              <OfficeIconButton title="Edytuj zakup" icon="pi pi-file-edit" @click="editItem(slotProps.data)" class="text-orange-500"/>
               <OfficeIconButton
+                class="text-red-500"
                 title="Usuń zakup"
                 icon="pi pi-trash"
                 severity="danger"
@@ -526,60 +585,6 @@
         </template>
       </DataTable>
     </Panel>
-
-    <template #bottom>
-      <Toolbar class="mx-2 border-t border-surface-200 bg-surface-0 pt-2 dark:border-surface-700 dark:bg-surface-950">
-        <template #start>
-          <OfficeIconButton
-            title="Odświerz listę zakupów"
-            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-            class="mr-2"
-            @click="purchasesStore.refreshPurchases()"
-          />
-        </template>
-
-        <template #center>
-          <OfficeIconButton
-            title="Wyświetl niespłacone"
-            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-            class="mr-2"
-            :active="filter === 'TO_PAY'"
-            @click="setFilter('TO_PAY')"
-          />
-          <OfficeIconButton
-            title="Wyświetl spłacone"
-            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-            class="mr-2"
-            :active="filter === 'PAID'"
-            @click="setFilter('PAID')"
-          />
-          <OfficeIconButton
-            title="Wyświetl wszystkie"
-            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-            class="mr-2"
-            :active="filter === 'ALL'"
-            @click="setFilter('ALL')"
-          />
-        </template>
-
-        <template #end>
-          <div class="flex flex-col gap-2">
-            <p class="">
-              <span class="">Przefiltrowane:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(filteredPurchaseAmount) }}</span>
-            </p>
-            <p class="">
-              <span class="">Wybrane:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(selectedPurchaseAmount) }}</span>
-            </p>
-            <p class="">
-              <span class="">DO SPŁATY RAZEM:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(purchasesStore.sumToPay) }}</span>
-            </p>
-          </div>
-        </template>
-      </Toolbar>
-    </template>
   </DataTablePageShell>
 </template>
 
