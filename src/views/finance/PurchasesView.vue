@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { FilterMatchMode } from '@primevue/core/api';
-  import { computed, watch, type DefineComponent, ref } from 'vue';
+  import { computed, watch, ref } from 'vue';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
   import StatusButton from '@/components/StatusButton.vue';
@@ -115,7 +115,6 @@
     return card?.name || '';
   };
 
-  const dataTableRef = ref<DefineComponent | null>(null);
   const filteredPurchaseAmount = computed(() => {
     let sum = 0;
     purchasesStore.purchases.forEach((purchase: Purchase) => {
@@ -323,14 +322,20 @@
       >
         <template #header>
           <div class="flex flex-col gap-3">
-            <div class="grid grid-cols-3 gap-4 items-center">
+            <div class="flex flex-wrap items-center justify-between gap-4">
               <div class="flex flex-wrap items-center gap-2">
-                <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy zakup" @click="goToNewPurchase" />
-              </div>
-              <div class="flex flex-wrap items-center justify-center gap-3">
-           
-             
-                <div class="flex gap-2">
+                <OfficeIconButton
+                  class="text-amber-500"
+                  title="Dodaj nowy zakup."
+                  icon="pi pi-plus"
+                  @click="goToNewPurchase"
+                />
+                <div
+                  class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                  role="presentation"
+                  aria-hidden="true"
+                />
+                <div class="flex flex-wrap items-center gap-2">
                   <OfficeIconButton
                     title="Wyświetl niespłacone"
                     :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
@@ -353,16 +358,16 @@
                     @click="setFilter('ALL')"
                   />
                   <div
-                  class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
-                  role="presentation"
-                  aria-hidden="true"
-                />
-                <OfficeIconButton
-                  title="Odśwież listę zakupów"
-                  class="text-orange-500"
-                  :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-                  @click="purchasesStore.refreshPurchases()"
-                />
+                    class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                    role="presentation"
+                    aria-hidden="true"
+                  />
+                  <OfficeIconButton
+                    title="Odśwież listę zakupów"
+                    class="text-orange-500"
+                    :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+                    @click="purchasesStore.refreshPurchases()"
+                  />
                 </div>
               </div>
               <div class="flex justify-end flex-wrap gap-4">
