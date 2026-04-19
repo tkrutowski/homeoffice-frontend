@@ -105,11 +105,11 @@
         ${purchasesToPay
           .map(
             purchase =>
-              `<li style="text-indent: -20px; margin-left: 50px;">- ${purchase.name}: ${UtilsService.formatCurrency(purchase.amount)} zł</li>`
+              `<li style="text-indent: -20px; margin-left: 50px;">- ${purchase.name}: ${UtilsService.formatCurrency(purchase.amount)}</li>`
           )
           .join('')}
         </BR>
-        <li style="text-indent: -30px; margin-left: 50px;">RAZEM: ${amountAll} zł</li>
+        <li style="text-indent: -30px; margin-left: 50px;">RAZEM: ${UtilsService.formatCurrency(amountAll)}</li>
       </ul>
     `;
 
