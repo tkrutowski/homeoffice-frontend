@@ -10,6 +10,15 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Bank } from '@/types/Bank.ts';
   import { useBanksStore } from '@/stores/banks.ts';
+  import {
+    CalendarDaysIcon,
+    InformationCircleIcon,
+    MapPinIcon,
+    PhoneIcon,
+    EnvelopeIcon,
+    DocumentTextIcon,
+    BuildingLibraryIcon,
+  } from '@heroicons/vue/24/outline';
 
   const bankStore = useBanksStore();
   const route = useRoute();
@@ -183,6 +192,24 @@
     }
     return false;
   };
+
+  const ptFieldInputText = {
+    root: {
+      class:
+        'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
+        'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
+
+  const ptTextareaField = {
+    root: {
+      class:
+        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
 </script>
 
 <template>
@@ -191,89 +218,149 @@
       <TheMenuFinance />
     </template>
 
-    <div class="my-3 w-full max-w-6xl mx-auto px-2 sm:px-3">
-      <form class="col-12 col-md-9 col-xl-6 align-self-center" @submit.stop.prevent="saveBank">
-        <Panel>
-          <template #header>
-            <OfficeIconButton
-              title="Powrót do listy banków"
-              class="text-orange-500"
-              icon="pi pi-fw pi-table"
-              @click="() => router.push({ name: 'Banks' })"
-            />
-            <div class="w-full flex justify-center gap-4">
-              <span class="text-3xl">
-                {{ isEdit ? `Edycja danych banku` : 'Nowy bank' }}
-              </span>
-              <div v-if="bankStore.loadingBanks">
-                <ProgressSpinner class="ml-3" style="width: 40px; height: 40px" stroke-width="5" />
+    <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
+      <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveBank">
+        <div
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
+        >
+          <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <h1
+              class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
+            >
+              {{ isEdit ? 'Edycja danych banku' : 'Nowy bank' }}
+            </h1>
+            <div class="flex shrink-0 items-center gap-2 sm:justify-end">
+              <OfficeIconButton
+                title="Powrót do listy banków"
+                class="text-orange-500"
+                @click="() => router.push({ name: 'Banks' })"
+              >
+                <template #icon>
+                  <CalendarDaysIcon aria-hidden="true" />
+                </template>
+              </OfficeIconButton>
+              <ProgressSpinner v-if="bankStore.loadingBanks" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-6">
+            <div
+              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+            >
+              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <InformationCircleIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Informacje ogólne</span>
+              </h2>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-name">Nazwa banku</label>
+                <div
+                  class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                  :class="{ 'border-red-500 dark:border-red-400': showErrorName() }"
+                >
+                  <div
+                    class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                  >
+                    <BuildingLibraryIcon class="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <InputText id="bank-name" v-model="bank.name" maxlength="100" :pt="ptFieldInputText" />
+                </div>
+                <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                  showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
+                }}</small>
               </div>
             </div>
-          </template>
 
-          <!-- ROW-1 NAME  -->
-          <div class="flex flex-col w-full">
-            <label for="input" class="ml-2">Nazwa banku</label>
-            <InputText id="input" v-model="bank.name" maxlength="100" :invalid="showErrorName()" />
-            <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+            <div
+              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+            >
+              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <MapPinIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Adres</span>
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-3">
+                <div class="flex flex-col gap-2 md:col-span-2 mr-5">
+                  <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-street">Ulica</label>
+                  <InputText id="bank-street" v-model="bank.address.street" maxlength="100" :pt="ptFieldInputText" />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-zip">Kod</label>
+                  <InputText
+                    id="bank-zip"
+                    v-model="bank.address.zip"
+                    maxlength="6"
+                    :pt="ptFieldInputText"
+                    :class="{ 'p-invalid': showErrorZip() }"
+                  />
+                  <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    showErrorZip() ? 'Prawidłowy format to: 61-754' : '\u00a0'
+                  }}</small>
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-3">
+                  <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-city">Miasto</label>
+                  <InputText id="bank-city" v-model="bank.address.city" maxlength="100" :pt="ptFieldInputText" />
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+            >
+              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <PhoneIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Kontakt</span>
+              </h2>
+              <div class="flex flex-col gap-5">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-phone">Telefon</label>
+                    <InputText id="bank-phone" v-model="bank.phone" maxlength="30" :pt="ptFieldInputText" />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-phone2">Telefon 2</label>
+                    <InputText id="bank-phone2" v-model="bank.phone2" maxlength="30" :pt="ptFieldInputText" />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-fax">Fax</label>
+                    <InputText id="bank-fax" v-model="bank.fax" maxlength="30" :pt="ptFieldInputText" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-mail">E-mail</label>
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      :class="{ 'border-red-500 dark:border-red-400': showErrorMail() }"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <EnvelopeIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <InputText id="bank-mail" v-model="bank.mail" maxlength="100" :pt="ptFieldInputText" />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorMail() ? 'Niepoprawny format.' : '\u00a0'
+                    }}</small>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-www">WWW</label>
+                    <InputText id="bank-www" v-model="bank.www" maxlength="100" :pt="ptFieldInputText" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <h2 class="flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <DocumentTextIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Dodatkowe informacje</span>
+              </h2>
+              <Textarea id="bank-other-info" v-model="bank.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
+            </div>
           </div>
 
-          <!-- ROW-2  ADDRESS  -->
-          <div class="flex-row flex gap-4">
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="street">Ulica</label>
-              <InputText id="street" v-model="bank.address.street" maxlength="100" />
-            </div>
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="zip">Kod</label>
-              <InputText id="zip" v-model="bank.address.zip" maxlength="6" :invalid="showErrorZip()" />
-              <small class="p-error">{{ showErrorZip() ? 'Prawidłowy format to: 61-754' : '&nbsp;' }}</small>
-            </div>
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="city">Miasto</label>
-              <InputText id="city" v-model="bank.address.city" maxlength="100" />
-            </div>
-          </div>
-
-          <!-- ROW-3  PHONE  -->
-          <div class="flex-row flex gap-4 mb-3">
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="phone">Telefon</label>
-              <InputText id="phone" v-model="bank.phone" maxlength="30" />
-            </div>
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="phone2">Telefon 2</label>
-              <InputText id="phone2" v-model="bank.phone2" maxlength="30" />
-            </div>
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="fax">Fax</label>
-              <InputText id="fax" v-model="bank.fax" maxlength="30" />
-            </div>
-          </div>
-
-          <!-- ROW-4  MAIL / PHONE  -->
-          <div class="flex-row flex gap-4">
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="mail">E-mail</label>
-              <InputText id="mail" v-model="bank.mail" :invalid="showErrorMail()" maxlength="100" />
-              <small class="p-error">{{ showErrorMail() ? 'Niepoprawny format.' : '&nbsp;' }}</small>
-            </div>
-            <div class="flex flex-col w-full">
-              <label class="ml-2" for="www">WWW</label>
-              <InputText id="www" v-model="bank.www" maxlength="100" />
-            </div>
-          </div>
-
-          <!-- ROW-6  OTHER INFO  -->
-          <div class="row">
-            <div class="flex flex-col">
-              <label class="ml-2" for="input">Dodatkowe informacje:</label>
-              <Textarea v-model="bank.otherInfo" rows="4" cols="30" />
-            </div>
-          </div>
-
-          <!-- ROW-7  BTN SAVE -->
-          <div class="flex mt-5 justify-center">
+          <div class="mt-8 flex justify-end">
             <OfficeButton
               text="zapisz"
               btn-type="office-save"
@@ -282,7 +369,7 @@
               :btn-disabled="isSaveBtnDisabled"
             />
           </div>
-        </Panel>
+        </div>
       </form>
     </div>
   </MainPageShell>
