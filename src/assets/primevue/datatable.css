@@ -443,3 +443,8 @@
 .p-datatable-tfoot > tr > td.user-payment-leading {
   @apply bg-surface-0 text-sm font-medium text-surface-700 dark:bg-surface-950 dark:text-surface-300;
 }
+
+/* UserPayments — jeden wiersz stopki z trzema kwotami w kolumnie miesiąca */
+.p-datatable-tfoot > tr > td.user-payment-footer-summary {
+  @apply align-middle dark:bg-surface-950 dark:text-surface-300;
+}

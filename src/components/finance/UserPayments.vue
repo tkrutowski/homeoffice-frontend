@@ -70,12 +70,7 @@
   };
 
   /** Zielony / żółty / czerwony wg reguł biznesowych; neutralne stany bez tych trzech kolorów */
-  type MonthCellState =
-    | 'no-credit'
-    | 'paid-on-time'
-    | 'paid-late'
-    | 'unpaid-overdue'
-    | 'unpaid-pending';
+  type MonthCellState = 'no-credit' | 'paid-on-time' | 'paid-late' | 'unpaid-overdue' | 'unpaid-pending';
 
   const getMonthCellState = (installments: Installment[], month: number): MonthCellState => {
     const installment: Installment | undefined = installments.find(
@@ -119,20 +114,24 @@
     }
   };
 
-  const isCurrentCalendarMonth = (month: number) => month === moment().month() + 1;
+  /**
+   * Podświetlenie nagłówka tylko dla aktualnego miesiąca w aktualnym roku.
+   * Przy przeglądaniu archiwalnych lat nie wyróżniamy miesiąca "dzisiejszego".
+   */
+  const isCurrentCalendarMonth = (month: number) => {
+    const now = moment();
+    return selectedYear.value === now.year() && month === now.month() + 1;
+  };
 
   const getMonthAmountHeaderShellClass = (month: number) => {
-    const shell =
-      'flex w-full flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-center min-h-[3.25rem]';
+    const shell = 'flex w-full flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-center min-h-[3.25rem]';
     return isCurrentCalendarMonth(month)
       ? `${shell} rounded-t-md border-b-2 border-primary bg-primary/10 dark:bg-primary/20`
       : shell;
   };
 
   const getMonthAmountHeaderTitleClass = (month: number) =>
-    isCurrentCalendarMonth(month)
-      ? 'font-semibold text-primary'
-      : 'font-semibold text-surface-800 dark:text-surface-0';
+    isCurrentCalendarMonth(month) ? 'font-semibold text-primary' : 'font-semibold text-surface-800 dark:text-surface-0';
 
   const getAmount = (installments: Installment[], month: number) => {
     const installment: Installment | undefined = installments.find(
@@ -457,15 +456,9 @@
             </div>
           </template>
           <template #body="slotProps">
-            <div
-              :class="
-                getPaymentCellWrapperClass(getMonthCellState(slotProps.data.installments, number))
-              "
-            >
+            <div :class="getPaymentCellWrapperClass(getMonthCellState(slotProps.data.installments, number))">
               <span>{{ getAmount(slotProps.data.installments, number) }}</span>
-              <span class="text-xs leading-tight opacity-90">{{
-                getDate(slotProps.data.installments, number)
-              }}</span>
+              <span class="text-xs leading-tight opacity-90">{{ getDate(slotProps.data.installments, number) }}</span>
             </div>
           </template>
         </Column>
@@ -473,49 +466,35 @@
 
       <ColumnGroup type="footer">
         <Row>
-          <Column
-            footer="Razem:"
-            :colspan="2"
-            frozen
-            footer-style="text-align:left"
-            footer-class="user-payment-leading"
-          />
+          <Column :colspan="2" frozen footer-class="user-payment-leading">
+            <template #footer>
+              <div class="flex flex-col gap-1 py-1.5 text-left text-xs font-medium leading-tight">
+                <span class="text-surface-600 dark:text-surface-400">Razem</span>
+                <span class="text-emerald-600 dark:text-emerald-400">Zapłacono</span>
+                <span class="text-red-600 dark:text-red-400">Do zapłaty</span>
+              </div>
+            </template>
+          </Column>
           <Column footer-class="user-payment-leading" />
-          <Column
-            v-for="number in 12"
-            :key="number"
-            :footer="UtilsService.formatCurrency(calculateTotal(number))"
-          />
-        </Row>
-        <Row>
-          <Column
-            footer="Zapłacono:"
-            :colspan="2"
-            footer-style="text-align:left"
-            footer-class="user-payment-leading ml-5"
-            frozen
-          />
-          <Column footer-class="user-payment-leading" />
-          <Column
-            v-for="number in 12"
-            :key="number"
-            :footer="UtilsService.formatCurrency(calculateTotalPaid(number))"
-          />
-        </Row>
-        <Row>
-          <Column
-            footer="Do zapłaty:"
-            :colspan="2"
-            frozen
-            footer-style="text-align:left"
-            footer-class="user-payment-leading"
-          />
-          <Column footer-class="user-payment-leading" />
-          <Column
-            v-for="number in 12"
-            :key="number"
-            :footer="UtilsService.formatCurrency(calculateTotalToPay(number))"
-          />
+          <div v-for="number in 12" :key="'foot-' + number">
+            <Column footer-class="user-payment user-payment-footer-summary p-column-data-zapl">
+              <template #footer>
+                <div
+                  class="flex min-h-[4.25rem] flex-col items-center justify-center gap-1 py-1.5 text-center tabular-nums"
+                >
+                  <span class="text-sm font-semibold text-surface-800 dark:text-surface-100">{{
+                    UtilsService.formatCurrency(calculateTotal(number))
+                  }}</span>
+                  <span class="text-sm text-emerald-600 dark:text-emerald-400">{{
+                    UtilsService.formatCurrency(calculateTotalPaid(number))
+                  }}</span>
+                  <span class="text-sm text-red-600 dark:text-red-400">{{
+                    UtilsService.formatCurrency(calculateTotalToPay(number))
+                  }}</span>
+                </div>
+              </template>
+            </Column>
+          </div>
         </Row>
       </ColumnGroup>
     </DataTable>
@@ -538,6 +517,11 @@
   }
 
   :deep(.p-datatable-tbody > tr:hover > td) {
-    @apply bg-surface-100/70 dark:bg-surface-800/35 transition-colors duration-150;
+    @apply bg-surface-200/90 dark:bg-surface-700/60 transition-colors duration-150;
+  }
+
+  /* Komórki miesięcy mają własne tło/gradient, więc hover trzeba doświetlić na wrapperze wewnętrznym. */
+  :deep(.p-datatable-tbody > tr:hover > td.user-payment > div) {
+    @apply brightness-125 contrast-125 dark:brightness-150 dark:contrast-125 transition duration-150;
   }
 </style>

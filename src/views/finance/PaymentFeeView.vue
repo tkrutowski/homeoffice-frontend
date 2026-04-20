@@ -403,8 +403,14 @@
       { label: 'Nr umowy', value: f.feeNumber || '—' },
       { label: 'Nr konta', value: UtilsService.maskAccountNumber(f.accountNumber) || '—' },
       { label: 'Data umowy', value: UtilsService.formatDateToString(f.date ?? undefined) || '—' },
-      { label: 'Data pierwszej opłaty', value: UtilsService.formatDateToString(f.firstPaymentDate ?? undefined) || '—' },
-      { label: 'Termin całkowitej spłaty', value: UtilsService.formatDateToString(maturityDeadline.value ?? undefined) || '—' },
+      {
+        label: 'Data pierwszej opłaty',
+        value: UtilsService.formatDateToString(f.firstPaymentDate ?? undefined) || '—',
+      },
+      {
+        label: 'Termin całkowitej spłaty',
+        value: UtilsService.formatDateToString(maturityDeadline.value ?? undefined) || '—',
+      },
       { label: 'Częstotliwość opłat', value: f.feeFrequency?.viewName ?? '—' },
       { label: 'Ilość opłat', value: String(f.numberOfPayments ?? '—') },
       {
@@ -458,7 +464,9 @@
           @click="() => router.push({ name: 'Fees' })"
         />
         <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
-          <h3 class="m-0 min-w-0 text-center text-lg font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-xl">
+          <h3
+            class="m-0 min-w-0 text-center text-lg font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-xl"
+          >
             Szczegóły opłaty
           </h3>
           <div v-if="feeStore.loadingFees" class="shrink-0">
@@ -495,7 +503,9 @@
               <p class="m-0 text-sm font-medium uppercase tracking-wide text-primary">Status: {{ feeStatusLabel }}</p>
             </div>
             <div class="shrink-0 text-left lg:text-right">
-              <p class="m-0 text-3xl font-bold tabular-nums text-primary sm:text-4xl">{{ principalPercent.toFixed(0) }}%</p>
+              <p class="m-0 text-3xl font-bold tabular-nums text-primary sm:text-4xl">
+                {{ principalPercent.toFixed(0) }}%
+              </p>
               <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
                 Spłacono wg harmonogramu
               </p>
@@ -517,7 +527,9 @@
             </div>
             <div class="text-surface-600 dark:text-surface-400 sm:text-right">
               <span class="font-semibold uppercase tracking-wide">Koniec</span>
-              <p class="m-0 mt-1 tabular-nums">{{ UtilsService.formatDateToString(maturityDeadline ?? undefined) || '—' }}</p>
+              <p class="m-0 mt-1 tabular-nums">
+                {{ UtilsService.formatDateToString(maturityDeadline ?? undefined) || '—' }}
+              </p>
             </div>
           </div>
         </template>
@@ -545,7 +557,9 @@
             <template #content>
               <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                  <dt class="text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">Kwota opłaty</dt>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                    Kwota opłaty
+                  </dt>
                   <dd class="m-0 mt-0.5 text-lg font-semibold tabular-nums text-primary">
                     {{ UtilsService.formatCurrency(fee?.amount) }}
                   </dd>
@@ -599,7 +613,9 @@
                       <p class="m-0 text-xl font-bold tabular-nums text-surface-900 dark:text-surface-0 sm:text-2xl">
                         {{ UtilsService.formatCurrency(paidSum) }}
                       </p>
-                      <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                      <p
+                        class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400"
+                      >
                         Spłacono łącznie
                       </p>
                     </div>
@@ -713,7 +729,9 @@
               <template #body="{ data }">
                 <span
                   class="tabular-nums"
-                  :class="data.installmentAmountPaid ? 'font-medium text-primary' : 'text-surface-500 dark:text-surface-400'"
+                  :class="
+                    data.installmentAmountPaid ? 'font-medium text-primary' : 'text-surface-500 dark:text-surface-400'
+                  "
                 >
                   {{
                     data.installmentAmountPaid

@@ -75,13 +75,16 @@
   });
   const calculateCost = computed(() => {
     if (loan.value)
-      return (loan.value.amount - loan.value.loanCost - loan.value.numberOfInstallments * loan.value.installmentAmount) * -1;
+      return (
+        (loan.value.amount - loan.value.loanCost - loan.value.numberOfInstallments * loan.value.installmentAmount) * -1
+      );
     return 0;
   });
   const calculatePaid = computed(() => {
     if (loan.value)
-      return loan.value.installmentList.filter((installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID)
-        .length;
+      return loan.value.installmentList.filter(
+        (installment: LoanInstallment) => installment.paymentStatus === PaymentStatus.PAID
+      ).length;
     return 0;
   });
 
@@ -385,7 +388,10 @@
       { label: 'Nr konta', value: UtilsService.maskAccountNumber(l.accountNumber) || '—' },
       { label: 'Data umowy', value: UtilsService.formatDateToString(l.date ?? undefined) || '—' },
       { label: 'Data pierwszej raty', value: UtilsService.formatDateToString(l.firstPaymentDate ?? undefined) || '—' },
-      { label: 'Termin całkowitej spłaty', value: UtilsService.formatDateToString(maturityDeadline.value ?? undefined) || '—' },
+      {
+        label: 'Termin całkowitej spłaty',
+        value: UtilsService.formatDateToString(maturityDeadline.value ?? undefined) || '—',
+      },
       { label: 'Ilość rat', value: String(l.numberOfInstallments ?? '—') },
       {
         label: 'Kwota raty',
@@ -447,7 +453,9 @@
           @click="() => router.push({ name: 'Loans' })"
         />
         <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
-          <h3 class="m-0 min-w-0 text-center text-lg font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-xl">
+          <h3
+            class="m-0 min-w-0 text-center text-lg font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-xl"
+          >
             Szczegóły kredytu
           </h3>
           <div v-if="loansStore.loadingLoans" class="shrink-0">
@@ -482,12 +490,12 @@
               >
                 {{ loan?.name ?? '—' }}
               </h2>
-              <p class="m-0 text-sm font-medium uppercase tracking-wide text-primary">
-                Status: {{ loanStatusLabel }}
-              </p>
+              <p class="m-0 text-sm font-medium uppercase tracking-wide text-primary">Status: {{ loanStatusLabel }}</p>
             </div>
             <div class="shrink-0 text-left lg:text-right">
-              <p class="m-0 text-3xl font-bold tabular-nums text-primary sm:text-4xl">{{ principalPercent.toFixed(0) }}%</p>
+              <p class="m-0 text-3xl font-bold tabular-nums text-primary sm:text-4xl">
+                {{ principalPercent.toFixed(0) }}%
+              </p>
               <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
                 Spłacono wg harmonogramu
               </p>
@@ -496,9 +504,7 @@
           <div class="mt-4">
             <ProgressBar :value="principalPercent" :show-value="false" class="h-3" />
           </div>
-          <div
-            class="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm"
-          >
+          <div class="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm">
             <div class="text-surface-600 dark:text-surface-400">
               <span class="font-semibold uppercase tracking-wide">Początek</span>
               <p class="m-0 mt-1 tabular-nums">{{ UtilsService.formatDateToString(loan?.date ?? undefined) || '—' }}</p>
@@ -511,7 +517,9 @@
             </div>
             <div class="text-surface-600 dark:text-surface-400 sm:text-right">
               <span class="font-semibold uppercase tracking-wide">Koniec</span>
-              <p class="m-0 mt-1 tabular-nums">{{ UtilsService.formatDateToString(maturityDeadline ?? undefined) || '—' }}</p>
+              <p class="m-0 mt-1 tabular-nums">
+                {{ UtilsService.formatDateToString(maturityDeadline ?? undefined) || '—' }}
+              </p>
             </div>
           </div>
         </template>
@@ -540,7 +548,9 @@
             <template #content>
               <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                  <dt class="text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">Kwota kredytu</dt>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                    Kwota kredytu
+                  </dt>
                   <dd class="m-0 mt-0.5 text-lg font-semibold tabular-nums text-primary">
                     {{ UtilsService.formatCurrency(loan?.amount) }}
                   </dd>
@@ -595,7 +605,9 @@
                       <p class="m-0 text-xl font-bold tabular-nums text-surface-900 dark:text-surface-0 sm:text-2xl">
                         {{ UtilsService.formatCurrency(paidSum) }}
                       </p>
-                      <p class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400">
+                      <p
+                        class="m-0 mt-1 text-xs font-medium uppercase tracking-wide text-surface-600 dark:text-surface-400"
+                      >
                         Spłacono łącznie
                       </p>
                     </div>
@@ -621,7 +633,9 @@
                     >
                       <div class="w-1 shrink-0 rounded-full bg-primary" />
                       <div>
-                        <p class="m-0 text-xs font-medium uppercase text-surface-600 dark:text-surface-400">Pozostało rat</p>
+                        <p class="m-0 text-xs font-medium uppercase text-surface-600 dark:text-surface-400">
+                          Pozostało rat
+                        </p>
                         <p class="m-0 mt-1 text-lg font-semibold tabular-nums text-surface-900 dark:text-surface-0">
                           {{ monthsLeft }}
                         </p>
@@ -681,9 +695,7 @@
               <template #body="{ data }">
                 <span
                   class="tabular-nums"
-                  :class="
-                    isNextUnpaid(data) ? 'font-semibold text-primary' : 'text-surface-800 dark:text-surface-100'
-                  "
+                  :class="isNextUnpaid(data) ? 'font-semibold text-primary' : 'text-surface-800 dark:text-surface-100'"
                 >
                   {{ formatInstallmentDeadline(data) }}
                 </span>
@@ -710,7 +722,9 @@
               <template #body="{ data }">
                 <span
                   class="tabular-nums"
-                  :class="data.installmentAmountPaid ? 'font-medium text-primary' : 'text-surface-500 dark:text-surface-400'"
+                  :class="
+                    data.installmentAmountPaid ? 'font-medium text-primary' : 'text-surface-500 dark:text-surface-400'
+                  "
                 >
                   {{
                     data.installmentAmountPaid
