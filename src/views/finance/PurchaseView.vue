@@ -447,233 +447,239 @@
     </template>
 
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
-    <form class="mx-auto max-w-2xl" @submit.stop.prevent="savePurchase">
-      <div
-        class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
-      >
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <h1
-            class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
-          >
-            {{ isEdit ? `Edycja zakupu: ${purchase?.name}` : 'Nowy zakup' }}
-          </h1>
-          <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-            <OfficeIconButton
-              title="Powrót do listy aktualnych zakupów"
-              class="text-orange-500"
-              @click="() => router.push({ name: 'PurchasesCurrent' })"
+      <form class="mx-auto max-w-2xl" @submit.stop.prevent="savePurchase">
+        <div
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
+        >
+          <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <h1
+              class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
             >
-              <template #icon>
-                <CalendarDaysIcon aria-hidden="true" />
-              </template>
-            </OfficeIconButton>
-            <OfficeIconButton
-              title="Powrót do listy wszystkich zakupów"
-              class="text-orange-500"
-              @click="() => router.push({ name: 'Purchases' })"
-            >
-              <template #icon>
-                <TableCellsIcon aria-hidden="true" />
-              </template>
-            </OfficeIconButton>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-6">
-          <!-- Nazwa -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-name">Nazwa</label>
-            <InputText
-              id="purchase-name"
-              v-model="purchase.name"
-              maxlength="50"
-              :pt="ptFieldInputText"
-              :class="{ 'p-invalid': showErrorName() }"
-            />
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-              showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
-            }}</small>
-          </div>
-
-          <!-- Użytkownik -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-user">Wybierz użytkownika</label>
-            <div
-              class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
-              :class="{ 'border-red-500 dark:border-red-400': showErrorUser() }"
-            >
-              <div
-                class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+              {{ isEdit ? `Edycja zakupu: ${purchase?.name}` : 'Nowy zakup' }}
+            </h1>
+            <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+              <OfficeIconButton
+                title="Powrót do listy aktualnych zakupów"
+                class="text-orange-500"
+                @click="() => router.push({ name: 'PurchasesCurrent' })"
               >
-                <UserIcon class="h-5 w-5" aria-hidden="true" />
-              </div>
-              <Select
-                id="purchase-user"
-                v-model="selectedUser"
-                :pt="ptSelectInField"
-                :options="userStore.getUserByPrivileges"
-                :option-label="user => user.firstName + ' ' + user.lastName"
-                placeholder="Wybierz użytkownika"
-                :loading="userStore.loadingUsers"
-                required
-                @change="purchase.idUser = selectedUser ? selectedUser.id : 0"
-              />
-            </div>
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-              showErrorUser() ? 'Pole jest wymagane.' : '\u00a0'
-            }}</small>
-          </div>
-
-          <!-- Karta -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-card">Wybierz kartę</label>
-            <div
-              class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
-              :class="{ 'border-red-500 dark:border-red-400': showErrorCard() }"
-            >
-              <div
-                class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                <template #icon>
+                  <CalendarDaysIcon aria-hidden="true" />
+                </template>
+              </OfficeIconButton>
+              <OfficeIconButton
+                title="Powrót do listy wszystkich zakupów"
+                class="text-orange-500"
+                @click="() => router.push({ name: 'Purchases' })"
               >
-                <CreditCardIcon class="h-5 w-5" aria-hidden="true" />
-              </div>
-              <Select
-                id="purchase-card"
-                v-model="selectedCard"
-                :pt="ptSelectInField"
-                :options="optionCard"
-                option-label="name"
-                placeholder="Wybierz kartę"
-                :loading="cardStore.loadingCards"
-                @change="purchase.idCard = selectedCard ? selectedCard.id : 0"
-              />
+                <template #icon>
+                  <TableCellsIcon aria-hidden="true" />
+                </template>
+              </OfficeIconButton>
             </div>
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-              showErrorCard() ? 'Pole jest wymagane.' : '\u00a0'
-            }}</small>
           </div>
 
-          <!-- Firma -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-firm">Wybierz firmę</label>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+          <div class="flex flex-col gap-6">
+            <!-- Nazwa -->
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-name">Nazwa</label>
+              <InputText
+                id="purchase-name"
+                v-model="purchase.name"
+                maxlength="50"
+                :pt="ptFieldInputText"
+                :class="{ 'p-invalid': showErrorName() }"
+              />
+              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
+              }}</small>
+            </div>
+
+            <!-- Użytkownik -->
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-user"
+                >Wybierz użytkownika</label
+              >
               <div
-                class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
-                :class="{ 'border-red-500 dark:border-red-400': showErrorFirm() }"
+                class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                :class="{ 'border-red-500 dark:border-red-400': showErrorUser() }"
               >
                 <div
                   class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
                 >
-                  <BuildingOffice2Icon class="h-5 w-5" aria-hidden="true" />
+                  <UserIcon class="h-5 w-5" aria-hidden="true" />
                 </div>
-                <AutoComplete
-                  id="purchase-firm"
-                  v-model="selectedFirm"
-                  :pt="ptAutoCompleteInField"
-                  input-class="w-full"
-                  dropdown
-                  force-selection
-                  :invalid="showErrorFirm()"
-                  :suggestions="filteredFirms"
-                  option-label="name"
-                  placeholder="Wybierz firmę"
-                  :loading="firmStore.loadingFirms"
-                  @complete="searchFirm"
+                <Select
+                  id="purchase-user"
+                  v-model="selectedUser"
+                  :pt="ptSelectInField"
+                  :options="userStore.getUserByPrivileges"
+                  :option-label="user => user.firstName + ' ' + user.lastName"
+                  placeholder="Wybierz użytkownika"
+                  :loading="userStore.loadingUsers"
+                  required
+                  @change="purchase.idUser = selectedUser ? selectedUser.id : 0"
                 />
               </div>
-              <OfficeIconButton
-                title="Dodaj firmę"
-                :icon="firmStore.loadingFirms ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                class="h-9 w-9 shrink-0 self-start border border-surface-300 bg-surface-50 p-0 text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0 sm:self-center"
-                @click="showNewFirmModal = true"
-              />
+              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                showErrorUser() ? 'Pole jest wymagane.' : '\u00a0'
+              }}</small>
             </div>
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">
-              {{ showErrorFirm() ? 'Pole jest wymagane.' : '\u00a0' }}
-            </small>
-          </div>
 
-          <!-- Data zakupu + Kwota -->
-          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <!-- Karta -->
             <div class="flex flex-col gap-2">
-              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-date">Data zakupu</label>
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-card">Wybierz kartę</label>
+              <div
+                class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                :class="{ 'border-red-500 dark:border-red-400': showErrorCard() }"
+              >
+                <div
+                  class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                >
+                  <CreditCardIcon class="h-5 w-5" aria-hidden="true" />
+                </div>
+                <Select
+                  id="purchase-card"
+                  v-model="selectedCard"
+                  :pt="ptSelectInField"
+                  :options="optionCard"
+                  option-label="name"
+                  placeholder="Wybierz kartę"
+                  :loading="cardStore.loadingCards"
+                  @change="purchase.idCard = selectedCard ? selectedCard.id : 0"
+                />
+              </div>
+              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                showErrorCard() ? 'Pole jest wymagane.' : '\u00a0'
+              }}</small>
+            </div>
+
+            <!-- Firma -->
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-firm">Wybierz firmę</label>
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                <div
+                  class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                  :class="{ 'border-red-500 dark:border-red-400': showErrorFirm() }"
+                >
+                  <div
+                    class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                  >
+                    <BuildingOffice2Icon class="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <AutoComplete
+                    id="purchase-firm"
+                    v-model="selectedFirm"
+                    :pt="ptAutoCompleteInField"
+                    input-class="w-full"
+                    dropdown
+                    force-selection
+                    :invalid="showErrorFirm()"
+                    :suggestions="filteredFirms"
+                    option-label="name"
+                    placeholder="Wybierz firmę"
+                    :loading="firmStore.loadingFirms"
+                    @complete="searchFirm"
+                  />
+                </div>
+                <OfficeIconButton
+                  title="Dodaj firmę"
+                  :icon="firmStore.loadingFirms ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                  class="h-9 w-9 shrink-0 self-start border border-surface-300 bg-surface-50 p-0 text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0 sm:self-center"
+                  @click="showNewFirmModal = true"
+                />
+              </div>
+              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">
+                {{ showErrorFirm() ? 'Pole jest wymagane.' : '\u00a0' }}
+              </small>
+            </div>
+
+            <!-- Data zakupu + Kwota -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-date">Data zakupu</label>
+                <DatePicker
+                  id="purchase-date"
+                  v-model="purchase.purchaseDate"
+                  :pt="ptDatePickerField"
+                  show-icon
+                  date-format="dd.mm.yy"
+                  :invalid="showErrorDate()"
+                />
+                <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                  showErrorDate() ? 'Pole jest wymagane.' : '\u00a0'
+                }}</small>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-amount">Kwota</label>
+                <div
+                  class="purchase-form-amount flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                  :class="{ 'border-red-500 dark:border-red-400': showErrorAmount() }"
+                >
+                  <div
+                    class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                  >
+                    <BanknotesIcon class="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <InputNumber
+                    id="purchase-amount"
+                    v-model="purchase.amount"
+                    :pt="ptInputNumberAmount"
+                    input-class="w-full"
+                    :invalid="showErrorAmount()"
+                    :min-fraction-digits="2"
+                    :max-fraction-digits="2"
+                    :disabled="isEdit"
+                    mode="currency"
+                    currency="PLN"
+                    locale="pl-PL"
+                    @focus="UtilsService.selectText"
+                  />
+                </div>
+                <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                  showErrorAmount() ? 'Pole jest wymagane.' : '\u00a0'
+                }}</small>
+              </div>
+            </div>
+
+            <!-- Termin spłaty -->
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-deadline"
+                >Termin spłaty</label
+              >
               <DatePicker
-                id="purchase-date"
-                v-model="purchase.purchaseDate"
+                id="purchase-deadline"
+                v-model="purchase.paymentDeadline"
                 :pt="ptDatePickerField"
                 show-icon
                 date-format="dd.mm.yy"
-                :invalid="showErrorDate()"
+                :invalid="showErrorDeadline()"
               />
-              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-                showErrorDate() ? 'Pole jest wymagane.' : '\u00a0'
-              }}</small>
+              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">
+                {{ showErrorDeadline() ? 'Pole jest wymagane.' : '\u00a0' }}
+              </small>
             </div>
+
+            <!-- Dodatkowe informacje -->
             <div class="flex flex-col gap-2">
-              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-amount">Kwota</label>
-              <div
-                class="purchase-form-amount flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
-                :class="{ 'border-red-500 dark:border-red-400': showErrorAmount() }"
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-other"
+                >Dodatkowe informacje</label
               >
-                <div
-                  class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
-                >
-                  <BanknotesIcon class="h-5 w-5" aria-hidden="true" />
-                </div>
-                <InputNumber
-                  id="purchase-amount"
-                  v-model="purchase.amount"
-                  :pt="ptInputNumberAmount"
-                  input-class="w-full"
-                  :invalid="showErrorAmount()"
-                  :min-fraction-digits="2"
-                  :max-fraction-digits="2"
-                  :disabled="isEdit"
-                  mode="currency"
-                  currency="PLN"
-                  locale="pl-PL"
-                  @focus="UtilsService.selectText"
-                />
-              </div>
-              <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-                showErrorAmount() ? 'Pole jest wymagane.' : '\u00a0'
-              }}</small>
+              <Textarea id="purchase-other" v-model="purchase.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
             </div>
           </div>
 
-          <!-- Termin spłaty -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-deadline">Termin spłaty</label>
-            <DatePicker
-              id="purchase-deadline"
-              v-model="purchase.paymentDeadline"
-              :pt="ptDatePickerField"
-              show-icon
-              date-format="dd.mm.yy"
-              :invalid="showErrorDeadline()"
+          <div class="mt-8 flex justify-end">
+            <OfficeButton
+              text="zapisz"
+              btn-type="office-save"
+              type="submit"
+              :loading="btnShowBusy"
+              :btn-disabled="isSaveBtnDisabled"
             />
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">
-              {{ showErrorDeadline() ? 'Pole jest wymagane.' : '\u00a0' }}
-            </small>
-          </div>
-
-          <!-- Dodatkowe informacje -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-other">Dodatkowe informacje</label>
-            <Textarea id="purchase-other" v-model="purchase.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
           </div>
         </div>
-
-        <div class="mt-8 flex justify-end">
-          <OfficeButton
-            text="zapisz"
-            btn-type="office-save"
-            type="submit"
-            :loading="btnShowBusy"
-            :btn-disabled="isSaveBtnDisabled"
-          />
-        </div>
-      </div>
-    </form>
+      </form>
     </div>
   </MainPageShell>
 </template>

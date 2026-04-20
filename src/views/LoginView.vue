@@ -93,52 +93,52 @@
 <template>
   <MainPageShell>
     <div class="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-10">
-  <form class="w-full max-w-96" @submit.prevent="login()">
-    <p class="mb-5 mt-5 text-center text-3xl font-bold text-primary">Logowanie</p>
+      <form class="w-full max-w-96" @submit.prevent="login()">
+        <p class="mb-5 mt-5 text-center text-3xl font-bold text-primary">Logowanie</p>
 
-    <!-- USERNAME -->
-    <FloatLabel class="">
-      <InputText id="username" v-model="username" class="w-full" autocomplete="username" required />
-      <label for="username">Login</label>
-    </FloatLabel>
+        <!-- USERNAME -->
+        <FloatLabel class="">
+          <InputText id="username" v-model="username" class="w-full" autocomplete="username" required />
+          <label for="username">Login</label>
+        </FloatLabel>
 
-    <!-- PASSWORD -->
-    <FloatLabel class="mt-9">
-      <Password
-        id="password"
-        v-model="password"
-        toggle-mask
-        required
-        class="w-full"
-        autocomplete="current-password"
-        :input-style="{ width: '100%' }"
-        :feedback="false"
-      />
-      <label for="password" class="w-full">Hasło</label>
-    </FloatLabel>
+        <!-- PASSWORD -->
+        <FloatLabel class="mt-9">
+          <Password
+            id="password"
+            v-model="password"
+            toggle-mask
+            required
+            class="w-full"
+            autocomplete="current-password"
+            :input-style="{ width: '100%' }"
+            :feedback="false"
+          />
+          <label for="password" class="w-full">Hasło</label>
+        </FloatLabel>
 
-    <!-- BUTTON -->
-    <Button
-      type="submit"
-      class="mt-5 mb-1 font-bold w-full uppercase tracking-[5px]"
-      outlined
-      :loading="authorizationStore.loading"
-      label="ZALOGUJ"
-      icon-pos="right"
-    />
+        <!-- BUTTON -->
+        <Button
+          type="submit"
+          class="mt-5 mb-1 font-bold w-full uppercase tracking-[5px]"
+          outlined
+          :loading="authorizationStore.loading"
+          label="ZALOGUJ"
+          icon-pos="right"
+        />
 
-    <!-- EC2 / login progress -->
-    <div v-if="loginPhase !== 'idle'" class="mt-2 mb-2 w-full">
-      <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
-        {{ phaseMessage[loginPhase] }}
-      </p>
-      <ProgressBar mode="indeterminate" class="w-full" />
-    </div>
+        <!-- EC2 / login progress -->
+        <div v-if="loginPhase !== 'idle'" class="mt-2 mb-2 w-full">
+          <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+            {{ phaseMessage[loginPhase] }}
+          </p>
+          <ProgressBar mode="indeterminate" class="w-full" />
+        </div>
 
-    <p class="text-right mb-4">
-      <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
-    </p>
-  </form>
+        <p class="text-right mb-4">
+          <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
+        </p>
+      </form>
     </div>
   </MainPageShell>
 </template>

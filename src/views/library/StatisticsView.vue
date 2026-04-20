@@ -148,43 +148,43 @@
     </template>
 
     <div class="p-6">
-    <div class="grid gap-4 grid-cols-3">
-      <Card class="shadow-lg p-4 col-span-2">
-        <template #content>
-          <Chart type="line" :data="chartData" :options="chartOptions" class="w-full h-96" />
+      <div class="grid gap-4 grid-cols-3">
+        <Card class="shadow-lg p-4 col-span-2">
+          <template #content>
+            <Chart type="line" :data="chartData" :options="chartOptions" class="w-full h-96" />
+          </template>
+        </Card>
+        <Card class="shadow-lg p-4">
+          <template #content>
+            <Chart type="doughnut" :data="bookstoreChartData" :options="bookstoreChartOptions" class="w-full h-96" />
+          </template>
+        </Card>
+      </div>
+      <Toolbar class="sticky-toolbar m-6">
+        <template #start>
+          <div class="flex flex-row text-color gap-3">
+            <p class="mb-1">
+              <small>Audiobook:</small>
+              {{ getTotalAudiobook('AUDIOBOOK') }}
+            </p>
+            <p class="mb-1">
+              <small>Ebooki:</small>
+              {{ getTotalAudiobook('EBOOK') }}
+            </p>
+            <p class="mb-1">
+              <small>Książki:</small>
+              {{ getTotalAudiobook('BOOK') }}
+            </p>
+          </div>
         </template>
-      </Card>
-      <Card class="shadow-lg p-4">
-        <template #content>
-          <Chart type="doughnut" :data="bookstoreChartData" :options="bookstoreChartOptions" class="w-full h-96" />
-        </template>
-      </Card>
-    </div>
-    <Toolbar class="sticky-toolbar m-6">
-      <template #start>
-        <div class="flex flex-row text-color gap-3">
-          <p class="mb-1">
-            <small>Audiobook:</small>
-            {{ getTotalAudiobook('AUDIOBOOK') }}
-          </p>
-          <p class="mb-1">
-            <small>Ebooki:</small>
-            {{ getTotalAudiobook('EBOOK') }}
-          </p>
-          <p class="mb-1">
-            <small>Książki:</small>
-            {{ getTotalAudiobook('BOOK') }}
-          </p>
-        </div>
-      </template>
 
-      <template #end>
-        <p class="mb-1 text-color">
-          RAZEM:
-          {{ getTotalAudiobook('AUDIOBOOK') + getTotalAudiobook('EBOOK') + getTotalAudiobook('BOOK') }}
-        </p>
-      </template>
-    </Toolbar>
+        <template #end>
+          <p class="mb-1 text-color">
+            RAZEM:
+            {{ getTotalAudiobook('AUDIOBOOK') + getTotalAudiobook('EBOOK') + getTotalAudiobook('BOOK') }}
+          </p>
+        </template>
+      </Toolbar>
     </div>
   </MainPageShell>
 </template>

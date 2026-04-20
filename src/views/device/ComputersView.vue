@@ -335,105 +335,105 @@
     </template>
 
     <Toolbar class="m-6">
-    <template #start>
-      <OfficeButton
-        btn-type="office-regular"
-        text="Nowy"
-        icon-pos="left"
-        icon="pi pi-plus"
-        size="small"
-        @click="showAddComputerModal = true"
-      />
-      <OfficeButton
-        class="ml-2"
-        btn-type="office-regular"
-        text="Edycja"
-        icon-pos="left"
-        icon="pi pi-pencil"
-        size="small"
-        @click="showEditComputerModal = true"
-        :disabled="selectedComputer == null"
-      />
-      <OfficeButton
-        class="ml-2"
-        btn-type="office-save"
-        text="Usuń"
-        icon-pos="left"
-        icon="pi pi-trash"
-        size="small"
-        @click="showDeleteConfirmation = true"
-        :disabled="selectedComputer == null"
-      />
-    </template>
-
-    <template #center>
-      <Select
-        v-model="selectedComputer"
-        :options="computerStore.computers"
-        optionLabel="name"
-        placeholder="Wybierz komputer"
-        :loading="computerStore.loadingComputers"
-        @change="selectedComputerChanged"
-      />
-    </template>
-
-    <template #end>
-      <OfficeButton
-        btn-type="office-save"
-        text="zapisz"
-        :btn-disabled="!hasChange"
-        icon="pi pi-save"
-        size="small"
-        class="mr-2"
-        :loading="updating"
-        @click="updateComputer"
-      />
-    </template>
-  </Toolbar>
-  <div v-if="selectedComputer" class="flex gap-4 m-6">
-    <Card class="flex-1 min-w-96 min-h-[calc(100vh-440px)]">
-      <template #title>
-        <div class="flex justify-center">
-          <span class="font-bold text-2xl">Kategorie</span>
-        </div>
+      <template #start>
+        <OfficeButton
+          btn-type="office-regular"
+          text="Nowy"
+          icon-pos="left"
+          icon="pi pi-plus"
+          size="small"
+          @click="showAddComputerModal = true"
+        />
+        <OfficeButton
+          class="ml-2"
+          btn-type="office-regular"
+          text="Edycja"
+          icon-pos="left"
+          icon="pi pi-pencil"
+          size="small"
+          @click="showEditComputerModal = true"
+          :disabled="selectedComputer == null"
+        />
+        <OfficeButton
+          class="ml-2"
+          btn-type="office-save"
+          text="Usuń"
+          icon-pos="left"
+          icon="pi pi-trash"
+          size="small"
+          @click="showDeleteConfirmation = true"
+          :disabled="selectedComputer == null"
+        />
       </template>
-      <template #content>
-        <ScrollPanel class="overflow-y-auto min-h-[calc(100vh-440px)]" :style="{ maxHeight: panelHeight + 'px' }">
-          <div v-if="refreshKey">
-            <div v-for="type in computerStore.componentTypes" :key="type.name">
-              <ComponentCategory
-                :componentType="type"
-                :computer="selectedComputer"
-                @addView="addToDisplayMap"
-                @removeView="removeFromDisplayMap"
-              />
+
+      <template #center>
+        <Select
+          v-model="selectedComputer"
+          :options="computerStore.computers"
+          optionLabel="name"
+          placeholder="Wybierz komputer"
+          :loading="computerStore.loadingComputers"
+          @change="selectedComputerChanged"
+        />
+      </template>
+
+      <template #end>
+        <OfficeButton
+          btn-type="office-save"
+          text="zapisz"
+          :btn-disabled="!hasChange"
+          icon="pi pi-save"
+          size="small"
+          class="mr-2"
+          :loading="updating"
+          @click="updateComputer"
+        />
+      </template>
+    </Toolbar>
+    <div v-if="selectedComputer" class="flex gap-4 m-6">
+      <Card class="flex-1 min-w-96 min-h-[calc(100vh-440px)]">
+        <template #title>
+          <div class="flex justify-center">
+            <span class="font-bold text-2xl">Kategorie</span>
+          </div>
+        </template>
+        <template #content>
+          <ScrollPanel class="overflow-y-auto min-h-[calc(100vh-440px)]" :style="{ maxHeight: panelHeight + 'px' }">
+            <div v-if="refreshKey">
+              <div v-for="type in computerStore.componentTypes" :key="type.name">
+                <ComponentCategory
+                  :componentType="type"
+                  :computer="selectedComputer"
+                  @addView="addToDisplayMap"
+                  @removeView="removeFromDisplayMap"
+                />
+              </div>
+            </div>
+          </ScrollPanel>
+        </template>
+      </Card>
+
+      <Panel class="w-full" ref="panelRef">
+        <template #header>
+          <div class="w-full flex justify-center gap-4">
+            <span class="font-bold text-3xl ml-2 text-color"
+              >Wybrane kategorie: {{ UtilsService.formatCurrency(selectedDevicesCost) }}</span
+            >
+            <div v-if="deviceStore.loadingDevices || computerStore.loadingComputers">
+              <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5" />
             </div>
           </div>
-        </ScrollPanel>
-      </template>
-    </Card>
-
-    <Panel class="w-full" ref="panelRef">
-      <template #header>
-        <div class="w-full flex justify-center gap-4">
-          <span class="font-bold text-3xl ml-2 text-color"
-            >Wybrane kategorie: {{ UtilsService.formatCurrency(selectedDevicesCost) }}</span
-          >
-          <div v-if="deviceStore.loadingDevices || computerStore.loadingComputers">
-            <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5" />
-          </div>
+        </template>
+        <div v-for="[category, devices] in deviceDetailsMap" :key="category.name" ref="devDetailsRef">
+          <DeviceDetails
+            :component-type="category"
+            :devices="devices"
+            @add="openAddComponentDialog"
+            @remove="removeComponent"
+            class="mb-5"
+          />
         </div>
-      </template>
-      <div v-for="[category, devices] in deviceDetailsMap" :key="category.name" ref="devDetailsRef">
-        <DeviceDetails
-          :component-type="category"
-          :devices="devices"
-          @add="openAddComponentDialog"
-          @remove="removeComponent"
-          class="mb-5"
-        />
-      </div>
-    </Panel>
-  </div>
+      </Panel>
+    </div>
   </MainPageShell>
 </template>

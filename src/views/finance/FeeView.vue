@@ -321,186 +321,190 @@
     </template>
 
     <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
-    <form @submit.stop.prevent="saveFee" class="w-full">
-      <Panel>
-        <template #header>
-          <OfficeIconButton
-            title="Powrót do listy opłat"
-            icon="pi pi-fw pi-list"
-            @click="() => router.push({ name: 'Fees' })"
-          />
-          <div class="w-full flex justify-center">
-            <span class="text-3xl">
-              {{
-                isEdit ? `Edycja opłaty: ${fee?.name}` : route.query.copyFromId ? 'Nowa opłata (kopia)' : 'Nowa opłata'
-              }}
-            </span>
-          </div>
-        </template>
-        <div class="flex flex-col">
-          <!-- ROW-1   NAME -->
-          <div class="flex flex-col">
-            <label for="name">Nazwa</label>
-            <InputText id="name" v-model="fee.name" maxlength="50" :invalid="showErrorName()" />
-            <small class="text-red-500">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-          </div>
-
-          <!-- ROW-2   USER -->
-          <div class="flex flex-row">
-            <div class="flex flex-col w-full">
-              <label for="input-customer">Wybierz użytkownika:</label>
-              <Select
-                id="input-customer"
-                v-model="selectedUser"
-                :invalid="showErrorUser()"
-                :options="userStore.users"
-                :option-label="user => user.firstName + ' ' + user.lastName"
-                :onchange="fee.idUser = selectedUser ? selectedUser.id : 0"
-                :loading="userStore.loadingUsers"
-                required
-              />
-              <small class="text-red-500">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-3   FIRM -->
-          <div class="flex flex-row gap-4">
-            <div class="flex flex-col w-full">
-              <label for="input-customer">Wybierz firmę:</label>
-              <AutoComplete
-                id="input-customer"
-                v-model="selectedFirm"
-                dropdown
-                force-selection
-                :invalid="showErrorFirm()"
-                :suggestions="filteredFirms"
-                option-label="name"
-                :loading="firmStore.loadingFirms"
-                @complete="searchFirm"
-              />
-              <small class="text-red-500">
-                {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
-              </small>
-            </div>
+      <form @submit.stop.prevent="saveFee" class="w-full">
+        <Panel>
+          <template #header>
             <OfficeIconButton
-              title="Dodaj firmę"
-              :icon="firmStore.loadingFirms ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-              style="height: 35px; width: 35px; padding: 0"
-              class="mt-1 self-center"
-              @click="showNewFirmModal = true"
+              title="Powrót do listy opłat"
+              icon="pi pi-fw pi-list"
+              @click="() => router.push({ name: 'Fees' })"
+            />
+            <div class="w-full flex justify-center">
+              <span class="text-3xl">
+                {{
+                  isEdit
+                    ? `Edycja opłaty: ${fee?.name}`
+                    : route.query.copyFromId
+                      ? 'Nowa opłata (kopia)'
+                      : 'Nowa opłata'
+                }}
+              </span>
+            </div>
+          </template>
+          <div class="flex flex-col">
+            <!-- ROW-1   NAME -->
+            <div class="flex flex-col">
+              <label for="name">Nazwa</label>
+              <InputText id="name" v-model="fee.name" maxlength="50" :invalid="showErrorName()" />
+              <small class="text-red-500">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+            </div>
+
+            <!-- ROW-2   USER -->
+            <div class="flex flex-row">
+              <div class="flex flex-col w-full">
+                <label for="input-customer">Wybierz użytkownika:</label>
+                <Select
+                  id="input-customer"
+                  v-model="selectedUser"
+                  :invalid="showErrorUser()"
+                  :options="userStore.users"
+                  :option-label="user => user.firstName + ' ' + user.lastName"
+                  :onchange="fee.idUser = selectedUser ? selectedUser.id : 0"
+                  :loading="userStore.loadingUsers"
+                  required
+                />
+                <small class="text-red-500">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+            </div>
+
+            <!-- ROW-3   FIRM -->
+            <div class="flex flex-row gap-4">
+              <div class="flex flex-col w-full">
+                <label for="input-customer">Wybierz firmę:</label>
+                <AutoComplete
+                  id="input-customer"
+                  v-model="selectedFirm"
+                  dropdown
+                  force-selection
+                  :invalid="showErrorFirm()"
+                  :suggestions="filteredFirms"
+                  option-label="name"
+                  :loading="firmStore.loadingFirms"
+                  @complete="searchFirm"
+                />
+                <small class="text-red-500">
+                  {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
+                </small>
+              </div>
+              <OfficeIconButton
+                title="Dodaj firmę"
+                :icon="firmStore.loadingFirms ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                style="height: 35px; width: 35px; padding: 0"
+                class="mt-1 self-center"
+                @click="showNewFirmModal = true"
+              />
+            </div>
+
+            <!-- ROW-4  NUMBER / DATE  -->
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex flex-col w-full">
+                <label for="number">Numer umowy:</label>
+                <InputText id="number" v-model="fee.feeNumber" :invalid="showErrorNumber()" maxlength="50" />
+                <small class="text-red-500">{{ showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+              <div class="flex flex-col w-full">
+                <label for="date">Z data:</label>
+                <DatePicker
+                  id="date"
+                  v-model="fee.date"
+                  show-icon
+                  date-format="yy-mm-dd"
+                  :class="{ 'p-invalid': showErrorDate() }"
+                />
+                <small class="text-red-500">{{ showErrorDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+            </div>
+
+            <!-- ROW-5   FEE_FREQUENCY -->
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex flex-col w-full">
+                <label for="input-customer">Częstotliwość opłat:</label>
+                <Select
+                  id="input-customer"
+                  v-model="selectedFeeFrequency"
+                  :invalid="showErrorFeeFrequency()"
+                  :options="feeStore.feeFrequencyTypes"
+                  option-label="viewName"
+                  :onchange="fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null"
+                  :disabled="isEdit"
+                  :loading="feeStore.loadingFeeFrequencyType"
+                />
+                <small class="text-red-500">{{ showErrorFeeFrequency() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+              <div class="flex flex-col w-full">
+                <label for="noOfPayment">Ilość opłat:</label>
+                <InputNumber
+                  id="noOfPayment"
+                  v-model="fee.numberOfPayments"
+                  mode="decimal"
+                  show-buttons
+                  :min="1"
+                  :max="84"
+                  :disabled="isEdit"
+                />
+              </div>
+              <div class="flex flex-col w-full">
+                <label for="amount">Kwota opłaty:</label>
+                <InputNumber
+                  id="amount"
+                  v-model="fee.amount"
+                  :invalid="showErrorAmount()"
+                  :min-fraction-digits="2"
+                  :max-fraction-digits="2"
+                  :disabled="isEdit"
+                  mode="currency"
+                  currency="PLN"
+                  locale="pl-PL"
+                  @focus="UtilsService.selectText"
+                />
+                <small class="text-red-500">{{ showErrorAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+            </div>
+            <!-- ROW-6  ACCOUNT NR / FIRST PAYMENT DATE  -->
+            <div class="flex flex-row gap-4">
+              <div class="flex flex-col w-full">
+                <label for="accountNo">Nr konta:</label>
+                <InputMask
+                  id="accountNo"
+                  v-model="fee.accountNumber"
+                  :invalid="showErrorAccountNumber()"
+                  mask="99 9999 9999 9999 9999 9999 9999"
+                />
+                <small class="text-red-500">{{ showErrorAccountNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+              <div class="flex flex-col w-full">
+                <label for="first">Data pierwszej raty:</label>
+                <DatePicker
+                  id="first"
+                  v-model="fee.firstPaymentDate"
+                  :invalid="showErrorFirstDate()"
+                  show-icon
+                  date-format="yy-mm-dd"
+                  :disabled="isEdit"
+                />
+                <small class="text-red-500">{{ showErrorFirstDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              </div>
+            </div>
+
+            <!-- ROW-7  OTHER INFO  -->
+            <div class="flex flex-col w-full">
+              <label for="input">Dodatkowe informacje:</label>
+              <Textarea v-model="fee.otherInfo" rows="5" cols="30" />
+            </div>
+          </div>
+
+          <!-- ROW-6  BTN SAVE -->
+          <div class="flex mt-5 justify-end">
+            <OfficeButton
+              text="zapisz"
+              btn-type="office-save"
+              type="submit"
+              :loading="btnShowBusy"
+              :btn-disabled="isSaveBtnDisabled"
             />
           </div>
-
-          <!-- ROW-4  NUMBER / DATE  -->
-          <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex flex-col w-full">
-              <label for="number">Numer umowy:</label>
-              <InputText id="number" v-model="fee.feeNumber" :invalid="showErrorNumber()" maxlength="50" />
-              <small class="text-red-500">{{ showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-            <div class="flex flex-col w-full">
-              <label for="date">Z data:</label>
-              <DatePicker
-                id="date"
-                v-model="fee.date"
-                show-icon
-                date-format="yy-mm-dd"
-                :class="{ 'p-invalid': showErrorDate() }"
-              />
-              <small class="text-red-500">{{ showErrorDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-5   FEE_FREQUENCY -->
-          <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex flex-col w-full">
-              <label for="input-customer">Częstotliwość opłat:</label>
-              <Select
-                id="input-customer"
-                v-model="selectedFeeFrequency"
-                :invalid="showErrorFeeFrequency()"
-                :options="feeStore.feeFrequencyTypes"
-                option-label="viewName"
-                :onchange="fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null"
-                :disabled="isEdit"
-                :loading="feeStore.loadingFeeFrequencyType"
-              />
-              <small class="text-red-500">{{ showErrorFeeFrequency() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-            <div class="flex flex-col w-full">
-              <label for="noOfPayment">Ilość opłat:</label>
-              <InputNumber
-                id="noOfPayment"
-                v-model="fee.numberOfPayments"
-                mode="decimal"
-                show-buttons
-                :min="1"
-                :max="84"
-                :disabled="isEdit"
-              />
-            </div>
-            <div class="flex flex-col w-full">
-              <label for="amount">Kwota opłaty:</label>
-              <InputNumber
-                id="amount"
-                v-model="fee.amount"
-                :invalid="showErrorAmount()"
-                :min-fraction-digits="2"
-                :max-fraction-digits="2"
-                :disabled="isEdit"
-                mode="currency"
-                currency="PLN"
-                locale="pl-PL"
-                @focus="UtilsService.selectText"
-              />
-              <small class="text-red-500">{{ showErrorAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-          <!-- ROW-6  ACCOUNT NR / FIRST PAYMENT DATE  -->
-          <div class="flex flex-row gap-4">
-            <div class="flex flex-col w-full">
-              <label for="accountNo">Nr konta:</label>
-              <InputMask
-                id="accountNo"
-                v-model="fee.accountNumber"
-                :invalid="showErrorAccountNumber()"
-                mask="99 9999 9999 9999 9999 9999 9999"
-              />
-              <small class="text-red-500">{{ showErrorAccountNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-            <div class="flex flex-col w-full">
-              <label for="first">Data pierwszej raty:</label>
-              <DatePicker
-                id="first"
-                v-model="fee.firstPaymentDate"
-                :invalid="showErrorFirstDate()"
-                show-icon
-                date-format="yy-mm-dd"
-                :disabled="isEdit"
-              />
-              <small class="text-red-500">{{ showErrorFirstDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-7  OTHER INFO  -->
-          <div class="flex flex-col w-full">
-            <label for="input">Dodatkowe informacje:</label>
-            <Textarea v-model="fee.otherInfo" rows="5" cols="30" />
-          </div>
-        </div>
-
-        <!-- ROW-6  BTN SAVE -->
-        <div class="flex mt-5 justify-end">
-          <OfficeButton
-            text="zapisz"
-            btn-type="office-save"
-            type="submit"
-            :loading="btnShowBusy"
-            :btn-disabled="isSaveBtnDisabled"
-          />
-        </div>
-      </Panel>
-    </form>
+        </Panel>
+      </form>
     </div>
   </MainPageShell>
 </template>

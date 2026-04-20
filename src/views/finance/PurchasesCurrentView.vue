@@ -166,75 +166,77 @@
     </template>
 
     <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-    <Toolbar
-      class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 py-2 dark:border-surface-700 dark:bg-surface-950"
-    >
-      <template #start>
-        <div class="flex flex-row items-center gap-1">
-          <OfficeIconButton
-            class="text-amber-500"
-            title="Dodaj nowy zakup."
-            icon="pi pi-plus"
-            @click="goToNewPurchase"
-          />
-          <OfficeIconButton
-            title="Odświerz listę zakupów"
-            class="text-green-500"
-            :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-            :btn-disabled="selectedUser === null"
-            @click="getCurrentPurchaseByUser"
-          />
-          <OfficeIconButton
-            class="text-red-500"
-            title="Oznacz wybrane zakupy jako opłacone."
-            icon="pi pi-save"
-            :btn-disabled="purchasesStore.purchasesToPay.length == 0"
-            @click="showStatusChangeConfirmationDialog = true"
-          />
-        </div>
-      </template>
+      <Toolbar
+        class="shrink-0 border-b border-surface-200 bg-surface-0 px-6 py-2 dark:border-surface-700 dark:bg-surface-950"
+      >
+        <template #start>
+          <div class="flex flex-row items-center gap-1">
+            <OfficeIconButton
+              class="text-amber-500"
+              title="Dodaj nowy zakup."
+              icon="pi pi-plus"
+              @click="goToNewPurchase"
+            />
+            <OfficeIconButton
+              title="Odświerz listę zakupów"
+              class="text-green-500"
+              :icon="purchasesStore.loadingPurchases ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+              :btn-disabled="selectedUser === null"
+              @click="getCurrentPurchaseByUser"
+            />
+            <OfficeIconButton
+              class="text-red-500"
+              title="Oznacz wybrane zakupy jako opłacone."
+              icon="pi pi-save"
+              :btn-disabled="purchasesStore.purchasesToPay.length == 0"
+              @click="showStatusChangeConfirmationDialog = true"
+            />
+          </div>
+        </template>
 
-      <template #center>
-        <div class="flex flex-wrap items-center justify-center gap-2">
-          <Select
-            id="input-customer"
-            v-model="selectedUser"
-            :options="userStore.getUserByPrivileges"
-            :option-label="user => user.firstName + ' ' + user.lastName"
-            :loading="userStore.loadingUsers"
-            @change="onUserSelectChange"
-            required
-          />
-          <OfficeIconButton
-            title="Wyszukaj zakupy dla wybranego użytkownika"
-            class="text-orange-500"
-            icon="pi pi-search"
-            :btn-disabled="purchasesStore.loadingPurchases || selectedUser === null"
-            :loading="purchasesStore.loadingPurchases"
-            @click="getCurrentPurchaseByUser"
-          />
-        </div>
-      </template>
+        <template #center>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <Select
+              id="input-customer"
+              v-model="selectedUser"
+              :options="userStore.getUserByPrivileges"
+              :option-label="user => user.firstName + ' ' + user.lastName"
+              :loading="userStore.loadingUsers"
+              @change="onUserSelectChange"
+              required
+            />
+            <OfficeIconButton
+              title="Wyszukaj zakupy dla wybranego użytkownika"
+              class="text-orange-500"
+              icon="pi pi-search"
+              :btn-disabled="purchasesStore.loadingPurchases || selectedUser === null"
+              :loading="purchasesStore.loadingPurchases"
+              @click="getCurrentPurchaseByUser"
+            />
+          </div>
+        </template>
 
-      <template #end>
-        <div class="flex flex-col text-sm">
-          <p class="mb-1">
-            <small>Zaznaczone:</small>
-            {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
-          </p>
-          <p class="mb-1">
-            RAZEM:
-            {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
-          </p>
+        <template #end>
+          <div class="flex flex-col text-sm">
+            <p class="mb-1">
+              <small>Zaznaczone:</small>
+              {{ UtilsService.formatCurrency(purchasesStore.totalAmountToPay) }}
+            </p>
+            <p class="mb-1">
+              RAZEM:
+              {{ UtilsService.formatCurrency(purchasesStore.totalAmount) }}
+            </p>
+          </div>
+        </template>
+      </Toolbar>
+      <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
+        <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
+          <PurchaseCurrentItemGroup :deadline-date="key" />
         </div>
-      </template>
-    </Toolbar>
-    <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
-      <div v-for="[key] in purchasesStore.purchasesCurrent" :key="key">
-        <PurchaseCurrentItemGroup :deadline-date="key" />
+        <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">
+          Wszystko spłacone
+        </h1>
       </div>
-      <h1 v-if="purchasesStore.purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
-    </div>
     </div>
   </MainPageShell>
 </template>

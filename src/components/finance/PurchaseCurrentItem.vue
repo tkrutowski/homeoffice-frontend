@@ -20,9 +20,7 @@
     },
   });
 
-  const rowPurchase = computed(
-    () => purchaseStore.getPurchaseById(props.purchase.id) ?? props.purchase
-  );
+  const rowPurchase = computed(() => purchaseStore.getPurchaseById(props.purchase.id) ?? props.purchase);
 
   const firmName = computed(() => {
     const result = firmStore.getFirm(props.purchase?.idFirm);
@@ -46,9 +44,7 @@
   );
 
   const isOverdueLook = computed(
-    () =>
-      !isPaid.value &&
-      (overdueDays.value !== null || rowPurchase.value.paymentStatus === PaymentStatus.OVER_DUE)
+    () => !isPaid.value && (overdueDays.value !== null || rowPurchase.value.paymentStatus === PaymentStatus.OVER_DUE)
   );
 
   const cardVariantClasses = computed(() => {
@@ -78,9 +74,7 @@
   /** Karta „do zapłaty”, jeszcze nie po terminie — zielona tonacja zamiast chłodnego slate. */
   const isDueSoonLook = computed(() => !isPaid.value && !isOverdueLook.value);
 
-  const isSelected = computed(() =>
-    purchaseStore.purchasesToPay.some((p: Purchase) => p.id === props.purchase.id)
-  );
+  const isSelected = computed(() => purchaseStore.purchasesToPay.some((p: Purchase) => p.id === props.purchase.id));
 
   /** Zaznaczenie: gasi zewnętrzną poświatę karty (!shadow), tylko cień wewnętrzny + grubsza bursztynowa obwódka — bez ring (ring mieszał się z kolorową ramką). */
   const pressedClasses =
@@ -96,8 +90,7 @@
     return '';
   });
 
-  const firmTitleClass =
-    'text-surface-950 dark:text-white';
+  const firmTitleClass = 'text-surface-950 dark:text-white';
 
   const subtitleClass = computed(() => {
     if (isDueSoonLook.value) {

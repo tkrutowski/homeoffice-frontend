@@ -395,15 +395,21 @@
             >
               <p>
                 <span>Przefiltrowane:</span>
-                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(filteredPurchaseAmount) }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{
+                  UtilsService.formatCurrency(filteredPurchaseAmount)
+                }}</span>
               </p>
               <p>
                 <span>Wybrane:</span>
-                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(selectedPurchaseAmount) }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{
+                  UtilsService.formatCurrency(selectedPurchaseAmount)
+                }}</span>
               </p>
               <p>
                 <span>DO SPŁATY RAZEM:</span>
-                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(purchasesStore.sumToPay) }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{
+                  UtilsService.formatCurrency(purchasesStore.sumToPay)
+                }}</span>
               </p>
             </div>
           </div>
@@ -532,7 +538,12 @@
         <Column header="Akcja" :exportable="false" style="width: 8rem">
           <template #body="slotProps">
             <div class="flex flex-row gap-1 justify-start">
-              <OfficeIconButton title="Edytuj zakup" icon="pi pi-file-edit" @click="editItem(slotProps.data)" class="text-orange-500"/>
+              <OfficeIconButton
+                title="Edytuj zakup"
+                icon="pi pi-file-edit"
+                @click="editItem(slotProps.data)"
+                class="text-orange-500"
+              />
               <OfficeIconButton
                 class="text-red-500"
                 title="Usuń zakup"

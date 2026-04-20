@@ -261,190 +261,200 @@
     </template>
 
     <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
-    <form @submit.stop.prevent="saveCard">
-      <Panel>
-        <template #header>
-          <IconButton
-            title="Powrót do listy kart"
-            class="text-orange-500"
-            icon="pi pi-fw pi-list"
-            @click="() => router.push({ name: 'Cards' })"
-          />
-          <div class="w-full flex justify-center">
-            <h1  class="min-w-0 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl">
-              {{ isEdit ? `Edycja karty: ${card?.name}` : 'Nowa karta' }}
-            </h1>
-          </div>
-        </template>
-
-        <!--  --------------------------------------------------------CARD---------------------------------      -->
-        <Fieldset class="w-full" legend="Karta">
-          <div class="grid grid-cols-6 gap-4">
-            <!-- IMAGE -->
-            <div class="col-start-1 col-span-2 mt-4 ml-2">
-              <img v-if="card.imageUrl.length > 0" :src="card.imageUrl" height="90" width="140" alt="Karta" />
-              <img v-else src="@/assets/images/no_card.png" alt="Karta" />
+      <form @submit.stop.prevent="saveCard">
+        <Panel>
+          <template #header>
+            <IconButton
+              title="Powrót do listy kart"
+              class="text-orange-500"
+              icon="pi pi-fw pi-list"
+              @click="() => router.push({ name: 'Cards' })"
+            />
+            <div class="w-full flex justify-center">
+              <h1
+                class="min-w-0 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
+              >
+                {{ isEdit ? `Edycja karty: ${card?.name}` : 'Nowa karta' }}
+              </h1>
             </div>
+          </template>
 
-            <div class="col-start-3 col-span-4">
-              <!-- ROW-1   NAME -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="name">Nazwa:</label>
-                <InputText id="name" v-model="card.name" maxlength="200" :class="{ 'p-invalid': showErrorName() }" />
-                <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+          <!--  --------------------------------------------------------CARD---------------------------------      -->
+          <Fieldset class="w-full" legend="Karta">
+            <div class="grid grid-cols-6 gap-4">
+              <!-- IMAGE -->
+              <div class="col-start-1 col-span-2 mt-4 ml-2">
+                <img v-if="card.imageUrl.length > 0" :src="card.imageUrl" height="90" width="140" alt="Karta" />
+                <img v-else src="@/assets/images/no_card.png" alt="Karta" />
               </div>
 
-              <!-- ROW-2   NUMBER -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="number">Nr karty:</label>
-                <InputText
-                  id="number"
-                  v-model="card.cardNumber"
-                  maxlength="20"
-                  :class="{ 'p-invalid': showErrorNumber() }"
-                />
-                <small class="p-error">{{ showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
+              <div class="col-start-3 col-span-4">
+                <!-- ROW-1   NAME -->
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="name">Nazwa:</label>
+                  <InputText id="name" v-model="card.name" maxlength="200" :class="{ 'p-invalid': showErrorName() }" />
+                  <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
 
-            <!-- ROW-3   LIMIT URL -->
-            <div class="col-start-1 col-span-2">
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="name">Limit na karcie:</label>
-                <InputNumber
-                  id="name"
-                  v-model="card.limit"
-                  mode="currency"
-                  currency="PLN"
-                  locale="pl-PL"
-                  fluid
-                  @focus="UtilsService.selectText"
-                  :invalid="showErrorLimit()"
-                />
-                <small class="p-error">{{ showErrorLimit() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-            <div class="col-start-3 col-span-4">
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="cover">URL zdjęcia:</label>
-                <InputText id="cover" v-model="card.imageUrl" />
-              </div>
-            </div>
-
-            <!-- ROW-3   DAYS -->
-            <div class="col-start-1 col-span-3">
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="name">Dzień zamknięcia:</label>
-                <InputNumber id="name" v-model="card.closingDay" mode="decimal" show-buttons :min="1" :max="28" fluid />
-              </div>
-            </div>
-            <div class="col-start-4 col-span-3 mb-4">
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="name">Dzień spłaty:</label>
-                <InputNumber
-                  id="name"
-                  v-model="card.repaymentDay"
-                  mode="decimal"
-                  show-buttons
-                  :min="1"
-                  :max="28"
-                  fluid
-                />
-              </div>
-            </div>
-
-            <!-- ROW-4   USER BANK-->
-            <div class="col-start-1 col-span-3">
-              <div class="flex flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label for="input-user">Wybierz użytkownika:</label>
-                  <Select
-                    id="input-user"
-                    v-model="selectedUser"
-                    :class="{ 'p-invalid': showErrorUser() }"
-                    :options="userStore.getUsers"
-                    :option-label="data => data.firstName + ' ' + data.lastName"
-                    :loading="userStore.loadingUsers"
-                    @change="onUserChange"
+                <!-- ROW-2   NUMBER -->
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="number">Nr karty:</label>
+                  <InputText
+                    id="number"
+                    v-model="card.cardNumber"
+                    maxlength="20"
+                    :class="{ 'p-invalid': showErrorNumber() }"
                   />
-                  <small class="p-error">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  <small class="p-error">{{ showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
+              </div>
+
+              <!-- ROW-3   LIMIT URL -->
+              <div class="col-start-1 col-span-2">
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="name">Limit na karcie:</label>
+                  <InputNumber
+                    id="name"
+                    v-model="card.limit"
+                    mode="currency"
+                    currency="PLN"
+                    locale="pl-PL"
+                    fluid
+                    @focus="UtilsService.selectText"
+                    :invalid="showErrorLimit()"
+                  />
+                  <small class="p-error">{{ showErrorLimit() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
+              </div>
+              <div class="col-start-3 col-span-4">
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="cover">URL zdjęcia:</label>
+                  <InputText id="cover" v-model="card.imageUrl" />
+                </div>
+              </div>
+
+              <!-- ROW-3   DAYS -->
+              <div class="col-start-1 col-span-3">
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="name">Dzień zamknięcia:</label>
+                  <InputNumber
+                    id="name"
+                    v-model="card.closingDay"
+                    mode="decimal"
+                    show-buttons
+                    :min="1"
+                    :max="28"
+                    fluid
+                  />
+                </div>
+              </div>
+              <div class="col-start-4 col-span-3 mb-4">
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="name">Dzień spłaty:</label>
+                  <InputNumber
+                    id="name"
+                    v-model="card.repaymentDay"
+                    mode="decimal"
+                    show-buttons
+                    :min="1"
+                    :max="28"
+                    fluid
+                  />
+                </div>
+              </div>
+
+              <!-- ROW-4   USER BANK-->
+              <div class="col-start-1 col-span-3">
+                <div class="flex flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label for="input-user">Wybierz użytkownika:</label>
+                    <Select
+                      id="input-user"
+                      v-model="selectedUser"
+                      :class="{ 'p-invalid': showErrorUser() }"
+                      :options="userStore.getUsers"
+                      :option-label="data => data.firstName + ' ' + data.lastName"
+                      :loading="userStore.loadingUsers"
+                      @change="onUserChange"
+                    />
+                    <small class="p-error">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-start-4 col-span-3">
+                <div class="flex flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label for="input-bank">Wybierz bank:</label>
+                    <Select
+                      id="input-bank"
+                      v-model="selectedBank"
+                      :class="{ 'p-invalid': showErrorBank() }"
+                      :options="bankStore.getSortedBanks"
+                      option-label="name"
+                      :loading="bankStore.loadingBanks"
+                      @change="onBankChange"
+                    />
+                    <small class="p-error">{{ showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ROW-5  DATES  -->
+              <div class="col-start-1 col-span-3">
+                <div class="flex flex-col w-full">
+                  <label class="ml-2 mb-1" for="activationDate">Data aktywacji:</label>
+                  <DatePicker
+                    id="activationDate"
+                    v-model="card.activationDate"
+                    show-icon
+                    date-format="yy-mm-dd"
+                    :invalid="showErrorActivationDate()"
+                  />
+                  <small class="p-error">{{ showErrorActivationDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
+              </div>
+
+              <div class="col-start-4 col-span-3">
+                <div class="flex flex-col w-full">
+                  <label class="ml-2 mb-1" for="expirationDate">Data ważności:</label>
+                  <DatePicker
+                    id="expirationDate"
+                    v-model="card.expirationDate"
+                    show-icon
+                    date-format="yy-mm-dd"
+                    :invalid="showErrorExpirationDate()"
+                  />
+                  <small class="p-error">{{ showErrorExpirationDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
+              </div>
+
+              <div class="col-start-1 col-span-3">
+                <div class="flex items-center gap-2">
+                  <Checkbox
+                    v-model="card.multi"
+                    inputId="multiCheckbox"
+                    :binary="true"
+                    title="Karta może być wybrana przez innego użytkownika."
+                  />
+                  <label for="multiCheckbox" title="Karta może być wybrana przez innego użytkownika.">Multi</label>
                 </div>
               </div>
             </div>
+          </Fieldset>
 
-            <div class="col-start-4 col-span-3">
-              <div class="flex flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label for="input-bank">Wybierz bank:</label>
-                  <Select
-                    id="input-bank"
-                    v-model="selectedBank"
-                    :class="{ 'p-invalid': showErrorBank() }"
-                    :options="bankStore.getSortedBanks"
-                    option-label="name"
-                    :loading="bankStore.loadingBanks"
-                    @change="onBankChange"
-                  />
-                  <small class="p-error">{{ showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-                </div>
-              </div>
-            </div>
+          <!-- ROW-6  OTHER INFO  -->
+          <Fieldset legend="Dodatkowe informacje">
+            <Textarea id="description" v-model="card.otherInfo" fluid rows="5" cols="30" />
+          </Fieldset>
 
-            <!-- ROW-5  DATES  -->
-            <div class="col-start-1 col-span-3">
-              <div class="flex flex-col w-full">
-                <label class="ml-2 mb-1" for="activationDate">Data aktywacji:</label>
-                <DatePicker
-                  id="activationDate"
-                  v-model="card.activationDate"
-                  show-icon
-                  date-format="yy-mm-dd"
-                  :invalid="showErrorActivationDate()"
-                />
-                <small class="p-error">{{ showErrorActivationDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <div class="col-start-4 col-span-3">
-              <div class="flex flex-col w-full">
-                <label class="ml-2 mb-1" for="expirationDate">Data ważności:</label>
-                <DatePicker
-                  id="expirationDate"
-                  v-model="card.expirationDate"
-                  show-icon
-                  date-format="yy-mm-dd"
-                  :invalid="showErrorExpirationDate()"
-                />
-                <small class="p-error">{{ showErrorExpirationDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <div class="col-start-1 col-span-3">
-              <div class="flex items-center gap-2">
-                <Checkbox
-                  v-model="card.multi"
-                  inputId="multiCheckbox"
-                  :binary="true"
-                  title="Karta może być wybrana przez innego użytkownika."
-                />
-                <label for="multiCheckbox" title="Karta może być wybrana przez innego użytkownika.">Multi</label>
-              </div>
-            </div>
+          <!-- ROW-8  BTN SAVE -->
+          <div class="flex flex-row justify-end gap-2 mt-6">
+            <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
+            <OfficeButton text="zapisz" btn-type="office-save" type="submit" :loading="btnShowBusy" />
           </div>
-        </Fieldset>
-
-        <!-- ROW-6  OTHER INFO  -->
-        <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="card.otherInfo" fluid rows="5" cols="30" />
-        </Fieldset>
-
-        <!-- ROW-8  BTN SAVE -->
-        <div class="flex flex-row justify-end gap-2 mt-6">
-          <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
-          <OfficeButton text="zapisz" btn-type="office-save" type="submit" :loading="btnShowBusy" />
-        </div>
-      </Panel>
-    </form>
+        </Panel>
+      </form>
     </div>
   </MainPageShell>
 </template>

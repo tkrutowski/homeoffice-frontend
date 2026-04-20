@@ -153,74 +153,74 @@
       <TheMenuLibrary />
     </template>
 
-  <div>
-    <Toolbar class="m-6 text-color">
-      <template #start
-        ><p class="mt-auto mb-auto">ROK: {{ displayText }}</p></template
-      >
-      <template #center>
-        <InputNumber
-          v-model="selectedYear"
-          :min="2010"
-          :max="2040"
-          show-buttons
-          :format="false"
-          button-layout="horizontal"
-        />
-        <Button
-          class="font-bold uppercase tracking-wider h-full ml-2"
-          outlined
-          icon="pi pi-search"
-          :disabled="userbookStore.loadingUserbooks"
-          :loading="userbookStore.loadingUserbooks"
-          @click="getUserbooks"
-        />
+    <div>
+      <Toolbar class="m-6 text-color">
+        <template #start
+          ><p class="mt-auto mb-auto">ROK: {{ displayText }}</p></template
+        >
+        <template #center>
+          <InputNumber
+            v-model="selectedYear"
+            :min="2010"
+            :max="2040"
+            show-buttons
+            :format="false"
+            button-layout="horizontal"
+          />
+          <Button
+            class="font-bold uppercase tracking-wider h-full ml-2"
+            outlined
+            icon="pi pi-search"
+            :disabled="userbookStore.loadingUserbooks"
+            :loading="userbookStore.loadingUserbooks"
+            @click="getUserbooks"
+          />
+        </template>
+
+        <template #end>
+          <div class="flex gap-4">
+            <IconField icon-position="left">
+              <InputIcon>
+                <i class="pi pi-search" />
+              </InputIcon>
+              <InputText class="!max-w-32" v-model="searchQuery" placeholder="wyszukaj..." />
+            </IconField>
+            <Button type="button" icon="pi pi-times" outlined title="Wyczyść wyszukiwanie" @click="clearSearch" />
+          </div>
+        </template>
+      </Toolbar>
+
+      <div class="flex flex-row flex-wrap justify-center">
+        <div v-for="ub in userbooks" :key="ub.id">
+          <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete" />
+        </div>
+      </div>
+    </div>
+    <Toolbar class="sticky-toolbar m-6">
+      <template #start>
+        <div class="flex flex-row text-color gap-3">
+          <p class="mb-1">
+            <small>Audiobook:</small>
+            {{ getTotalAudiobook('AUDIOBOOK') }}
+          </p>
+          <p class="mb-1">
+            <small>Ebooki:</small>
+            {{ getTotalAudiobook('EBOOK') }}
+          </p>
+          <p class="mb-1">
+            <small>Papierowe:</small>
+            {{ getTotalAudiobook('BOOK') }}
+          </p>
+        </div>
       </template>
 
       <template #end>
-        <div class="flex gap-4">
-          <IconField icon-position="left">
-            <InputIcon>
-              <i class="pi pi-search" />
-            </InputIcon>
-            <InputText class="!max-w-32" v-model="searchQuery" placeholder="wyszukaj..." />
-          </IconField>
-          <Button type="button" icon="pi pi-times" outlined title="Wyczyść wyszukiwanie" @click="clearSearch" />
-        </div>
+        <p class="mb-1 text-color">
+          RAZEM:
+          {{ getTotalAudiobook('AUDIOBOOK') + getTotalAudiobook('EBOOK') + getTotalAudiobook('BOOK') }}
+        </p>
       </template>
     </Toolbar>
-
-    <div class="flex flex-row flex-wrap justify-center">
-      <div v-for="ub in userbooks" :key="ub.id">
-        <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete" />
-      </div>
-    </div>
-  </div>
-  <Toolbar class="sticky-toolbar m-6">
-    <template #start>
-      <div class="flex flex-row text-color gap-3">
-        <p class="mb-1">
-          <small>Audiobook:</small>
-          {{ getTotalAudiobook('AUDIOBOOK') }}
-        </p>
-        <p class="mb-1">
-          <small>Ebooki:</small>
-          {{ getTotalAudiobook('EBOOK') }}
-        </p>
-        <p class="mb-1">
-          <small>Papierowe:</small>
-          {{ getTotalAudiobook('BOOK') }}
-        </p>
-      </div>
-    </template>
-
-    <template #end>
-      <p class="mb-1 text-color">
-        RAZEM:
-        {{ getTotalAudiobook('AUDIOBOOK') + getTotalAudiobook('EBOOK') + getTotalAudiobook('BOOK') }}
-      </p>
-    </template>
-  </Toolbar>
   </MainPageShell>
 </template>
 

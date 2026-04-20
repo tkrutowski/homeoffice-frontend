@@ -144,12 +144,7 @@
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-2">
-              <OfficeIconButton
-                class="text-amber-500"
-                title="Dodaj nowy bank"
-                icon="pi pi-plus"
-                @click="goToNewBank"
-              />
+              <OfficeIconButton class="text-amber-500" title="Dodaj nowy bank" icon="pi pi-plus" @click="goToNewBank" />
               <div
                 class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
                 role="presentation"

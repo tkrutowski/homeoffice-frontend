@@ -754,156 +754,162 @@
     </template>
 
     <div class="min-h-0 p-4">
-    <!-- Year Selection and Filter -->
-    <div class="flex justify-between items-center mb-4">
-      <div class="w-1/4"></div>
-      <!-- Empty div for spacing -->
-      <div class="flex items-center gap-4">
-        <Select
-          v-model="selectedYear"
-          :options="availableYears"
-          @change="onYearChange"
-          class="w-32"
-          placeholder="Wybierz rok"
-        />
-      </div>
-      <div class="flex items-center gap-2 w-1/4 justify-end">
-        <Checkbox v-model="showOnlyLoggedUser" :binary="true" />
-        <label class="ml-2 dark:text-primary">Wyświetl tylko moje</label>
-      </div>
-    </div>
-
-    <!-- Loading State for Initial Load -->
-    <div v-if="isLoadingData" class="flex flex-col gap-8">
-      <!-- Summary Charts Skeleton -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="card border-2 border-primary rounded-lg">
-          <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-          <div class="h-30rem px-3">
-            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-          </div>
-        </div>
-        <div class="card border-2 border-primary rounded-lg">
-          <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-          <div class="h-30rem px-3">
-            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-          </div>
-        </div>
-      </div>
-
-      <!-- User Charts Skeleton -->
-      <div v-for="n in 2" :key="n" class="flex flex-col gap-4">
-        <Skeleton width="40%" height="2rem" class="mx-auto"></Skeleton>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="card border-2 border-primary rounded-lg">
-            <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-            <div class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-          </div>
-          <div class="card border-2 border-primary rounded-lg">
-            <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-            <div class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-          </div>
-          <div class="card border-2 border-primary rounded-lg md:col-span-2">
-            <Skeleton width="80%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-            <div class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actual Content -->
-    <div v-else class="flex flex-col gap-8">
-      <!-- Summary Charts -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Loans Chart -->
-        <div class="card border-2 border-primary rounded-lg">
-          <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Kredyty do spłaty</h3>
-          <div v-if="isLoadingLoans" class="h-30rem px-3">
-            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-          </div>
-          <Chart v-else type="bar" :data="summaryChartData.loans" :options="summaryChartOptions" class="h-30rem px-3" />
-        </div>
-
-        <!-- Purchases Chart -->
-        <div class="card border-2 border-primary rounded-lg">
-          <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Zakupy do spłaty</h3>
-          <div v-if="isLoadingPurchases" class="h-30rem px-3">
-            <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-          </div>
-          <Chart
-            v-else
-            type="bar"
-            :data="summaryChartData.purchases"
-            :options="summaryChartOptions"
-            class="h-30rem px-3"
+      <!-- Year Selection and Filter -->
+      <div class="flex justify-between items-center mb-4">
+        <div class="w-1/4"></div>
+        <!-- Empty div for spacing -->
+        <div class="flex items-center gap-4">
+          <Select
+            v-model="selectedYear"
+            :options="availableYears"
+            @change="onYearChange"
+            class="w-32"
+            placeholder="Wybierz rok"
           />
         </div>
+        <div class="flex items-center gap-2 w-1/4 justify-end">
+          <Checkbox v-model="showOnlyLoggedUser" :binary="true" />
+          <label class="ml-2 dark:text-primary">Wyświetl tylko moje</label>
+        </div>
       </div>
 
-      <div v-for="user in usersToDisplay" :key="user.id" class="flex flex-col gap-4">
-        <h2 class="text-2xl font-bold text-center dark:text-primary">{{ user.firstName }} {{ user.lastName }}</h2>
+      <!-- Loading State for Initial Load -->
+      <div v-if="isLoadingData" class="flex flex-col gap-8">
+        <!-- Summary Charts Skeleton -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card border-2 border-primary rounded-lg">
+            <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+            <div class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
+          </div>
+          <div class="card border-2 border-primary rounded-lg">
+            <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+            <div class="h-30rem px-3">
+              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Charts Skeleton -->
+        <div v-for="n in 2" :key="n" class="flex flex-col gap-4">
+          <Skeleton width="40%" height="2rem" class="mx-auto"></Skeleton>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card border-2 border-primary rounded-lg">
+              <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+              <div class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+            </div>
+            <div class="card border-2 border-primary rounded-lg">
+              <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+              <div class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+            </div>
+            <div class="card border-2 border-primary rounded-lg md:col-span-2">
+              <Skeleton width="80%" height="2rem" class="mb-4 mx-auto"></Skeleton>
+              <div class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Content -->
+      <div v-else class="flex flex-col gap-8">
+        <!-- Summary Charts -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Loans Chart -->
           <div class="card border-2 border-primary rounded-lg">
-            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
-              Płatności kredytów w {{ selectedYear }}
-            </h3>
+            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Kredyty do spłaty</h3>
             <div v-if="isLoadingLoans" class="h-30rem px-3">
               <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
             </div>
             <Chart
               v-else
-              :id="'loans-' + user.id"
               type="bar"
-              :data="usersChartData.get(user.id)?.loans"
-              :options="loansChartOptions"
-              class="h-30rem px-3"
-            />
-          </div>
-
-          <!-- Fees Chart -->
-          <div class="card border-2 border-primary rounded-lg">
-            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Płatności opłat w {{ selectedYear }}</h3>
-            <div v-if="isLoadingFees" class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-            <Chart
-              v-else
-              :id="'fees-' + user.id"
-              type="bar"
-              :data="usersChartData.get(user.id)?.fees"
-              :options="feesChartOptions"
+              :data="summaryChartData.loans"
+              :options="summaryChartOptions"
               class="h-30rem px-3"
             />
           </div>
 
           <!-- Purchases Chart -->
-          <div class="card border-2 border-primary rounded-lg md:col-span-2">
-            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
-              Niespłacone zakupy w {{ selectedYear }}
-            </h3>
+          <div class="card border-2 border-primary rounded-lg">
+            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Zakupy do spłaty</h3>
             <div v-if="isLoadingPurchases" class="h-30rem px-3">
               <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
             </div>
             <Chart
               v-else
-              :id="'purchases-' + user.id"
-              type="line"
-              :data="usersPurchaseChartData.get(user.id)"
-              :options="purchaseChartOptions"
+              type="bar"
+              :data="summaryChartData.purchases"
+              :options="summaryChartOptions"
               class="h-30rem px-3"
             />
           </div>
         </div>
+
+        <div v-for="user in usersToDisplay" :key="user.id" class="flex flex-col gap-4">
+          <h2 class="text-2xl font-bold text-center dark:text-primary">{{ user.firstName }} {{ user.lastName }}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Loans Chart -->
+            <div class="card border-2 border-primary rounded-lg">
+              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
+                Płatności kredytów w {{ selectedYear }}
+              </h3>
+              <div v-if="isLoadingLoans" class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+              <Chart
+                v-else
+                :id="'loans-' + user.id"
+                type="bar"
+                :data="usersChartData.get(user.id)?.loans"
+                :options="loansChartOptions"
+                class="h-30rem px-3"
+              />
+            </div>
+
+            <!-- Fees Chart -->
+            <div class="card border-2 border-primary rounded-lg">
+              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Płatności opłat w {{ selectedYear }}</h3>
+              <div v-if="isLoadingFees" class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+              <Chart
+                v-else
+                :id="'fees-' + user.id"
+                type="bar"
+                :data="usersChartData.get(user.id)?.fees"
+                :options="feesChartOptions"
+                class="h-30rem px-3"
+              />
+            </div>
+
+            <!-- Purchases Chart -->
+            <div class="card border-2 border-primary rounded-lg md:col-span-2">
+              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
+                Niespłacone zakupy w {{ selectedYear }}
+              </h3>
+              <div v-if="isLoadingPurchases" class="h-30rem px-3">
+                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
+              </div>
+              <Chart
+                v-else
+                :id="'purchases-' + user.id"
+                type="line"
+                :data="usersPurchaseChartData.get(user.id)"
+                :options="purchaseChartOptions"
+                class="h-30rem px-3"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
   </MainPageShell>
 </template>
 

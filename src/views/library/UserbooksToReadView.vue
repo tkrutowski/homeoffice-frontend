@@ -129,20 +129,20 @@
       <TheMenuLibrary />
     </template>
 
-  <div>
-    <div class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4">
-      <h2 class="text-3xl font-semibold text-primary">Moja półka - książki w poczekalni...</h2>
-      <div v-if="userbookStore.loadingUserbooks">
-        <ProgressSpinner style="width: 30px; height: 30px" stroke-width="5" />
+    <div>
+      <div class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4">
+        <h2 class="text-3xl font-semibold text-primary">Moja półka - książki w poczekalni...</h2>
+        <div v-if="userbookStore.loadingUserbooks">
+          <ProgressSpinner style="width: 30px; height: 30px" stroke-width="5" />
+        </div>
       </div>
-    </div>
 
-    <div class="flex flex-row flex-wrap justify-center">
-      <div v-for="ub in userbooks" :key="ub.id">
-        <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete" />
+      <div class="flex flex-row flex-wrap justify-center">
+        <div v-for="ub in userbooks" :key="ub.id">
+          <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete" />
+        </div>
       </div>
     </div>
-  </div>
   </MainPageShell>
 </template>
 

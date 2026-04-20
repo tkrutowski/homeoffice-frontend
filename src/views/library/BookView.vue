@@ -479,182 +479,187 @@
     </template>
 
     <div class="my-3 w-full max-w-6xl mx-auto px-2 sm:px-3">
-    <form @submit.stop.prevent="saveBook">
-      <Panel>
-        <template #header>
-          <IconButton
-            title="Powrót do listy książek"
-            icon="pi pi-fw pi-list"
-            @click="() => router.push({ name: 'Books' })"
-          />
-          <div class="w-full flex justify-center">
-            <h2>
-              {{ isEdit ? `Edycja książki: ${book?.title}` : 'Nowa książka' }}
-            </h2>
-          </div>
-        </template>
-        <Fieldset v-if="!isEdit" legend="URL" class="flex flex-col">
-          <!-- URL -->
-          <div class="flex flex-col mt-3">
-            <InputText id="url" v-model="searchUrl" :class="{ 'p-invalid': showErrorUrl() }" />
-            <small class="p-error">{{ showErrorUrl() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-          </div>
-
-          <!--   BTN SEARCH -->
-          <div class="flex justify-center gap-2">
-            <OfficeButton
-              text="wyszukaj"
-              type="button"
-              btn-type="office-regular"
-              :loading="bookStore.searchBook"
-              :btn-disabled="btnSearchDisabled"
-              @click="findBook()"
+      <form @submit.stop.prevent="saveBook">
+        <Panel>
+          <template #header>
+            <IconButton
+              title="Powrót do listy książek"
+              icon="pi pi-fw pi-list"
+              @click="() => router.push({ name: 'Books' })"
             />
-            <OfficeButton
-              text="wyszukaj"
-              type="button"
-              icon="pi pi-microchip-ai"
-              btn-type="office-regular"
-              :loading="bookStore.searchBook"
-              :btn-disabled="btnSearchDisabled"
-              @click="findBook(true)"
-            />
-          </div>
-        </Fieldset>
+            <div class="w-full flex justify-center">
+              <h2>
+                {{ isEdit ? `Edycja książki: ${book?.title}` : 'Nowa książka' }}
+              </h2>
+            </div>
+          </template>
+          <Fieldset v-if="!isEdit" legend="URL" class="flex flex-col">
+            <!-- URL -->
+            <div class="flex flex-col mt-3">
+              <InputText id="url" v-model="searchUrl" :class="{ 'p-invalid': showErrorUrl() }" />
+              <small class="p-error">{{ showErrorUrl() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+            </div>
 
-        <!--  --------------------------------------------------------BOOK---------------------------------      -->
-        <Fieldset class="w-full" legend="Książka">
-          <div class="grid grid-cols-6 gap-4">
-            <div class="col-start-1 col-span-4">
-              <!-- ROW-1   TITLE -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="title">Tytuł:</label>
-                <InputText id="title" v-model="book.title" maxlength="50" :class="{ 'p-invalid': showErrorTitle() }" />
-                <small class="p-error">{{ showErrorTitle() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
+            <!--   BTN SEARCH -->
+            <div class="flex justify-center gap-2">
+              <OfficeButton
+                text="wyszukaj"
+                type="button"
+                btn-type="office-regular"
+                :loading="bookStore.searchBook"
+                :btn-disabled="btnSearchDisabled"
+                @click="findBook()"
+              />
+              <OfficeButton
+                text="wyszukaj"
+                type="button"
+                icon="pi pi-microchip-ai"
+                btn-type="office-regular"
+                :loading="bookStore.searchBook"
+                :btn-disabled="btnSearchDisabled"
+                @click="findBook(true)"
+              />
+            </div>
+          </Fieldset>
 
-              <!-- ROW-2   AUTHOR -->
-              <div class="flex gap-2">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="author">Wybierz autora:</label>
-                  <AutoComplete
-                    id="author"
-                    v-model="selectedAuthors"
-                    dropdown
-                    multiple
-                    force-selection
-                    :class="{ 'p-invalid': showErrorAuthor() }"
-                    :suggestions="filteredAuthors"
-                    :option-label="author => author.firstName + ' ' + author.lastName"
-                    @complete="searchAuthor"
-                    :loading="bookStore.loadingAuthors"
+          <!--  --------------------------------------------------------BOOK---------------------------------      -->
+          <Fieldset class="w-full" legend="Książka">
+            <div class="grid grid-cols-6 gap-4">
+              <div class="col-start-1 col-span-4">
+                <!-- ROW-1   TITLE -->
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="title">Tytuł:</label>
+                  <InputText
+                    id="title"
+                    v-model="book.title"
+                    maxlength="50"
+                    :class="{ 'p-invalid': showErrorTitle() }"
                   />
-                  <small class="p-error">{{ showErrorAuthor() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  <small class="p-error">{{ showErrorTitle() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
                 </div>
-                <OfficeIconButton
-                  title="Dodaj autora"
-                  :icon="bookStore.loadingAuthors ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                  style="height: 35px; width: 35px; padding: 0"
-                  class="mt-1 self-center"
-                  @click="showAddModal = true"
-                />
-              </div>
 
-              <!-- ROW-3  SERIES / NUMBER  -->
-              <div class="flex gap-2 mb-5">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="series">Seria:</label>
-                  <div class="flex gap-2">
+                <!-- ROW-2   AUTHOR -->
+                <div class="flex gap-2">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-2 mb-1" for="author">Wybierz autora:</label>
                     <AutoComplete
-                      id="series"
-                      v-model="selectedSeries"
+                      id="author"
+                      v-model="selectedAuthors"
                       dropdown
+                      multiple
                       force-selection
-                      :suggestions="filteredSeries"
-                      field="title"
-                      option-label="title"
-                      @complete="searchSeries"
-                      :loading="bookStore.loadingSeries"
-                      class="flex-1"
+                      :class="{ 'p-invalid': showErrorAuthor() }"
+                      :suggestions="filteredAuthors"
+                      :option-label="author => author.firstName + ' ' + author.lastName"
+                      @complete="searchAuthor"
+                      :loading="bookStore.loadingAuthors"
                     />
-                    <OfficeIconButton
-                      title="Dodaj serię"
-                      :icon="bookStore.loadingSeries ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                      style="height: 35px; width: 35px; padding: 0"
-                      class="self-center"
-                      @click="showAddSeriesModal = true"
-                    />
+                    <small class="p-error">{{ showErrorAuthor() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                  <OfficeIconButton
+                    title="Dodaj autora"
+                    :icon="bookStore.loadingAuthors ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                    style="height: 35px; width: 35px; padding: 0"
+                    class="mt-1 self-center"
+                    @click="showAddModal = true"
+                  />
+                </div>
+
+                <!-- ROW-3  SERIES / NUMBER  -->
+                <div class="flex gap-2 mb-5">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-2 mb-1" for="series">Seria:</label>
+                    <div class="flex gap-2">
+                      <AutoComplete
+                        id="series"
+                        v-model="selectedSeries"
+                        dropdown
+                        force-selection
+                        :suggestions="filteredSeries"
+                        field="title"
+                        option-label="title"
+                        @complete="searchSeries"
+                        :loading="bookStore.loadingSeries"
+                        class="flex-1"
+                      />
+                      <OfficeIconButton
+                        title="Dodaj serię"
+                        :icon="bookStore.loadingSeries ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                        style="height: 35px; width: 35px; padding: 0"
+                        class="self-center"
+                        @click="showAddSeriesModal = true"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <label for="seriesNo">Część:</label>
+                    <InputText id="seriesNo" v-model="book.bookInSeriesNo" maxlength="5" />
                   </div>
                 </div>
 
-                <div class="flex flex-col">
-                  <label for="seriesNo">Część:</label>
-                  <InputText id="seriesNo" v-model="book.bookInSeriesNo" maxlength="5" />
-                </div>
-              </div>
-
-              <!-- ROW-4   CATEGORY -->
-              <div class="flex gap-2">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="category">Wybierz kategorię:</label>
-                  <AutoComplete
-                    id="category"
-                    v-model="selectedCategories"
-                    dropdown
-                    multiple
-                    force-selection
-                    :class="{ 'p-invalid': showErrorCategory() }"
-                    :suggestions="filteredCategories"
-                    field="name"
-                    option-label="name"
-                    @complete="searchCategory"
-                    :loading="bookStore.loadingCategories"
+                <!-- ROW-4   CATEGORY -->
+                <div class="flex gap-2">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-2 mb-1" for="category">Wybierz kategorię:</label>
+                    <AutoComplete
+                      id="category"
+                      v-model="selectedCategories"
+                      dropdown
+                      multiple
+                      force-selection
+                      :class="{ 'p-invalid': showErrorCategory() }"
+                      :suggestions="filteredCategories"
+                      field="name"
+                      option-label="name"
+                      @complete="searchCategory"
+                      :loading="bookStore.loadingCategories"
+                    />
+                    <small class="p-error">{{ showErrorCategory() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                  <OfficeIconButton
+                    title="Dodaj kategorię"
+                    :icon="bookStore.loadingCategories ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                    style="height: 35px; width: 35px; padding: 0"
+                    class="mt-1 self-center"
+                    @click="showAddCategoryModal = true"
                   />
-                  <small class="p-error">{{ showErrorCategory() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
                 </div>
-                <OfficeIconButton
-                  title="Dodaj kategorię"
-                  :icon="bookStore.loadingCategories ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                  style="height: 35px; width: 35px; padding: 0"
-                  class="mt-1 self-center"
-                  @click="showAddCategoryModal = true"
-                />
+
+                <!-- ROW-5   URL -->
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="cover">URL okładki:</label>
+                  <InputText id="cover" v-model="book.cover" :class="{ 'p-invalid': showErrorCover() }" />
+                  <small class="p-error">{{ showErrorCover() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
               </div>
 
-              <!-- ROW-5   URL -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="cover">URL okładki:</label>
-                <InputText id="cover" v-model="book.cover" :class="{ 'p-invalid': showErrorCover() }" />
-                <small class="p-error">{{ showErrorCover() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+              <!-- ROW-   COVER -->
+              <div class="col-start-5 col-span-2">
+                <img v-if="book.cover.length > 0" :src="book.cover" height="500" width="333" alt="Okładka do książki" />
+                <img v-else src="@/assets/images/no_cover.jpg" height="300" width="300" alt="Okładka do książki" />
               </div>
             </div>
+          </Fieldset>
 
-            <!-- ROW-   COVER -->
-            <div class="col-start-5 col-span-2">
-              <img v-if="book.cover.length > 0" :src="book.cover" height="500" width="333" alt="Okładka do książki" />
-              <img v-else src="@/assets/images/no_cover.jpg" height="300" width="300" alt="Okładka do książki" />
-            </div>
+          <!-- ROW-7  OTHER INFO  -->
+          <Fieldset legend="Dodatkowe informacje">
+            <Textarea id="description" v-model="book.description" fluid rows="5" cols="30" />
+          </Fieldset>
+
+          <!-- ROW-8  BTN SAVE -->
+          <div class="flex flex-row justify-end gap-2 mt-6">
+            <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
+            <OfficeButton
+              text="zapisz"
+              btn-type="office-save"
+              type="submit"
+              :loading="btnShowBusy"
+              :btn-disabled="isSaveBtnDisabled"
+            />
           </div>
-        </Fieldset>
-
-        <!-- ROW-7  OTHER INFO  -->
-        <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="book.description" fluid rows="5" cols="30" />
-        </Fieldset>
-
-        <!-- ROW-8  BTN SAVE -->
-        <div class="flex flex-row justify-end gap-2 mt-6">
-          <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
-          <OfficeButton
-            text="zapisz"
-            btn-type="office-save"
-            type="submit"
-            :loading="btnShowBusy"
-            :btn-disabled="isSaveBtnDisabled"
-          />
-        </div>
-      </Panel>
-    </form>
+        </Panel>
+      </form>
     </div>
   </MainPageShell>
 </template>

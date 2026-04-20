@@ -187,149 +187,140 @@
     </template>
 
     <Panel class="my-3 w-full max-w-screen-xl mx-auto px-2 sm:px-3">
-    <DataView :value="filteredData" dataKey="id">
-      <template #header>
-        <div class="flex flex-wrap items-center gap-2">
-          <OfficeIconButton
-            class="text-amber-500"
-            title="Dodaj nową kartę"
-            icon="pi pi-plus"
-            @click="goToNewCard"
-          />
-          <div
-            class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
-            role="presentation"
-            aria-hidden="true"
-          />
+      <DataView :value="filteredData" dataKey="id">
+        <template #header>
           <div class="flex flex-wrap items-center gap-2">
-            <OfficeIconButton
-              title="Wyświetl nieaktywne"
-              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-              class="text-red-500"
-              :active="filter === 'INACTIVE'"
-              @click="setFilter('INACTIVE')"
-            />
-            <OfficeIconButton
-              title="Wyświetl aktywne"
-              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-              class="text-green-500"
-              :active="filter === 'ACTIVE'"
-              @click="setFilter('ACTIVE')"
-            />
-            <OfficeIconButton
-              title="Wyświetl wszystkie"
-              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-              class="text-orange-500"
-              :active="filter === 'ALL'"
-              @click="setFilter('ALL')"
-            />
-            <div
-              class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
-              role="presentation"
-              aria-hidden="true"
-            />
-            <OfficeIconButton
-              title="Odśwież listę kart"
-              class="text-orange-500"
-              :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-              @click="refreshCards"
-            />
+            <OfficeIconButton class="text-amber-500" title="Dodaj nową kartę" icon="pi pi-plus" @click="goToNewCard" />
+            <div class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600" role="presentation" aria-hidden="true" />
+            <div class="flex flex-wrap items-center gap-2">
+              <OfficeIconButton
+                title="Wyświetl nieaktywne"
+                :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+                class="text-red-500"
+                :active="filter === 'INACTIVE'"
+                @click="setFilter('INACTIVE')"
+              />
+              <OfficeIconButton
+                title="Wyświetl aktywne"
+                :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+                class="text-green-500"
+                :active="filter === 'ACTIVE'"
+                @click="setFilter('ACTIVE')"
+              />
+              <OfficeIconButton
+                title="Wyświetl wszystkie"
+                :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+                class="text-orange-500"
+                :active="filter === 'ALL'"
+                @click="setFilter('ALL')"
+              />
+              <div
+                class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                role="presentation"
+                aria-hidden="true"
+              />
+              <OfficeIconButton
+                title="Odśwież listę kart"
+                class="text-orange-500"
+                :icon="toolbarLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+                @click="refreshCards"
+              />
+            </div>
           </div>
-        </div>
-      </template>
-      <template #list="slotProps">
-        <div class="flex flex-col">
-          <div v-for="(item, index) in slotProps.items" :key="index">
-            <div
-              class="flex flex-col sm:flex-row sm:items-center p-6 gap-4"
-              :class="{
-                'border-t border-surface-200 dark:border-surface-700': index !== 0,
-                inactive: item.activeStatus == 'INACTIVE',
-                active: item.activeStatus == 'ACTIVE',
-              }"
-            >
-              <div class="md:w-40 relative">
-                <img
-                  v-if="item.imageUrl && item.imageUrl.length > 0"
-                  class="block xl:block mx-auto rounded w-full"
-                  :src="item.imageUrl"
-                  :alt="item.name"
-                />
-                <img v-else src="@/assets/images/no_card.png" alt="Karta" />
-              </div>
-              <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-                <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
-                  <div class="w-full">
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ item.name }}</span>
-                    <div class="text-sm font-medium mt-2">
-                      {{ item.cardNumber }}
-                    </div>
-                    <div class="text-sm font-medium mt-2">
-                      {{ item.otherInfo }}
+        </template>
+        <template #list="slotProps">
+          <div class="flex flex-col">
+            <div v-for="(item, index) in slotProps.items" :key="index">
+              <div
+                class="flex flex-col sm:flex-row sm:items-center p-6 gap-4"
+                :class="{
+                  'border-t border-surface-200 dark:border-surface-700': index !== 0,
+                  inactive: item.activeStatus == 'INACTIVE',
+                  active: item.activeStatus == 'ACTIVE',
+                }"
+              >
+                <div class="md:w-40 relative">
+                  <img
+                    v-if="item.imageUrl && item.imageUrl.length > 0"
+                    class="block xl:block mx-auto rounded w-full"
+                    :src="item.imageUrl"
+                    :alt="item.name"
+                  />
+                  <img v-else src="@/assets/images/no_card.png" alt="Karta" />
+                </div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                  <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
+                    <div class="w-full">
+                      <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{ item.name }}</span>
+                      <div class="text-sm font-medium mt-2">
+                        {{ item.cardNumber }}
+                      </div>
+                      <div class="text-sm font-medium mt-2">
+                        {{ item.otherInfo }}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
-                  <div>
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{
-                      bankStore.getBank(item.idBank)?.name
+                  <div class="flex flex-row md:flex-col justify-between items-start gap-2 w-1/3">
+                    <div>
+                      <span class="font-medium text-surface-500 dark:text-surface-400 text-lg">{{
+                        bankStore.getBank(item.idBank)?.name
+                      }}</span>
+                      <div class="text-sm font-medium mt-2">
+                        {{ UtilsService.formatDateToString(item.expirationDate) }}
+                      </div>
+                      <div class="text-sm font-medium mt-2">Dzień spłaty: {{ item.repaymentDay }}</div>
+                    </div>
+                  </div>
+                  <div class="flex flex-col md:items-end gap-8 w-1/3">
+                    <span class="text-xl font-semibold text-surface-500 dark:text-surface-400">{{
+                      UtilsService.formatCurrency(item.limit)
                     }}</span>
-                    <div class="text-sm font-medium mt-2">
-                      {{ UtilsService.formatDateToString(item.expirationDate) }}
+                    <div class="flex flex-row-reverse md:flex-row flex-wrap items-center gap-1">
+                      <OfficeIconButton
+                        v-if="item.activeStatus == 'INACTIVE'"
+                        title="Zmień status na AKTYWNY"
+                        icon="pi pi-times-circle"
+                        :rounded="false"
+                        class="text-red-500"
+                        @click="confirmStatusChange(item)"
+                      />
+                      <OfficeIconButton
+                        v-else
+                        title="Zmień status na NIEAKTYWNY"
+                        icon="pi pi-check-circle"
+                        :rounded="false"
+                        class="text-green-500"
+                        @click="confirmStatusChange(item)"
+                      />
+                      <OfficeIconButton
+                        icon="pi pi-file-edit"
+                        :title="'Edytuj kartę: ' + item.name"
+                        :rounded="false"
+                        class="text-orange-500"
+                        @click="editCard(item)"
+                      />
+                      <OfficeIconButton
+                        icon="pi pi-trash"
+                        class="text-red-500"
+                        :rounded="false"
+                        :title="'Usuń kartę: ' + item.name"
+                        @click="confirmDeleteCard(item)"
+                      />
+                      <OfficeButton
+                        btn-type="office-regular"
+                        icon="pi pi-shopping-cart"
+                        title="Nowy zakup"
+                        class="flex-auto md:flex-initial whitespace-nowrap"
+                        text=""
+                      ></OfficeButton>
                     </div>
-                    <div class="text-sm font-medium mt-2">Dzień spłaty: {{ item.repaymentDay }}</div>
-                  </div>
-                </div>
-                <div class="flex flex-col md:items-end gap-8 w-1/3">
-                  <span class="text-xl font-semibold text-surface-500 dark:text-surface-400">{{
-                    UtilsService.formatCurrency(item.limit)
-                  }}</span>
-                  <div class="flex flex-row-reverse md:flex-row flex-wrap items-center gap-1">
-                    <OfficeIconButton
-                      v-if="item.activeStatus == 'INACTIVE'"
-                      title="Zmień status na AKTYWNY"
-                      icon="pi pi-times-circle"
-                      :rounded="false"
-                      class="text-red-500"
-                      @click="confirmStatusChange(item)"
-                    />
-                    <OfficeIconButton
-                      v-else
-                      title="Zmień status na NIEAKTYWNY"
-                      icon="pi pi-check-circle"
-                      :rounded="false"
-                      class="text-green-500"
-                      @click="confirmStatusChange(item)"
-                    />
-                    <OfficeIconButton
-                      icon="pi pi-file-edit"
-                      :title="'Edytuj kartę: ' + item.name"
-                      :rounded="false"
-                      class="text-orange-500"
-                      @click="editCard(item)"
-                    />
-                    <OfficeIconButton
-                      icon="pi pi-trash"
-                      class="text-red-500"
-                      :rounded="false"
-                      :title="'Usuń kartę: ' + item.name"
-                      @click="confirmDeleteCard(item)"
-                    />
-                    <OfficeButton
-                      btn-type="office-regular"
-                      icon="pi pi-shopping-cart"
-                      title="Nowy zakup"
-                      class="flex-auto md:flex-initial whitespace-nowrap"
-                      text=""
-                    ></OfficeButton>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </template>
-    </DataView>
+        </template>
+      </DataView>
     </Panel>
   </MainPageShell>
 </template>

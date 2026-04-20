@@ -529,328 +529,333 @@
     </template>
 
     <div class="my-3 w-full max-w-7xl mx-auto px-2 sm:px-3">
-    <form @submit.stop.prevent="saveDevice">
-      <Panel>
-        <template #header>
-          <IconButton
-            title="Powrót do listy urządzeń"
-            icon="pi pi-fw pi-bars"
-            @click="() => router.push({ name: 'DevicesList' })"
-          />
-          <IconButton
-            title="Powrót do listy urządzeń"
-            icon="pi pi-fw pi-th-large"
-            @click="() => router.push({ name: 'DevicesGrid' })"
-          />
-          <div class="w-full flex justify-center">
-            <span class="m-0 text-2xl" :title="device?.name">
-              {{
-                isEdit
-                  ? `Edycja: ${device?.name.length > 50 ? device?.name.substring(0, 50) + '...' : device?.name}`
-                  : 'Nowe urzadzenie'
-              }}
-            </span>
-          </div>
-        </template>
-
-        <!--  --------------------------------------------------------DEVICE---------------------------------      -->
-        <Fieldset class="w-full" legend="Zakup">
-          <div class="grid gap-4">
-            <div class="col-start-1 col-span-4">
-              <!-- ROW-1   NAME -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="title">Nazwa:</label>
-                <InputText id="title" v-model="device.name" maxlength="200" :invalid="showErrorName()" />
-                <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-
-              <!-- ROW-2  DEVICE TYPE  -->
-              <div class="flex gap-2">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="deviceType">Rodzaj urządzenia:</label>
-                  <Select
-                    id="deviceType"
-                    v-model="device.deviceType"
-                    :options="deviceStore.devicesTypes"
-                    option-label="name"
-                    :invalid="showErrorDeviceType()"
-                    :loading="deviceStore.loadingDeviceTypes"
-                  />
-                  <small class="p-error">
-                    {{ showErrorDeviceType() ? 'Pole jest wymagane.' : '&nbsp;' }}
-                  </small>
-                </div>
-                <OfficeIconButton
-                  title="Dodaj rodzaj urządzenia"
-                  :icon="deviceStore.loadingDeviceTypes ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                  style="height: 35px; width: 35px; padding: 0"
-                  class="mt-3 self-center"
-                  @click="showAddDeviceTypeModal = true"
-                />
-              </div>
-
-              <!-- ROW-3   FIRM -->
-              <div class="flex flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="input-customer">Wybierz firmę:</label>
-                  <AutoComplete
-                    id="input-customer"
-                    v-model="device.firm"
-                    dropdown
-                    force-selection
-                    :invalid="showErrorFirm()"
-                    :suggestions="filteredFirms"
-                    :loading="firmStore.loadingFirms"
-                    option-label="name"
-                    @complete="searchFirm"
-                  />
-                  <small class="p-error">
-                    {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
-                  </small>
-                </div>
-              </div>
-
-              <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="purchase-date">Data zakupu:</label>
-                  <DatePicker
-                    id="purchase-date"
-                    v-model="device.purchaseDate"
-                    show-icon
-                    :invalid="showErrorPurchaseDate()"
-                    date-format="yy-mm-dd"
-                  />
-                  <small class="p-error">{{ showErrorPurchaseDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-                </div>
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="purchase-amount">Kwota zakupu:</label>
-                  <InputNumber
-                    id="purchase-amount"
-                    v-model="device.purchaseAmount"
-                    :class="{ 'p-invalid': showErrorPurchaseAmount() }"
-                    :min-fraction-digits="2"
-                    :max-fraction-digits="2"
-                    mode="currency"
-                    currency="PLN"
-                    locale="pl-PL"
-                    :invalid="showErrorPurchaseAmount()"
-                    @focus="UtilsService.selectText"
-                  />
-                  <small class="p-error">{{ showErrorPurchaseAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-                </div>
-              </div>
-
-              <!-- ROW-5  WARRANTY DATE  -->
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="warranty-date">Gwarancja do::</label>
-                  <DatePicker
-                    id="warranty-date"
-                    v-model="device.warrantyEndDate"
-                    show-icon
-                    date-format="yy-mm-dd"
-                    show-button-bar
-                  />
-                </div>
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="warranty-left">Pozostało...</label>
-                  <InputText
-                    id="warranty-left"
-                    v-model="warrantyDateLeft"
-                    :class="{
-                      overdue: warrantyDateLeft === 'Gwarancja się skończyła.',
-                      valid: warrantyDateLeft !== 'Gwarancja się skończyła.' && warrantyDateLeft !== 'Brak gwarancji.',
-                    }"
-                    :disabled="!device.warrantyEndDate"
-                    readonly
-                    @focus="UtilsService.selectText"
-                  />
-                </div>
-              </div>
-
-              <!-- ROW-6  INSURANCE DATE  -->
-              <div class="flex flex-col md:flex-row gap-4 mt-5">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="warranty-date">Ubezpieczenie do::</label>
-                  <DatePicker
-                    id="warranty-date"
-                    v-model="device.insuranceEndDate"
-                    show-icon
-                    date-format="yy-mm-dd"
-                    show-button-bar
-                  />
-                </div>
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="insurance-left">Pozostało...</label>
-                  <InputText
-                    id="insurance-left"
-                    v-model="insuranceDateLeft"
-                    :class="{
-                      overdue: insuranceDateLeft === 'Ubezpieczenie się skończyło.',
-                      valid:
-                        insuranceDateLeft !== 'Ubezpieczenie się skończyło.' &&
-                        insuranceDateLeft !== 'Brak ubezpieczenia.',
-                    }"
-                    :disabled="!device.insuranceEndDate"
-                    readonly
-                    @focus="UtilsService.selectText"
-                  />
-                </div>
-              </div>
-
-              <!-- ROW-7   IMAGE URL -->
-              <div class="flex flex-col mt-5">
-                <label class="ml-2 mb-1" for="image">URL obrazka:</label>
-                <InputText id="image" v-model="device.imageUrl" maxlength="2000" />
-              </div>
+      <form @submit.stop.prevent="saveDevice">
+        <Panel>
+          <template #header>
+            <IconButton
+              title="Powrót do listy urządzeń"
+              icon="pi pi-fw pi-bars"
+              @click="() => router.push({ name: 'DevicesList' })"
+            />
+            <IconButton
+              title="Powrót do listy urządzeń"
+              icon="pi pi-fw pi-th-large"
+              @click="() => router.push({ name: 'DevicesGrid' })"
+            />
+            <div class="w-full flex justify-center">
+              <span class="m-0 text-2xl" :title="device?.name">
+                {{
+                  isEdit
+                    ? `Edycja: ${device?.name.length > 50 ? device?.name.substring(0, 50) + '...' : device?.name}`
+                    : 'Nowe urzadzenie'
+                }}
+              </span>
             </div>
-          </div>
-        </Fieldset>
+          </template>
 
-        <Fieldset v-if="device.files" class="w-full" legend="Pliki" :toggleable="true">
-          <DataTable
-            v-if="device.files.length > 0"
-            :value="device.files"
-            class="mt-4"
-            :rows="10"
-            :paginator="true"
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-            :rowsPerPageOptions="[5, 10, 20, 50]"
-            responsiveLayout="scroll"
-            @row-click="onFilesRowClick"
-          >
-            <Column field="name" header="Nazwa pliku" :sortable="true">
-              <template #body="slotProps">
-                <div class="flex items-center gap-2">
-                  <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2 shrink-0"></i>
-                  <span class="text-primary-600 dark:text-primary-400 cursor-pointer truncate">{{
-                    slotProps.data.name
-                  }}</span>
+          <!--  --------------------------------------------------------DEVICE---------------------------------      -->
+          <Fieldset class="w-full" legend="Zakup">
+            <div class="grid gap-4">
+              <div class="col-start-1 col-span-4">
+                <!-- ROW-1   NAME -->
+                <div class="flex flex-col">
+                  <label class="ml-2 mb-1" for="title">Nazwa:</label>
+                  <InputText id="title" v-model="device.name" maxlength="200" :invalid="showErrorName()" />
+                  <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                </div>
+
+                <!-- ROW-2  DEVICE TYPE  -->
+                <div class="flex gap-2">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="deviceType">Rodzaj urządzenia:</label>
+                    <Select
+                      id="deviceType"
+                      v-model="device.deviceType"
+                      :options="deviceStore.devicesTypes"
+                      option-label="name"
+                      :invalid="showErrorDeviceType()"
+                      :loading="deviceStore.loadingDeviceTypes"
+                    />
+                    <small class="p-error">
+                      {{ showErrorDeviceType() ? 'Pole jest wymagane.' : '&nbsp;' }}
+                    </small>
+                  </div>
                   <OfficeIconButton
-                    icon="pi pi-external-link"
-                    class="shrink-0 text-blue-500"
-                    title="Otwórz w nowej karcie"
-                    @click.stop="openFileUrlInNewTab(slotProps.data.url)"
+                    title="Dodaj rodzaj urządzenia"
+                    :icon="deviceStore.loadingDeviceTypes ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                    style="height: 35px; width: 35px; padding: 0"
+                    class="mt-3 self-center"
+                    @click="showAddDeviceTypeModal = true"
                   />
                 </div>
-              </template>
-            </Column>
-            <Column field="type" header="Typ" :sortable="true" style="width: 150px">
-              <template #body="slotProps">
-                <Tag
-                  :value="FileService.getFileTypeLabel(slotProps.data.type)"
-                  :severity="FileService.getFileTypeSeverity(slotProps.data.type)"
-                />
-              </template>
-            </Column>
-            <Column field="size" header="Rozmiar" :sortable="true" style="width: 150px">
-              <template #body="slotProps">
-                {{ FileService.formatFileSize(slotProps.data.size) }}
-              </template>
-            </Column>
-            <Column field="uploadDate" header="Data dodania" :sortable="true" style="width: 200px">
-              <template #body="slotProps">
-                {{ FileService.formatDate(slotProps.data.uploadDate) }}
-              </template>
-            </Column>
-            <Column field="description" header="Opis" style="width: 200px">
-              <template #body="slotProps">
-                <div @click.stop>
-                  <InputText v-model="slotProps.data.description" placeholder="Dodaj opis..." />
-                </div>
-              </template>
-            </Column>
-            <Column header="Akcje" style="width: 100px">
-              <template #body="slotProps">
-                <div class="flex gap-2" @click.stop>
-                  <OfficeIconButton icon="pi pi-download" class="text-blue-500" @click="downloadFile(slotProps.data)" />
-                  <OfficeIconButton
-                    icon="pi pi-trash"
-                    class="text-red-500"
-                    @click="confirmDeleteFile(slotProps.data)"
-                  />
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-        </Fieldset>
 
-        <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
-          <Toolbar class="mb-6">
-            <template #start>
-              <ButtonOutlined text="Nowy" icon="pi pi-plus" icon-pos="left" class="mr-2" @click="openNew" />
-            </template>
-          </Toolbar>
-          <DataTable
-            :value="Array.from(device.details)"
-            :reorderableColumns="true"
-            @rowReorder="onRowReorder"
-            tableStyle="min-width: 50rem"
-            size="small"
-          >
-            <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
-            <Column field="0" header="Klucz" style="width: 40%"></Column>
-            <Column field="1" header="Wartość" style="width: 40%"></Column>
-            <Column header="Akcje">
-              <template #body="slotProps">
-                <OfficeIconButton
-                  icon="pi pi-pencil"
-                  class="mr-2 text-orange-500"
-                  @click="editDetails(slotProps.data, slotProps.index)"
-                />
-                <OfficeIconButton icon="pi pi-trash" class="text-red-500" @click="confirmDelete(slotProps.data)" />
-              </template>
-            </Column>
-          </DataTable>
-          <div class="flex flex-col gap-4"></div>
-        </Fieldset>
-
-        <Fieldset class="w-full" legend="Sprzedaż">
-          <div class="grid gap-4">
-            <div class="col-start-1 col-span-4">
-              <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="sell-date">Data sprzedaży:</label>
-                  <DatePicker id="sell-date" v-model="device.sellDate" show-icon date-format="yy-mm-dd" />
+                <!-- ROW-3   FIRM -->
+                <div class="flex flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="input-customer">Wybierz firmę:</label>
+                    <AutoComplete
+                      id="input-customer"
+                      v-model="device.firm"
+                      dropdown
+                      force-selection
+                      :invalid="showErrorFirm()"
+                      :suggestions="filteredFirms"
+                      :loading="firmStore.loadingFirms"
+                      option-label="name"
+                      @complete="searchFirm"
+                    />
+                    <small class="p-error">
+                      {{ showErrorFirm() ? 'Pole jest wymagane.' : '&nbsp;' }}
+                    </small>
+                  </div>
                 </div>
-                <div class="flex flex-col w-full">
-                  <label class="ml-1 mb-1" for="sell-amount">Kwota sprzedaży:</label>
-                  <InputNumber
-                    id="sell-amount"
-                    v-model="device.sellAmount"
-                    :min-fraction-digits="2"
-                    :max-fraction-digits="2"
-                    mode="currency"
-                    currency="PLN"
-                    locale="pl-PL"
-                    @focus="UtilsService.selectText"
-                  />
+
+                <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
+                <div class="flex flex-col md:flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="purchase-date">Data zakupu:</label>
+                    <DatePicker
+                      id="purchase-date"
+                      v-model="device.purchaseDate"
+                      show-icon
+                      :invalid="showErrorPurchaseDate()"
+                      date-format="yy-mm-dd"
+                    />
+                    <small class="p-error">{{ showErrorPurchaseDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="purchase-amount">Kwota zakupu:</label>
+                    <InputNumber
+                      id="purchase-amount"
+                      v-model="device.purchaseAmount"
+                      :class="{ 'p-invalid': showErrorPurchaseAmount() }"
+                      :min-fraction-digits="2"
+                      :max-fraction-digits="2"
+                      mode="currency"
+                      currency="PLN"
+                      locale="pl-PL"
+                      :invalid="showErrorPurchaseAmount()"
+                      @focus="UtilsService.selectText"
+                    />
+                    <small class="p-error">{{ showErrorPurchaseAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+                  </div>
+                </div>
+
+                <!-- ROW-5  WARRANTY DATE  -->
+                <div class="flex flex-col md:flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="warranty-date">Gwarancja do::</label>
+                    <DatePicker
+                      id="warranty-date"
+                      v-model="device.warrantyEndDate"
+                      show-icon
+                      date-format="yy-mm-dd"
+                      show-button-bar
+                    />
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="warranty-left">Pozostało...</label>
+                    <InputText
+                      id="warranty-left"
+                      v-model="warrantyDateLeft"
+                      :class="{
+                        overdue: warrantyDateLeft === 'Gwarancja się skończyła.',
+                        valid:
+                          warrantyDateLeft !== 'Gwarancja się skończyła.' && warrantyDateLeft !== 'Brak gwarancji.',
+                      }"
+                      :disabled="!device.warrantyEndDate"
+                      readonly
+                      @focus="UtilsService.selectText"
+                    />
+                  </div>
+                </div>
+
+                <!-- ROW-6  INSURANCE DATE  -->
+                <div class="flex flex-col md:flex-row gap-4 mt-5">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="warranty-date">Ubezpieczenie do::</label>
+                    <DatePicker
+                      id="warranty-date"
+                      v-model="device.insuranceEndDate"
+                      show-icon
+                      date-format="yy-mm-dd"
+                      show-button-bar
+                    />
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="insurance-left">Pozostało...</label>
+                    <InputText
+                      id="insurance-left"
+                      v-model="insuranceDateLeft"
+                      :class="{
+                        overdue: insuranceDateLeft === 'Ubezpieczenie się skończyło.',
+                        valid:
+                          insuranceDateLeft !== 'Ubezpieczenie się skończyło.' &&
+                          insuranceDateLeft !== 'Brak ubezpieczenia.',
+                      }"
+                      :disabled="!device.insuranceEndDate"
+                      readonly
+                      @focus="UtilsService.selectText"
+                    />
+                  </div>
+                </div>
+
+                <!-- ROW-7   IMAGE URL -->
+                <div class="flex flex-col mt-5">
+                  <label class="ml-2 mb-1" for="image">URL obrazka:</label>
+                  <InputText id="image" v-model="device.imageUrl" maxlength="2000" />
                 </div>
               </div>
             </div>
+          </Fieldset>
+
+          <Fieldset v-if="device.files" class="w-full" legend="Pliki" :toggleable="true">
+            <DataTable
+              v-if="device.files.length > 0"
+              :value="device.files"
+              class="mt-4"
+              :rows="10"
+              :paginator="true"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+              :rowsPerPageOptions="[5, 10, 20, 50]"
+              responsiveLayout="scroll"
+              @row-click="onFilesRowClick"
+            >
+              <Column field="name" header="Nazwa pliku" :sortable="true">
+                <template #body="slotProps">
+                  <div class="flex items-center gap-2">
+                    <i :class="FileService.getFileIcon(slotProps.data.type)" class="mr-2 shrink-0"></i>
+                    <span class="text-primary-600 dark:text-primary-400 cursor-pointer truncate">{{
+                      slotProps.data.name
+                    }}</span>
+                    <OfficeIconButton
+                      icon="pi pi-external-link"
+                      class="shrink-0 text-blue-500"
+                      title="Otwórz w nowej karcie"
+                      @click.stop="openFileUrlInNewTab(slotProps.data.url)"
+                    />
+                  </div>
+                </template>
+              </Column>
+              <Column field="type" header="Typ" :sortable="true" style="width: 150px">
+                <template #body="slotProps">
+                  <Tag
+                    :value="FileService.getFileTypeLabel(slotProps.data.type)"
+                    :severity="FileService.getFileTypeSeverity(slotProps.data.type)"
+                  />
+                </template>
+              </Column>
+              <Column field="size" header="Rozmiar" :sortable="true" style="width: 150px">
+                <template #body="slotProps">
+                  {{ FileService.formatFileSize(slotProps.data.size) }}
+                </template>
+              </Column>
+              <Column field="uploadDate" header="Data dodania" :sortable="true" style="width: 200px">
+                <template #body="slotProps">
+                  {{ FileService.formatDate(slotProps.data.uploadDate) }}
+                </template>
+              </Column>
+              <Column field="description" header="Opis" style="width: 200px">
+                <template #body="slotProps">
+                  <div @click.stop>
+                    <InputText v-model="slotProps.data.description" placeholder="Dodaj opis..." />
+                  </div>
+                </template>
+              </Column>
+              <Column header="Akcje" style="width: 100px">
+                <template #body="slotProps">
+                  <div class="flex gap-2" @click.stop>
+                    <OfficeIconButton
+                      icon="pi pi-download"
+                      class="text-blue-500"
+                      @click="downloadFile(slotProps.data)"
+                    />
+                    <OfficeIconButton
+                      icon="pi pi-trash"
+                      class="text-red-500"
+                      @click="confirmDeleteFile(slotProps.data)"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </Fieldset>
+
+          <Fieldset class="w-full" legend="Szczegóły" :toggleable="true">
+            <Toolbar class="mb-6">
+              <template #start>
+                <ButtonOutlined text="Nowy" icon="pi pi-plus" icon-pos="left" class="mr-2" @click="openNew" />
+              </template>
+            </Toolbar>
+            <DataTable
+              :value="Array.from(device.details)"
+              :reorderableColumns="true"
+              @rowReorder="onRowReorder"
+              tableStyle="min-width: 50rem"
+              size="small"
+            >
+              <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
+              <Column field="0" header="Klucz" style="width: 40%"></Column>
+              <Column field="1" header="Wartość" style="width: 40%"></Column>
+              <Column header="Akcje">
+                <template #body="slotProps">
+                  <OfficeIconButton
+                    icon="pi pi-pencil"
+                    class="mr-2 text-orange-500"
+                    @click="editDetails(slotProps.data, slotProps.index)"
+                  />
+                  <OfficeIconButton icon="pi pi-trash" class="text-red-500" @click="confirmDelete(slotProps.data)" />
+                </template>
+              </Column>
+            </DataTable>
+            <div class="flex flex-col gap-4"></div>
+          </Fieldset>
+
+          <Fieldset class="w-full" legend="Sprzedaż">
+            <div class="grid gap-4">
+              <div class="col-start-1 col-span-4">
+                <!-- ROW-4  PURCHASE DATE / AMOUNT  -->
+                <div class="flex flex-col md:flex-row gap-4">
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="sell-date">Data sprzedaży:</label>
+                    <DatePicker id="sell-date" v-model="device.sellDate" show-icon date-format="yy-mm-dd" />
+                  </div>
+                  <div class="flex flex-col w-full">
+                    <label class="ml-1 mb-1" for="sell-amount">Kwota sprzedaży:</label>
+                    <InputNumber
+                      id="sell-amount"
+                      v-model="device.sellAmount"
+                      :min-fraction-digits="2"
+                      :max-fraction-digits="2"
+                      mode="currency"
+                      currency="PLN"
+                      locale="pl-PL"
+                      @focus="UtilsService.selectText"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Fieldset>
+
+          <!-- ROW-7  OTHER INFO  -->
+          <Fieldset legend="Dodatkowe informacje">
+            <Textarea id="description" v-model="device.otherInfo" fluid rows="5" cols="30" />
+          </Fieldset>
+
+          <!-- ROW-8  BTN SAVE -->
+          <div class="flex flex-row justify-end gap-2 mt-6">
+            <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
+            <OfficeButton
+              text="zapisz"
+              btn-type="office-save"
+              type="submit"
+              :loading="btnShowBusy"
+              :btn-disabled="isSaveBtnDisabled"
+            />
           </div>
-        </Fieldset>
-
-        <!-- ROW-7  OTHER INFO  -->
-        <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="device.otherInfo" fluid rows="5" cols="30" />
-        </Fieldset>
-
-        <!-- ROW-8  BTN SAVE -->
-        <div class="flex flex-row justify-end gap-2 mt-6">
-          <OfficeButton v-if="!isEdit" text="Reset" type="button" btn-type="office-regular" @click="resetForm()" />
-          <OfficeButton
-            text="zapisz"
-            btn-type="office-save"
-            type="submit"
-            :loading="btnShowBusy"
-            :btn-disabled="isSaveBtnDisabled"
-          />
-        </div>
-      </Panel>
-    </form>
+        </Panel>
+      </form>
     </div>
   </MainPageShell>
 </template>

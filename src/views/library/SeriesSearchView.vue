@@ -25,29 +25,29 @@
     </template>
 
     <Toolbar class="m-6 text-color">
-    <template #start>
-      <span>Wybrano {{ selectedSeries.length }} z {{ booksStore.getSortedSeries.length }} cykli</span>
-    </template>
+      <template #start>
+        <span>Wybrano {{ selectedSeries.length }} z {{ booksStore.getSortedSeries.length }} cykli</span>
+      </template>
 
-    <template #center>
-      <div class="flex flex-col">
-        <label class="ml-2" for="series">Wybierz cykl:</label>
-        <MultiSelect
-          v-model="selectedSeries"
-          filter
-          display="chip"
-          :options="booksStore.getSortedSeries"
-          option-label="title"
-          placeholder="Wybierz..."
-          :max-selected-labels="3"
-          class="w-full md:w-80"
-          :loading="booksStore.loadingBooksInSeries"
-        />
-      </div>
-    </template>
+      <template #center>
+        <div class="flex flex-col">
+          <label class="ml-2" for="series">Wybierz cykl:</label>
+          <MultiSelect
+            v-model="selectedSeries"
+            filter
+            display="chip"
+            :options="booksStore.getSortedSeries"
+            option-label="title"
+            placeholder="Wybierz..."
+            :max-selected-labels="3"
+            class="w-full md:w-80"
+            :loading="booksStore.loadingBooksInSeries"
+          />
+        </div>
+      </template>
 
-    <template #end></template>
-  </Toolbar>
+      <template #end></template>
+    </Toolbar>
 
     <div v-for="series in selectedSeries" :key="series.id" class="m-6">
       <SeriesCarousel :series="series" class="mb-10" />
