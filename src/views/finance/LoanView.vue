@@ -17,6 +17,16 @@
   import type { AxiosError } from 'axios';
   import { PaymentStatus } from '@/types/Payment.ts';
   import AddBankDialog from '@/components/finance/AddBankDialog.vue';
+  import {
+    UserIcon,
+    BuildingLibraryIcon,
+    CalendarDaysIcon,
+    BanknotesIcon,
+    CreditCardIcon,
+    InformationCircleIcon,
+    CalculatorIcon,
+    DocumentTextIcon,
+  } from '@heroicons/vue/24/outline';
 
   const userStore = useUsersStore();
   const loanStore = useLoansStore();
@@ -269,6 +279,73 @@
         });
       });
   }
+
+  const ptFieldInputText = {
+    root: {
+      class:
+        'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
+        'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
+
+  const ptSelectInField = {
+    root: {
+      class: 'flex-1 rounded-none border-0 shadow-none',
+    },
+    label: {
+      class: 'border-0 bg-transparent text-surface-900 dark:text-surface-0',
+    },
+    dropdown: {
+      class: 'shrink-0 border-0 bg-transparent px-3 text-surface-500 dark:text-surface-400',
+    },
+  };
+
+  const ptDatePickerField = {
+    root: {
+      class: 'w-full',
+    },
+    pcInputText: {
+      root: {
+        class:
+          'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 ' +
+          'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+          'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0',
+      },
+    },
+  };
+
+  const ptInputNumberAmount = {
+    root: {
+      class: 'min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none',
+    },
+    pcInputText: {
+      root: {
+        class:
+          'w-full border-0 bg-transparent text-surface-900 shadow-none ' +
+          'enabled:focus:border-transparent enabled:focus:shadow-none enabled:focus:ring-0 ' +
+          'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+      },
+    },
+  };
+
+  const ptInputMaskField = {
+    root: {
+      class:
+        'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
+        'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
+
+  const ptTextareaField = {
+    root: {
+      class:
+        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
 </script>
 
 <template>
@@ -279,185 +356,317 @@
       <TheMenuFinance />
     </template>
 
-    <div class="my-3 w-full max-w-4xl mx-auto px-2 sm:px-3">
-      <form @submit.stop.prevent="saveLoan" class="w-full">
-        <Panel class="w-full">
-          <template #header>
-            <OfficeIconButton
-              title="Powrót do listy kredytów"
-              icon="pi pi-fw pi-list"
-              @click="() => router.push({ name: 'Loans' })"
-            />
-            <div class="w-full flex justify-center">
-              <span class="text-3xl">
-                {{ isEdit ? `Edycja kredytu: ${loan?.name}` : 'Nowy kredyt' }}
-              </span>
-            </div>
-          </template>
-          <div class="flex flex-col">
-            <!-- ROW-1   NAME -->
-            <div class="flex flex-col">
-              <label for="name">Nazwa</label>
-              <InputText id="name" v-model="loan.name" maxlength="50" :invalid="showErrorName()" />
-              <small class="text-red-500">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-
-            <!-- ROW-2   USER -->
-            <div class="flex flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="input-customer">Wybierz użytkownika:</label>
-                <Select
-                  id="input-customer"
-                  v-model="selectedUser"
-                  :class="{ 'p-invalid': showErrorUser() }"
-                  :options="userStore.users"
-                  :option-label="user => user.firstName + ' ' + user.lastName"
-                  :loading="userStore.loadingUsers"
-                  @change="loan.idUser = selectedUser ? selectedUser.id : 0"
-                />
-                <small class="text-red-500">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <!-- ROW-3   BANK -->
-            <div class="flex flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="input-customer">Wybierz bank:</label>
-                <Select
-                  id="input-customer"
-                  v-model="selectedBank"
-                  :invalid="showErrorBank()"
-                  :options="bankStore.banks"
-                  option-label="name"
-                  :onchange="loan.bank = selectedBank ? selectedBank : null"
-                  :loading="bankStore.loadingBanks"
-                />
-                <small class="text-red-500">{{ showErrorBank() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
+    <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
+      <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveLoan">
+        <div
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
+        >
+          <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <h1
+              class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
+            >
+              {{ isEdit ? `Edycja kredytu: ${loan?.name}` : 'Nowy kredyt' }}
+            </h1>
+            <div class="flex shrink-0 items-center gap-2 sm:justify-end">
               <OfficeIconButton
-                title="Dodaj bank"
-                :icon="bankStore.loadingBanks ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                style="height: 35px; width: 35px; padding: 0"
-                class="mt-1 self-center"
-                @click="showNewBankModal = true"
-              />
-            </div>
-
-            <!-- ROW-4  NUMBER / DATE  -->
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="number">Numer kredytu</label>
-                <InputText id="number" v-model="loan.loanNumber" :invalid="showErrorNumber()" maxlength="50" />
-                <small class="text-red-500">{{ showErrorNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-              <div class="flex flex-col w-full">
-                <label for="date">Z dnia:</label>
-                <DatePicker id="date" v-model="loan.date" show-icon date-format="yy-mm-dd" :invalid="showErrorDate()" />
-                <small class="text-red-500">{{ showErrorDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <!-- ROW-5  AMOUNT / COST  -->
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="amount">Kwota kredytu</label>
-                <InputNumber
-                  id="amount"
-                  v-model="loan.amount"
-                  :invalid="showErrorAmount()"
-                  :min-fraction-digits="2"
-                  :max-fraction-digits="2"
-                  mode="currency"
-                  currency="PLN"
-                  locale="pl-PL"
-                  @focus="UtilsService.selectText"
-                />
-                <small class="text-red-500">{{ showErrorAmount() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-              <div class="flex flex-col w-full">
-                <label for="cost">Koszt kredytu:</label>
-                <InputNumber
-                  id="cost"
-                  v-model="loan.loanCost"
-                  :min-fraction-digits="2"
-                  :max-fraction-digits="2"
-                  mode="currency"
-                  currency="PLN"
-                  locale="pl-PL"
-                  @focus="UtilsService.selectText"
-                />
-              </div>
-            </div>
-
-            <!-- ROW-6  INSTALLMENT NR / INSTALLMENT AMOUNT  -->
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="amount">Ilość rat:</label>
-                <InputNumber
-                  id="amount"
-                  v-model="loan.numberOfInstallments"
-                  mode="decimal"
-                  show-buttons
-                  :min="1"
-                  :max="84"
-                  :disabled="isEdit"
-                />
-              </div>
-              <div class="flex flex-col w-full">
-                <label for="installmentAmount">Kwota raty:</label>
-                <InputNumber
-                  id="installmentAmount"
-                  v-model="loan.installmentAmount"
-                  :invalid="showErrorInstallmentAmount()"
-                  :min-fraction-digits="2"
-                  :max-fraction-digits="2"
-                  :disabled="isEdit"
-                  mode="currency"
-                  currency="PLN"
-                  locale="pl-PL"
-                  @focus="UtilsService.selectText"
-                />
-                <small class="text-red-500">{{
-                  showErrorInstallmentAmount() ? 'Pole jest wymagane.' : '&nbsp;'
-                }}</small>
-              </div>
-            </div>
-
-            <!-- ROW-7  ACCOUNT NR / FIRST PAYMENT DATE  -->
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="flex flex-col w-full">
-                <label for="accountNo">Nr konta:</label>
-                <InputMask
-                  id="accountNo"
-                  v-model="loan.accountNumber"
-                  :invalid="showErrorAccountNumber()"
-                  mask="99 9999 9999 9999 9999 9999 9999"
-                />
-                <small class="text-red-500">{{ showErrorAccountNumber() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-              <div class="flex flex-col w-full">
-                <label for="first">Data pierwszej raty:</label>
-                <DatePicker
-                  id="first"
-                  v-model="loan.firstPaymentDate"
-                  :invalid="showErrorFirstDate()"
-                  show-icon
-                  date-format="yy-mm-dd"
-                  :disabled="isEdit"
-                />
-                <small class="text-red-500">{{ showErrorFirstDate() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <!-- ROW-7  OTHER INFO  -->
-            <div class="flex flex-col w-full">
-              <label for="input">Dodatkowe informacje:</label>
-              <Textarea v-model="loan.otherInfo" rows="5" cols="30" />
+                title="Powrót do listy kredytów"
+                class="text-orange-500"
+                @click="() => router.push({ name: 'Loans' })"
+              >
+                <template #icon>
+                  <CalendarDaysIcon aria-hidden="true" />
+                </template>
+              </OfficeIconButton>
             </div>
           </div>
 
-          <!-- ROW-6  BTN SAVE -->
-          <div class="flex mt-5 justify-end">
+          <div class="flex flex-col gap-6">
+            <div
+              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+            >
+              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <InformationCircleIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Informacje ogólne</span>
+              </h2>
+              <div class="flex flex-col gap-5">
+                <div class="flex flex-col gap-2">
+                  <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-name">Nazwa</label>
+                  <InputText
+                    id="loan-name"
+                    v-model="loan.name"
+                    maxlength="50"
+                    :pt="ptFieldInputText"
+                    :class="{ 'p-invalid': showErrorName() }"
+                  />
+                  <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
+                  }}</small>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-user"
+                      >Wybierz użytkownika</label
+                    >
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      :class="{ 'border-red-500 dark:border-red-400': showErrorUser() }"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <UserIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <Select
+                        id="loan-user"
+                        v-model="selectedUser"
+                        :pt="ptSelectInField"
+                        :options="userStore.users"
+                        :option-label="user => user.firstName + ' ' + user.lastName"
+                        placeholder="Wybierz użytkownika"
+                        :loading="userStore.loadingUsers"
+                        @change="loan.idUser = selectedUser ? selectedUser.id : 0"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorUser() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-bank">Wybierz bank</label>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                      <div
+                        class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                        :class="{ 'border-red-500 dark:border-red-400': showErrorBank() }"
+                      >
+                        <div
+                          class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                        >
+                          <BuildingLibraryIcon class="h-5 w-5" aria-hidden="true" />
+                        </div>
+                        <Select
+                          id="loan-bank"
+                          v-model="selectedBank"
+                          :pt="ptSelectInField"
+                          :options="bankStore.banks"
+                          option-label="name"
+                          placeholder="Wybierz bank"
+                          :loading="bankStore.loadingBanks"
+                          @change="loan.bank = selectedBank ? selectedBank : null"
+                        />
+                      </div>
+                      <OfficeIconButton
+                        title="Dodaj bank"
+                        :icon="bankStore.loadingBanks ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                        class="text-orange-500"
+                        @click="showNewBankModal = true"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorBank() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-number"
+                      >Numer kredytu</label
+                    >
+                    <InputText
+                      id="loan-number"
+                      v-model="loan.loanNumber"
+                      maxlength="50"
+                      :pt="ptFieldInputText"
+                      :class="{ 'p-invalid': showErrorNumber() }"
+                    />
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorNumber() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-date">Z dnia</label>
+                    <DatePicker
+                      id="loan-date"
+                      v-model="loan.date"
+                      :pt="ptDatePickerField"
+                      show-icon
+                      date-format="yy-mm-dd"
+                      :invalid="showErrorDate()"
+                    />
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorDate() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+            >
+              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <CalculatorIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Szczegóły kredytu</span>
+              </h2>
+              <div class="flex flex-col gap-5">
+                <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-amount"
+                      >Kwota kredytu</label
+                    >
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      :class="{ 'border-red-500 dark:border-red-400': showErrorAmount() }"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <BanknotesIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <InputNumber
+                        id="loan-amount"
+                        v-model="loan.amount"
+                        :pt="ptInputNumberAmount"
+                        input-class="w-full"
+                        :invalid="showErrorAmount()"
+                        :min-fraction-digits="2"
+                        :max-fraction-digits="2"
+                        mode="currency"
+                        currency="PLN"
+                        locale="pl-PL"
+                        @focus="UtilsService.selectText"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorAmount() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-cost">Koszt kredytu</label>
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <CreditCardIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <InputNumber
+                        id="loan-cost"
+                        v-model="loan.loanCost"
+                        :pt="ptInputNumberAmount"
+                        input-class="w-full"
+                        :min-fraction-digits="2"
+                        :max-fraction-digits="2"
+                        mode="currency"
+                        currency="PLN"
+                        locale="pl-PL"
+                        @focus="UtilsService.selectText"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-installments"
+                      >Ilość rat</label
+                    >
+                    <InputNumber
+                      id="loan-installments"
+                      v-model="loan.numberOfInstallments"
+                      :pt="ptFieldInputText"
+                      mode="decimal"
+                      show-buttons
+                      :min="1"
+                      :max="84"
+                      :disabled="isEdit"
+                    />
+                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-installment-amount"
+                      >Kwota raty</label
+                    >
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      :class="{ 'border-red-500 dark:border-red-400': showErrorInstallmentAmount() }"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <BanknotesIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <InputNumber
+                        id="loan-installment-amount"
+                        v-model="loan.installmentAmount"
+                        :pt="ptInputNumberAmount"
+                        input-class="w-full"
+                        :invalid="showErrorInstallmentAmount()"
+                        :min-fraction-digits="2"
+                        :max-fraction-digits="2"
+                        :disabled="isEdit"
+                        mode="currency"
+                        currency="PLN"
+                        locale="pl-PL"
+                        @focus="UtilsService.selectText"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorInstallmentAmount() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-first-date"
+                      >Data pierwszej raty</label
+                    >
+                    <DatePicker
+                      id="loan-first-date"
+                      v-model="loan.firstPaymentDate"
+                      :pt="ptDatePickerField"
+                      :invalid="showErrorFirstDate()"
+                      show-icon
+                      date-format="yy-mm-dd"
+                      :disabled="isEdit"
+                    />
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorFirstDate() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-account">Nr konta</label>
+                  <InputMask
+                    id="loan-account"
+                    v-model="loan.accountNumber"
+                    :pt="ptInputMaskField"
+                    :class="{ 'p-invalid': showErrorAccountNumber() }"
+                    mask="99 9999 9999 9999 9999 9999 9999"
+                  />
+                  <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    showErrorAccountNumber() ? 'Pole jest wymagane.' : '\u00a0'
+                  }}</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <h2 class="flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
+                <DocumentTextIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
+                <span>Dodatkowe informacje</span>
+              </h2>
+              <Textarea id="loan-other-info" v-model="loan.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
+            </div>
+          </div>
+
+          <div class="mt-8 flex justify-end">
             <OfficeButton
               text="zapisz"
               btn-type="office-save"
@@ -466,7 +675,7 @@
               :btn-disabled="isSaveBtnDisabled"
             />
           </div>
-        </Panel>
+        </div>
       </form>
     </div>
   </MainPageShell>
