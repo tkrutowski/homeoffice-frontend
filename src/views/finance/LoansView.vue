@@ -327,28 +327,92 @@
         current-page-report-template="Od {first} do {last} (Wszystkich kredytów: {totalRecords})"
       >
         <template #header>
-          <div class="flex justify-between">
-            <router-link :to="{ name: 'Loan', params: { isEdit: 'false', loanId: 0 } }" style="text-decoration: none">
-              <Button outlined label="Dodaj" icon="pi pi-plus" title="Dodaj nowy kredyt" />
-            </router-link>
-            <div v-if="loansStore.loadingLoans">
-              <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <OfficeIconButton
+                  class="text-amber-500"
+                  title="Dodaj nowy kredyt"
+                  icon="pi pi-plus"
+                  @click="router.push({ name: 'Loan', params: { isEdit: 'false', loanId: 0 } })"
+                />
+                <div
+                  class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                  role="presentation"
+                  aria-hidden="true"
+                />
+                <div class="flex flex-wrap items-center gap-2">
+                  <OfficeIconButton
+                    title="Wyświetl niespłacone"
+                    :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
+                    class="text-red-500"
+                    :active="filter === 'TO_PAY'"
+                    @click="setFilter('TO_PAY')"
+                  />
+                  <OfficeIconButton
+                    title="Wyświetl spłacone"
+                    :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
+                    class="text-green-500"
+                    :active="filter === 'PAID'"
+                    @click="setFilter('PAID')"
+                  />
+                  <OfficeIconButton
+                    title="Wyświetl wszystkie"
+                    :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
+                    class="text-orange-500"
+                    :active="filter === 'ALL'"
+                    @click="setFilter('ALL')"
+                  />
+                  <div
+                    class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
+                    role="presentation"
+                    aria-hidden="true"
+                  />
+                  <OfficeIconButton
+                    title="Odświerz listę kredytów"
+                    class="text-orange-500"
+                    :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+                    @click="loansStore.refreshLoans()"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-end flex-wrap gap-4">
+                <div v-if="loansStore.loadingLoans" class="flex items-center">
+                  <ProgressSpinner class="shrink-0" style="width: 35px; height: 35px" stroke-width="5" />
+                </div>
+                <IconField icon-position="left">
+                  <InputIcon>
+                    <i class="pi pi-search" />
+                  </InputIcon>
+                  <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                </IconField>
+                <Button
+                  type="button"
+                  icon="pi pi-filter-slash"
+                  outlined
+                  size="small"
+                  title="Wyczyść filtry"
+                  @click="clearFilter()"
+                />
+              </div>
             </div>
-            <div class="flex gap-4">
-              <IconField icon-position="left">
-                <InputIcon>
-                  <i class="pi pi-search" />
-                </InputIcon>
-                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
-              </IconField>
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                outlined
-                size="small"
-                title="Wyczyść filtry"
-                @click="clearFilter()"
-              />
+            <div
+              class="flex flex-col gap-1 border-t border-surface-200 pt-3 text-sm dark:border-surface-700 md:flex-row md:flex-wrap md:items-baseline md:justify-end md:gap-x-6 md:gap-y-1"
+            >
+              <p>
+                <span>Przefiltrowane:</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(filteredLoanAmount) }}</span>
+              </p>
+              <p>
+                <span>Wybrane:</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(selectedLoanAmount) }}</span>
+              </p>
+              <p>
+                <span>DO SPŁATY RAZEM:</span>
+                <span class="ml-2 font-medium tabular-nums">{{
+                  UtilsService.formatCurrency(loansStore.loansSumToPay)
+                }}</span>
+              </p>
             </div>
           </div>
         </template>
@@ -589,60 +653,6 @@
         </template>
       </DataTable>
     </Panel>
-
-    <template #bottom>
-      <Toolbar class="mx-2 border-t border-surface-200 bg-surface-0 pt-2 dark:border-surface-700 dark:bg-surface-950">
-        <template #start>
-          <OfficeIconButton
-            title="Odświerz listę kredytów"
-            :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-            class="mr-2"
-            @click="loansStore.refreshLoans()"
-          />
-        </template>
-
-        <template #center>
-          <OfficeIconButton
-            title="Wyświetl niespłacone"
-            :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-times-circle'"
-            class="mr-2 text-red-500"
-            :active="filter === 'TO_PAY'"
-            @click="setFilter('TO_PAY')"
-          />
-          <OfficeIconButton
-            title="Wyświetl spłacone"
-            :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"
-            class="mr-2 text-green-500"
-            :active="filter === 'PAID'"
-            @click="setFilter('PAID')"
-          />
-          <OfficeIconButton
-            title="Wyświetl wszystkie"
-            :icon="loansStore.loadingLoans ? 'pi pi-spin pi-spinner' : 'pi pi-list'"
-            class="mr-2 text-orange-500"
-            :active="filter === 'ALL'"
-            @click="setFilter('ALL')"
-          />
-        </template>
-
-        <template #end>
-          <div class="flex flex-col gap-2">
-            <p class="">
-              <span class="">Przefiltrowane:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(filteredLoanAmount) }}</span>
-            </p>
-            <p class="">
-              <span class="">Wybrane:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(selectedLoanAmount) }}</span>
-            </p>
-            <p class="">
-              <span class="">DO SPŁATY RAZEM:</span>
-              <span class="ml-3">{{ UtilsService.formatCurrency(loansStore.loansSumToPay) }}</span>
-            </p>
-          </div>
-        </template>
-      </Toolbar>
-    </template>
   </MainPageShell>
 </template>
 
