@@ -3,6 +3,7 @@
   import { type Firm } from '@/types/Firm.ts';
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useToast } from 'primevue/usetoast';
+  import FirmFormFields from '@/components/share/FirmFormFields.vue';
 
   const toast = useToast();
   const firm = ref<Firm>({
@@ -94,72 +95,40 @@
     }
     return false;
   };
+
+  const ptFieldInputText = {
+    root: {
+      class:
+        'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
+        'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
+
+  const ptTextareaField = {
+    root: {
+      class:
+        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
+    },
+  };
 </script>
 
 <template>
-  <Dialog :style="{ width: '750px' }" :modal="true">
+  <Dialog :style="{ width: 'min(95vw, 64rem)' }" :modal="true">
     <template #header>
       <p class="text-xl text-center mx-auto">Nowa firma</p>
     </template>
-    <!-- ROW-1 NAME  -->
-    <div class="flex flex-col w-full">
-      <label for="input" class="ml-2">Nazwa firmy</label>
-      <InputText id="input" v-model="firm.name" maxlength="100" :invalid="showErrorName()" />
-      <small class="p-error">{{ showErrorName() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-    </div>
-
-    <!-- ROW-2  ADDRESS  -->
-    <div class="flex-row flex gap-4">
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="street">Ulica</label>
-        <InputText id="street" v-model="firm.address.street" maxlength="100" />
-      </div>
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="zip">Kod</label>
-        <InputText id="zip" v-model="firm.address.zip" maxlength="6" :invalid="showErrorZip()" />
-        <small class="p-error">{{ showErrorZip() ? 'Format 61754 lub 61-754.' : '&nbsp;' }}</small>
-      </div>
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="city">Miasto</label>
-        <InputText id="city" v-model="firm.address.city" maxlength="100" />
-      </div>
-    </div>
-
-    <!-- ROW-3  PHONE  -->
-    <div class="flex-row flex gap-4 mb-3">
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="phone">Telefon</label>
-        <InputText id="phone" v-model="firm.phone" maxlength="30" />
-      </div>
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="phone2">Telefon 2</label>
-        <InputText id="phone2" v-model="firm.phone2" maxlength="30" />
-      </div>
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="fax">Fax</label>
-        <InputText id="fax" v-model="firm.fax" maxlength="30" />
-      </div>
-    </div>
-
-    <!-- ROW-4  MAIL / PHONE  -->
-    <div class="flex-row flex gap-4">
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="mail">E-mail</label>
-        <InputText id="mail" v-model="firm.mail" :invalid="showErrorMail()" maxlength="100" />
-        <small class="p-error">{{ showErrorMail() ? 'Niepoprawny format.' : '&nbsp;' }}</small>
-      </div>
-      <div class="flex flex-col w-full">
-        <label class="ml-2" for="www">WWW</label>
-        <InputText id="www" v-model="firm.www" maxlength="100" />
-      </div>
-    </div>
-
-    <!-- ROW-6  OTHER INFO  -->
-    <div class="row">
-      <div class="flex flex-col">
-        <label class="ml-2" for="input">Dodatkowe informacje:</label>
-        <Textarea v-model="firm.otherInfo" rows="4" cols="30" />
-      </div>
+    <div class="max-h-[70vh] overflow-y-auto pr-1">
+      <FirmFormFields
+        :firm="firm"
+        :show-error-name="showErrorName()"
+        :show-error-zip="showErrorZip()"
+        :show-error-mail="showErrorMail()"
+        :pt-field-input-text="ptFieldInputText"
+        :pt-textarea-field="ptTextareaField"
+      />
     </div>
     <template #footer>
       <div class="flex flex-row gap-4">

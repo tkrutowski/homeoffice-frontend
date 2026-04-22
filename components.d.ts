@@ -41,6 +41,7 @@ declare module 'vue' {
     FileUploadDialog: typeof import('./src/components/FileUploadDialog.vue')['default']
     FileUrlsPreviewDialog: typeof import('./src/components/FileUrlsPreviewDialog.vue')['default']
     FinanceHomeEntryCard: typeof import('./src/components/home/FinanceHomeEntryCard.vue')['default']
+    FirmFormFields: typeof import('./src/components/share/FirmFormFields.vue')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     IconField: typeof import('primevue/iconfield')['default']
     Image: typeof import('primevue/image')['default']
