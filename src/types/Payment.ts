@@ -11,6 +11,7 @@ export interface Payment {
   paymentType: 'LOAN' | 'FEE';
   paymentStatus: PaymentStatus;
   installments: Installment[];
+  idIssuer: number;
 }
 
 export enum PaymentStatus {

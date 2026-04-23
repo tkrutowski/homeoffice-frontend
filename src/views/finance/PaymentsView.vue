@@ -2,40 +2,32 @@
   import UserPayments from '@/components/finance/UserPayments.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import { onActivated, onMounted, ref, watch } from 'vue';
+  import { onMounted, ref, watch } from 'vue';
 
   import { usePaymentStore } from '@/stores/payments';
   import { useUsersStore } from '@/stores/users';
+  import { useBanksStore } from '@/stores/banks';
+  import { useFirmsStore } from '@/stores/firms';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { StatusType } from '@/types/StatusType.ts';
 
   const paymentStore = usePaymentStore();
   const userStore = useUsersStore();
+  const banksStore = useBanksStore();
+  const firmsStore = useFirmsStore();
 
   const selectedYear = ref<number>(new Date().getFullYear());
-  const refreshKey = ref<boolean>(true);
   let yearChangeTimeout: ReturnType<typeof setTimeout> | null = null;
-  let lastRequestId = 0;
 
   async function getPayments() {
-    const requestId = ++lastRequestId;
-    refreshKey.value = false;
     paymentStore.paymentSelectedYear = selectedYear.value;
     await paymentStore.getPaymentsFromDb(filter.value);
-    // Jeśli pojawiło się nowsze żądanie, ignorujemy starszą odpowiedź.
-    if (requestId !== lastRequestId) return;
-    refreshKey.value = true;
   }
 
   onMounted(async () => {
     console.log('onMounted PaymentView');
     if (userStore.users.length === 0) await userStore.refreshUsers();
-    await getPayments();
-  });
-
-  onActivated(() => {
-    // Zabezpieczenie na przyszłość (np. KeepAlive): po powrocie do listy zawsze dociągnij aktualne dane.
-    void getPayments();
+    await Promise.all([banksStore.getBanksFromDb(), firmsStore.getFirmsFromDb(), getPayments()]);
   });
 
   watch(selectedYear, newYear => {
@@ -112,7 +104,7 @@
         />
       </template>
     </Toolbar>
-    <div v-if="refreshKey" class="ml-6 mr-6">
+    <div class="ml-6 mr-6">
       <div v-for="[userId] in paymentStore.payments" :key="userId">
         <UserPayments :id-user="+userId" :year="+paymentStore.paymentSelectedYear" />
       </div>

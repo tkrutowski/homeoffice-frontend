@@ -12,21 +12,14 @@
   import { useUsersStore } from '@/stores/users.ts';
   import { useLoansStore } from '@/stores/loans.ts';
   import { useFeeStore } from '@/stores/fee.ts';
+  import { useBanksStore } from '@/stores/banks.ts';
+  import { useFirmsStore } from '@/stores/firms.ts';
   import { TranslationService } from '@/service/TranslationService.ts';
-  import type { StatusType } from '@/types/StatusType.ts';
-  import type { Loan } from '@/types/Loan';
-  import type { Fee } from '@/types/Fee';
-
-  /** Kolejka: `getLoansByYearAndStatusAndUser` / `getFeesByYearAndStatusAndUser` zerują globalny stan store — nie mogą się przeplatać między instancjami `UserPayments`. */
-  let bankFirmColumnMutex = Promise.resolve();
-  function runBankFirmColumnLoadSequentially(fn: () => Promise<void>): Promise<void> {
-    const run = bankFirmColumnMutex.then(fn);
-    bankFirmColumnMutex = run.catch(() => {});
-    return run;
-  }
 
   const paymentStore = usePaymentStore();
   const userStore = useUsersStore();
+  const banksStore = useBanksStore();
+  const firmsStore = useFirmsStore();
   const loansStore = useLoansStore();
   const feeStore = useFeeStore();
   const toast = useToast();
@@ -51,8 +44,6 @@
 
   const dataTableRef = ref(null);
   const cm = ref<InstanceType<typeof ContextMenu> | null>(null);
-  /** Indeks `th` kolumny bieżącego miesiąca: Nazwa, Bank, Dzień, potem miesiące 1–12 */
-  const todayIndex = ref<number>(moment().month() + 3);
 
   const onRowSelect = (event: any) => {
     const payment = event.data.paymentType === 'LOAN' ? 'PaymentLoan' : 'PaymentFee';
@@ -196,24 +187,16 @@
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
   };
 
-  /** Nazwy z lokalnego wyniku API (patrz `loadLoansAndFeesForBankFirmColumn`), nie ze `getLoan`/`getFee` na pustym store. */
-  const bankNameByLoanId = ref<Map<number, string>>(new Map());
-  const firmNameByFeeId = ref<Map<number, string>>(new Map());
-
+  /** `idIssuer` = id banku (LOAN) lub id firmy (FEE); lookup po `paymentType`, żeby nie pomylić kolizyjnych ID. */
   const findBankOrFirmName = (payment: Payment) => {
-    let result = '';
-    if (payment.paymentType === 'LOAN' && payment.installments.length > 0) {
-      const firstInstallment = payment.installments[0];
-      if (UtilsService.isLoanInstallment(firstInstallment)) {
-        result = bankNameByLoanId.value.get(firstInstallment.idLoan) ?? '';
-      }
-    }
+    const idIssuer = payment.idIssuer;
+    if (idIssuer == null || Number.isNaN(Number(idIssuer))) return '';
 
-    if (payment.paymentType === 'FEE' && payment.installments.length > 0) {
-      const firstInstallment = payment.installments[0];
-      if (UtilsService.isFeeInstallment(firstInstallment)) {
-        result = firmNameByFeeId.value.get(firstInstallment.idFee) ?? '';
-      }
+    let result = '';
+    if (payment.paymentType === 'LOAN') {
+      result = banksStore.getBank(idIssuer)?.name ?? '';
+    } else if (payment.paymentType === 'FEE') {
+      result = firmsStore.getFirm(idIssuer)?.name ?? '';
     }
 
     if (result.length > 20) {
@@ -279,63 +262,20 @@
     showStatusChangeConfirmationDialog.value = false;
   };
 
-  /** Ładuje kredyty/opłaty użytkownika dla roku i zapisuje nazwy banku/firmy w mapach (store list kredytów nie jest wypełniany na widoku płatności). */
-  const loadLoansAndFeesForBankFirmColumn = async () => {
-    const year = props.year;
-    const idUser = props.idUser;
-    await runBankFirmColumnLoadSequentially(async () => {
-      const status: StatusType = 'ALL';
-      const [loans, fees] = await Promise.all([
-        loansStore.getLoansByYearAndStatusAndUser(year, status, idUser),
-        feeStore.getFeesByYearAndStatusAndUser(year, status, idUser),
-      ]);
-      bankNameByLoanId.value = new Map(loans.map((l: Loan) => [l.id, l.bank?.name ?? '']));
-      firmNameByFeeId.value = new Map(fees.map((f: Fee) => [f.id, f.firm?.name ?? '']));
-    });
-  };
-
-  const syncPaymentsAndScroll = async () => {
+  const syncPayments = () => {
     moment.locale('pl');
     selectedYear.value = props.year;
     payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
-    await loadLoansAndFeesForBankFirmColumn();
-    await nextTick();
-    scrollToToday();
   };
 
   watch(
     () => [props.year, props.idUser] as const,
     () => {
-      void syncPaymentsAndScroll();
+      syncPayments();
     },
     { immediate: true }
   );
 
-  const scrollToToday = () => {
-    if (dataTableRef.value) {
-      const container = (dataTableRef.value as any).$el.querySelector(
-        '.p-datatable-table-container'
-      ) as HTMLElement | null;
-
-      if (container) {
-        const columns = container.querySelectorAll('thead.p-datatable-thead > tr > th');
-
-        const frozenColumnsCount = 2;
-        const frozenColumnsWidth = Array.from(columns)
-          .slice(0, frozenColumnsCount)
-          .reduce((total, col) => total + (col as HTMLElement).offsetWidth, 0);
-
-        const target = columns[todayIndex.value] as HTMLElement;
-
-        if (target) {
-          container.scrollTo({
-            left: target.offsetLeft - frozenColumnsWidth,
-            behavior: 'smooth',
-          });
-        }
-      }
-    }
-  };
 </script>
 
 <template>
