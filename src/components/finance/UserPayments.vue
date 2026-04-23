@@ -275,7 +275,6 @@
     },
     { immediate: true }
   );
-
 </script>
 
 <template>

@@ -40,7 +40,9 @@
 
 <template>
   <div class="flex flex-col gap-6">
-    <div class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5">
+    <div
+      class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+    >
       <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
         <InformationCircleIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
         <span>Informacje ogólne</span>
@@ -67,7 +69,9 @@
       </div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5">
+    <div
+      class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+    >
       <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
         <MapPinIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
         <span>Adres</span>
@@ -98,7 +102,9 @@
       </div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5">
+    <div
+      class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+    >
       <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
         <PhoneIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
         <span>Kontakt</span>

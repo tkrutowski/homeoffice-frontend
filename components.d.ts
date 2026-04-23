@@ -58,6 +58,7 @@ declare module 'vue' {
     MultiSelect: typeof import('primevue/multiselect')['default']
     NewBookDialog: typeof import('./src/components/library/NewBookDialog.vue')['default']
     NewComputer: typeof import('./src/components/device/NewComputer.vue')['default']
+    NipGusLookupPanel: typeof import('./src/components/share/NipGusLookupPanel.vue')['default']
     OfficeButton: typeof import('./src/components/OfficeButton.vue')['default']
     OfficeIconButton: typeof import('./src/components/OfficeIconButton.vue')['default']
     Panel: typeof import('primevue/panel')['default']

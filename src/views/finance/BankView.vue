@@ -10,6 +10,9 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Bank } from '@/types/Bank.ts';
   import { useBanksStore } from '@/stores/banks.ts';
+  import NipGusLookupPanel from '@/components/share/NipGusLookupPanel.vue';
+  import type { CompanyLookupResult } from '@/types/CompanyLookup';
+  import { applyCompanyLookupToParty } from '@/utils/applyCompanyLookupToParty';
   import {
     CalendarDaysIcon,
     InformationCircleIcon,
@@ -210,6 +213,10 @@
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
   };
+
+  function onCompanyLookupFilled(result: CompanyLookupResult) {
+    applyCompanyLookupToParty(bank.value, result);
+  }
 </script>
 
 <template>
@@ -242,6 +249,8 @@
               <ProgressSpinner v-if="bankStore.loadingBanks" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
             </div>
           </div>
+
+          <NipGusLookupPanel @filled="onCompanyLookupFilled" />
 
           <div class="flex flex-col gap-6">
             <div

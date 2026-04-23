@@ -12,6 +12,9 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { CalendarDaysIcon } from '@heroicons/vue/24/outline';
   import FirmFormFields from '@/components/share/FirmFormFields.vue';
+  import NipGusLookupPanel from '@/components/share/NipGusLookupPanel.vue';
+  import type { CompanyLookupResult } from '@/types/CompanyLookup';
+  import { applyCompanyLookupToParty } from '@/utils/applyCompanyLookupToParty';
 
   const firmStore = useFirmsStore();
   const route = useRoute();
@@ -203,6 +206,10 @@
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
   };
+
+  function onCompanyLookupFilled(result: CompanyLookupResult) {
+    applyCompanyLookupToParty(firm.value, result);
+  }
 </script>
 
 <template>
@@ -235,6 +242,8 @@
               <ProgressSpinner v-if="firmStore.loadingFirms" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
             </div>
           </div>
+
+          <NipGusLookupPanel @filled="onCompanyLookupFilled" />
 
           <FirmFormFields
             :firm="firm"
