@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useDevicesStore } from '@/stores/devices.ts';
-  import { computed, onMounted, ref, watch } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Device } from '@/types/Devices.ts';
@@ -31,19 +31,6 @@
   const selectedComputer = ref<Computer | null>(null);
   const hasChange = ref<boolean>(false);
   const updating = ref<boolean>(false);
-
-  const panelHeight = ref<number>(0);
-  const devDetailsRef = ref<HTMLElement[]>([]);
-  watch(devDetailsRef.value, refs => {
-    console.log('REFS', devDetailsRef.value);
-    let height = 0;
-    refs.forEach((el: HTMLElement) => {
-      if (el) {
-        height += el.offsetHeight;
-      }
-    });
-    panelHeight.value = height;
-  });
 
   //refresh view
   const refreshKey = ref<boolean>(false);
@@ -329,12 +316,13 @@
     @cancel="() => (showDeleteConfirmation = false)"
   />
 
-  <MainPageShell>
+  <MainPageShell :scroll-default-slot="false">
     <template #top>
       <TheMenuDevice />
     </template>
 
-    <Toolbar class="m-6">
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <Toolbar class="shrink-0 m-6 mb-0">
       <template #start>
         <OfficeButton
           btn-type="office-regular"
@@ -390,15 +378,16 @@
         />
       </template>
     </Toolbar>
-    <div v-if="selectedComputer" class="flex gap-4 m-6">
-      <Card class="flex-1 min-w-96 min-h-[calc(100vh-440px)]">
+
+    <div v-if="selectedComputer" class="flex min-h-0 min-w-0 flex-1 gap-4 m-6 mt-4 overflow-hidden">
+      <Card class="categories-card flex min-h-0 min-w-96 flex-1 flex-col overflow-hidden">
         <template #title>
           <div class="flex justify-center">
             <span class="font-bold text-2xl">Kategorie</span>
           </div>
         </template>
         <template #content>
-          <ScrollPanel class="overflow-y-auto min-h-[calc(100vh-440px)]" :style="{ maxHeight: panelHeight + 'px' }">
+          <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
             <div v-if="refreshKey">
               <div v-for="type in computerStore.componentTypes" :key="type.name">
                 <ComponentCategory
@@ -409,11 +398,11 @@
                 />
               </div>
             </div>
-          </ScrollPanel>
+          </div>
         </template>
       </Card>
 
-      <Panel class="w-full" ref="panelRef">
+      <Panel class="details-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden">
         <template #header>
           <div class="w-full flex justify-center gap-4">
             <span class="font-bold text-3xl ml-2 text-color"
@@ -424,16 +413,64 @@
             </div>
           </div>
         </template>
-        <div v-for="[category, devices] in deviceDetailsMap" :key="category.name" ref="devDetailsRef">
-          <DeviceDetails
-            :component-type="category"
-            :devices="devices"
-            @add="openAddComponentDialog"
-            @remove="removeComponent"
-            class="mb-5"
-          />
+        <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <div v-for="[category, devices] in deviceDetailsMap" :key="category.name">
+            <DeviceDetails
+              :component-type="category"
+              :devices="devices"
+              @add="openAddComponentDialog"
+              @remove="removeComponent"
+              class="mb-5"
+            />
+          </div>
         </div>
       </Panel>
     </div>
+    </div>
   </MainPageShell>
 </template>
+
+<style scoped>
+  :deep(.categories-card.p-card) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  :deep(.categories-card .p-card-body) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  :deep(.categories-card .p-card-content) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  :deep(.details-panel.p-panel) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+  :deep(.details-panel .p-panel-content-container) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  :deep(.details-panel .p-panel-content) {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+</style>
