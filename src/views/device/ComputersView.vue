@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useDevicesStore } from '@/stores/devices.ts';
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import OfficeButton from '@/components/OfficeButton.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Device } from '@/types/Devices.ts';
@@ -18,6 +19,8 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   const deviceStore = useDevicesStore();
   const computerStore = useComputerStore();
+  const route = useRoute();
+  const router = useRouter();
 
   const toast = useToast();
 
@@ -25,7 +28,15 @@
     console.log('onMounted GET');
     if (deviceStore.devices.length === 0) deviceStore.getDevices();
     if (computerStore.computers.length === 0) await computerStore.getComputers();
+    await syncComputerFromRoute();
   });
+
+  watch(
+    () => route.query.id,
+    () => {
+      void syncComputerFromRoute();
+    }
+  );
 
   const deviceDetailsMap = ref<Map<ComponentType, Device[]>>(new Map<ComponentType, Device[]>());
   const selectedComputer = ref<Computer | null>(null);
@@ -35,37 +46,89 @@
   //refresh view
   const refreshKey = ref<boolean>(false);
 
-  async function selectedComputerChanged(event: SelectChangeEvent) {
-    console.log('selectedComputerChanged', event);
+  function parseComputerIdFromQuery(raw: unknown): number | null {
+    if (raw == null || raw === '') return null;
+    const id = Number(Array.isArray(raw) ? raw[0] : raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
 
-    // Wyczyść poprzedni stan
+  function resetComputerViewState() {
     refreshKey.value = false;
     hasChange.value = false;
     deviceDetailsMap.value = new Map<ComponentType, Device[]>();
+  }
 
-    // Ustaw wybrany komputer
-    selectedComputer.value = event.value as Computer | null;
+  async function selectComputer(computer: Computer | null) {
+    resetComputerViewState();
 
-    // Jeśli wybrano komputer, pobierz jego pełne dane i zaktualizuj w store
-    if (event.value && typeof event.value === 'object' && 'id' in event.value) {
-      const computer = event.value as Computer;
-
-      const fullComputer = await computerStore.getComputerFromDb(computer.id);
-      if (fullComputer) {
-        // Zaktualizuj komputer w store, aby Select mógł go znaleźć
-        const index = computerStore.computers.findIndex(comp => comp.id === computer.id);
-        if (index !== -1) {
-          computerStore.computers[index] = fullComputer;
-        }
-        selectedComputer.value = fullComputer;
-      }
-    } else {
+    if (!computer) {
       selectedComputer.value = null;
+      return;
+    }
+
+    selectedComputer.value = computer;
+
+    const fullComputer = await computerStore.getComputerFromDb(computer.id);
+    if (fullComputer) {
+      const index = computerStore.computers.findIndex(comp => comp.id === computer.id);
+      if (index !== -1) {
+        computerStore.computers[index] = fullComputer;
+      }
+      selectedComputer.value = fullComputer;
     }
 
     setTimeout(() => {
       refreshKey.value = true;
     }, 300);
+  }
+
+  async function selectComputerById(id: number) {
+    if (computerStore.computers.length === 0) {
+      await computerStore.getComputers();
+    }
+
+    const computer = computerStore.computers.find(c => c.id === id);
+    if (!computer) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Komputer',
+        detail: 'Nie znaleziono komputera o podanym identyfikatorze.',
+        life: 4000,
+      });
+      await router.replace({ name: 'Computers' });
+      return;
+    }
+
+    await selectComputer(computer);
+  }
+
+  async function syncComputerFromRoute() {
+    const id = parseComputerIdFromQuery(route.query.id);
+    if (id == null) {
+      if (selectedComputer.value != null) {
+        await selectComputer(null);
+      }
+      return;
+    }
+    if (selectedComputer.value?.id === id) return;
+    await selectComputerById(id);
+  }
+
+  async function selectedComputerChanged(event: SelectChangeEvent) {
+    console.log('selectedComputerChanged', event);
+
+    const computer =
+      event.value && typeof event.value === 'object' && 'id' in event.value
+        ? (event.value as Computer)
+        : null;
+
+    await selectComputer(computer);
+
+    if (computer) {
+      await router.replace({ name: 'Computers', query: { id: String(computer.id) } });
+    } else {
+      await router.replace({ name: 'Computers' });
+    }
   }
 
   //
@@ -279,6 +342,7 @@
             life: 3000,
           });
           selectedComputer.value = null;
+          void router.replace({ name: 'Computers' });
         })
         .catch((reason: AxiosError) => {
           toast.add({
