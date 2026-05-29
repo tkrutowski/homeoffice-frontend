@@ -148,9 +148,7 @@ export const UtilsService = {
    * `details` z API może być Mapą lub zwykłym obiektem po deserializacji JSON.
    * Zwraca pary [klucz, wartość]; brak pola → pusta tablica.
    */
-  getDeviceDetailEntries(
-    details: Map<string, string> | Record<string, string> | null | undefined
-  ): [string, string][] {
+  getDeviceDetailEntries(details: Map<string, string> | Record<string, string> | null | undefined): [string, string][] {
     if (details == null) return [];
     if (details instanceof Map) {
       return Array.from(details.entries());
@@ -162,9 +160,7 @@ export const UtilsService = {
   },
 
   /** Czy urządzenie ma jawne, puste `details` (Map lub `{}`). Brak pola w odpowiedzi → false. */
-  hasEmptyDeviceDetails(
-    details: Map<string, string> | Record<string, string> | null | undefined
-  ): boolean {
+  hasEmptyDeviceDetails(details: Map<string, string> | Record<string, string> | null | undefined): boolean {
     if (details == null) return false;
     return UtilsService.getDeviceDetailEntries(details).length === 0;
   },

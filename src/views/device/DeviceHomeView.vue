@@ -40,9 +40,7 @@
 
     <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
       <header class="shrink-0">
-        <h1 class="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-0">
-          Tablica urządzeń
-        </h1>
+        <h1 class="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-0">Tablica urządzeń</h1>
         <p class="mt-1 text-sm text-surface-600 dark:text-surface-400">
           Przegląd inwentarza, kosztów i alertów w jednym miejscu.
         </p>
@@ -56,22 +54,14 @@
       </p>
 
       <!-- Finansowe -->
-      <DeviceFinancialSummary
-        :total-value="totalValue"
-        :value-by-category="valueByCategory"
-        :loading="isLoading"
-      />
+      <DeviceFinancialSummary :total-value="totalValue" :value-by-category="valueByCategory" :loading="isLoading" />
 
       <!-- Wykres + podział kategorii -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <DeviceCostChart :chart-data="chartData" :loading="isLoading" />
         </div>
-        <DeviceCategoryBreakdown
-          :categories="categoryAggregates"
-          :max-count="maxCategoryCount"
-          :loading="isLoading"
-        />
+        <DeviceCategoryBreakdown :categories="categoryAggregates" :max-count="maxCategoryCount" :loading="isLoading" />
       </div>
 
       <!-- Komputery + alerty -->

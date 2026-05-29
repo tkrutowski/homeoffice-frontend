@@ -32,8 +32,6 @@
         </span>
       </li>
     </ul>
-    <p v-else class="text-sm text-surface-500 dark:text-surface-400">
-      Brak urządzeń z datą zakupu.
-    </p>
+    <p v-else class="text-sm text-surface-500 dark:text-surface-400">Brak urządzeń z datą zakupu.</p>
   </DeviceDashboardPanel>
 </template>

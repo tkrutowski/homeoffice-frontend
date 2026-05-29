@@ -31,9 +31,7 @@
           </p>
         </div>
       </div>
-      <p class="mt-4 text-xs text-surface-500 dark:text-surface-400">
-        Suma cen zakupu wszystkich urządzeń w katalogu
-      </p>
+      <p class="mt-4 text-xs text-surface-500 dark:text-surface-400">Suma cen zakupu wszystkich urządzeń w katalogu</p>
     </article>
 
     <!-- Wartość wg kategorii -->
@@ -53,11 +51,7 @@
         <Skeleton v-for="n in 5" :key="n" height="1.75rem" border-radius="0.375rem" />
       </div>
       <ul v-else-if="valueByCategory.length" class="flex max-h-48 flex-col gap-2 overflow-y-auto pr-1">
-        <li
-          v-for="cat in valueByCategory"
-          :key="cat.name"
-          class="flex items-center justify-between gap-3 text-sm"
-        >
+        <li v-for="cat in valueByCategory" :key="cat.name" class="flex items-center justify-between gap-3 text-sm">
           <span class="min-w-0 truncate font-medium text-surface-800 dark:text-surface-200">
             {{ cat.name }}
           </span>

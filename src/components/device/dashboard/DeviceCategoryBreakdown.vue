@@ -20,10 +20,7 @@
         <span class="truncate text-sm font-medium text-surface-800 dark:text-surface-200">
           {{ cat.name }}
         </span>
-        <div
-          class="h-2 overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700"
-          role="presentation"
-        >
+        <div class="h-2 overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700" role="presentation">
           <div
             class="h-full rounded-full transition-all duration-300"
             :class="cat.barColorClass"

@@ -372,7 +372,12 @@
                 icon="pi pi-book"
                 @click="addUserbook(slotProps.data.id)"
               />
-              <OfficeIconButton title="Edytuj książkę" icon="pi pi-file-edit" class="text-orange-500" @click="editItem(slotProps.data)" />
+              <OfficeIconButton
+                title="Edytuj książkę"
+                icon="pi pi-file-edit"
+                class="text-orange-500"
+                @click="editItem(slotProps.data)"
+              />
               <OfficeIconButton
                 title="Usuń książkę"
                 icon="pi pi-trash"

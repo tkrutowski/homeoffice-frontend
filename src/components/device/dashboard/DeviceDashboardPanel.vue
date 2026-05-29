@@ -16,12 +16,7 @@
     <header
       class="flex shrink-0 flex-wrap items-center gap-2 border-b border-surface-200 px-4 py-3 dark:border-surface-700 md:px-5"
     >
-      <i
-        v-if="icon"
-        :class="[icon, 'text-primary']"
-        class="text-lg"
-        aria-hidden="true"
-      />
+      <i v-if="icon" :class="[icon, 'text-primary']" class="text-lg" aria-hidden="true" />
       <h2 class="min-w-0 flex-1 text-base font-semibold text-surface-900 dark:text-surface-0">
         {{ title }}
       </h2>

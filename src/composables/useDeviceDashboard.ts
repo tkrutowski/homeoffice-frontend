@@ -70,8 +70,7 @@ function buildCategoryAggregates(devices: Device[]): CategoryAggregate[] {
     .map(([name, { count, totalValue }]) => ({ name, count, totalValue }))
     .sort((a, b) => b.count - a.count)
     .map((item, index) => {
-      const palette =
-        CATEGORY_COLORS[Math.min(index, CATEGORY_COLORS.length - 1)];
+      const palette = CATEGORY_COLORS[Math.min(index, CATEGORY_COLORS.length - 1)];
       return {
         ...item,
         colorClass: palette.text,
@@ -237,10 +236,7 @@ function buildChartDataByYears(devices: Device[]): DeviceChartData {
   const valueByCategoryName = new Map<string, number>();
   for (const device of withDate) {
     const cat = getChartCategoryName(device);
-    valueByCategoryName.set(
-      cat,
-      (valueByCategoryName.get(cat) ?? 0) + (Number(device.purchaseAmount) || 0)
-    );
+    valueByCategoryName.set(cat, (valueByCategoryName.get(cat) ?? 0) + (Number(device.purchaseAmount) || 0));
   }
 
   const sortedCategories = [...valueByCategoryName.entries()]
@@ -255,7 +251,10 @@ function buildChartDataByYears(devices: Device[]): DeviceChartData {
 
   const yearlyByCategory = new Map<string, number[]>();
   for (const cat of chartCategories) {
-    yearlyByCategory.set(cat, years.map(() => 0));
+    yearlyByCategory.set(
+      cat,
+      years.map(() => 0)
+    );
   }
 
   for (const device of withDate) {
@@ -302,21 +301,15 @@ export function useDeviceDashboard() {
   const devices = computed(() => deviceStore.devices);
   const computers = computed(() => computerStore.computers);
 
-  const isLoading = computed(
-    () => deviceStore.loadingDevices || computerStore.loadingComputers
-  );
+  const isLoading = computed(() => deviceStore.loadingDevices || computerStore.loadingComputers);
 
   const isLoadingAudit = computed(() => auditStore.loadingAudit);
 
-  const totalValue = computed(() =>
-    devices.value.reduce((sum, d) => sum + (Number(d.purchaseAmount) || 0), 0)
-  );
+  const totalValue = computed(() => devices.value.reduce((sum, d) => sum + (Number(d.purchaseAmount) || 0), 0));
 
   const categoryAggregates = computed(() => buildCategoryAggregates(devices.value));
 
-  const valueByCategory = computed(() =>
-    [...categoryAggregates.value].sort((a, b) => b.totalValue - a.totalValue)
-  );
+  const valueByCategory = computed(() => [...categoryAggregates.value].sort((a, b) => b.totalValue - a.totalValue));
 
   const maxCategoryCount = computed(() => {
     const counts = categoryAggregates.value.map(c => c.count);
@@ -325,10 +318,7 @@ export function useDeviceDashboard() {
 
   const chartData = computed(() => buildChartDataByYears(devices.value));
 
-  const alerts = computed(() => [
-    ...buildComputerAlerts(computers.value),
-    ...buildDeviceAlerts(devices.value),
-  ]);
+  const alerts = computed(() => [...buildComputerAlerts(computers.value), ...buildDeviceAlerts(devices.value)]);
 
   const computerListItems = computed((): ComputerListItem[] =>
     computers.value.slice(0, MAX_COMPUTERS).map(c => ({
@@ -359,9 +349,7 @@ export function useDeviceDashboard() {
   const isEmpty = computed(() => devices.value.length === 0 && computers.value.length === 0);
 
   async function loadDashboardData() {
-    const tasks: Promise<unknown>[] = [
-      auditStore.fetchDashboardRecentChanges(MAX_RECENT_CHANGES),
-    ];
+    const tasks: Promise<unknown>[] = [auditStore.fetchDashboardRecentChanges(MAX_RECENT_CHANGES)];
 
     if (deviceStore.devices.length <= 1) {
       tasks.push(deviceStore.refreshDevices());
