@@ -68,3 +68,46 @@
     --p-user-payment-border-color: var(--p-surface-800);
   }
 }
+
+/* Paski przewijania — jasny / ciemny motyw (tokeny surface) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-surface-400) var(--p-surface-100);
+}
+
+html.dark * {
+  scrollbar-color: var(--p-surface-600) var(--p-surface-900);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--p-surface-100);
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--p-surface-400);
+  border: 2px solid var(--p-surface-100);
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--p-surface-500);
+}
+
+html.dark *::-webkit-scrollbar-track {
+  background: var(--p-surface-900);
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background: var(--p-surface-600);
+  border-color: var(--p-surface-900);
+}
+
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background: var(--p-surface-500);
+}
