@@ -2,6 +2,8 @@
   import OfficeButton from '@/components/OfficeButton.vue';
   import { ref, watch } from 'vue';
 
+  const visible = defineModel<boolean>('visible', { default: false });
+
   const props = defineProps({
     msg: {
       type: String,
@@ -64,7 +66,7 @@
 </script>
 
 <template>
-  <Dialog :style="{ width: '550px' }" :modal="true">
+  <Dialog v-model:visible="visible" :style="{ width: '550px' }" :modal="true">
     <template #header>
       <h4>{{ msg }}</h4>
     </template>

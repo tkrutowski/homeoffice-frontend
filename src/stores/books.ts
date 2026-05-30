@@ -303,11 +303,12 @@ export const useBooksStore = defineStore('book', {
 
     //ADD AUTHOR
     //
-    async addAuthorDb(author: Author) {
+    async addAuthorDb(author: Author): Promise<Author> {
       console.log('START - addAuthorDb()');
       const response = await httpCommon.post(`/v1/library/author`, author);
       this.authors.push(response.data);
       console.log('END - addAuthorDb()');
+      return response.data;
     },
 
     //
@@ -412,11 +413,12 @@ export const useBooksStore = defineStore('book', {
 
     //ADD SERIES
     //
-    async addSeriesDb(series: Series) {
+    async addSeriesDb(series: Series): Promise<Series> {
       console.log('START - addSeriesDb()');
       const response = await httpCommon.post(`/v1/library/series`, series);
       this.series.push(response.data);
       console.log('END - addSeriesDb()');
+      return response.data;
     },
 
     //

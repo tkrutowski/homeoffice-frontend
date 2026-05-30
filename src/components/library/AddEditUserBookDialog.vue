@@ -3,6 +3,9 @@
   import OfficeButton from '@/components/OfficeButton.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import AddDialog from '@/components/AddDialog.vue';
+  import LibraryOptionPills from '@/components/library/LibraryOptionPills.vue';
+  import ReadingStatusStepper from '@/components/library/ReadingStatusStepper.vue';
+  import { TranslationService } from '@/service/TranslationService.ts';
   import { useBookstoreStore } from '@/stores/bookstores.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
   import { useBooksStore } from '@/stores/books.ts';
@@ -18,16 +21,13 @@
   const bookStore = useBooksStore();
   const toast = useToast();
   // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
+  const visible = defineModel<boolean>('visible', { default: false });
+
   const emit = defineEmits<{
     (e: 'save', userbook: UserBook): void;
     (e: 'cancel'): void;
   }>();
   const props = defineProps({
-    visible: {
-      type: Boolean,
-      require: false,
-      default: false,
-    },
     idBook: {
       type: Number,
       require: true,
@@ -39,6 +39,42 @@
       default: false,
     },
   });
+
+  const editionPillOptions = [
+    {
+      value: EditionType.BOOK,
+      label: TranslationService.translateEnum('EditionType', 'BOOK'),
+      icon: 'pi pi-book',
+    },
+    {
+      value: EditionType.AUDIOBOOK,
+      label: TranslationService.translateEnum('EditionType', 'AUDIOBOOK'),
+      icon: 'pi pi-headphones',
+    },
+    {
+      value: EditionType.EBOOK,
+      label: TranslationService.translateEnum('EditionType', 'EBOOK'),
+      icon: 'pi pi-tablet',
+    },
+  ];
+
+  const ownershipPillOptions = [
+    {
+      value: OwnershipStatus.HAVE,
+      label: TranslationService.translateEnum('OwnershipStatus', 'HAVE'),
+      icon: 'pi pi-box',
+    },
+    {
+      value: OwnershipStatus.WANT,
+      label: TranslationService.translateEnum('OwnershipStatus', 'WANT'),
+      icon: 'pi pi-shopping-cart',
+    },
+    {
+      value: OwnershipStatus.READ_ONLY,
+      label: TranslationService.translateEnum('OwnershipStatus', 'READ_ONLY'),
+      icon: 'pi pi-eye',
+    },
+  ];
   const submitted = ref<boolean>(false);
   const selectedBookstore = ref<Bookstore | null>();
   const showAddBookstoreModal = ref<boolean>(false);
@@ -83,27 +119,24 @@
   );
 
   // Watch for dialog visibility to reload data when dialog opens
-  watch(
-    () => props.visible,
-    async (isVisible: boolean) => {
-      if (isVisible && props.isEdit && props.idBook > 0) {
-        console.log('WATCH visible - loading userbook data');
-        await userbookStore
-          .getUserbookFromDb(props.idBook)
-          .then((result: UserBook | null) => {
-            if (result) {
-              userbook.value = result;
-              selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore);
-              readingDateFrom.value = userbook.value.readFrom;
-              readingDateTo.value = userbook.value.readTo;
-            }
-          })
-          .catch((reason: AxiosError) => {
-            console.log('ERROR: ', reason);
-          });
-      }
+  watch(visible, async (isVisible: boolean | undefined) => {
+    if (isVisible && props.isEdit && props.idBook > 0) {
+      console.log('WATCH visible - loading userbook data');
+      await userbookStore
+        .getUserbookFromDb(props.idBook)
+        .then((result: UserBook | null) => {
+          if (result) {
+            userbook.value = result;
+            selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore);
+            readingDateFrom.value = userbook.value.readFrom;
+            readingDateTo.value = userbook.value.readTo;
+          }
+        })
+        .catch((reason: AxiosError) => {
+          console.log('ERROR: ', reason);
+        });
     }
-  );
+  });
   const readingDateFrom = ref<Date | null>(null);
   watch(readingDateFrom, (newDate: Date | null) => {
     console.log('date from ', newDate);
@@ -182,7 +215,7 @@
       idUser: 0,
       book: null,
       idBookstore: 0,
-      editionType: EditionType.BOOK,
+      editionType: EditionType.AUDIOBOOK,
       readingStatus: ReadingStatus.NOT_READ,
       ownershipStatus: OwnershipStatus.READ_ONLY,
       readFrom: null,
@@ -194,9 +227,14 @@
     readingDateTo.value = null;
   }
 
-  const cancel = () => {
+  function onDialogHide() {
     reset();
+    submitted.value = false;
     emit('cancel');
+  }
+
+  const cancel = () => {
+    visible.value = false;
   };
 
   //--------------------------------------------------BOOKSTORE
@@ -248,7 +286,7 @@
     @save="saveBookstore"
     @cancel="showAddBookstoreModal = false"
   />
-  <Dialog v-model:visible="props.visible" modal class="max-w-5xl mx-auto" close-on-escape @abort="cancel">
+  <Dialog v-model:visible="visible" modal class="max-w-4xl mx-auto" close-on-escape @hide="onDialogHide">
     <template #header>
       <p class="text-2xl mx-auto">
         {{ $props.isEdit ? 'Edytuj książkę na półce' : 'Dodaj nową książkę na półkę' }}
@@ -256,10 +294,10 @@
     </template>
     <Fieldset class="w-full" legend="Książka">
       <div class="grid grid-cols-6 gap-4">
-        <div class="col-start-1 col-span-4">
+        <div class="col-start-1 col-span-4 flex min-w-0 flex-col gap-4">
           <!-- ROW-1   BOOKSTORE -->
-          <div class="flex flex-row">
-            <div class="flex flex-col w-full">
+          <div class="flex flex-row w-full">
+            <div class="flex min-w-0 flex-col w-full">
               <label class="ml-2 mb-1" for="input-bookstore">Wybierz księgarnię:</label>
               <div class="flex gap-2">
                 <Select
@@ -285,51 +323,41 @@
           </div>
 
           <!-- ROW-2 OWNERSHIP -->
-          <div class="flex flex-row">
-            <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-ownership">Wybierz własność:</label>
-              <Select
-                id="input-ownership"
+          <div class="flex flex-row w-full">
+            <div class="flex min-w-0 flex-col w-full">
+              <span class="mb-1 text-surface-700 dark:text-surface-300">Wybierz własność:</span>
+              <LibraryOptionPills
+                class="w-full"
                 v-model="userbook.ownershipStatus"
-                :class="{ 'p-invalid': showErrorOwnership() }"
-                :options="UtilsService.getOwnershipStatusOption()"
-                option-label="label"
-                option-value="value"
-                :loading="userbookStore.loadingOwnership"
+                :options="ownershipPillOptions"
+                :invalid="showErrorOwnership()"
               />
               <small class="p-error">{{ showErrorOwnership() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
             </div>
           </div>
 
           <!-- ROW-3 EDITION -->
-          <div class="flex flex-row">
-            <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-edition">Wybierz rodzaj:</label>
-              <Select
-                id="input-edition"
+          <div class="flex flex-row w-full">
+            <div class="flex min-w-0 flex-col w-full">
+              <span class="mb-1 text-surface-700 dark:text-surface-300">Wybierz rodzaj:</span>
+              <LibraryOptionPills
+                class="w-full"
                 v-model="userbook.editionType"
-                :class="{ 'p-invalid': showErrorEditionType() }"
-                :options="UtilsService.getEditionTypeOption()"
-                option-label="label"
-                option-value="value"
-                :loading="userbookStore.loadingEditionType"
+                :options="editionPillOptions"
+                :invalid="showErrorEditionType()"
               />
               <small class="p-error">{{ showErrorEditionType() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
             </div>
           </div>
 
           <!-- ROW-4 READ STATUS -->
-          <div class="flex flex-row">
-            <div class="flex flex-col w-full">
-              <label class="ml-2 mb-1" for="input-read">Stan czytania:</label>
-              <Select
-                id="input-read"
+          <div class="flex flex-row w-full">
+            <div class="flex min-w-0 flex-col w-full">
+              <span class="mb-1 text-surface-700 dark:text-surface-300">Stan czytania:</span>
+              <ReadingStatusStepper
                 v-model="userbook.readingStatus"
-                :class="{ 'p-invalid': showErrorReadingStatus() }"
-                :options="UtilsService.getReadingStatusOption()"
-                option-label="label"
-                option-value="value"
-                :loading="userbookStore.loadingReadingStatus"
+                class="w-full"
+                :invalid="showErrorReadingStatus()"
               />
               <small class="p-error">{{ showErrorReadingStatus() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
             </div>

@@ -11,8 +11,8 @@ export const Translations: Record<string, Record<string, string>> = {
     READ: 'Przeczytana',
   },
   OwnershipStatus: {
-    HAVE: 'Mam',
-    WANT: 'Chcę',
+    HAVE: 'Posiadam',
+    WANT: 'Planuje zakup',
     READ_ONLY: 'Tylko czytam',
   },
   EditionType: {
