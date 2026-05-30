@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import OfficeButton from '@/components/OfficeButton.vue';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import { useCompanyLookupStore } from '@/stores/companyLookup';
   import type { CompanyLookupResult } from '@/types/CompanyLookup';
   import { parsePolishNipInput } from '@/utils/applyCompanyLookupToParty';
@@ -70,16 +71,12 @@
 </script>
 
 <template>
-  <div
-    class="mb-6 rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
+  <FormSectionCard
+    :title="title"
+    :icon="MagnifyingGlassIcon"
+    description="Wpisz NIP i wybierz Szukaj, aby uzupełnić nazwę i adres z rejestru."
+    class="mb-6"
   >
-    <h2 class="mb-1 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-      <MagnifyingGlassIcon class="h-5 w-5 shrink-0 text-orange-500" aria-hidden="true" />
-      <span>{{ title }}</span>
-    </h2>
-    <p class="mb-4 text-sm text-surface-600 dark:text-surface-400">
-      Wpisz NIP i wybierz Szukaj, aby uzupełnić nazwę i adres z rejestru.
-    </p>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
       <div class="min-w-0 flex flex-1 flex-col gap-2">
         <label class="text-sm text-surface-600 dark:text-surface-400" for="nip-gus-lookup-input">NIP</label>
@@ -105,5 +102,5 @@
         />
       </div>
     </div>
-  </div>
+  </FormSectionCard>
 </template>

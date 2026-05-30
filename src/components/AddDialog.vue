@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import OfficeButton from '@/components/OfficeButton.vue';
-  import FormSectionCard from '@/components/library/FormSectionCard.vue';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import { ptFieldInputText } from '@/config/formFieldPt';
   import { PencilSquareIcon } from '@heroicons/vue/24/outline';
   import { ref, watch } from 'vue';

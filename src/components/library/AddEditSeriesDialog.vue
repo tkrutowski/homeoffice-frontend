@@ -2,7 +2,7 @@
   import { ref, watch } from 'vue';
   import type { Ref } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
-  import FormSectionCard from '@/components/library/FormSectionCard.vue';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import { ptFieldInputText, ptTextareaField } from '@/config/formFieldPt';
   import { useBooksStore } from '@/stores/books.ts';
   import type { Series } from '@/types/Book.ts';

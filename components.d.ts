@@ -53,7 +53,7 @@ declare module 'vue' {
     FinanceHomeEntryCard: typeof import('./src/components/home/FinanceHomeEntryCard.vue')['default']
     FirmFormFields: typeof import('./src/components/share/FirmFormFields.vue')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
-    FormSectionCard: typeof import('./src/components/library/FormSectionCard.vue')['default']
+    FormSectionCard: typeof import('./src/components/FormSectionCard.vue')['default']
     IconField: typeof import('primevue/iconfield')['default']
     Image: typeof import('primevue/image')['default']
     ImageButton: typeof import('./src/components/ImageButton.vue')['default']

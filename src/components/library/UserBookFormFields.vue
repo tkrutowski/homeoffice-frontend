@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { PropType } from 'vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import FormSectionCard from '@/components/library/FormSectionCard.vue';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import LibraryOptionPills from '@/components/library/LibraryOptionPills.vue';
   import ReadingStatusStepper from '@/components/library/ReadingStatusStepper.vue';
   import { ptDatePickerField, ptSelectInField, ptTextareaField } from '@/config/formFieldPt';

@@ -10,6 +10,7 @@
   import IconButton from '@/components/OfficeIconButton.vue';
   import type { User } from '@/types/User';
   import type { Bank, Card } from '@/types/Bank';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
@@ -352,13 +353,7 @@
           </div>
 
           <div class="flex flex-col gap-6">
-            <div
-              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-950 sm:p-5"
-            >
-              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                <InformationCircleIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                <span>Informacje ogólne</span>
-              </h2>
+            <FormSectionCard title="Informacje ogólne" :icon="InformationCircleIcon">
               <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <div
                   class="order-1 flex min-h-[9rem] items-center justify-center rounded-lg border border-surface-300 bg-surface-0 p-3 dark:border-surface-600 dark:bg-surface-900 lg:order-none"
@@ -427,16 +422,10 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </FormSectionCard>
 
-            <div
-              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-950 sm:p-5"
-            >
-              <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h2 class="flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                  <CreditCardIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                  <span>Parametry karty</span>
-                </h2>
+            <FormSectionCard title="Parametry karty" :icon="CreditCardIcon">
+              <template #header-actions>
                 <div
                   class="flex items-center gap-2 rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 dark:border-surface-600 dark:bg-surface-900"
                 >
@@ -454,7 +443,7 @@
                     Multi
                   </label>
                 </div>
-              </div>
+              </template>
               <div class="flex flex-col gap-5">
                 <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
                   <div class="flex min-w-0 flex-col gap-2">
@@ -614,15 +603,11 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </FormSectionCard>
 
-            <div class="flex flex-col gap-2">
-              <h2 class="flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                <DocumentTextIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                <span>Dodatkowe informacje</span>
-              </h2>
+            <FormSectionCard title="Dodatkowe informacje" :icon="DocumentTextIcon">
               <Textarea id="card-other-info" v-model="card.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
-            </div>
+            </FormSectionCard>
           </div>
 
           <div class="mt-8 flex flex-row justify-end gap-2">

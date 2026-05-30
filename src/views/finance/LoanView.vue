@@ -10,6 +10,7 @@
   import router from '@/router';
   import type { Bank } from '@/types/Bank';
   import type { User } from '@/types/User';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
@@ -381,13 +382,7 @@
           </div>
 
           <div class="flex flex-col gap-6">
-            <div
-              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
-            >
-              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                <InformationCircleIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                <span>Informacje ogólne</span>
-              </h2>
+            <FormSectionCard title="Informacje ogólne" :icon="InformationCircleIcon">
               <div class="flex flex-col gap-5">
                 <div class="flex flex-col gap-2">
                   <label class="text-sm text-surface-600 dark:text-surface-400" for="loan-name">Nazwa</label>
@@ -501,15 +496,9 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </FormSectionCard>
 
-            <div
-              class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900 sm:p-5"
-            >
-              <h2 class="mb-4 flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                <CalculatorIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                <span>Szczegóły kredytu</span>
-              </h2>
+            <FormSectionCard title="Szczegóły kredytu" :icon="CalculatorIcon">
               <div class="flex flex-col gap-5">
                 <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
                   <div class="flex flex-col gap-2">
@@ -655,15 +644,11 @@
                   }}</small>
                 </div>
               </div>
-            </div>
+            </FormSectionCard>
 
-            <div class="flex flex-col gap-2">
-              <h2 class="flex items-center gap-2 text-lg font-medium text-surface-900 dark:text-surface-0">
-                <DocumentTextIcon class="h-5 w-5 text-orange-500" aria-hidden="true" />
-                <span>Dodatkowe informacje</span>
-              </h2>
+            <FormSectionCard title="Dodatkowe informacje" :icon="DocumentTextIcon">
               <Textarea id="loan-other-info" v-model="loan.otherInfo" :pt="ptTextareaField" rows="5" auto-resize />
-            </div>
+            </FormSectionCard>
           </div>
 
           <div class="mt-8 flex justify-end">
