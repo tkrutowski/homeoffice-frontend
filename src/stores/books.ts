@@ -201,11 +201,12 @@ export const useBooksStore = defineStore('book', {
 
     //ADD BOOK
     //
-    async addBookDb(book: Book) {
+    async addBookDb(book: Book): Promise<Book> {
       console.log('START - addBookDb()');
       const response = await httpCommon.post(`/v1/library/book`, book);
       this.books.unshift(response.data);
       console.log('END - addBookDb()');
+      return response.data;
     },
 
     //

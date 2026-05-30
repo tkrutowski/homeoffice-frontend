@@ -131,7 +131,7 @@
                 v-if="showAddButtons"
                 title="Dodaj autora"
                 :icon="loadingAuthors ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                class="h-9 w-9 shrink-0 self-center p-0"
+                class="h-9 w-9 shrink-0 self-center p-0 text-primary"
                 @click="emit('addAuthor')"
               />
             </div>
@@ -170,7 +170,7 @@
                   v-if="showAddButtons"
                   title="Dodaj serię"
                   :icon="loadingSeries ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                  class="h-9 w-9 shrink-0 self-center p-0"
+                  class="h-9 w-9 shrink-0 self-center p-0 text-primary"
                   @click="emit('addSeries')"
                 />
               </div>
@@ -217,7 +217,7 @@
                 v-if="showAddButtons"
                 title="Dodaj kategorię"
                 :icon="loadingCategories ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                class="h-9 w-9 shrink-0 self-center p-0"
+                class="h-9 w-9 shrink-0 self-center p-0 text-primary"
                 @click="emit('addCategory')"
               />
             </div>

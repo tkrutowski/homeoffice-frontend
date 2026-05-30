@@ -3,11 +3,16 @@
   import { computed, type PropType, ref, watch, watchEffect } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import BookFormFields from '@/components/library/BookFormFields.vue';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import AddEditUserBookDialog from '@/components/library/AddEditUserBookDialog.vue';
   import { useToast } from 'primevue/usetoast';
-  import type { Author, Book, Category, Series } from '@/types/Book.ts';
+  import { useUserbooksStore } from '@/stores/userbooks.ts';
+  import type { Author, Book, Category, Series, UserBook } from '@/types/Book.ts';
   import type { AxiosError } from 'axios';
 
   const bookStore = useBooksStore();
+  const userbookStore = useUserbooksStore();
+  const visible = defineModel<boolean>('visible', { default: false });
 
   const toast = useToast();
   const selectedAuthors = ref<Author[]>([]);
@@ -24,6 +29,59 @@
   const emit = defineEmits<{
     (e: 'close'): void;
   }>();
+
+  const showAddToShelfConfirmation = ref(false);
+  const showUserbookDialog = ref(false);
+  const savedBookId = ref(0);
+  const savedBookTitle = ref('');
+  const addToShelfMessage = computed(
+    () => `Czy chcesz od razu dodać książkę <b>${savedBookTitle.value}</b> na półkę?`
+  );
+
+  function finishDialogFlow() {
+    visible.value = false;
+    emit('close');
+  }
+
+  function cancelAddToShelf() {
+    showAddToShelfConfirmation.value = false;
+    finishDialogFlow();
+  }
+
+  function confirmAddToShelf() {
+    showAddToShelfConfirmation.value = false;
+    showUserbookDialog.value = true;
+  }
+
+  async function submitAddUserbook(newUserbook: UserBook) {
+    showUserbookDialog.value = false;
+    if (newUserbook) {
+      await userbookStore
+        .addUserbookDb(newUserbook)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
+            life: 3000,
+          });
+        })
+        .catch((error: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się dodać książki na półkę: ' + (error.response?.data as string) || error.message,
+            life: 3000,
+          });
+        });
+    }
+    finishDialogFlow();
+  }
+
+  function onUserbookCancel() {
+    showUserbookDialog.value = false;
+    finishDialogFlow();
+  }
 
   const book = ref<Book>({
     id: 0,
@@ -103,15 +161,18 @@
       book.value.series = selectedSeries.value;
       bookStore
         .addBookDb(book.value)
-        .then(() => {
+        .then((savedBook: Book) => {
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail: 'Zapisano książkę: ' + book.value?.title,
+            detail: 'Zapisano książkę: ' + savedBook.title,
             life: 3000,
           });
           btnShowBusy.value = false;
-          emit('close');
+          savedBookId.value = savedBook.id;
+          savedBookTitle.value = savedBook.title;
+          visible.value = false;
+          showAddToShelfConfirmation.value = true;
         })
         .catch((reason: AxiosError) => {
           console.log('reason', reason);
@@ -168,7 +229,26 @@
   };
 </script>
 <template>
-  <Dialog :style="{ width: 'min(95vw, 64rem)' }" header="Nowa książka" :modal="true" close-on-escape>
+  <ConfirmationDialog
+    v-model:visible="showAddToShelfConfirmation"
+    :msg="addToShelfMessage"
+    label="Dodaj na półkę"
+    @save="confirmAddToShelf"
+    @cancel="cancelAddToShelf"
+  />
+  <AddEditUserBookDialog
+    v-model:visible="showUserbookDialog"
+    :id-book="savedBookId"
+    @save="submitAddUserbook"
+    @cancel="onUserbookCancel"
+  />
+  <Dialog
+    v-model:visible="visible"
+    :style="{ width: 'min(95vw, 64rem)' }"
+    header="Nowa książka"
+    :modal="true"
+    close-on-escape
+  >
     <div class="max-h-[70vh] overflow-y-auto pr-1">
       <form @submit.stop.prevent="saveBook">
         <BookFormFields
