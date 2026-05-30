@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useBooksStore } from '@/stores/books';
   import { useRoute } from 'vue-router';
-  import { computed, onMounted, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import router from '@/router';
   import IconButton from '@/components/OfficeIconButton.vue';
@@ -76,6 +76,206 @@
   watch(selectedCategories, (newCategory: Category[] | []) => {
     book.value.categories = newCategory;
   });
+
+  function findExistingCategory(category: Category): Category | undefined {
+    return bookStore.categories.find(
+      (cat: Category) =>
+        (category.id > 0 && cat.id === category.id) ||
+        cat.name.toLowerCase() === category.name.toLowerCase()
+    );
+  }
+
+  function mapToExistingCategories(categories: Category[]): Category[] {
+    const matched: Category[] = [];
+    const skippedNames: string[] = [];
+
+    for (const category of categories) {
+      const existing = findExistingCategory(category);
+      if (existing) {
+        if (!matched.some((cat: Category) => cat.id === existing.id)) {
+          matched.push(existing);
+        }
+      } else if (category.name) {
+        skippedNames.push(category.name);
+      }
+    }
+
+    if (skippedNames.length > 0) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Kategorie',
+        detail: `Pominięto nieistniejące kategorie: ${skippedNames.join(', ')}`,
+        life: 5000,
+      });
+    }
+
+    return matched;
+  }
+
+  function findExistingAuthor(author: Author): Author | undefined {
+    if (author.id > 0) {
+      return authors.value.find((a: Author) => a.id === author.id);
+    }
+    return authors.value.find(
+      (a: Author) =>
+        a.firstName.toLowerCase() === author.firstName.toLowerCase() &&
+        a.lastName.toLowerCase() === author.lastName.toLowerCase()
+    );
+  }
+
+  function findExistingSeries(series: Series): Series | undefined {
+    if (series.id > 0) {
+      return bookStore.series.find((s: Series) => s.id === series.id);
+    }
+    return bookStore.series.find(
+      (s: Series) => s.title.toLowerCase() === series.title.toLowerCase()
+    );
+  }
+
+  const showAddModal = ref(false);
+  const showAddSeriesModal = ref(false);
+
+  type UrlSearchPendingItem =
+    | { kind: 'series'; series: Series }
+    | { kind: 'author'; author: Author };
+
+  const urlSearchPendingQueue = ref<UrlSearchPendingItem[]>([]);
+  const addAuthorFromUrlFlow = ref(false);
+  const addAuthorPrefillFirstName = ref('');
+  const addAuthorPrefillLastName = ref('');
+  const addSeriesFromUrlFlow = ref(false);
+  const addSeriesPrefillTitle = ref('');
+  const addSeriesPrefillUrl = ref('');
+
+  function clearUrlSearchFlow() {
+    urlSearchPendingQueue.value = [];
+    addAuthorFromUrlFlow.value = false;
+    addSeriesFromUrlFlow.value = false;
+    addAuthorPrefillFirstName.value = '';
+    addAuthorPrefillLastName.value = '';
+    addSeriesPrefillTitle.value = '';
+    addSeriesPrefillUrl.value = '';
+  }
+
+  function openAddAuthorModal() {
+    clearUrlSearchFlow();
+    showAddModal.value = true;
+  }
+
+  function openAddSeriesModal() {
+    clearUrlSearchFlow();
+    showAddSeriesModal.value = true;
+  }
+
+  async function processNextUrlSearchPending() {
+    if (urlSearchPendingQueue.value.length === 0) {
+      clearUrlSearchFlow();
+      return;
+    }
+
+    const item = urlSearchPendingQueue.value[0];
+    await nextTick();
+
+    if (item.kind === 'series') {
+      addSeriesFromUrlFlow.value = true;
+      addAuthorFromUrlFlow.value = false;
+      addSeriesPrefillTitle.value = item.series.title;
+      addSeriesPrefillUrl.value = item.series.url ?? '';
+      showAddModal.value = false;
+      showAddSeriesModal.value = true;
+    } else {
+      addAuthorFromUrlFlow.value = true;
+      addSeriesFromUrlFlow.value = false;
+      addAuthorPrefillFirstName.value = item.author.firstName;
+      addAuthorPrefillLastName.value = item.author.lastName;
+      showAddSeriesModal.value = false;
+      showAddModal.value = true;
+    }
+  }
+
+  function advanceUrlSearchQueue() {
+    addAuthorFromUrlFlow.value = false;
+    addSeriesFromUrlFlow.value = false;
+    urlSearchPendingQueue.value.shift();
+    showAddModal.value = false;
+    showAddSeriesModal.value = false;
+    nextTick(() => processNextUrlSearchPending());
+  }
+
+  function cancelAddAuthor() {
+    showAddModal.value = false;
+  }
+
+  function cancelAddSeries() {
+    showAddSeriesModal.value = false;
+  }
+
+  watch(showAddModal, visible => {
+    if (!visible && addAuthorFromUrlFlow.value) {
+      advanceUrlSearchQueue();
+    }
+  });
+
+  watch(showAddSeriesModal, visible => {
+    if (!visible && addSeriesFromUrlFlow.value) {
+      advanceUrlSearchQueue();
+    }
+  });
+
+  function buildUrlSearchPendingQueue(bookByUrl: Book): UrlSearchPendingItem[] {
+    const queue: UrlSearchPendingItem[] = [];
+
+    if (bookByUrl.series?.title) {
+      const existingSeries = findExistingSeries(bookByUrl.series);
+      if (!existingSeries) {
+        queue.push({ kind: 'series', series: bookByUrl.series });
+      }
+    }
+
+    for (const author of bookByUrl.authors ?? []) {
+      const existingAuthor = findExistingAuthor(author);
+      if (!existingAuthor && (author.firstName || author.lastName)) {
+        queue.push({ kind: 'author', author });
+      }
+    }
+
+    return queue;
+  }
+
+  async function applyBookFromSearch(bookByUrl: Book) {
+    if (bookStore.categories.length === 0) {
+      await bookStore.getCategoriesFromDb();
+    }
+    if (bookStore.series.length === 0) {
+      await bookStore.getSeriesFromDb();
+    }
+    if (authors.value.length === 0) {
+      authors.value = await bookStore.getAuthorsFromDb();
+    }
+
+    book.value = bookByUrl;
+    selectedCategories.value = mapToExistingCategories(bookByUrl.categories);
+
+    if (bookByUrl.series?.title) {
+      selectedSeries.value = findExistingSeries(bookByUrl.series) ?? null;
+    } else {
+      selectedSeries.value = null;
+    }
+
+    const matchedAuthors: Author[] = [];
+    for (const author of bookByUrl.authors ?? []) {
+      const existing = findExistingAuthor(author);
+      if (existing && !matchedAuthors.some((a: Author) => a.id === existing.id)) {
+        matchedAuthors.push(existing);
+      }
+    }
+    selectedAuthors.value = matchedAuthors;
+
+    urlSearchPendingQueue.value = buildUrlSearchPendingQueue(bookByUrl);
+    if (urlSearchPendingQueue.value.length > 0) {
+      await processNextUrlSearchPending();
+    }
+  }
 
   //
   //SAVE
@@ -198,7 +398,7 @@
     if (!isEdit.value && bookId === -1) {
       book.value = bookStore.tempBook;
       selectedAuthors.value = book.value.authors;
-      selectedCategories.value = book.value.categories;
+      selectedCategories.value = mapToExistingCategories(book.value.categories);
       selectedSeries.value = book.value.series;
     } else if (!isEdit.value && bookId === 0) {
       console.log('onMounted NEW BOOK');
@@ -210,7 +410,7 @@
           if (data) {
             book.value = data;
             selectedAuthors.value = book.value.authors;
-            selectedCategories.value = book.value.categories;
+            selectedCategories.value = mapToExistingCategories(book.value.categories);
             selectedSeries.value = book.value.series;
           }
         })
@@ -223,77 +423,88 @@
   //
   //--------------------------------------------------AUTHOR
   //
-  const showAddModal = ref(false);
 
   async function saveAuthor(firstName: string, lastName: string) {
-    console.log('in1: ', firstName);
-    console.log('in2: ', lastName);
     if (firstName.length === 0 || lastName.length === 0) {
       showError('Uzupełnij brakujące elementy');
-    } else {
-      showAddModal.value = false;
-      await bookStore
-        .addAuthorDb({
-          id: 0,
-          firstName: firstName,
-          lastName: lastName,
-        })
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Dodano autora: ' + firstName + ' ' + lastName,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Nie dodano autora: ' + firstName + ' ' + lastName,
-            life: 5000,
-          });
-        });
+      return;
+    }
+
+    try {
+      const newAuthor = await bookStore.addAuthorDb({
+        id: 0,
+        firstName: firstName,
+        lastName: lastName,
+      });
+      authors.value.push(newAuthor);
+
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Dodano autora: ' + firstName + ' ' + lastName,
+        life: 3000,
+      });
+
+      if (addAuthorFromUrlFlow.value) {
+        if (!selectedAuthors.value.some((a: Author) => a.id === newAuthor.id)) {
+          selectedAuthors.value = [...selectedAuthors.value, newAuthor];
+        }
+        advanceUrlSearchQueue();
+      } else {
+        showAddModal.value = false;
+      }
+    } catch (reason) {
+      const axiosError = reason as AxiosError;
+      toast.add({
+        severity: 'error',
+        summary: axiosError?.message,
+        detail: 'Nie dodano autora: ' + firstName + ' ' + lastName,
+        life: 5000,
+      });
     }
   }
 
   //
   //--------------------------------------------------SERIES
   //
-  const showAddSeriesModal = ref(false);
 
   async function saveSeries(title: string, url: string) {
-    console.log('in1: ', title);
-    console.log('in2: ', url);
     if (title.length === 0 || url.length === 0) {
       showError('Uzupełnij brakujące elementy');
-    } else {
-      showAddSeriesModal.value = false;
-      await bookStore
-        .addSeriesDb({
-          id: 0,
-          title: title,
-          description: '',
-          url: url,
-          checkDate: null,
-          hasNewBooks: false,
-        })
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Dodano serię: ' + title,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Nie dodano serii: ' + title,
-            life: 5000,
-          });
-        });
+      return;
+    }
+
+    try {
+      const newSeries = await bookStore.addSeriesDb({
+        id: 0,
+        title: title,
+        description: '',
+        url: url,
+        checkDate: null,
+        hasNewBooks: false,
+      });
+
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Dodano serię: ' + title,
+        life: 3000,
+      });
+
+      if (addSeriesFromUrlFlow.value) {
+        selectedSeries.value = newSeries;
+        advanceUrlSearchQueue();
+      } else {
+        showAddSeriesModal.value = false;
+      }
+    } catch (reason) {
+      const axiosError = reason as AxiosError;
+      toast.add({
+        severity: 'error',
+        summary: axiosError?.message,
+        detail: 'Nie dodano serii: ' + title,
+        life: 5000,
+      });
     }
   }
 
@@ -341,49 +552,44 @@
   const btnSearchShowOk = ref<boolean>(false);
   const btnSearchDisabled = ref<boolean>(false);
 
-  function findBook(ai: boolean = false) {
+  async function findBook(ai: boolean = false) {
     console.log('START - findBook(' + searchUrl.value + ')');
     submittedSearch.value = true;
     resetForm();
+    clearUrlSearchFlow();
     if (isSearchNotValid()) {
       showError('Uzupełnij brakujące elementy');
       btnSearchShowError.value = true;
       setTimeout(() => (btnSearchShowError.value = false), 5000);
     } else {
       btnSearchDisabled.value = true;
-      bookStore
-        .getBookFromUrl(searchUrl.value, ai)
-        .then((bookByUrl: Book | null) => {
-          if (bookByUrl == null) {
-            btnSearchDisabled.value = false;
-            changeStatusSearchIcon(false, false, true);
-            setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
-            toast.add({
-              severity: 'info',
-              summary: 'Informacja',
-              detail: 'Nie znaleziono książki.',
-              life: 3500,
-            });
-          } else {
-            btnSearchDisabled.value = false;
-            changeStatusSearchIcon(false, true, false);
-            setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
-            book.value = bookByUrl;
-            selectedAuthors.value = book.value.authors;
-            selectedCategories.value = book.value.categories;
-            selectedSeries.value = book.value.series;
-          }
-        })
-        .catch(() => {
-          btnSearchDisabled.value = false;
+      try {
+        const bookByUrl = await bookStore.getBookFromUrl(searchUrl.value, ai);
+        if (bookByUrl == null) {
+          changeStatusSearchIcon(false, false, true);
+          setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
           toast.add({
-            severity: 'error',
-            summary: 'Błąd',
-            detail: 'Błąd podczas wyszukiwania książki...',
+            severity: 'info',
+            summary: 'Informacja',
+            detail: 'Nie znaleziono książki.',
             life: 3500,
           });
-        })
-        .finally(() => (bookStore.searchBook = false));
+        } else {
+          changeStatusSearchIcon(false, true, false);
+          setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
+          await applyBookFromSearch(bookByUrl);
+        }
+      } catch {
+        toast.add({
+          severity: 'error',
+          summary: 'Błąd',
+          detail: 'Błąd podczas wyszukiwania książki...',
+          life: 3500,
+        });
+      } finally {
+        btnSearchDisabled.value = false;
+        bookStore.searchBook = false;
+      }
     }
   }
 
@@ -401,6 +607,7 @@
     selectedAuthors.value = [];
     selectedCategories.value = [];
     selectedSeries.value = null;
+    clearUrlSearchFlow();
     submitted.value = false;
     btnSaveDisabled.value = false;
   }
@@ -444,7 +651,7 @@
     return submitted.value && book.value.categories.length === 0;
   };
   const showErrorCover = () => {
-    return submitted.value && book.value.cover.length === 0;
+    return submitted.value && book.value.cover && book.value.cover.length === 0;
   };
 </script>
 
@@ -454,16 +661,20 @@
     label2="Nazwisko:"
     msg="Dodaj autora"
     label1="Imię:"
+    :value1="addAuthorPrefillFirstName"
+    :value2="addAuthorPrefillLastName"
     @save="saveAuthor"
-    @cancel="showAddModal = false"
+    @cancel="cancelAddAuthor"
   />
   <AddDialog
     v-model:visible="showAddSeriesModal"
     msg="Dodaj serię"
     label1="Tytuł:"
     label2="URL:"
+    :value1="addSeriesPrefillTitle"
+    :value2="addSeriesPrefillUrl"
     @save="saveSeries"
-    @cancel="showAddSeriesModal = false"
+    @cancel="cancelAddSeries"
   />
   <AddDialog
     v-model:visible="showAddCategoryModal"
@@ -561,7 +772,7 @@
                     :icon="bookStore.loadingAuthors ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
                     style="height: 35px; width: 35px; padding: 0"
                     class="mt-1 self-center"
-                    @click="showAddModal = true"
+                    @click="openAddAuthorModal"
                   />
                 </div>
 
@@ -587,7 +798,7 @@
                         :icon="bookStore.loadingSeries ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
                         style="height: 35px; width: 35px; padding: 0"
                         class="self-center"
-                        @click="showAddSeriesModal = true"
+                        @click="openAddSeriesModal"
                       />
                     </div>
                   </div>
@@ -636,7 +847,7 @@
 
               <!-- ROW-   COVER -->
               <div class="col-start-5 col-span-2">
-                <img v-if="book.cover.length > 0" :src="book.cover" height="500" width="333" alt="Okładka do książki" />
+                <img v-if="book.cover && book.cover.length > 0" :src="book.cover" height="500" width="333" alt="Okładka do książki" />
                 <img v-else src="@/assets/images/no_cover.jpg" height="300" width="300" alt="Okładka do książki" />
               </div>
             </div>
