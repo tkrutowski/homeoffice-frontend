@@ -2,6 +2,7 @@
   import { useBooksStore } from '@/stores/books.ts';
   import { computed, type PropType, ref, watch, watchEffect } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
+  import BookFormFields from '@/components/library/BookFormFields.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Author, Book, Category, Series } from '@/types/Book.ts';
   import type { AxiosError } from 'axios';
@@ -48,10 +49,7 @@
   const isSaveBtnDisabled = computed(() => {
     return bookStore.loadingBooks || bookStore.loadingSeries || bookStore.loadingAuthors || btnSaveDisabled.value;
   });
-  //
-  //AUTO COMPLETE
-  //
-  //AUTHOR
+
   const filteredAuthors = ref<Author[]>();
   const searchAuthor = (event: { query: string }) => {
     filteredAuthors.value = bookStore.authors.filter((author: Author) => {
@@ -62,7 +60,6 @@
     book.value.authors = newAuthors;
   });
 
-  //SERIES
   const filteredSeries = ref<Series[]>();
   const searchSeries = (event: { query: string }) => {
     filteredSeries.value = bookStore.series.filter((series: Series) => {
@@ -73,7 +70,6 @@
     book.value.series = newSeries;
   });
 
-  //CATEGORY
   const filteredCategories = ref<Category[]>();
   const searchCategory = (event: { query: string }) => {
     filteredCategories.value = bookStore.categories.filter((cat: Category) => {
@@ -172,106 +168,32 @@
   };
 </script>
 <template>
-  <Dialog class="" header="Nowa książka" :modal="true" close-on-escape>
-    <div class="m-4 max-w-6xl mx-auto">
+  <Dialog :style="{ width: 'min(95vw, 64rem)' }" header="Nowa książka" :modal="true" close-on-escape>
+    <div class="max-h-[70vh] overflow-y-auto pr-1">
       <form @submit.stop.prevent="saveBook">
-        <!--  --------------------------------------------------------BOOK---------------------------------      -->
-        <Fieldset class="w-full" legend="Książka">
-          <div class="grid grid-cols-6 gap-4">
-            <div class="col-start-1 col-span-4">
-              <!-- ROW-1   TITLE -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="title">Tytuł:</label>
-                <InputText id="title" v-model="book.title" maxlength="50" :class="{ 'p-invalid': showErrorTitle() }" />
-                <small class="p-error">{{ showErrorTitle() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
+        <BookFormFields
+          v-model:book="book"
+          v-model:selected-authors="selectedAuthors"
+          v-model:selected-series="selectedSeries"
+          v-model:selected-categories="selectedCategories"
+          :filtered-authors="filteredAuthors"
+          :filtered-series="filteredSeries"
+          :filtered-categories="filteredCategories"
+          :show-error-title="showErrorTitle()"
+          :show-error-author="showErrorAuthor()"
+          :show-error-category="showErrorCategory()"
+          :show-error-cover="showErrorCover()"
+          :loading-authors="bookStore.loadingAuthors"
+          :loading-series="bookStore.loadingSeries"
+          :loading-categories="bookStore.loadingCategories"
+          :show-add-buttons="false"
+          id-prefix="new-book-dialog"
+          @search-author="searchAuthor"
+          @search-series="searchSeries"
+          @search-category="searchCategory"
+        />
 
-              <!-- ROW-2   AUTHOR -->
-              <div class="flex gap-2">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="author">Wybierz autora:</label>
-                  <AutoComplete
-                    id="author"
-                    v-model="selectedAuthors"
-                    dropdown
-                    multiple
-                    force-selection
-                    :class="{ 'p-invalid': showErrorAuthor() }"
-                    :suggestions="filteredAuthors"
-                    :option-label="author => author.firstName + ' ' + author.lastName"
-                    @complete="searchAuthor"
-                    :loading="bookStore.loadingAuthors"
-                  />
-                  <small class="p-error">{{ showErrorAuthor() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-                </div>
-              </div>
-
-              <!-- ROW-3  SERIES / NUMBER  -->
-              <div class="flex gap-2 mb-5">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="series">Seria:</label>
-                  <AutoComplete
-                    id="series"
-                    v-model="selectedSeries"
-                    dropdown
-                    force-selection
-                    :suggestions="filteredSeries"
-                    field="title"
-                    option-label="title"
-                    @complete="searchSeries"
-                    :loading="bookStore.loadingSeries"
-                  />
-                </div>
-                <div class="flex flex-col">
-                  <label for="seriesNo">Cześć:</label>
-                  <InputText id="seriesNo" v-model="book.bookInSeriesNo" maxlength="5" />
-                </div>
-              </div>
-
-              <!-- ROW-4   CATEGORY -->
-              <div class="flex gap-2">
-                <div class="flex flex-col w-full">
-                  <label class="ml-2 mb-1" for="category">Wybierz kategorię:</label>
-                  <AutoComplete
-                    id="category"
-                    v-model="selectedCategories"
-                    dropdown
-                    multiple
-                    force-selection
-                    :class="{ 'p-invalid': showErrorCategory() }"
-                    :suggestions="filteredCategories"
-                    field="name"
-                    option-label="name"
-                    @complete="searchCategory"
-                    :loading="bookStore.loadingCategories"
-                  />
-                  <small class="p-error">{{ showErrorCategory() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-                </div>
-              </div>
-
-              <!-- ROW-5   URL -->
-              <div class="flex flex-col">
-                <label class="ml-2 mb-1" for="cover">URL okładki:</label>
-                <InputText id="cover" v-model="book.cover" :class="{ 'p-invalid': showErrorCover() }" />
-                <small class="p-error">{{ showErrorCover() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <!-- ROW-   COVER -->
-            <div class="col-start-5 col-span-2">
-              <img v-if="book.cover.length > 0" :src="book.cover" height="500" width="333" alt="Okładka do książki" />
-              <img v-else src="@/assets/images/no_cover.jpg" height="300" width="300" alt="Okładka do książki" />
-            </div>
-          </div>
-        </Fieldset>
-
-        <!-- ROW-7  OTHER INFO  -->
-        <Fieldset legend="Dodatkowe informacje">
-          <Textarea id="description" v-model="book.description" fluid rows="5" cols="30" />
-        </Fieldset>
-
-        <!-- ROW-8  BTN SAVE -->
-        <div class="flex flex-row justify-end gap-2 mt-6">
+        <div class="mt-8 flex flex-row justify-end gap-2">
           <OfficeButton
             text="zapisz"
             btn-type="office-save"

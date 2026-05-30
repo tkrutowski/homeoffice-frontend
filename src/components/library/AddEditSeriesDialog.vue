@@ -2,8 +2,11 @@
   import { ref, watch } from 'vue';
   import type { Ref } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
+  import FormSectionCard from '@/components/library/FormSectionCard.vue';
+  import { ptFieldInputText, ptTextareaField } from '@/config/formFieldPt';
   import { useBooksStore } from '@/stores/books.ts';
   import type { Series } from '@/types/Book.ts';
+  import { DocumentTextIcon, LinkIcon, QueueListIcon } from '@heroicons/vue/24/outline';
 
   const bookStore = useBooksStore();
   const emit = defineEmits<{
@@ -39,7 +42,6 @@
   const getUrl = (url: string, searchText: string, variable: Ref<string>) => {
     const array = url.split(';;');
     const filteredArray = array.filter(value => value.includes(searchText));
-    // Sprawdzenie, czy wynikowa tablica jest pusta
     variable.value = filteredArray.length > 0 ? filteredArray[0] : '';
   };
 
@@ -105,54 +107,85 @@
 </script>
 
 <template>
-  <Dialog modal class="max-w-5xl w-1/2 mx-auto" close-on-escape @abort="cancel">
+  <Dialog modal :style="{ width: 'min(95vw, 64rem)' }" close-on-escape @abort="cancel">
     <template #header>
-      <h3>
+      <p class="text-xl font-medium text-surface-900 dark:text-surface-0">
         {{ $props.isEdit ? 'Edytuj serię' : 'Dodaj nową serię' }}
-      </h3>
+      </p>
     </template>
-    <Fieldset class="w-full" legend="Seria">
-      <!-- ROW-1   TITLE -->
-      <div class="flex flex-col w-full">
-        <label class="ml-2 mb-1" for="input-title">Nazwa:</label>
-        <InputText id="input-title" v-model="series.title" :class="{ 'p-invalid': showErrorTitle() }" />
-        <small class="p-error">{{ showErrorTitle() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-      </div>
+    <div class="max-h-[70vh] overflow-y-auto pr-1">
+      <div class="flex flex-col gap-6">
+        <FormSectionCard title="Seria" :icon="QueueListIcon">
+          <div class="flex flex-col gap-2">
+            <label class="text-sm text-surface-600 dark:text-surface-400" for="series-title">Nazwa</label>
+            <InputText
+              id="series-title"
+              v-model="series.title"
+              :pt="ptFieldInputText"
+              :class="{ 'border-red-500 dark:border-red-400': showErrorTitle() }"
+            />
+            <small v-if="showErrorTitle()" class="text-sm text-red-600 dark:text-red-400">
+              Pole jest wymagane.
+            </small>
+          </div>
+        </FormSectionCard>
 
-      <!-- ROW-2   URL Legimi -->
-      <div class="flex flex-col w-full">
-        <label class="ml-2 mb-1" for="input-legimi">URL Legimi:</label>
-        <InputText id="input-legimi" v-model="urlLegimi" :class="{ 'p-invalid': showErrorUrlLegimi() }" />
-        <small class="p-error">{{ showErrorUrlLegimi() ? 'Wpisz popraawny adres www.' : '&nbsp;' }}</small>
-      </div>
+        <FormSectionCard title="Linki zewnętrzne" :icon="LinkIcon">
+          <div class="flex flex-col gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-legimi">URL Legimi</label>
+              <InputText
+                id="series-legimi"
+                v-model="urlLegimi"
+                :pt="ptFieldInputText"
+                :class="{ 'border-red-500 dark:border-red-400': showErrorUrlLegimi() }"
+              />
+              <small v-if="showErrorUrlLegimi()" class="text-sm text-red-600 dark:text-red-400">
+                Wpisz poprawny adres www.
+              </small>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-upoluj">URL upolujebooka.pl</label>
+              <InputText
+                id="series-upoluj"
+                v-model="urlUpolujEbooka"
+                :pt="ptFieldInputText"
+                :class="{ 'border-red-500 dark:border-red-400': showErrorUpolujEbooka() }"
+              />
+              <small v-if="showErrorUpolujEbooka()" class="text-sm text-red-600 dark:text-red-400">
+                Wpisz poprawny adres www.
+              </small>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-lubimy">URL lubimyczytac.pl</label>
+              <InputText
+                id="series-lubimy"
+                v-model="urlLubimyCzytac"
+                :pt="ptFieldInputText"
+                :class="{ 'border-red-500 dark:border-red-400': showErrorLubimyCzytac() }"
+              />
+              <small v-if="showErrorLubimyCzytac()" class="text-sm text-red-600 dark:text-red-400">
+                Wpisz poprawny adres www.
+              </small>
+            </div>
+          </div>
+        </FormSectionCard>
 
-      <!-- ROW-3   URL UpolujEbooka -->
-      <div class="flex flex-col w-full">
-        <label class="ml-2 mb-1" for="input-upoluj">URL upolujebooka.pl:</label>
-        <InputText id="input-upoluj" v-model="urlUpolujEbooka" :class="{ 'p-invalid': showErrorUpolujEbooka() }" />
-        <small class="p-error">{{ showErrorUpolujEbooka() ? 'Wpisz popraawny adres www.' : '&nbsp;' }}</small>
+        <FormSectionCard title="Opis" :icon="DocumentTextIcon">
+          <Textarea id="series-description" v-model="series.description" fluid rows="3" cols="30" :pt="ptTextareaField" />
+        </FormSectionCard>
       </div>
-
-      <!-- ROW-4   URL lubimy czytac -->
-      <div class="flex flex-col w-full">
-        <label class="ml-2 mb-1" for="input-lubimy">URL lubimyczytac.pl:</label>
-        <InputText id="input-lubimy" v-model="urlLubimyCzytac" :class="{ 'p-invalid': showErrorLubimyCzytac() }" />
-        <small class="p-error">{{ showErrorLubimyCzytac() ? 'Wpisz popraawny adres www.' : '&nbsp;' }}</small>
-      </div>
-
-      <!-- ROW- DESCRIPTION  -->
-      <div class="flex flex-col w-full">
-        <label class="ml-2 mb-1" for="description">Opis:</label>
-        <Textarea id="description" v-model="series.description" fluid rows="3" cols="30" />
-      </div>
-    </Fieldset>
+    </div>
 
     <template #footer>
-      <div class="w-full flex justify-between">
-        <div class="flex gap-2 items-center">
-          <i v-if="series.hasNewBooks" class="pi pi-book" style="color: var(--p-green-700); font-size: 1.5rem"></i>
-          <i v-else class="pi pi-book" style="color: var(--p-red-500); font-size: 1.5rem"></i>
-          <span>Data sprawdzenia: {{ series.checkDate }} </span>
+      <div class="flex w-full flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <i
+            class="pi pi-book text-2xl"
+            :class="series.hasNewBooks ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'"
+            aria-hidden="true"
+          />
+          <span class="text-sm text-surface-600 dark:text-surface-400">Data sprawdzenia: {{ series.checkDate }}</span>
         </div>
         <div class="flex gap-4">
           <OfficeButton text="Anuluj" btn-type="office-regular" @click="cancel" />

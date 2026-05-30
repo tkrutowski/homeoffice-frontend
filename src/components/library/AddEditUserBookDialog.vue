@@ -1,10 +1,8 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
-  import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import AddDialog from '@/components/AddDialog.vue';
-  import LibraryOptionPills from '@/components/library/LibraryOptionPills.vue';
-  import ReadingStatusStepper from '@/components/library/ReadingStatusStepper.vue';
+  import UserBookFormFields from '@/components/library/UserBookFormFields.vue';
   import { TranslationService } from '@/service/TranslationService.ts';
   import { useBookstoreStore } from '@/stores/bookstores.ts';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
@@ -286,135 +284,39 @@
     @save="saveBookstore"
     @cancel="showAddBookstoreModal = false"
   />
-  <Dialog v-model:visible="visible" modal class="max-w-4xl mx-auto" close-on-escape @hide="onDialogHide">
+  <Dialog
+    v-model:visible="visible"
+    modal
+    :style="{ width: 'min(95vw, 64rem)' }"
+    close-on-escape
+    @hide="onDialogHide"
+  >
     <template #header>
-      <p class="text-2xl mx-auto">
+      <p class="text-xl font-medium text-surface-900 dark:text-surface-0">
         {{ $props.isEdit ? 'Edytuj książkę na półce' : 'Dodaj nową książkę na półkę' }}
       </p>
     </template>
-    <Fieldset class="w-full" legend="Książka">
-      <div class="grid grid-cols-6 gap-4">
-        <div class="col-start-1 col-span-4 flex min-w-0 flex-col gap-4">
-          <!-- ROW-1   BOOKSTORE -->
-          <div class="flex flex-row w-full">
-            <div class="flex min-w-0 flex-col w-full">
-              <label class="ml-2 mb-1" for="input-bookstore">Wybierz księgarnię:</label>
-              <div class="flex gap-2">
-                <Select
-                  id="input-bookstore"
-                  v-model="selectedBookstore"
-                  :class="{ 'p-invalid': showErrorBookstore() }"
-                  :options="bookstoreStore.bookstores"
-                  option-label="name"
-                  @change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
-                  :loading="bookstoreStore.loadingBookstore"
-                  class="flex-1"
-                />
-                <OfficeIconButton
-                  title="Dodaj księgarnię"
-                  :icon="bookstoreStore.loadingBookstore ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
-                  style="height: 35px; width: 35px; padding: 0"
-                  class="self-center text-primary-500"
-                  @click="showAddBookstoreModal = true"
-                />
-              </div>
-              <small class="p-error">{{ showErrorBookstore() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-2 OWNERSHIP -->
-          <div class="flex flex-row w-full">
-            <div class="flex min-w-0 flex-col w-full">
-              <span class="mb-1 text-surface-700 dark:text-surface-300">Wybierz własność:</span>
-              <LibraryOptionPills
-                class="w-full"
-                v-model="userbook.ownershipStatus"
-                :options="ownershipPillOptions"
-                :invalid="showErrorOwnership()"
-              />
-              <small class="p-error">{{ showErrorOwnership() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-3 EDITION -->
-          <div class="flex flex-row w-full">
-            <div class="flex min-w-0 flex-col w-full">
-              <span class="mb-1 text-surface-700 dark:text-surface-300">Wybierz rodzaj:</span>
-              <LibraryOptionPills
-                class="w-full"
-                v-model="userbook.editionType"
-                :options="editionPillOptions"
-                :invalid="showErrorEditionType()"
-              />
-              <small class="p-error">{{ showErrorEditionType() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-4 READ STATUS -->
-          <div class="flex flex-row w-full">
-            <div class="flex min-w-0 flex-col w-full">
-              <span class="mb-1 text-surface-700 dark:text-surface-300">Stan czytania:</span>
-              <ReadingStatusStepper
-                v-model="userbook.readingStatus"
-                class="w-full"
-                :invalid="showErrorReadingStatus()"
-              />
-              <small class="p-error">{{ showErrorReadingStatus() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-            </div>
-          </div>
-
-          <!-- ROW-5  DATE FROM DATE TO  -->
-          <div class="flex-row flex gap-4">
-            <div class="flex-row flex w-full">
-              <div class="flex flex-col w-full">
-                <label class="ml-2 mb-1" for="date-from">Czytana od:</label>
-                <DatePicker
-                  id="date-from"
-                  v-model="readingDateFrom"
-                  show-icon
-                  showButtonBar
-                  date-format="yy-mm-dd"
-                  :invalid="showErrorDateFrom()"
-                />
-                <small class="p-error">{{ showErrorDateFrom() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
-              </div>
-            </div>
-
-            <div class="flex-row flex w-full">
-              <div class="flex flex-col w-full">
-                <label class="ml-2 mb-1" for="date-to">Czytana do:</label>
-                <DatePicker
-                  id="date-to"
-                  v-model="readingDateTo"
-                  show-icon
-                  showButtonBar
-                  date-format="yy-mm-dd"
-                  :invalid="showErrorDateTo()"
-                />
-                <small class="p-error">{{ showErrorDateTo() ? getReadToMessage : '&nbsp;' }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ROW-   COVER -->
-        <div class="col-start-5 col-span-2">
-          <img
-            v-if="userbook.book && userbook.book.cover.length > 0"
-            :src="userbook.book?.cover"
-            height="500"
-            width="333"
-            alt="Okładka do książki"
-          />
-          <img v-else src="@/assets/images/no_cover.jpg" alt="Okładka do książki" />
-        </div>
-      </div>
-    </Fieldset>
-
-    <!-- ROW-7  OTHER INFO  -->
-    <Fieldset legend="Dodatkowe informacje">
-      <Textarea v-model="userbook.info" fluid rows="3" cols="30" />
-    </Fieldset>
+    <div class="max-h-[70vh] overflow-y-auto pr-1">
+      <UserBookFormFields
+        v-model:userbook="userbook"
+        v-model:selected-bookstore="selectedBookstore"
+        v-model:reading-date-from="readingDateFrom"
+        v-model:reading-date-to="readingDateTo"
+        :bookstores="bookstoreStore.bookstores"
+        :ownership-pill-options="ownershipPillOptions"
+        :edition-pill-options="editionPillOptions"
+        :show-error-bookstore="showErrorBookstore()"
+        :show-error-ownership="showErrorOwnership()"
+        :show-error-edition-type="showErrorEditionType()"
+        :show-error-reading-status="showErrorReadingStatus()"
+        :show-error-date-from="showErrorDateFrom()"
+        :show-error-date-to="showErrorDateTo()"
+        :read-to-error-message="getReadToMessage"
+        :loading-bookstore="bookstoreStore.loadingBookstore"
+        @bookstore-change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"
+        @add-bookstore="showAddBookstoreModal = true"
+      />
+    </div>
     <template #footer>
       <div class="flex flex-row gap-4">
         <OfficeButton text="Anuluj" btn-type="office-regular" @click="cancel" />

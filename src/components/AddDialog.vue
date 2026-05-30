@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import OfficeButton from '@/components/OfficeButton.vue';
+  import FormSectionCard from '@/components/library/FormSectionCard.vue';
+  import { ptFieldInputText } from '@/config/formFieldPt';
+  import { PencilSquareIcon } from '@heroicons/vue/24/outline';
   import { ref, watch } from 'vue';
 
   const visible = defineModel<boolean>('visible', { default: false });
@@ -66,22 +69,26 @@
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" :style="{ width: '550px' }" :modal="true">
+  <Dialog v-model:visible="visible" :style="{ width: 'min(95vw, 32rem)' }" :modal="true">
     <template #header>
-      <h4>{{ msg }}</h4>
+      <p class="text-xl font-medium text-surface-900 dark:text-surface-0">{{ msg }}</p>
     </template>
-    <div class="flex flex-col mb-3">
-      <label for="label1" class="mb-1">{{ label1 }}</label>
-      <InputText id="label1" v-model="input1" class="flex-auto" autofocus />
-    </div>
-    <div v-if="label2 !== 'label2'" class="flex flex-col">
-      <label for="label2" class="mb-1">{{ label2 }}</label>
-      <InputText id="label2" v-model="input2" class="flex-auto" />
-    </div>
+    <FormSectionCard title="Dane" :icon="PencilSquareIcon">
+      <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-surface-600 dark:text-surface-400" for="add-dialog-input1">{{ label1 }}</label>
+          <InputText id="add-dialog-input1" v-model="input1" :pt="ptFieldInputText" autofocus />
+        </div>
+        <div v-if="label2 !== 'label2'" class="flex flex-col gap-2">
+          <label class="text-sm text-surface-600 dark:text-surface-400" for="add-dialog-input2">{{ label2 }}</label>
+          <InputText id="add-dialog-input2" v-model="input2" :pt="ptFieldInputText" />
+        </div>
+      </div>
+    </FormSectionCard>
     <template #footer>
       <div class="flex flex-row gap-4">
-        <OfficeButton text="Anuluj" btn-type="office-regular" @click="cancel" @abort="cancel"></OfficeButton>
-        <OfficeButton text="zapisz" btn-type="office-save" @click="save"></OfficeButton>
+        <OfficeButton text="Anuluj" btn-type="office-regular" @click="cancel" @abort="cancel" />
+        <OfficeButton text="zapisz" btn-type="office-save" @click="save" />
       </div>
     </template>
   </Dialog>
