@@ -39,58 +39,103 @@
     await refresh();
   });
 
-  async function refresh() {
-    const result = await booksStore.getBooksInSeriesFromDb(props.series?.id);
-    booksInSeries.value = result.sort(
+  function sortBooksBySeriesNo(books: Book[]): Book[] {
+    return [...books].sort(
       (a: Book, b: Book) => Number.parseFloat(a.bookInSeriesNo) - Number.parseFloat(b.bookInSeriesNo)
     );
+  }
+
+  /** Książka z bazy ma id > 0; id === 0 to kandydat z API (jeszcze nie zapisany w bibliotece). */
+  function isBookCandidate(book: Book): boolean {
+    return book.id === 0;
+  }
+
+  function getBookListKey(book: Book): string {
+    return `${book.bookInSeriesNo}::${book.title}`;
+  }
+
+  function getSeriesBookComponentKey(book: Book): string {
+    const listKey = getBookListKey(book);
+    const token = bookCardRefreshTokens.value[listKey] ?? 0;
+    return `${book.id}::${listKey}::${token}`;
+  }
+
+  function bumpSeriesBookCard(book: Book) {
+    const listKey = getBookListKey(book);
+    bookCardRefreshTokens.value = {
+      ...bookCardRefreshTokens.value,
+      [listKey]: (bookCardRefreshTokens.value[listKey] ?? 0) + 1,
+    };
+  }
+
+  function isSameBookInSeries(a: Book, b: Book): boolean {
+    if (a.id > 0 && b.id > 0) return a.id === b.id;
+    return a.title === b.title && a.bookInSeriesNo === b.bookInSeriesNo;
+  }
+
+  function mergeBookCandidatesIntoList(existing: Book[], candidates: Book[]): { books: Book[]; addedCount: number } {
+    const merged = [...existing];
+    let addedCount = 0;
+    for (const book of candidates) {
+      if (!merged.some(b => isSameBookInSeries(b, book))) {
+        merged.push(book);
+        addedCount++;
+      }
+    }
+    return { books: sortBooksBySeriesNo(merged), addedCount };
+  }
+
+  async function refresh() {
+    const fromDb = await booksStore.getBooksInSeriesFromDb(props.series?.id);
+    const pendingCandidates = booksInSeries.value.filter(
+      book => isBookCandidate(book) && !fromDb.some(dbBook => isSameBookInSeries(dbBook, book))
+    );
+    booksInSeries.value = sortBooksBySeriesNo([...fromDb, ...pendingCandidates]);
     carouselKey.value++;
   }
 
   async function findNewBookInSeries(url: string) {
-    booksStore
-      .getNewBooksInSeriesFromDb(props.series?.id, url)
-      .then((result: Book[]) => {
-        if (result && result.length > 0) {
+    try {
+      const candidates = await booksStore.getNewBooksInSeriesFromDb(props.series?.id, url);
+      if (candidates.length > 0) {
+        const { books, addedCount } = mergeBookCandidatesIntoList(booksInSeries.value, candidates);
+        if (addedCount > 0) {
+          booksInSeries.value = books;
+          carouselKey.value++;
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail: 'Znaleziono ' + result.length + ' ' + getBooksCountLabel(result.length),
+            detail:
+              'Znaleziono ' + addedCount + ' ' + getBooksCountLabel(addedCount) + ' do dodania do biblioteki',
             life: 3000,
           });
-          booksInSeries.value.push(
-            ...result.sort(
-              (a: Book, b: Book) => Number.parseFloat(a.bookInSeriesNo) - Number.parseFloat(b.bookInSeriesNo)
-            )
-          );
-        } else if (result && result.length == 0) {
+        } else {
           toast.add({
             severity: 'info',
             summary: 'Potwierdzenie',
-            detail: 'Nie znaleziono nowych książek.',
+            detail: 'Znalezieni kandydaci są już na liście.',
             life: 3000,
           });
-          booksInSeries.value.push(
-            ...result.sort(
-              (a: Book, b: Book) => Number.parseFloat(a.bookInSeriesNo) - Number.parseFloat(b.bookInSeriesNo)
-            )
-          );
         }
-        booksStore.getSeriesByIdFromDb(props.series?.id).then((series: Series | null) => {
-          if (series) tempSeries.value = series;
-        });
-      })
-      .catch((reason: AxiosError) => {
+      } else {
         toast.add({
-          severity: 'error',
-          summary: reason?.message,
-          detail: 'Wystąpił błąd',
+          severity: 'info',
+          summary: 'Potwierdzenie',
+          detail: 'Nie znaleziono nowych książek.',
           life: 3000,
         });
-      });
-    booksStore.getSeriesByIdFromDb(props.series?.id).then((series: Series | null) => {
+      }
+      const series = await booksStore.getSeriesByIdFromDb(props.series?.id);
       if (series) tempSeries.value = series;
-    });
+    } catch (reason) {
+      const error = reason as AxiosError;
+      toast.add({
+        severity: 'error',
+        summary: error?.message,
+        detail: 'Wystąpił błąd',
+        life: 3000,
+      });
+    }
   }
 
   //
@@ -98,8 +143,11 @@
   //
   const showUserbookDialog = ref<boolean>(false);
   const tempIdBook = ref<number>(0);
+  const userbookBookListKey = ref<string | null>(null);
+  const bookCardRefreshTokens = ref<Record<string, number>>({});
   const addUserbook = (book: Book) => {
     tempIdBook.value = book.id;
+    userbookBookListKey.value = getBookListKey(book);
     showUserbookDialog.value = true;
   };
   const submitAddUserbook = async (newUserbook: UserBook) => {
@@ -114,7 +162,9 @@
             detail: 'Dodano książkę na półkę: ' + newUserbook.book?.title,
             life: 3000,
           });
-          refresh();
+          const book = booksInSeries.value.find(b => getBookListKey(b) === userbookBookListKey.value);
+          if (book) bumpSeriesBookCard(book);
+          userbookBookListKey.value = null;
         })
         .catch((reason: AxiosError) => {
           toast.add({
@@ -168,6 +218,7 @@
   //----------------------------BOOK
   //
   const showAddNewBookDialog = ref<boolean>(false);
+  const editingCandidateKey = ref<string | null>(null);
   const bookToAdd = ref<Book>({
     id: 0,
     title: '',
@@ -180,32 +231,45 @@
   });
   const addBook = (book: Book) => {
     console.log('showAddNewBookDialog', book);
+    editingCandidateKey.value = getBookListKey(book);
     bookToAdd.value = book;
     showAddNewBookDialog.value = true;
   };
-  const afterSavedBook = async () => {
+
+  function onBookSavedToDb(savedBook: Book) {
+    const candidateKey = editingCandidateKey.value;
+    if (!candidateKey) return;
+
+    const index = booksInSeries.value.findIndex(book => getBookListKey(book) === candidateKey);
+    if (index >= 0) {
+      booksInSeries.value[index] = savedBook;
+    }
+    editingCandidateKey.value = null;
+  }
+
+  const afterSavedBook = () => {
     showAddNewBookDialog.value = false;
-    await refresh();
   };
 
+  /** ~300px szerokości karty SeriesBook + marginesy; breakpointy jak w Tailwind (2xl/xl/lg/md/sm). */
   const responsiveOptions = ref([
     {
-      breakpoint: '1700px',
+      breakpoint: '1536px',
+      numVisible: 4,
+      numScroll: 2,
+    },
+    {
+      breakpoint: '1280px',
       numVisible: 3,
       numScroll: 2,
     },
     {
-      breakpoint: '1200px',
+      breakpoint: '1024px',
       numVisible: 2,
       numScroll: 1,
     },
     {
-      breakpoint: '900px',
-      numVisible: 2,
-      numScroll: 1,
-    },
-    {
-      breakpoint: '767px',
+      breakpoint: '640px',
       numVisible: 1,
       numScroll: 1,
     },
@@ -299,7 +363,12 @@
     @cancel="showSeriesDialog = false"
   />
 
-  <NewBookDialog v-model:visible="showAddNewBookDialog" :book-to-add="bookToAdd" @close="afterSavedBook" />
+  <NewBookDialog
+    v-model:visible="showAddNewBookDialog"
+    :book-to-add="bookToAdd"
+    @saved="onBookSavedToDb"
+    @close="afterSavedBook"
+  />
   <Panel class="mb-10 w-full text-color">
     <template #header>
       <div class="flex items-center gap-4">
@@ -336,8 +405,8 @@
       <Carousel
         :value="booksInSeries"
         :responsive-options="responsiveOptions"
-        :num-visible="3"
-        :num-scroll="2"
+        :num-visible="5"
+        :num-scroll="3"
         class="w-full"
         :key="carouselKey"
         style="overflow: hidden; width: 100%"
@@ -345,6 +414,7 @@
         <template #item="slotProps">
           <div class="flex justify-center">
             <SeriesBook
+              :key="getSeriesBookComponentKey(slotProps.data)"
               :book="slotProps.data"
               @new-userbook="addUserbook"
               @exist-userbook="addUserbook"

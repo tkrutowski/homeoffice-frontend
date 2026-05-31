@@ -234,6 +234,12 @@
           :alt="props.book.title"
           class="w-full rounded cover"
         />
+        <img
+          v-else-if="props.book?.cover.length > 0"
+          :src="props.book.cover"
+          :alt="props.book.title"
+          class="w-full rounded cover"
+        />
         <img v-else src="../../assets/images/no_cover.png" :alt="props.book.title" class="w-full rounded cover" />
         <Tag
           :value="getStatusMsg"

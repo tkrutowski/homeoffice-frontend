@@ -28,6 +28,7 @@
 
   const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'saved', book: Book): void;
   }>();
 
   const showAddToShelfConfirmation = ref(false);
@@ -172,6 +173,7 @@
           savedBookId.value = savedBook.id;
           savedBookTitle.value = savedBook.title;
           visible.value = false;
+          emit('saved', savedBook);
           showAddToShelfConfirmation.value = true;
         })
         .catch((reason: AxiosError) => {
