@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, type DefineComponent, ref, watchEffect } from 'vue';
+  import { type DefineComponent, ref, watchEffect } from 'vue';
   import type { PropType } from 'vue';
   import { useUserbooksStore } from '@/stores/userbooks.ts';
   import type { Book, Series, UserBook } from '@/types/Book.ts';
@@ -246,7 +246,7 @@
         {
           label: 'Legimi',
           icon: 'pi pi-search',
-          disabled: computed(() => !tempSeries.value?.url.includes('legimi.pl')),
+          disabled: () => !tempSeries.value?.url.includes('legimi.pl'),
           command: () => {
             const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'legimi.pl', ';;');
             if (result.length > 0) {
@@ -257,7 +257,7 @@
         {
           label: 'Upoluj ebooka',
           icon: 'pi pi-search',
-          disabled: computed(() => !tempSeries.value?.url.includes('upolujebooka.pl')),
+          disabled: () => !tempSeries.value?.url.includes('upolujebooka.pl'),
           command: () => {
             const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'upolujebooka.pl', ';;');
             if (result.length > 0) {
@@ -268,7 +268,7 @@
         {
           label: 'Lubimy czytać',
           icon: 'pi pi-search',
-          disabled: computed(() => !tempSeries.value?.url.includes('lubimyczytac.pl')),
+          disabled: () => !tempSeries.value?.url.includes('lubimyczytac.pl'),
           command: () => {
             const result: string[] = UtilsService.findPatternInString(tempSeries.value?.url, 'lubimyczytac.pl', ';;');
             if (result.length > 0) {
