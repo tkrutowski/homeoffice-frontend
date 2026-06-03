@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import type { Author, Book, Category, Series } from '@/types/Book';
+import { getAudiobookAvailability as fetchAudiobookAvailability } from '@/service/AudiobookAvailabilityService';
+import type { AudiobookAvailabilityResponse, Author, Book, Category, Series } from '@/types/Book';
 
 export const useBooksStore = defineStore('book', {
   state: () => ({
@@ -142,6 +143,12 @@ export const useBooksStore = defineStore('book', {
       this.loadingBooks = false;
       console.log('END - getBookFromDb()');
       return response.data ? response.data : null;
+    },
+    //
+    //GET AUDIOBOOK AVAILABILITY BY BOOK ID
+    //
+    async getAudiobookAvailability(bookId: number): Promise<AudiobookAvailabilityResponse | null> {
+      return fetchAudiobookAvailability(bookId);
     },
     //
     //GET  BOOKS IN SERIES FROM DB BY ID

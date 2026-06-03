@@ -82,3 +82,19 @@ export interface BookStatistic {
   book: number;
   ebook: number;
 }
+
+export interface AudiobookAvailabilityResult {
+  bookstoreId: number;
+  platformName: string;
+  available: boolean;
+  url: string | null;
+  error: string | null;
+}
+
+export interface AudiobookAvailabilityResponse {
+  bookId: number;
+  title: string;
+  author: string;
+  results: AudiobookAvailabilityResult[];
+  checkedAt: string;
+}

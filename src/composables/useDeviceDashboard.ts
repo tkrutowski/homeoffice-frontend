@@ -11,7 +11,7 @@ import type {
   DeviceChartData,
   RecentPurchaseItem,
 } from '@/types/DeviceDashboard';
-import { CATEGORY_COLORS, CHART_LINE_COLORS } from '@/mocks/deviceDashboard.mock';
+import { CATEGORY_COLORS, CHART_LINE_COLORS } from '@/config/deviceDashboardColors';
 import { useAuditStore } from '@/stores/audit';
 import { UtilsService } from '@/service/UtilsService';
 

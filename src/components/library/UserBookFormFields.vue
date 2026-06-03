@@ -1,11 +1,12 @@
 <script setup lang="ts">
-  import type { PropType } from 'vue';
+  import { computed, type PropType } from 'vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import LibraryOptionPills from '@/components/library/LibraryOptionPills.vue';
   import ReadingStatusStepper from '@/components/library/ReadingStatusStepper.vue';
+  import { AUDIOBOOK_PLATFORM_ORDER, getPlatformIcon } from '@/config/audiobookPlatformIcons';
   import { ptDatePickerField, ptSelectInField, ptTextareaField } from '@/config/formFieldPt';
-  import type { Bookstore, UserBook } from '@/types/Book.ts';
+  import type { AudiobookAvailabilityResponse, AudiobookAvailabilityResult, Bookstore, UserBook } from '@/types/Book.ts';
   import {
     BookmarkIcon,
     BuildingStorefrontIcon,
@@ -19,7 +20,7 @@
   const readingDateFrom = defineModel<Date | null>('readingDateFrom', { default: null });
   const readingDateTo = defineModel<Date | null>('readingDateTo', { default: null });
 
-  defineProps({
+  const props = defineProps({
     bookstores: {
       type: Array as PropType<Bookstore[]>,
       default: () => [],
@@ -64,12 +65,36 @@
       type: Boolean,
       default: false,
     },
+    audiobookAvailability: {
+      type: Object as PropType<AudiobookAvailabilityResponse | null>,
+      default: null,
+    },
+    loadingAudiobookAvailability: {
+      type: Boolean,
+      default: false,
+    },
   });
 
   const emit = defineEmits<{
     bookstoreChange: [];
     addBookstore: [];
   }>();
+
+  const showAudiobookHeaderActions = computed(
+    () => props.loadingAudiobookAvailability || (props.audiobookAvailability?.results?.length ?? 0) > 0
+  );
+
+  const sortedAudiobookPlatforms = computed((): AudiobookAvailabilityResult[] => {
+    const results = props.audiobookAvailability?.results ?? [];
+    const byId = new Map(results.map(r => [r.bookstoreId, r]));
+    return AUDIOBOOK_PLATFORM_ORDER.map(id => byId.get(id)).filter(
+      (r): r is AudiobookAvailabilityResult => r != null && getPlatformIcon(r.bookstoreId) != null
+    );
+  });
+
+  function unavailableTitle(platformName: string): string {
+    return `${platformName} — niedostępny`;
+  }
 </script>
 
 <template>
@@ -77,6 +102,50 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr,min(280px,35%)] lg:items-start">
       <div class="flex flex-col gap-6">
         <FormSectionCard title="Źródło" :icon="BuildingStorefrontIcon">
+          <template v-if="showAudiobookHeaderActions" #header-actions>
+            <div class="flex items-center gap-2">
+              <span
+                v-if="loadingAudiobookAvailability"
+                class="inline-flex h-7 w-7 shrink-0 items-center justify-center"
+                role="status"
+                aria-label="Sprawdzanie dostępności audiobooków"
+              >
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-surface-300 border-t-primary dark:border-surface-600 dark:border-t-primary"
+                  aria-hidden="true"
+                />
+              </span>
+              <template v-else>
+                <template v-for="platform in sortedAudiobookPlatforms" :key="platform.bookstoreId">
+                  <a
+                    v-if="platform.available && platform.url"
+                    :href="platform.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :title="platform.platformName"
+                    class="inline-flex shrink-0 rounded transition-opacity hover:opacity-80"
+                  >
+                    <img
+                      :src="getPlatformIcon(platform.bookstoreId)"
+                      :alt="platform.platformName"
+                      class="h-7 w-7 object-contain"
+                    />
+                  </a>
+                  <span
+                    v-else
+                    :title="unavailableTitle(platform.platformName)"
+                    class="inline-flex shrink-0"
+                  >
+                    <img
+                      :src="getPlatformIcon(platform.bookstoreId)"
+                      :alt="unavailableTitle(platform.platformName)"
+                      class="h-7 w-7 object-contain grayscale opacity-60"
+                    />
+                  </span>
+                </template>
+              </template>
+            </div>
+          </template>
           <div class="flex flex-col gap-2">
             <label class="text-sm text-surface-600 dark:text-surface-400" for="userbook-bookstore">Księgarnia</label>
             <div class="flex gap-2">
