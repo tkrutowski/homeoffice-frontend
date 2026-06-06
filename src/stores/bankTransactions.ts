@@ -1,0 +1,131 @@
+import { defineStore } from 'pinia';
+import httpCommon from '@/config/http-common';
+import moment from 'moment';
+import type {
+  BankTransaction,
+  BankTransactionCreatePayload,
+  TransactionCategoryDto,
+  TransactionLabelDto,
+} from '@/types/BankTransaction';
+
+function groupByDate(transactions: BankTransaction[]): Map<string, BankTransaction[]> {
+  const map = new Map<string, BankTransaction[]>();
+  for (const t of transactions) {
+    const key = t.transactionDate;
+    const list = map.get(key);
+    if (list) list.push(t);
+    else map.set(key, [t]);
+  }
+  for (const [, list] of map.entries()) {
+    list.sort((a, b) => b.id - a.id);
+  }
+  return map;
+}
+
+function toPayloadPayload(payload: BankTransactionCreatePayload) {
+  return {
+    ...payload,
+    transactionDate: moment(payload.transactionDate).format('YYYY-MM-DD'),
+    transactionCategory: { id: payload.transactionCategory.id, name: payload.transactionCategory.name },
+    transactionLabel: payload.transactionLabel.map(l => ({ id: l.id, name: l.name })),
+  };
+}
+
+export const useBankTransactionsStore = defineStore('bankTransactions', {
+  state: () => ({
+    loadingTransactions: false,
+    loadingCategories: false,
+    loadingLabels: false,
+    transactionsByDate: new Map<string, BankTransaction[]>(),
+    rawTransactions: [] as BankTransaction[],
+    categories: [] as TransactionCategoryDto[],
+    labels: [] as TransactionLabelDto[],
+  }),
+
+  actions: {
+    clearTransactionsMap() {
+      this.transactionsByDate = new Map();
+      this.rawTransactions = [];
+    },
+
+    getTransactionsByDate(date: string) {
+      return this.transactionsByDate.get(date);
+    },
+
+    getTransactionById(id: number): BankTransaction | null {
+      for (const t of this.rawTransactions) {
+        if (t.id === id) return t;
+      }
+      return null;
+    },
+
+    async getCategoriesFromDb(): Promise<TransactionCategoryDto[]> {
+      this.loadingCategories = true;
+      try {
+        const response = await httpCommon.get('/v1/finance/transaction-category');
+        this.categories = response.data;
+        return this.categories;
+      } finally {
+        this.loadingCategories = false;
+      }
+    },
+
+    async getLabelsFromDb(): Promise<TransactionLabelDto[]> {
+      this.loadingLabels = true;
+      try {
+        const response = await httpCommon.get('/v1/finance/transaction-label');
+        this.labels = response.data;
+        return this.labels;
+      } finally {
+        this.loadingLabels = false;
+      }
+    },
+
+    async addLabelDb(name: string): Promise<TransactionLabelDto> {
+      const response = await httpCommon.post('/v1/finance/transaction-label', { name });
+      const created: TransactionLabelDto = response.data;
+      this.labels.push(created);
+      return created;
+    },
+
+    async getTransactionsBetween(dateFrom: string, dateTo: string): Promise<Map<string, BankTransaction[]>> {
+      this.loadingTransactions = true;
+      try {
+        const response = await httpCommon.get('/v1/finance/bank-transaction/between', {
+          params: { dateFrom, dateTo },
+        });
+        this.rawTransactions = response.data;
+        this.transactionsByDate = groupByDate(this.rawTransactions);
+        return this.transactionsByDate;
+      } finally {
+        this.loadingTransactions = false;
+      }
+    },
+
+    async addTransactionDb(payload: BankTransactionCreatePayload): Promise<BankTransaction> {
+      const response = await httpCommon.post('/v1/finance/bank-transaction', toPayloadPayload(payload));
+      const created: BankTransaction = response.data;
+      this.rawTransactions.push(created);
+      const key = created.transactionDate;
+      const list = this.transactionsByDate.get(key);
+      if (list) list.unshift(created);
+      else this.transactionsByDate.set(key, [created]);
+      return created;
+    },
+
+    async updateTransactionDb(payload: BankTransactionCreatePayload & { id: number }): Promise<BankTransaction> {
+      const response = await httpCommon.put('/v1/finance/bank-transaction', toPayloadPayload(payload));
+      const updated: BankTransaction = response.data;
+      const idx = this.rawTransactions.findIndex(t => t.id === updated.id);
+      if (idx !== -1) this.rawTransactions[idx] = updated;
+      this.transactionsByDate = groupByDate(this.rawTransactions);
+      return updated;
+    },
+
+    async deleteTransactionDb(id: number): Promise<void> {
+      await httpCommon.delete(`/v1/finance/bank-transaction/${id}`);
+      this.rawTransactions = this.rawTransactions.filter(t => t.id !== id);
+      this.transactionsByDate = groupByDate(this.rawTransactions);
+    },
+  },
+});

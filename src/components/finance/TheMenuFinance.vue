@@ -164,6 +164,13 @@
             router.push({ name: 'PurchasesCurrent' });
           },
         },
+        {
+          label: 'Tranzakcje',
+          icon: 'pi pi-fw pi-list',
+          command: () => {
+            router.push({ name: 'Transactions' });
+          },
+        },
       ],
     },
     {
