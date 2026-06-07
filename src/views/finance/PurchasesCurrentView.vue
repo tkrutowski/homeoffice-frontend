@@ -47,6 +47,7 @@
   function onUserSelectChange() {
     purchases.value.clear();
     purchasesStore.clearPurchasesCurrentMap();
+    purchasesStore.clearPurchasesToPay();
   }
 
   function goToNewPurchase() {
@@ -63,6 +64,7 @@
   //--------------------------------------GET PURCHASE
   async function getCurrentPurchaseByUser() {
     purchases.value.clear();
+    purchasesStore.clearPurchasesToPay();
     if (selectedUser.value) {
       purchases.value = await purchasesStore.getPurchaseCurrentFromDb(selectedUser.value?.username);
       sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);

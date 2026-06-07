@@ -4,9 +4,59 @@ import moment from 'moment';
 import type {
   BankTransaction,
   BankTransactionCreatePayload,
+  TransactionCategoryCreatePayload,
   TransactionCategoryDto,
   TransactionLabelDto,
 } from '@/types/BankTransaction';
+
+function sortCategories(categories: TransactionCategoryDto[]): TransactionCategoryDto[] {
+  return [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+}
+
+function resolveTransactionLabelName(
+  item: TransactionLabelDto & { label?: string },
+  catalog: TransactionLabelDto[]
+): string {
+  const direct = item.name?.trim() || item.label?.trim();
+  if (direct) return direct;
+  return catalog.find(l => l.id === item.id)?.name?.trim() ?? '';
+}
+
+function enrichTransactionLabels(
+  raw: TransactionLabelDto[] | undefined,
+  catalog: TransactionLabelDto[]
+): TransactionLabelDto[] {
+  if (!raw?.length) return [];
+  return raw
+    .map(item => {
+      const name = resolveTransactionLabelName(item, catalog);
+      return name ? { id: item.id, name } : null;
+    })
+    .filter((item): item is TransactionLabelDto => item !== null);
+}
+
+function enrichTransactions(
+  transactions: BankTransaction[],
+  categories: TransactionCategoryDto[],
+  labels: TransactionLabelDto[] = []
+): BankTransaction[] {
+  return transactions.map(t => {
+    let enriched = {
+      ...t,
+      transactionLabel: enrichTransactionLabels(t.transactionLabel, labels),
+    };
+    if (!t.transactionCategory) return enriched;
+    const full = categories.find(c => c.id === t.transactionCategory!.id);
+    if (!full) return enriched;
+    return {
+      ...enriched,
+      transactionCategory: {
+        ...full,
+        type: t.transactionCategory.type ?? full.type,
+      },
+    };
+  });
+}
 
 function groupByDate(transactions: BankTransaction[]): Map<string, BankTransaction[]> {
   const map = new Map<string, BankTransaction[]>();
@@ -23,10 +73,11 @@ function groupByDate(transactions: BankTransaction[]): Map<string, BankTransacti
 }
 
 function toPayloadPayload(payload: BankTransactionCreatePayload) {
+  console.log(payload);
   return {
     ...payload,
     transactionDate: moment(payload.transactionDate).format('YYYY-MM-DD'),
-    transactionCategory: { id: payload.transactionCategory.id, name: payload.transactionCategory.name },
+    transactionCategory: { id: payload.transactionCategory.id, name: payload.transactionCategory.name, type: payload.transactionCategory.type },
     transactionLabel: payload.transactionLabel.map(l => ({ id: l.id, name: l.name })),
   };
 }
@@ -59,11 +110,31 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
       return null;
     },
 
+    resolveTransactionCategory(
+      category: TransactionCategoryDto | null | undefined
+    ): TransactionCategoryDto | null {
+      if (!category) return null;
+      const full = this.categories.find(c => c.id === category.id);
+      if (!full) return category;
+      return {
+        ...full,
+        type: category.type ?? full.type,
+      };
+    },
+
+    resolveTransactionLabelName(label: TransactionLabelDto & { label?: string }): string {
+      return resolveTransactionLabelName(label, this.labels);
+    },
+
     async getCategoriesFromDb(): Promise<TransactionCategoryDto[]> {
       this.loadingCategories = true;
       try {
         const response = await httpCommon.get('/v1/finance/transaction-category');
-        this.categories = response.data;
+        this.categories = sortCategories(response.data);
+        if (this.rawTransactions.length > 0) {
+          this.rawTransactions = enrichTransactions(this.rawTransactions, this.categories, this.labels);
+          this.transactionsByDate = groupByDate(this.rawTransactions);
+        }
         return this.categories;
       } finally {
         this.loadingCategories = false;
@@ -88,13 +159,23 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
       return created;
     },
 
+    async addCategoryDb(payload: TransactionCategoryCreatePayload): Promise<TransactionCategoryDto> {
+      const response = await httpCommon.post('/v1/finance/transaction-category', {
+        ...payload,
+        color: payload.color.toUpperCase(),
+      });
+      const created: TransactionCategoryDto = response.data;
+      this.categories = sortCategories([...this.categories, created]);
+      return created;
+    },
+
     async getTransactionsBetween(dateFrom: string, dateTo: string): Promise<Map<string, BankTransaction[]>> {
       this.loadingTransactions = true;
       try {
         const response = await httpCommon.get('/v1/finance/bank-transaction/between', {
           params: { dateFrom, dateTo },
         });
-        this.rawTransactions = response.data;
+        this.rawTransactions = enrichTransactions(response.data, this.categories, this.labels);
         this.transactionsByDate = groupByDate(this.rawTransactions);
         return this.transactionsByDate;
       } finally {
@@ -104,7 +185,7 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
 
     async addTransactionDb(payload: BankTransactionCreatePayload): Promise<BankTransaction> {
       const response = await httpCommon.post('/v1/finance/bank-transaction', toPayloadPayload(payload));
-      const created: BankTransaction = response.data;
+      const created: BankTransaction = enrichTransactions([response.data], this.categories, this.labels)[0];
       this.rawTransactions.push(created);
       const key = created.transactionDate;
       const list = this.transactionsByDate.get(key);
@@ -115,7 +196,7 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
 
     async updateTransactionDb(payload: BankTransactionCreatePayload & { id: number }): Promise<BankTransaction> {
       const response = await httpCommon.put('/v1/finance/bank-transaction', toPayloadPayload(payload));
-      const updated: BankTransaction = response.data;
+      const updated: BankTransaction = enrichTransactions([response.data], this.categories, this.labels)[0];
       const idx = this.rawTransactions.findIndex(t => t.id === updated.id);
       if (idx !== -1) this.rawTransactions[idx] = updated;
       this.transactionsByDate = groupByDate(this.rawTransactions);

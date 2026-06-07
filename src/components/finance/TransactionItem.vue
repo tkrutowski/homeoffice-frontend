@@ -6,7 +6,7 @@
   import { useFirmsStore } from '@/stores/firms';
   import { useBankTransactionsStore } from '@/stores/bankTransactions';
   import {
-    getCategoryIconConfig,
+    getCategoryDisplay,
     getCategoryInitial,
   } from '@/config/transactionCategoryIcons';
   import {
@@ -47,16 +47,32 @@
     return c ? c.toUpperCase() : '?';
   });
 
-  const categoryName = computed(() => row.value.transactionCategory?.name ?? '—');
-  const categoryIcon = computed(() => getCategoryIconConfig(row.value.transactionCategory));
+  const resolvedCategory = computed(() =>
+    bankStore.resolveTransactionCategory(row.value.transactionCategory)
+  );
 
-  const amountNum = computed(() => Number(row.value.amount));
-  const isPositive = computed(() => amountNum.value >= 0);
+  const categoryName = computed(() => resolvedCategory.value?.name ?? '—');
+  const categoryDisplay = computed(() => getCategoryDisplay(resolvedCategory.value));
+
+  const isIncome = computed(() => {
+    const categoryType = resolvedCategory.value?.type;
+    if (categoryType) return categoryType === 'INCOME';
+    return UtilsService.inferCategoryTypeFromTransactionType(row.value.transactionType) === 'INCOME';
+  });
 
   const amountTextClass = computed(() =>
-    isPositive.value
+    isIncome.value
       ? 'text-emerald-700 dark:text-emerald-400'
       : 'text-red-600 dark:text-red-400'
+  );
+
+  const displayLabels = computed(() =>
+    (row.value.transactionLabel ?? [])
+      .map(label => ({
+        id: label.id,
+        name: bankStore.resolveTransactionLabelName(label),
+      }))
+      .filter(label => label.name)
   );
 
   const showDeleteDialog = ref(false);
@@ -108,11 +124,12 @@
           </span>
           <span class="mt-0.5 flex items-center gap-2 text-sm" :class="transactionItemSubtitleClass">
             <span
-              v-if="categoryIcon"
-              class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs"
-              :class="categoryIcon.colorClass"
+              v-if="categoryDisplay"
+              class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs text-white"
+              :style="{ backgroundColor: categoryDisplay.backgroundColor }"
             >
-              <i v-if="categoryIcon.icon" :class="categoryIcon.icon" aria-hidden="true" />
+              <i v-if="categoryDisplay.iconClass" :class="categoryDisplay.iconClass" aria-hidden="true" />
+              <span v-else class="text-[0.6rem] font-bold">{{ categoryDisplay.initial ?? getCategoryInitial(categoryName) }}</span>
             </span>
             <span
               v-else
@@ -124,20 +141,21 @@
           </span>
           <span
             v-if="row.description"
-            class="mt-1 block truncate text-xs"
+            class="mt-1 block truncate text-sm"
             :class="transactionItemOtherInfoClass"
             :title="row.description"
           >
             {{ row.description }}
           </span>
-          <div v-if="row.transactionLabel?.length" class="mt-2 flex flex-wrap gap-1">
+          <div v-if="displayLabels.length" class="mt-2 flex flex-wrap gap-1">
             <Tag
-              v-for="label in row.transactionLabel"
+              v-for="label in displayLabels"
               :key="label.id"
-              :value="label.name"
-              severity="secondary"
-              class="text-xs"
-            />
+              severity="contrast"
+              rounded
+            >
+              {{ label.name }}
+            </Tag>
           </div>
         </div>
       </div>

@@ -405,5 +405,36 @@ export const usePurchasesStore = defineStore('purchase', {
       console.log(`END - getPurchasesByYearAndUser(), found ${purchasesMap.size} deadlines`);
       return purchasesMap;
     },
+
+    /** Suma kwot zakupów kartą w zakresie dat (filtrowanie po purchaseDate i opcjonalnie idUser). */
+    async getPurchasesSumBetween(dateFrom: string, dateTo: string, userIds?: number[]): Promise<number> {
+      let sum = 0;
+      let page = 0;
+      let totalPages = 1;
+      const size = 200;
+
+      while (page < totalPages) {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          size: size.toString(),
+          sort: 'purchaseDate',
+          direction: 'ASC',
+          purchaseDate: dateFrom,
+          dateComparisonType: 'AFTER',
+        });
+        const response = await httpCommon.get(`/v1/finance/purchase/page?${params.toString()}`);
+        const content = response.data.content as Purchase[];
+        for (const p of content) {
+          if (!p.purchaseDate) continue;
+          const d = moment(p.purchaseDate).format('YYYY-MM-DD');
+          if (d < dateFrom || d > dateTo) continue;
+          if (userIds && userIds.length > 0 && !userIds.includes(p.idUser)) continue;
+          sum += Number(p.amount);
+        }
+        totalPages = response.data.totalPages ?? 1;
+        page++;
+      }
+      return sum;
+    },
   },
 });

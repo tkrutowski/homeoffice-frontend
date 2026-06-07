@@ -2,7 +2,8 @@
   import TransactionItem from '@/components/finance/TransactionItem.vue';
   import { computed } from 'vue';
   import { UtilsService } from '@/service/UtilsService';
-  import type { BankTransaction } from '@/types/BankTransaction';
+  import { useBankTransactionsStore } from '@/stores/bankTransactions';
+  import type { BankTransaction, TransactionCategoryType } from '@/types/BankTransaction';
   import {
     transactionGroupFrameClasses,
     transactionGroupHeaderClasses,
@@ -20,8 +21,19 @@
     edit: [transaction: BankTransaction];
   }>();
 
+  const bankStore = useBankTransactionsStore();
+
+  function getFlowType(t: BankTransaction): TransactionCategoryType | null {
+    const category = bankStore.resolveTransactionCategory(t.transactionCategory);
+    return category?.type ?? UtilsService.inferCategoryTypeFromTransactionType(t.transactionType);
+  }
+
   const dayTotal = computed(() =>
-    props.transactions.reduce((sum, t) => sum + Number(t.amount), 0)
+    props.transactions.reduce((sum, t) => {
+      const amount = Math.abs(Number(t.amount));
+      const flowType = getFlowType(t);
+      return sum + (flowType === 'INCOME' ? amount : -amount);
+    }, 0)
   );
 
   const formattedTotal = computed(() => UtilsService.formatCurrency(dayTotal.value));

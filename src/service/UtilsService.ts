@@ -8,6 +8,7 @@ import type { FeeInstallment } from '../types/Fee';
 import type { Installment } from '../types/Payment';
 import type { LoanInstallment } from '../types/Loan';
 import { TranslationService } from '@/service/TranslationService.ts';
+import { TransactionType, type TransactionCategoryType } from '@/types/BankTransaction';
 
 export const UtilsService = {
   /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
@@ -163,5 +164,60 @@ export const UtilsService = {
   hasEmptyDeviceDetails(details: Map<string, string> | Record<string, string> | null | undefined): boolean {
     if (details == null) return false;
     return UtilsService.getDeviceDetailEntries(details).length === 0;
+  },
+
+  formatTransactionCategoryType(type: TransactionCategoryType): string {
+    switch (type) {
+      case 'INCOME':
+        return 'Przychód';
+      case 'EXPENSE':
+        return 'Wydatek';
+      default:
+        return type;
+    }
+  },
+
+  formatTransactionType(type: TransactionType | string | null | undefined): string {
+    if (!type) return '—';
+    return TranslationService.translateEnum('TransactionType', type);
+  },
+
+  /** Przychód / wydatek na podstawie typu operacji bankowej (gdy brak kategorii). */
+  inferCategoryTypeFromTransactionType(
+    type: TransactionType | string | null | undefined
+  ): TransactionCategoryType | null {
+    switch (type) {
+      case TransactionType.TRANSFER_IN:
+      case TransactionType.DEPOSIT:
+        return 'INCOME';
+      case TransactionType.TRANSFER_OUT:
+      case TransactionType.WITHDRAWAL:
+      case TransactionType.CARD_PAYMENT:
+      case TransactionType.LOAN_PAYMENT:
+        return 'EXPENSE';
+      default:
+        return null;
+    }
+  },
+
+  /** Slug ikony PrimeIcons → klasa CSS, np. "shopping-cart" → "pi pi-shopping-cart". */
+  toPrimeIconClass(iconSlug: string | null | undefined): string | undefined {
+    if (!iconSlug?.trim()) return undefined;
+    const slug = iconSlug.trim();
+    if (slug.startsWith('pi ')) return slug;
+    if (slug.startsWith('pi-')) return `pi ${slug}`;
+    return `pi pi-${slug}`;
+  },
+
+  /** Normalizacja koloru hex do #RRGGBB (uppercase). */
+  normalizeHexColor(color: string | null | undefined): string | undefined {
+    if (!color?.trim()) return undefined;
+    let hex = color.trim();
+    if (!hex.startsWith('#')) hex = `#${hex}`;
+    if (/^#[0-9A-Fa-f]{3}$/.test(hex)) {
+      hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+    }
+    if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return undefined;
+    return hex.toUpperCase();
   },
 };

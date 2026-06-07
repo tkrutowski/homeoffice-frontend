@@ -167,10 +167,10 @@
   const installmentsSorted = computed(() => {
     const list = [...installments.value];
     return list.sort((a, b) => {
-      const ma = a.paymentDeadline ? moment(a.paymentDeadline).valueOf() : 0;
-      const mb = b.paymentDeadline ? moment(b.paymentDeadline).valueOf() : 0;
-      if (mb !== ma) return mb - ma;
-      return (b.idFeeInstallment ?? 0) - (a.idFeeInstallment ?? 0);
+      const ma = a.paymentDeadline ? moment(a.paymentDeadline).valueOf() : Number.POSITIVE_INFINITY;
+      const mb = b.paymentDeadline ? moment(b.paymentDeadline).valueOf() : Number.POSITIVE_INFINITY;
+      if (ma !== mb) return ma - mb;
+      return (a.idFeeInstallment ?? 0) - (b.idFeeInstallment ?? 0);
     });
   });
 

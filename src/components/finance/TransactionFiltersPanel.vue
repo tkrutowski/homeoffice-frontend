@@ -2,6 +2,8 @@
   import type { TransactionCategoryDto } from '@/types/BankTransaction';
   import type { User } from '@/types/User';
   import { ptFieldInputText, ptSelectInField } from '@/config/formFieldPt';
+  import { getCategoryDisplay } from '@/config/transactionCategoryIcons';
+  import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
   import { computed } from 'vue';
 
   const props = defineProps<{
@@ -87,6 +89,25 @@
               {{ value.length }}
             </span>
             <span>Wszystkie kategorie</span>
+          </template>
+          <template #option="{ option }">
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.6rem] text-white"
+                :style="{
+                  backgroundColor:
+                    getCategoryDisplay(option)?.backgroundColor ?? TRANSACTION_CATEGORY_DEFAULT_COLOR,
+                }"
+              >
+                <i
+                  v-if="getCategoryDisplay(option)?.iconClass"
+                  :class="getCategoryDisplay(option)?.iconClass"
+                  aria-hidden="true"
+                />
+                <span v-else class="font-bold">{{ option.name.charAt(0).toUpperCase() }}</span>
+              </span>
+              <span>{{ option.name }}</span>
+            </div>
           </template>
         </MultiSelect>
       </div>

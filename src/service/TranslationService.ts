@@ -4,6 +4,14 @@ export const Translations: Record<string, Record<string, string>> = {
     CASH_LATE: 'gotówka terminowa',
     TRANSFER: 'przelew',
   },
+  TransactionType: {
+    TRANSFER_OUT: 'Przelew wychodzący',
+    TRANSFER_IN: 'Przelew przychodzący',
+    WITHDRAWAL: 'Wypłata',
+    DEPOSIT: 'Wpłata',
+    CARD_PAYMENT: 'Spłata karty kredytowej',
+    LOAN_PAYMENT: 'Spłata raty kredytu',
+  },
   BedType: { SINGLE: 'pojedyncze', DOUBLE: 'podwójne' },
   ReadingStatus: {
     NOT_READ: 'Nie przeczytana',

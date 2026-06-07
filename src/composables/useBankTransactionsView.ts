@@ -4,11 +4,17 @@ import { useBankTransactionsStore } from '@/stores/bankTransactions';
 import { usePurchasesStore } from '@/stores/purchases';
 import { useUsersStore } from '@/stores/users';
 import { useAuthorizationStore } from '@/stores/authorization';
-import type { BankTransaction, TransactionCategoryDto } from '@/types/BankTransaction';
+import type { BankTransaction, TransactionCategoryDto, TransactionCategoryType } from '@/types/BankTransaction';
+import { UtilsService } from '@/service/UtilsService';
 import type { User } from '@/types/User';
 
 function parseAmount(amount: string | number): number {
-  return Number(amount);
+  return Math.abs(Number(amount));
+}
+
+function getTransactionCategoryType(t: BankTransaction, bankStore: ReturnType<typeof useBankTransactionsStore>): TransactionCategoryType | null {
+  const category = bankStore.resolveTransactionCategory(t.transactionCategory);
+  return category?.type ?? UtilsService.inferCategoryTypeFromTransactionType(t.transactionType);
 }
 
 function monthStart(d: Date): Date {
@@ -73,12 +79,8 @@ export function useBankTransactionsView() {
   }
 
   function initPeopleFilter() {
-    if (isAdmin.value) {
-      selectedUsers.value = [...usersStore.users];
-    } else {
-      const logged = usersStore.getLoggedUser;
-      selectedUsers.value = logged ? [logged] : [];
-    }
+    const logged = usersStore.getLoggedUser;
+    selectedUsers.value = logged ? [logged] : [];
   }
 
   function initAmountRange() {
@@ -138,14 +140,18 @@ export function useBankTransactionsView() {
   });
 
   const summaryIncome = computed(() =>
-    filteredTransactions.value.filter(t => parseAmount(t.amount) > 0).reduce((s, t) => s + parseAmount(t.amount), 0)
+    filteredTransactions.value
+      .filter(t => getTransactionCategoryType(t, bankStore) === 'INCOME')
+      .reduce((s, t) => s + parseAmount(t.amount), 0)
   );
 
   const summaryExpenses = computed(() =>
-    filteredTransactions.value.filter(t => parseAmount(t.amount) < 0).reduce((s, t) => s + parseAmount(t.amount), 0)
+    filteredTransactions.value
+      .filter(t => getTransactionCategoryType(t, bankStore) === 'EXPENSE')
+      .reduce((s, t) => s + parseAmount(t.amount), 0)
   );
 
-  const summaryNetChange = computed(() => summaryIncome.value + summaryExpenses.value);
+  const summaryNetChange = computed(() => summaryIncome.value - summaryExpenses.value);
 
   async function loadMonth() {
     await bankStore.getTransactionsBetween(dateFrom.value, dateTo.value);
