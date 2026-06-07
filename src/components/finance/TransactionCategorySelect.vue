@@ -19,9 +19,7 @@
 
   const selectedDisplay = computed(() => getCategoryDisplay(model.value));
 
-  const filteredCategories = computed(() =>
-    props.categories.filter(c => (c.type ?? 'EXPENSE') === activeTab.value)
-  );
+  const filteredCategories = computed(() => props.categories.filter(c => (c.type ?? 'EXPENSE') === activeTab.value));
 
   watch(model, category => {
     if (category?.type) activeTab.value = category.type;
@@ -67,11 +65,7 @@
 
       <span
         class="min-w-0 flex-1 truncate text-sm"
-        :class="
-          model
-            ? 'text-surface-900 dark:text-surface-0'
-            : 'text-surface-500 dark:text-surface-400'
-        "
+        :class="model ? 'text-surface-900 dark:text-surface-0' : 'text-surface-500 dark:text-surface-400'"
       >
         {{ model?.name ?? 'Wybierz kategorię…' }}
       </span>
@@ -81,11 +75,7 @@
         class="pi pi-spin pi-spinner shrink-0 text-surface-500 dark:text-surface-400"
         aria-hidden="true"
       />
-      <i
-        v-else
-        class="pi pi-chevron-down shrink-0 text-xs text-surface-500 dark:text-surface-400"
-        aria-hidden="true"
-      />
+      <i v-else class="pi pi-chevron-down shrink-0 text-xs text-surface-500 dark:text-surface-400" aria-hidden="true" />
     </button>
 
     <Popover
@@ -129,18 +119,13 @@
             <button
               type="button"
               class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-100 dark:hover:bg-surface-800"
-              :class="
-                model?.id === category.id
-                  ? 'bg-surface-100 dark:bg-surface-800'
-                  : ''
-              "
+              :class="model?.id === category.id ? 'bg-surface-100 dark:bg-surface-800' : ''"
               @click="selectCategory(category)"
             >
               <span
                 class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs text-white"
                 :style="{
-                  backgroundColor:
-                    UtilsService.normalizeHexColor(category.color) ?? TRANSACTION_CATEGORY_DEFAULT_COLOR,
+                  backgroundColor: UtilsService.normalizeHexColor(category.color) ?? TRANSACTION_CATEGORY_DEFAULT_COLOR,
                 }"
               >
                 <i

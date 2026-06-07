@@ -59,9 +59,7 @@
           @click="emit('searchAi')"
         />
       </div>
-      <small v-if="showErrorUrl" class="text-sm text-red-600 dark:text-red-400">
-        Pole jest wymagane.
-      </small>
+      <small v-if="showErrorUrl" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
     </div>
   </FormSectionCard>
 </template>

@@ -77,7 +77,11 @@ function toPayloadPayload(payload: BankTransactionCreatePayload) {
   return {
     ...payload,
     transactionDate: moment(payload.transactionDate).format('YYYY-MM-DD'),
-    transactionCategory: { id: payload.transactionCategory.id, name: payload.transactionCategory.name, type: payload.transactionCategory.type },
+    transactionCategory: {
+      id: payload.transactionCategory.id,
+      name: payload.transactionCategory.name,
+      type: payload.transactionCategory.type,
+    },
     transactionLabel: payload.transactionLabel.map(l => ({ id: l.id, name: l.name })),
   };
 }
@@ -110,9 +114,7 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
       return null;
     },
 
-    resolveTransactionCategory(
-      category: TransactionCategoryDto | null | undefined
-    ): TransactionCategoryDto | null {
+    resolveTransactionCategory(category: TransactionCategoryDto | null | undefined): TransactionCategoryDto | null {
       if (!category) return null;
       const full = this.categories.find(c => c.id === category.id);
       if (!full) return category;

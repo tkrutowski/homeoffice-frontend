@@ -124,9 +124,7 @@
               :pt="ptFieldInputText"
               :class="{ 'border-red-500 dark:border-red-400': showErrorTitle() }"
             />
-            <small v-if="showErrorTitle()" class="text-sm text-red-600 dark:text-red-400">
-              Pole jest wymagane.
-            </small>
+            <small v-if="showErrorTitle()" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
         </FormSectionCard>
 
@@ -172,7 +170,14 @@
         </FormSectionCard>
 
         <FormSectionCard title="Opis" :icon="DocumentTextIcon">
-          <Textarea id="series-description" v-model="series.description" fluid rows="3" cols="30" :pt="ptTextareaField" />
+          <Textarea
+            id="series-description"
+            v-model="series.description"
+            fluid
+            rows="3"
+            cols="30"
+            :pt="ptTextareaField"
+          />
         </FormSectionCard>
       </div>
     </div>

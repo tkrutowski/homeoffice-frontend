@@ -54,16 +54,10 @@
 </script>
 
 <template>
-  <div
-    class="shrink-0 border-b border-surface-200 bg-surface-50 px-6 py-4 dark:border-surface-700 dark:bg-surface-900"
-  >
+  <div class="shrink-0 border-b border-surface-200 bg-surface-50 px-6 py-4 dark:border-surface-700 dark:bg-surface-900">
     <div class="mb-4 flex items-center justify-between">
       <span class="text-sm font-semibold text-surface-700 dark:text-surface-200">Filtry</span>
-      <button
-        type="button"
-        class="text-sm text-primary hover:underline dark:text-orange-400"
-        @click="emit('reset')"
-      >
+      <button type="button" class="text-sm text-primary hover:underline dark:text-orange-400" @click="emit('reset')">
         Resetuj filtry
       </button>
     </div>
@@ -95,8 +89,7 @@
               <span
                 class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.6rem] text-white"
                 :style="{
-                  backgroundColor:
-                    getCategoryDisplay(option)?.backgroundColor ?? TRANSACTION_CATEGORY_DEFAULT_COLOR,
+                  backgroundColor: getCategoryDisplay(option)?.backgroundColor ?? TRANSACTION_CATEGORY_DEFAULT_COLOR,
                 }"
               >
                 <i

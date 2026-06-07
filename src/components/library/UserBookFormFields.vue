@@ -6,7 +6,12 @@
   import ReadingStatusStepper from '@/components/library/ReadingStatusStepper.vue';
   import { AUDIOBOOK_PLATFORM_ORDER, getPlatformIcon } from '@/config/audiobookPlatformIcons';
   import { ptDatePickerField, ptSelectInField, ptTextareaField } from '@/config/formFieldPt';
-  import type { AudiobookAvailabilityResponse, AudiobookAvailabilityResult, Bookstore, UserBook } from '@/types/Book.ts';
+  import type {
+    AudiobookAvailabilityResponse,
+    AudiobookAvailabilityResult,
+    Bookstore,
+    UserBook,
+  } from '@/types/Book.ts';
   import {
     BookmarkIcon,
     BuildingStorefrontIcon,
@@ -131,11 +136,7 @@
                       class="h-7 w-7 object-contain"
                     />
                   </a>
-                  <span
-                    v-else
-                    :title="unavailableTitle(platform.platformName)"
-                    class="inline-flex shrink-0"
-                  >
+                  <span v-else :title="unavailableTitle(platform.platformName)" class="inline-flex shrink-0">
                     <img
                       :src="getPlatformIcon(platform.bookstoreId)"
                       :alt="unavailableTitle(platform.platformName)"

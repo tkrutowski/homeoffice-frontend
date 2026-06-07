@@ -41,7 +41,11 @@ export function getCategoryInitial(name: string | undefined | null): string {
 }
 
 export function getCategoryDisplay(
-  category: TransactionCategoryDto | { id: number; name: string; icon?: string | null; color?: string | null } | null | undefined
+  category:
+    | TransactionCategoryDto
+    | { id: number; name: string; icon?: string | null; color?: string | null }
+    | null
+    | undefined
 ): CategoryDisplayConfig | null {
   if (!category) return null;
 

@@ -5,10 +5,7 @@
   import { UtilsService } from '@/service/UtilsService';
   import { useFirmsStore } from '@/stores/firms';
   import { useBankTransactionsStore } from '@/stores/bankTransactions';
-  import {
-    getCategoryDisplay,
-    getCategoryInitial,
-  } from '@/config/transactionCategoryIcons';
+  import { getCategoryDisplay, getCategoryInitial } from '@/config/transactionCategoryIcons';
   import {
     transactionItemCardClasses,
     transactionItemTitleClass,
@@ -47,9 +44,7 @@
     return c ? c.toUpperCase() : '?';
   });
 
-  const resolvedCategory = computed(() =>
-    bankStore.resolveTransactionCategory(row.value.transactionCategory)
-  );
+  const resolvedCategory = computed(() => bankStore.resolveTransactionCategory(row.value.transactionCategory));
 
   const categoryName = computed(() => resolvedCategory.value?.name ?? '—');
   const categoryDisplay = computed(() => getCategoryDisplay(resolvedCategory.value));
@@ -61,9 +56,7 @@
   });
 
   const amountTextClass = computed(() =>
-    isIncome.value
-      ? 'text-emerald-700 dark:text-emerald-400'
-      : 'text-red-600 dark:text-red-400'
+    isIncome.value ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
   );
 
   const displayLabels = computed(() =>
@@ -119,7 +112,11 @@
           {{ firmInitial }}
         </div>
         <div class="min-w-0 flex-1 flex-col">
-          <span class="block truncate text-lg font-bold leading-tight" :class="transactionItemTitleClass" :title="firmName">
+          <span
+            class="block truncate text-lg font-bold leading-tight"
+            :class="transactionItemTitleClass"
+            :title="firmName"
+          >
             {{ firmName }}
           </span>
           <span class="mt-0.5 flex items-center gap-2 text-sm" :class="transactionItemSubtitleClass">
@@ -129,7 +126,9 @@
               :style="{ backgroundColor: categoryDisplay.backgroundColor }"
             >
               <i v-if="categoryDisplay.iconClass" :class="categoryDisplay.iconClass" aria-hidden="true" />
-              <span v-else class="text-[0.6rem] font-bold">{{ categoryDisplay.initial ?? getCategoryInitial(categoryName) }}</span>
+              <span v-else class="text-[0.6rem] font-bold">{{
+                categoryDisplay.initial ?? getCategoryInitial(categoryName)
+              }}</span>
             </span>
             <span
               v-else

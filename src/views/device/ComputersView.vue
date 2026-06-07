@@ -118,9 +118,7 @@
     console.log('selectedComputerChanged', event);
 
     const computer =
-      event.value && typeof event.value === 'object' && 'id' in event.value
-        ? (event.value as Computer)
-        : null;
+      event.value && typeof event.value === 'object' && 'id' in event.value ? (event.value as Computer) : null;
 
     await selectComputer(computer);
 

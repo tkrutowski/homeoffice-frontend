@@ -62,7 +62,11 @@
           :key="option.slug"
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm text-white transition-transform hover:scale-105"
-          :class="model === option.slug ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-950' : ''"
+          :class="
+            model === option.slug
+              ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-950'
+              : ''
+          "
           :style="{ backgroundColor: TRANSACTION_CATEGORY_DEFAULT_COLOR }"
           :title="option.slug"
           @click="select(option.slug)"

@@ -105,8 +105,7 @@
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail:
-              'Znaleziono ' + addedCount + ' ' + getBooksCountLabel(addedCount) + ' do dodania do biblioteki',
+            detail: 'Znaleziono ' + addedCount + ' ' + getBooksCountLabel(addedCount) + ' do dodania do biblioteki',
             life: 3000,
           });
         } else {

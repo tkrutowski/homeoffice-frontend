@@ -1,10 +1,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
   import Popover from 'primevue/popover';
-  import {
-    TRANSACTION_CATEGORY_COLORS,
-    TRANSACTION_CATEGORY_DEFAULT_COLOR,
-  } from '@/config/transactionCategoryColors';
+  import { TRANSACTION_CATEGORY_COLORS, TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
   import { UtilsService } from '@/service/UtilsService';
 
   const props = defineProps<{
@@ -66,7 +63,11 @@
           :key="color"
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:scale-105"
-          :class="displayColor === color ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-950' : ''"
+          :class="
+            displayColor === color
+              ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-950'
+              : ''
+          "
           :style="{ backgroundColor: color }"
           :title="color"
           @click="select(color)"

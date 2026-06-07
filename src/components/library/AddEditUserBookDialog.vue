@@ -322,13 +322,7 @@
     @save="saveBookstore"
     @cancel="showAddBookstoreModal = false"
   />
-  <Dialog
-    v-model:visible="visible"
-    modal
-    :style="{ width: 'min(95vw, 64rem)' }"
-    close-on-escape
-    @hide="onDialogHide"
-  >
+  <Dialog v-model:visible="visible" modal :style="{ width: 'min(95vw, 64rem)' }" close-on-escape @hide="onDialogHide">
     <template #header>
       <p class="text-xl font-medium text-surface-900 dark:text-surface-0">
         {{ $props.isEdit ? 'Edytuj książkę na półce' : 'Dodaj nową książkę na półkę' }}

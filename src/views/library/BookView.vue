@@ -86,8 +86,7 @@
   function findExistingCategory(category: Category): Category | undefined {
     return bookStore.categories.find(
       (cat: Category) =>
-        (category.id > 0 && cat.id === category.id) ||
-        cat.name.toLowerCase() === category.name.toLowerCase()
+        (category.id > 0 && cat.id === category.id) || cat.name.toLowerCase() === category.name.toLowerCase()
     );
   }
 
@@ -133,17 +132,13 @@
     if (series.id > 0) {
       return bookStore.series.find((s: Series) => s.id === series.id);
     }
-    return bookStore.series.find(
-      (s: Series) => s.title.toLowerCase() === series.title.toLowerCase()
-    );
+    return bookStore.series.find((s: Series) => s.title.toLowerCase() === series.title.toLowerCase());
   }
 
   const showAddModal = ref(false);
   const showAddSeriesModal = ref(false);
 
-  type UrlSearchPendingItem =
-    | { kind: 'series'; series: Series }
-    | { kind: 'author'; author: Author };
+  type UrlSearchPendingItem = { kind: 'series'; series: Series } | { kind: 'author'; author: Author };
 
   const urlSearchPendingQueue = ref<UrlSearchPendingItem[]>([]);
   const addAuthorFromUrlFlow = ref(false);
@@ -522,9 +517,7 @@
   const showUserbookDialog = ref(false);
   const savedBookId = ref(0);
   const savedBookTitle = ref('');
-  const addToShelfMessage = computed(
-    () => `Czy chcesz od razu dodać książkę <b>${savedBookTitle.value}</b> na półkę?`
-  );
+  const addToShelfMessage = computed(() => `Czy chcesz od razu dodać książkę <b>${savedBookTitle.value}</b> na półkę?`);
 
   function cancelAddToShelf() {
     showAddToShelfConfirmation.value = false;
@@ -776,11 +769,7 @@
                   <ListBulletIcon aria-hidden="true" />
                 </template>
               </OfficeIconButton>
-              <ProgressSpinner
-                v-if="bookStore.loadingBooks"
-                class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8"
-                stroke-width="5"
-              />
+              <ProgressSpinner v-if="bookStore.loadingBooks" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
             </div>
           </div>
 

@@ -198,14 +198,8 @@ function buildComputerAlerts(computers: Computer[]): DashboardAlert[] {
 function formatComputerSummary(computer: Computer): string {
   const cpu = computer.processor?.name ?? 'brak CPU';
   const gpu = computer.graphicCard?.[0]?.name ?? 'brak GPU';
-  const ram =
-    computer.ram?.length > 0
-      ? computer.ram.map(r => r.name).join(', ')
-      : 'brak RAM';
-  const disk =
-    computer.disk?.length > 0
-      ? computer.disk.map(d => d.name).join(', ')
-      : 'brak dysku';
+  const ram = computer.ram?.length > 0 ? computer.ram.map(r => r.name).join(', ') : 'brak RAM';
+  const disk = computer.disk?.length > 0 ? computer.disk.map(d => d.name).join(', ') : 'brak dysku';
 
   return [cpu, gpu, ram, disk].join(' · ');
 }

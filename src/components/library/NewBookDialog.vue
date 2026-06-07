@@ -35,9 +35,7 @@
   const showUserbookDialog = ref(false);
   const savedBookId = ref(0);
   const savedBookTitle = ref('');
-  const addToShelfMessage = computed(
-    () => `Czy chcesz od razu dodać książkę <b>${savedBookTitle.value}</b> na półkę?`
-  );
+  const addToShelfMessage = computed(() => `Czy chcesz od razu dodać książkę <b>${savedBookTitle.value}</b> na półkę?`);
 
   function finishDialogFlow() {
     visible.value = false;

@@ -2,19 +2,9 @@
   import type { PropType } from 'vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import FormSectionCard from '@/components/FormSectionCard.vue';
-  import {
-    ptAutoCompleteInField,
-    ptFieldInputText,
-    ptTextareaField,
-  } from '@/config/formFieldPt';
+  import { ptAutoCompleteInField, ptFieldInputText, ptTextareaField } from '@/config/formFieldPt';
   import type { Author, Book, Category, Series } from '@/types/Book';
-  import {
-    BookOpenIcon,
-    DocumentTextIcon,
-    TagIcon,
-    UserGroupIcon,
-    QueueListIcon,
-  } from '@heroicons/vue/24/outline';
+  import { BookOpenIcon, DocumentTextIcon, TagIcon, UserGroupIcon, QueueListIcon } from '@heroicons/vue/24/outline';
 
   const book = defineModel<Book>('book', { required: true });
   const selectedAuthors = defineModel<Author[]>('selectedAuthors', { default: () => [] });
@@ -96,9 +86,7 @@
               :pt="ptFieldInputText"
               :class="{ 'border-red-500 dark:border-red-400': showErrorTitle }"
             />
-            <small v-if="showErrorTitle" class="text-sm text-red-600 dark:text-red-400">
-              Pole jest wymagane.
-            </small>
+            <small v-if="showErrorTitle" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -135,9 +123,7 @@
                 @click="emit('addAuthor')"
               />
             </div>
-            <small v-if="showErrorAuthor" class="text-sm text-red-600 dark:text-red-400">
-              Pole jest wymagane.
-            </small>
+            <small v-if="showErrorAuthor" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
 
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-[1fr,6rem]">
@@ -221,9 +207,7 @@
                 @click="emit('addCategory')"
               />
             </div>
-            <small v-if="showErrorCategory" class="text-sm text-red-600 dark:text-red-400">
-              Pole jest wymagane.
-            </small>
+            <small v-if="showErrorCategory" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -234,9 +218,7 @@
               :pt="ptFieldInputText"
               :class="{ 'border-red-500 dark:border-red-400': showErrorCover }"
             />
-            <small v-if="showErrorCover" class="text-sm text-red-600 dark:text-red-400">
-              Pole jest wymagane.
-            </small>
+            <small v-if="showErrorCover" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
         </div>
       </FormSectionCard>

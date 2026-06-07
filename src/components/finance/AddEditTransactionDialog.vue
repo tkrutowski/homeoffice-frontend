@@ -6,7 +6,12 @@
   import { useBankTransactionsStore } from '@/stores/bankTransactions';
   import { useFirmsStore } from '@/stores/firms';
   import { useUsersStore } from '@/stores/users';
-  import type { BankTransaction, BankTransactionCreatePayload, TransactionCategoryCreatePayload, TransactionCategoryDto } from '@/types/BankTransaction';
+  import type {
+    BankTransaction,
+    BankTransactionCreatePayload,
+    TransactionCategoryCreatePayload,
+    TransactionCategoryDto,
+  } from '@/types/BankTransaction';
   import type { Firm } from '@/types/Firm';
   import { ptDatePickerField, ptFieldInputText, ptSelectInField } from '@/config/formFieldPt';
   import AddFirmDialog from '@/components/share/AddFirmDialog.vue';
@@ -86,9 +91,7 @@
   }
 
   function fillFromTransaction(t: BankTransaction) {
-    selectedCategory.value = t.transactionCategory
-      ? bankStore.resolveTransactionCategory(t.transactionCategory)
-      : null;
+    selectedCategory.value = t.transactionCategory ? bankStore.resolveTransactionCategory(t.transactionCategory) : null;
     selectedLabels.value = t.transactionLabel ? [...t.transactionLabel] : [];
     selectedFirm.value = firmStore.getFirm(t.idFirm);
     transactionDate.value = t.transactionDate ? moment(t.transactionDate).toDate() : new Date();
@@ -269,7 +272,7 @@
     :pt="{
       root: { class: 'border border-surface-200 dark:border-surface-700' },
       header: { class: 'bg-surface-0 dark:bg-surface-950 border-b border-surface-200 dark:border-surface-700' },
-      content: { class: 'bg-surface-0 dark:bg-surface-950 pb-1'},
+      content: { class: 'bg-surface-0 dark:bg-surface-950 pb-1' },
       footer: { class: 'bg-surface-0 dark:bg-surface-950 border-t border-surface-200 dark:border-surface-700 pt-4' },
     }"
     @update:visible="onVisibleChange"
@@ -303,23 +306,13 @@
 
       <div class="flex min-w-[9rem] flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Data</label>
-        <DatePicker
-          v-model="transactionDate"
-          date-format="dd/mm/yy"
-          class="w-full"
-          :pt="ptDatePickerAligned"
-        />
+        <DatePicker v-model="transactionDate" date-format="dd/mm/yy" class="w-full" :pt="ptDatePickerAligned" />
         <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
 
       <div class="flex min-w-[12rem] flex-[2] flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Notatka (opcjonalnie)</label>
-        <InputText
-          v-model="description"
-          placeholder="Wpisz notatkę"
-          class="w-full"
-          :pt="ptFieldInputAligned"
-        />
+        <InputText v-model="description" placeholder="Wpisz notatkę" class="w-full" :pt="ptFieldInputAligned" />
         <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
 
@@ -412,11 +405,7 @@
 
         <div class="flex gap-2">
           <Button label="Anuluj" severity="secondary" outlined @click="close" />
-          <Button
-            :label="isEdit ? 'Zapisz' : 'Dodaj transakcję'"
-            :loading="saving"
-            @click="save"
-          />
+          <Button :label="isEdit ? 'Zapisz' : 'Dodaj transakcję'" :loading="saving" @click="save" />
         </div>
       </div>
     </template>

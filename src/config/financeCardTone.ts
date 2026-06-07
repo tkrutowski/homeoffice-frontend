@@ -25,8 +25,7 @@ export const transactionGroupHeaderClasses =
 export const transactionGroupHeaderDateClass =
   'text-4xl font-semibold tracking-tight text-orange-950 dark:text-orange-50';
 
-export const transactionGroupHeaderCaptionClass =
-  'text-sm font-medium text-orange-900/90 dark:text-orange-100/90';
+export const transactionGroupHeaderCaptionClass = 'text-sm font-medium text-orange-900/90 dark:text-orange-100/90';
 
 export const transactionGroupHeaderAmountClass =
   'text-2xl font-bold tabular-nums tracking-tight text-orange-950 dark:text-orange-50';
