@@ -50,9 +50,10 @@ export function useBankTransactionsView() {
   const dateTo = computed(() => monthEnd(selectedMonth.value));
 
   const monthLabel = computed(() => {
-    const from = moment(selectedMonth.value).startOf('month');
-    const to = moment(selectedMonth.value).endOf('month');
-    return `${from.format('MMM DD, YYYY')} – ${to.format('MMM DD, YYYY')}`;
+    const fmt = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
+    const from = moment(selectedMonth.value).startOf('month').toDate();
+    const to = moment(selectedMonth.value).endOf('month').toDate();
+    return `${fmt.format(from)} – ${fmt.format(to)}`;
   });
 
   const peopleOptions = computed(() => {
