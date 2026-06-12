@@ -2,7 +2,7 @@
   import { useAuthorizationStore } from '@/stores/authorization';
   import ThemeSwitcher from './ThemeSwitcher.vue';
   import InstanceControl from '@/components/share/InstanceControl.vue';
-  import { EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
+  import { EC2_CONTROL_ENABLED, EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
 
   const authStore = useAuthorizationStore();
 </script>
@@ -12,7 +12,7 @@
     <img id="logo-mobile" alt="HomeOffice logo" src="../assets/HomeOffice.png" />
     <h1 class="text-primary text-4xl font-bold">Home Office</h1>
     <div class="flex flex-col align-items-end">
-      <div class="flex justify-end">
+      <div v-if="EC2_CONTROL_ENABLED" class="flex justify-end">
         <InstanceControl :idInstance="'i-0c84ab8759cefd840'" :nameInstance="'Smartgaz'" />
         <InstanceControl :idInstance="EC2_INSTANCE_ID" :nameInstance="EC2_INSTANCE_NAME" />
       </div>

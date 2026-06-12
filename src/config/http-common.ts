@@ -3,6 +3,7 @@ import { useAuthorizationStore } from '../stores/authorization';
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import router from '../router';
+import { EC2_CONTROL_ENABLED } from '@/config/ec2';
 
 /** Timeout żądań (ms). Gdy EC2 jest wyłączony, requesty wiszą w pending – po tym czasie dostajemy błąd i przekierowanie na 503. */
 const REQUEST_TIMEOUT_MS = 15000;
@@ -50,9 +51,7 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
       const message = error.response.data?.message;
 
-      const requestConfig = error.config as
-        | (InternalAxiosRequestConfig & { _retryAfterRefresh?: boolean })
-        | undefined;
+      const requestConfig = error.config as (InternalAxiosRequestConfig & { _retryAfterRefresh?: boolean }) | undefined;
       if (!requestConfig) {
         return Promise.reject(error);
       }
@@ -91,6 +90,7 @@ apiClient.interceptors.response.use(
 
     // Serwer w ogóle nie odpowiedział (brak połączenia / timeout), nie 4xx/5xx – np. EC2 wyłączony
     else if (
+      EC2_CONTROL_ENABLED &&
       !error.response &&
       (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED' || error.code === 'ECONNABORTED')
     ) {

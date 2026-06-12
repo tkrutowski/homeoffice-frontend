@@ -1,0 +1,19 @@
+---
+description: 
+alwaysApply: true
+---
+
+# Motyw jasny / ciemny i kolorystyka
+
+- Przełącznik motywu ustawia na elemencie `html` klasę **`dark`** albo **`light`** (`src/components/ThemeSwitcher.vue`). Warianty Tailwinda `dark:` są aktywne przy **`tailwind.config.js`** → `darkMode: ['selector', '[class="dark"]']`.
+- **Nie** styluj widoków na stałe „jak w dark mode” przez sztywne kolory heks (`#121212`, `#1E1E1E`, `#333`, `#fff` itd.). Zawsze uwzględnij **obie** skórki: jasną i ciemną.
+- **Paleta projektu:** używaj tokenów **Prime surface** z Tailwinda (`tailwindcss-primeui`), spójnie z presetem PrimeVue w `src/assets/primevue/*.css` oraz z istniejącymi widokami (np. `text-surface-*`, `bg-surface-*`, `border-surface-*`).
+- **Wzorzec:** dla tła, obramowań i tekstu stosuj pary **`…-surface-*`** + **`dark:…-surface-*`** (albo jedna klasa surface, jeśli komponent sam rozwiązuje motyw). Przykłady:
+  - tło sekcji: `bg-surface-100 dark:bg-surface-900`
+  - karta: `bg-surface-0 dark:bg-surface-950`, obramowanie `border-surface-200 dark:border-surface-700`
+  - etykiety: `text-surface-600 dark:text-surface-400`
+  - pola: `border-surface-300 bg-surface-0 dark:border-surface-600 dark:bg-surface-950` (dopasuj do kontekstu)
+- **Akcent / focus:** tam gdzie w formularzach PrimeVue jest `border-primary`, trzymaj się **`primary`** zamiast losowych kolorów focusu.
+- **Błędy walidacji:** `text-red-600 dark:text-red-400`, obramowanie `border-red-500 dark:border-red-400` tam, gdzie potrzebny jest wyraźny stan błędu.
+- **PrimeVue — nadpisywanie wyglądu:** preferuj prop **`pt`** (pass-through) z klasami Tailwinda (`class` na sekcjach typu `root`, `pcInputText`, `label`, `dropdown`), zamiast **`<style scoped>` + `:deep()` + `@apply`** na klasach `.p-*`, o ile to możliwe — łatwiej utrzymać motyw i uniknąć konfliktów z presetem.
+- Jeśli zostajesz przy **`<style scoped>`** i `:deep()`, używaj **`@apply`** z tokenami `surface` i **`dark:`**, bez sztywnych hexów.

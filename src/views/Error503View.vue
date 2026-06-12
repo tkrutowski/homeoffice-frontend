@@ -6,7 +6,7 @@
   import { useToast } from 'primevue/usetoast';
   import ProgressBar from 'primevue/progressbar';
   import { useEc2Control, type EnsureInstanceRunningPhase } from '@/composables/useEc2Control';
-  import { EC2_INSTANCE_ID } from '@/config/ec2';
+  import { EC2_CONTROL_ENABLED, EC2_INSTANCE_ID } from '@/config/ec2';
   import { useAuthorizationStore } from '@/stores/authorization';
 
   const route = useRoute();
@@ -25,6 +25,11 @@
   };
 
   onMounted(async () => {
+    if (!EC2_CONTROL_ENABLED) {
+      router.replace({ name: 'Home' });
+      return;
+    }
+
     phase.value = 'checking';
     try {
       await ensureInstanceRunning(EC2_INSTANCE_ID, {

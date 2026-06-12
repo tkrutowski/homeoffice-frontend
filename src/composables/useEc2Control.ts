@@ -1,4 +1,5 @@
 // composables/useEc2Control.ts
+import { EC2_CONTROL_ENABLED } from '@/config/ec2';
 import { ref } from 'vue';
 
 const API_URL = 'https://vxy52veych.execute-api.eu-central-1.amazonaws.com';
@@ -84,6 +85,13 @@ export function useEc2Control() {
     const waitForAppTimeoutMs = options?.waitForAppTimeoutMs ?? 60000;
     const onPhase = options?.onPhase;
     const waitForAppPing = options?.waitForAppPing;
+
+    if (!EC2_CONTROL_ENABLED) {
+      if (waitForAppPing) {
+        await waitForAppPing();
+      }
+      return;
+    }
 
     function getState(data: { state?: string; status?: string }): string {
       const raw = data?.state ?? data?.status ?? '';
