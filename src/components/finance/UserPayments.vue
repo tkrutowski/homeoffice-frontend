@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import moment from 'moment';
-  import { nextTick, ref, computed, watch } from 'vue';
+  import { onMounted, ref, computed } from 'vue';
   import { UtilsService } from '@/service/UtilsService.ts';
   import router from '@/router';
   import { type Installment, type Payment, PaymentStatus } from '@/types/Payment.ts';
@@ -36,8 +36,11 @@
   });
 
   const selectedPayment = ref<Payment | null>(null);
-  const selectedYear = ref<number>(props.year);
-  const payments = ref<Payment[]>([]);
+
+  const payments = computed(() => {
+    paymentStore.payments;
+    return paymentStore.getPaymentsByUserID(props.idUser.toString());
+  });
 
   const showStatusChangeConfirmationDialog = ref<boolean>(false);
   const selectedPaymentTemp = ref<Payment | null>(null);
@@ -66,7 +69,7 @@
   const getMonthCellState = (installments: Installment[], month: number): MonthCellState => {
     const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
-        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
+        pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline?.getMonth() + 1 === month
     );
     const paymentDeadline = installment?.paymentDeadline;
     if (!paymentDeadline) return 'no-credit';
@@ -111,7 +114,7 @@
    */
   const isCurrentCalendarMonth = (month: number) => {
     const now = moment();
-    return selectedYear.value === now.year() && month === now.month() + 1;
+    return props.year === now.year() && month === now.month() + 1;
   };
 
   const getMonthAmountHeaderShellClass = (month: number) => {
@@ -127,7 +130,7 @@
   const getAmount = (installments: Installment[], month: number) => {
     const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
-        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline.getMonth() + 1 === month
+        pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline.getMonth() + 1 === month
     );
 
     return installment === undefined
@@ -140,7 +143,7 @@
   const getDate = (installments: Installment[], month: number) => {
     const installment: Installment | undefined = installments.find(
       (pay: Installment) =>
-        pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline?.getMonth() + 1 === month
+        pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline?.getMonth() + 1 === month
     );
     if (!installment) return '';
 
@@ -159,7 +162,7 @@
       .flatMap(value => value)
       .filter(
         (pay: Installment) =>
-          pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline.getMonth() + 1 === month
+          pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline.getMonth() + 1 === month
       )
       .map(value => value.installmentAmountToPay)
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
@@ -170,7 +173,7 @@
       .flatMap(value => value)
       .filter(
         (pay: Installment) =>
-          pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline.getMonth() + 1 === month
+          pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline.getMonth() + 1 === month
       )
       .map(value => value.installmentAmountPaid)
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
@@ -181,7 +184,7 @@
       .flatMap(value => value)
       .filter(
         (pay: Installment) =>
-          pay.paymentDeadline?.getFullYear() === selectedYear.value && pay.paymentDeadline.getMonth() + 1 === month
+          pay.paymentDeadline?.getFullYear() === props.year && pay.paymentDeadline.getMonth() + 1 === month
       )
       .map(value => (value.paymentStatus === PaymentStatus.TO_PAY ? value.installmentAmountToPay : 0))
       .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
@@ -240,10 +243,6 @@
           newStatus
         );
 
-        // Odświeżenie danych z paymentStore aby mieć pewność synchronizacji
-        await nextTick();
-        payments.value = [...paymentStore.getPaymentsByUserID(props.idUser?.toString())];
-
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -262,19 +261,9 @@
     showStatusChangeConfirmationDialog.value = false;
   };
 
-  const syncPayments = () => {
+  onMounted(() => {
     moment.locale('pl');
-    selectedYear.value = props.year;
-    payments.value = paymentStore.getPaymentsByUserID(props.idUser?.toString());
-  };
-
-  watch(
-    () => [props.year, props.idUser] as const,
-    () => {
-      syncPayments();
-    },
-    { immediate: true }
-  );
+  });
 </script>
 
 <template>

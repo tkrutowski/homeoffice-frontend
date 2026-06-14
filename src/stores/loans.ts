@@ -338,18 +338,22 @@ export const useLoansStore = defineStore('loan', {
       };
 
       const response = await httpCommon.put(`/v1/finance/loan/installment`, transformedLoanInstallment);
-      console.log('loan store ', this.loans);
-      const loan = this.loans.find((l: Loan) => l.id === installment.idLoan);
-      console.log('loan store ', loan);
-      if (loan) {
-        const index = loan.installmentList.findIndex(
+      const cachedLoan = this.loans.find((l: Loan) => l.id === installment.idLoan);
+      if (cachedLoan) {
+        const index = cachedLoan.installmentList.findIndex(
           (l: LoanInstallment) => l.idLoanInstallment === installment.idLoanInstallment
         );
-        console.log('index ', index);
-        if (index !== -1) loan.installmentList.splice(index, 1, response.data);
+        if (index !== -1) cachedLoan.installmentList.splice(index, 1, response.data);
+      }
+
+      const loanResponse = await httpCommon.get(`/v1/finance/loan/` + installment.idLoan);
+      const freshLoan = loanResponse.data ? this.convertResponse(loanResponse.data) : null;
+      if (freshLoan) {
+        const cacheIndex = this.loans.findIndex((l: Loan) => l.id === installment.idLoan);
+        if (cacheIndex !== -1) this.loans.splice(cacheIndex, 1, freshLoan);
       }
       console.log('END - updateLoanInstallmentDb()');
-      return loan;
+      return freshLoan;
     },
 
     convertResponse(loan: Loan) {

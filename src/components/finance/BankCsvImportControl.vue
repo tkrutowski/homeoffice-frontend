@@ -45,6 +45,15 @@
   } = storeToRefs(importStore);
 
   const fileInputRef = ref<HTMLInputElement | null>(null);
+  const hideExistingRows = ref(false);
+
+  const visibleTransactionRows = computed(() =>
+    hideExistingRows.value ? transactionRows.value.filter(r => !r.exists) : transactionRows.value
+  );
+
+  const visiblePurchaseRows = computed(() =>
+    hideExistingRows.value ? purchaseRows.value.filter(r => !r.exists) : purchaseRows.value
+  );
 
   const transactionTypeOptions = Object.values(TransactionType).map(value => ({
     value,
@@ -111,7 +120,10 @@
   }
 
   watch(reviewDialogVisible, visible => {
-    if (visible) void loadDictionaries();
+    if (visible) {
+      hideExistingRows.value = false;
+      void loadDictionaries();
+    }
   });
 
   watch(
@@ -234,9 +246,8 @@
 
   <Dialog
     v-model:visible="reviewDialogVisible"
-    modal
     header="Podgląd importu CSV Millenium Bank"
-    class="w-full max-w-[min(96rem,calc(100vw-2rem))]"
+    :style="{ width: '90vw' }"
     :pt="{
       root: { class: 'border border-surface-200 dark:border-surface-700' },
       header: { class: 'bg-surface-0 dark:bg-surface-950 border-b border-surface-200 dark:border-surface-700' },
@@ -272,18 +283,29 @@
       </Message>
 
       <section class="flex flex-col gap-3">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">Transakcje bankowe</h3>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">Transakcje bankowe</h3>
+          <div class="flex items-center gap-2">
+            <Checkbox v-model="hideExistingRows" input-id="hide-existing-rows" binary />
+            <label for="hide-existing-rows" class="cursor-pointer text-sm text-surface-600 dark:text-surface-400">
+              Ukryj wiersze już w bazie
+            </label>
+          </div>
+        </div>
 
         <p v-if="transactionRows.length === 0" class="text-sm text-surface-600 dark:text-surface-400">
           Brak transakcji do importu.
         </p>
 
+        <p v-else-if="visibleTransactionRows.length === 0" class="text-sm text-surface-600 dark:text-surface-400">
+          Wszystkie transakcje są już w bazie (ukryte).
+        </p>
+
         <template v-else>
           <DataTable
             v-model:selection="selectedTransactions"
-            :value="transactionRows"
+            :value="visibleTransactionRows"
             data-key="_rowKey"
-            selection-mode="multiple"
             :meta-key-selection="false"
             :row-class="rowClass"
             :is-data-selectable="isRowSelectable"
@@ -435,12 +457,15 @@
           Brak zakupów do importu.
         </p>
 
+        <p v-else-if="visiblePurchaseRows.length === 0" class="text-sm text-surface-600 dark:text-surface-400">
+          Wszystkie zakupy są już w bazie (ukryte).
+        </p>
+
         <template v-else>
           <DataTable
             v-model:selection="selectedPurchases"
-            :value="purchaseRows"
+            :value="visiblePurchaseRows"
             data-key="_rowKey"
-            selection-mode="multiple"
             :meta-key-selection="false"
             :row-class="rowClass"
             :is-data-selectable="isRowSelectable"

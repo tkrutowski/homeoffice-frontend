@@ -343,15 +343,22 @@ export const useFeeStore = defineStore('fee', {
         paymentDate: installment.paymentDate ? moment(installment.paymentDate).format('YYYY-MM-DD') : null,
       };
       const response = await httpCommon.put(`/v1/finance/fee/installment`, transformedFeeInstallment);
-      const fee: Fee | undefined = this.fees.find((fee: Fee) => fee.id === installment.idFee);
-      console.log('END - updateFeeInstallmentDb()');
-      if (fee) {
-        const index = fee.installmentList.findIndex(
+      const cachedFee = this.fees.find((fee: Fee) => fee.id === installment.idFee);
+      if (cachedFee) {
+        const index = cachedFee.installmentList.findIndex(
           (f: FeeInstallment) => f.idFeeInstallment === installment.idFeeInstallment
         );
-        if (index !== -1) fee.installmentList.splice(index, 1, response.data);
-        return fee;
-      } else return null;
+        if (index !== -1) cachedFee.installmentList.splice(index, 1, response.data);
+      }
+
+      const feeResponse = await httpCommon.get(`/v1/finance/fee/` + installment.idFee);
+      const freshFee = feeResponse.data ? this.convertResponse(feeResponse.data) : null;
+      if (freshFee) {
+        const cacheIndex = this.fees.findIndex((f: Fee) => f.id === installment.idFee);
+        if (cacheIndex !== -1) this.fees.splice(cacheIndex, 1, freshFee);
+      }
+      console.log('END - updateFeeInstallmentDb()');
+      return freshFee;
     },
 
     convertResponse(fee: Fee) {

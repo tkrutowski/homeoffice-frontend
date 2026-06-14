@@ -1,9 +1,17 @@
 import { defineStore } from 'pinia';
-import type { Payment, PaymentType } from '@/types/Payment';
+import type { Installment, Payment, PaymentType } from '@/types/Payment';
 import { PaymentStatus } from '@/types/Payment';
 import type { Fee } from '@/types/Fee';
 import type { Loan } from '@/types/Loan';
 import httpCommon from '@/config/http-common';
+
+function normalizeInstallments(installments: Installment[]): Installment[] {
+  return installments.map(installment => ({
+    ...installment,
+    paymentDeadline: installment.paymentDeadline ? new Date(installment.paymentDeadline) : null,
+    paymentDate: installment.paymentDate ? new Date(installment.paymentDate) : null,
+  }));
+}
 
 export const usePaymentStore = defineStore('payment', {
   state: () => ({
@@ -33,11 +41,7 @@ export const usePaymentStore = defineStore('payment', {
       if (!userPayments) return [];
       return userPayments.map((pay: Payment) => ({
         ...pay,
-        installments: pay.installments.map(installment => ({
-          ...installment,
-          paymentDeadline: installment.paymentDeadline ? new Date(installment.paymentDeadline) : null,
-          paymentDate: installment.paymentDate ? new Date(installment.paymentDate) : null,
-        })),
+        installments: normalizeInstallments(pay.installments),
       }));
     },
     //
@@ -53,7 +57,18 @@ export const usePaymentStore = defineStore('payment', {
           ?.find((payment: Payment) => payment.id === paymentNew.id && payment.paymentType === type);
         console.log('type ', type);
         console.log('paymentOld ', paymentOld);
-        if (paymentOld) paymentOld.installments = paymentNew.installmentList;
+        if (paymentOld) {
+          const userPayments = this.payments.get(idUser);
+          const paymentIndex = userPayments?.findIndex(
+            (payment: Payment) => payment.id === paymentNew.id && payment.paymentType === type
+          );
+          if (userPayments && paymentIndex !== undefined && paymentIndex !== -1) {
+            userPayments[paymentIndex] = {
+              ...paymentOld,
+              installments: normalizeInstallments(paymentNew.installmentList),
+            };
+          }
+        }
         console.log('END - updatePayment() ');
       }
     },
@@ -72,11 +87,6 @@ export const usePaymentStore = defineStore('payment', {
 
           if (paymentIndex !== -1) {
             const payment = userPayments[paymentIndex];
-
-            // Aktualizacja statusu
-            payment.paymentStatus = status;
-
-            // Jeśli filtr jest ustawiony i nowy status nie pasuje do filtru, usuń płatność z listy
             const shouldRemove =
               (this.paymentSelectedFilter === 'TO_PAY' && status === PaymentStatus.PAID) ||
               (this.paymentSelectedFilter === 'PAID' && status === PaymentStatus.TO_PAY);
@@ -84,6 +94,8 @@ export const usePaymentStore = defineStore('payment', {
             if (shouldRemove) {
               userPayments.splice(paymentIndex, 1);
               console.log('Payment removed from list due to filter mismatch');
+            } else {
+              userPayments[paymentIndex] = { ...payment, paymentStatus: status };
             }
           }
         }

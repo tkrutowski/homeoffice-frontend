@@ -14,8 +14,8 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx config
-COPY <<EOF /etc/nginx/conf.d/default.conf
+# Create nginx config
+RUN cat > /etc/nginx/conf.d/default.conf <<'EOF'
 server {
     listen 3000;
     server_name localhost;
