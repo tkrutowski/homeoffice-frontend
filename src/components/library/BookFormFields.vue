@@ -173,7 +173,9 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <label class="text-sm text-surface-600 dark:text-surface-400" :for="`${idPrefix}-category`">Kategoria</label>
+            <label class="text-sm text-surface-600 dark:text-surface-400" :for="`${idPrefix}-category`"
+              >Kategoria</label
+            >
             <div class="flex gap-2">
               <div
                 class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"

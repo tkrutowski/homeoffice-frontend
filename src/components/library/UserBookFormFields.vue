@@ -216,18 +216,16 @@
           <div class="flex flex-col gap-5">
             <div class="flex flex-col gap-2">
               <span class="text-sm text-surface-600 dark:text-surface-400">Stan czytania</span>
-              <ReadingStatusStepper
-                v-model="userbook.readingStatus"
-                class="w-full"
-                :invalid="showErrorReadingStatus"
-              />
+              <ReadingStatusStepper v-model="userbook.readingStatus" class="w-full" :invalid="showErrorReadingStatus" />
               <small v-if="showErrorReadingStatus" class="text-sm text-red-600 dark:text-red-400">
                 Pole jest wymagane.
               </small>
             </div>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
-                <label class="text-sm text-surface-600 dark:text-surface-400" for="userbook-date-from">Czytana od</label>
+                <label class="text-sm text-surface-600 dark:text-surface-400" for="userbook-date-from"
+                  >Czytana od</label
+                >
                 <DatePicker
                   id="userbook-date-from"
                   v-model="readingDateFrom"

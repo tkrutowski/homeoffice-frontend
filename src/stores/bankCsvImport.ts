@@ -170,9 +170,7 @@ export const useBankCsvImportStore = defineStore('bankCsvImport', {
 
       const missingCategory = rows.filter(r => !r.transactionCategory || !r.idFirm);
       if (missingCategory.length > 0) {
-        summary.errors.push(
-          `Uzupełnij kategorię i firmę dla ${missingCategory.length} zaznaczonych transakcji.`
-        );
+        summary.errors.push(`Uzupełnij kategorię i firmę dla ${missingCategory.length} zaznaczonych transakcji.`);
         this.lastTransactionSaveSummary = summary;
         return summary;
       }

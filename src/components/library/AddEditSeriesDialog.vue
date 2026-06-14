@@ -143,7 +143,9 @@
               </small>
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-upoluj">URL upolujebooka.pl</label>
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-upoluj"
+                >URL upolujebooka.pl</label
+              >
               <InputText
                 id="series-upoluj"
                 v-model="urlUpolujEbooka"
@@ -155,7 +157,9 @@
               </small>
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-lubimy">URL lubimyczytac.pl</label>
+              <label class="text-sm text-surface-600 dark:text-surface-400" for="series-lubimy"
+                >URL lubimyczytac.pl</label
+              >
               <InputText
                 id="series-lubimy"
                 v-model="urlLubimyCzytac"

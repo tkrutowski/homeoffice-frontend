@@ -109,12 +109,7 @@
 
   <Popover ref="monthPickerRef" class="border border-surface-200 dark:border-surface-700">
     <div class="flex flex-col gap-3 p-2">
-      <DatePicker
-        v-model="monthPickerDate"
-        view="month"
-        date-format="mm/yy"
-        :pt="ptDatePickerField"
-      />
+      <DatePicker v-model="monthPickerDate" view="month" date-format="mm/yy" :pt="ptDatePickerField" />
       <Button label="Zastosuj" size="small" @click="applyMonthPicker" />
     </div>
   </Popover>
@@ -168,11 +163,7 @@
         </div>
         <template v-else>
           <div v-for="group in filteredByDate" :key="group.date">
-            <TransactionItemGroup
-              :transaction-date="group.date"
-              :transactions="group.items"
-              @edit="openEditDialog"
-            />
+            <TransactionItemGroup :transaction-date="group.date" :transactions="group.items" @edit="openEditDialog" />
           </div>
           <h2
             v-if="filteredByDate.length === 0"

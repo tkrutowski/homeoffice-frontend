@@ -62,9 +62,7 @@
 
   const sortedFirms = computed(() => [...firmsStore.firms].sort((a, b) => a.name.localeCompare(b.name)));
   const sortedUsers = computed(() =>
-    [...usersStore.users].sort((a, b) =>
-      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
-    )
+    [...usersStore.users].sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`))
   );
   const sortedCards = computed(() => [...cardsStore.cards].sort((a, b) => a.name.localeCompare(b.name)));
 

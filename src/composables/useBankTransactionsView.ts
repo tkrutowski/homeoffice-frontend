@@ -12,7 +12,10 @@ function parseAmount(amount: string | number): number {
   return Math.abs(Number(amount));
 }
 
-function getTransactionCategoryType(t: BankTransaction, bankStore: ReturnType<typeof useBankTransactionsStore>): TransactionCategoryType | null {
+function getTransactionCategoryType(
+  t: BankTransaction,
+  bankStore: ReturnType<typeof useBankTransactionsStore>
+): TransactionCategoryType | null {
   const category = bankStore.resolveTransactionCategory(t.transactionCategory);
   return category?.type ?? UtilsService.inferCategoryTypeFromTransactionType(t.transactionType);
 }

@@ -147,12 +147,7 @@
             {{ row.description }}
           </span>
           <div v-if="displayLabels.length" class="mt-2 flex flex-wrap gap-1">
-            <Tag
-              v-for="label in displayLabels"
-              :key="label.id"
-              severity="contrast"
-              rounded
-            >
+            <Tag v-for="label in displayLabels" :key="label.id" severity="contrast" rounded>
               {{ label.name }}
             </Tag>
           </div>

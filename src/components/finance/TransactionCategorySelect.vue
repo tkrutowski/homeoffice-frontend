@@ -112,7 +112,10 @@
         </div>
 
         <ul class="max-h-64 overflow-y-auto py-1">
-          <li v-if="filteredCategories.length === 0" class="px-4 py-6 text-center text-sm text-surface-500 dark:text-surface-400">
+          <li
+            v-if="filteredCategories.length === 0"
+            class="px-4 py-6 text-center text-sm text-surface-500 dark:text-surface-400"
+          >
             Brak kategorii tego typu
           </li>
           <li v-for="category in filteredCategories" :key="category.id">

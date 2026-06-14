@@ -30,7 +30,11 @@
 
   const selectedCategories = computed({
     get: () => props.categories.filter(c => props.selectedCategoryIds.includes(c.id)),
-    set: (val: TransactionCategoryDto[]) => emit('update:selectedCategoryIds', val.map(c => c.id)),
+    set: (val: TransactionCategoryDto[]) =>
+      emit(
+        'update:selectedCategoryIds',
+        val.map(c => c.id)
+      ),
   });
 
   const selectedPeople = computed({
@@ -136,12 +140,7 @@
 
       <div class="flex flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Notatka</label>
-        <InputText
-          v-model="note"
-          placeholder="Filtruj po słowie kluczowym"
-          class="w-full"
-          :pt="ptFieldInputText"
-        />
+        <InputText v-model="note" placeholder="Filtruj po słowie kluczowym" class="w-full" :pt="ptFieldInputText" />
       </div>
 
       <div class="flex flex-col gap-1">

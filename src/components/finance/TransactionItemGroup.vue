@@ -49,11 +49,7 @@
       class="flex shrink-0 w-full items-center justify-between gap-2 px-5 py-4 sm:gap-4"
       :class="transactionGroupHeaderClasses"
     >
-      <span
-        class="min-w-0 truncate text-left"
-        :class="transactionGroupHeaderDateClass"
-        :title="transactionDate"
-      >
+      <span class="min-w-0 truncate text-left" :class="transactionGroupHeaderDateClass" :title="transactionDate">
         {{ transactionDate }}
       </span>
 
