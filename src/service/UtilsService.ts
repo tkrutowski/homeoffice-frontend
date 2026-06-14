@@ -9,6 +9,8 @@ import type { Installment } from '../types/Payment';
 import type { LoanInstallment } from '../types/Loan';
 import { TranslationService } from '@/service/TranslationService.ts';
 import { TransactionType, type TransactionCategoryType } from '@/types/BankTransaction';
+import type { Card } from '@/types/Bank';
+import type { Moment } from 'moment';
 
 export const UtilsService = {
   /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
@@ -207,6 +209,24 @@ export const UtilsService = {
     if (slug.startsWith('pi ')) return slug;
     if (slug.startsWith('pi-')) return `pi ${slug}`;
     return `pi pi-${slug}`;
+  },
+
+  /** Termin płatności zakupu na podstawie karty i daty zakupu (logika z formularza zakupu). */
+  calculatePurchasePaymentDeadline(card: Card, date: Date): Date {
+    const purchaseDate: Moment = moment(date);
+    let deadlineDate: Moment = purchaseDate.add(1, 'months');
+
+    if (purchaseDate.date() > card.closingDay) {
+      deadlineDate = deadlineDate.add(1, 'months');
+    }
+
+    deadlineDate = deadlineDate.date(card.repaymentDay);
+
+    if (deadlineDate.month() === 0 && purchaseDate.month() === 11) {
+      deadlineDate = deadlineDate.add(1, 'year');
+    }
+
+    return deadlineDate.toDate();
   },
 
   /** Normalizacja koloru hex do #RRGGBB (uppercase). */

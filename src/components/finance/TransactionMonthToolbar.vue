@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import BankCsvImportControl from '@/components/finance/BankCsvImportControl.vue';
 
   defineProps<{
     monthLabel: string;
@@ -11,6 +12,8 @@
     nextMonth: [];
     addClick: [event: Event];
     calendarClick: [event: Event];
+    'transactions-saved': [];
+    'purchases-saved': [];
   }>();
 </script>
 
@@ -18,12 +21,18 @@
   <div
     class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-surface-200 bg-surface-0 px-6 py-3 dark:border-surface-700 dark:bg-surface-950"
   >
-    <Button
-      icon="pi pi-plus"
-      label="Dodaj transakcję"
-      class="shrink-0"
-      @click="emit('addClick', $event)"
-    />
+    <div class="flex shrink-0 items-center gap-1">
+      <OfficeIconButton
+        class="text-amber-500"
+        title="Dodaj transakcję"
+        icon="pi pi-plus"
+        @click="emit('addClick', $event)"
+      />
+      <BankCsvImportControl
+        @transactions-saved="emit('transactions-saved')"
+        @purchases-saved="emit('purchases-saved')"
+      />
+    </div>
 
     <div class="flex flex-wrap items-center justify-center gap-2">
       <OfficeIconButton

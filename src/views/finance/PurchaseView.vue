@@ -2,7 +2,6 @@
   import OfficeButton from '@/components/OfficeButton.vue';
   import type { User } from '@/types/User';
   import { computed, onMounted, ref, watch } from 'vue';
-  import moment, { type Moment } from 'moment';
   import router from '@/router';
   import { useToast } from 'primevue/usetoast';
   import type { Firm } from '@/types/Firm';
@@ -119,26 +118,7 @@
 
   function calculateDeadline(card: Card, date: Date) {
     console.log('Calculating deadline...');
-    const purchaseDate: Moment = moment(date);
-
-    // Ustawienie początkowej daty płatności na następny miesiąc
-    let deadlineDate: Moment = purchaseDate.add(1, 'months');
-
-    // Jeśli dzień zakupu jest większy niż dzień zamknięcia karty, przesuń o kolejny miesiąc
-    if (purchaseDate.date() > card.closingDay) {
-      deadlineDate = deadlineDate.add(1, 'months');
-    }
-
-    // Ustawienie dnia płatności karty
-    deadlineDate = deadlineDate.date(card.repaymentDay);
-
-    // Jeśli przekroczyliśmy koniec roku, ustawienie odpowiedniego roku
-    if (deadlineDate.month() === 0 && purchaseDate.month() === 11) {
-      deadlineDate = deadlineDate.add(1, 'year');
-    }
-
-    // Formatowanie i zapisywanie daty płatności
-    purchase.value.paymentDeadline = deadlineDate.toDate();
+    purchase.value.paymentDeadline = UtilsService.calculatePurchasePaymentDeadline(card, date);
   }
 
   //

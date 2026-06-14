@@ -132,6 +132,7 @@
         @next-month="nextMonth"
         @add-click="openAddDialog"
         @calendar-click="onCalendarClick"
+        @transactions-saved="onDialogSaved"
       />
 
       <TransactionFiltersPanel

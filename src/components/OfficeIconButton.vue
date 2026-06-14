@@ -21,6 +21,11 @@
       required: false,
       default: false,
     },
+    attention: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     rounded: {
       type: Boolean,
       required: false,
@@ -38,9 +43,9 @@
   <Button
     v-else
     class="icon-only"
+    :class="{ isActive: props.active, 'office-icon-button--attention': props.attention }"
     :icon="hasCustomIcon ? undefined : props.icon"
     :rounded="props.rounded"
-    :class="{ isActive: props.active }"
     :disabled="props.btnDisabled || props.loading"
     :loading="props.loading"
   >
@@ -122,5 +127,10 @@
     opacity: 0.2;
     border-radius: inherit;
     pointer-events: none;
+  }
+
+  .office-icon-button--attention :deep(.p-button-icon),
+  .office-icon-button--attention :deep(.office-icon-button__custom-icon) {
+    @apply animate-pulse;
   }
 </style>

@@ -8,6 +8,7 @@
   import { PaymentStatus } from '@/types/Payment';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import BankCsvImportControl from '@/components/finance/BankCsvImportControl.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Purchase } from '@/types/Purchase.ts';
   import type { User } from '@/types/User.ts';
@@ -69,6 +70,10 @@
       purchases.value = await purchasesStore.getPurchaseCurrentFromDb(selectedUser.value?.username);
       sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);
     }
+  }
+
+  function onPurchasesImported() {
+    if (selectedUser.value) void getCurrentPurchaseByUser();
   }
 
   async function applyUsernameFromRouteQuery() {
@@ -179,6 +184,7 @@
               icon="pi pi-plus"
               @click="goToNewPurchase"
             />
+            <BankCsvImportControl @purchases-saved="onPurchasesImported" />
             <OfficeIconButton
               title="Odświerz listę zakupów"
               class="text-green-500"

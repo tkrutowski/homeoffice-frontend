@@ -9,6 +9,7 @@
   import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import BankCsvImportControl from '@/components/finance/BankCsvImportControl.vue';
 
   import { useToast } from 'primevue/usetoast';
   import { usePurchasesStore } from '@/stores/purchases';
@@ -330,6 +331,7 @@
                   icon="pi pi-plus"
                   @click="goToNewPurchase"
                 />
+                <BankCsvImportControl @purchases-saved="purchasesStore.refreshPurchases()" />
                 <div
                   class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
                   role="presentation"

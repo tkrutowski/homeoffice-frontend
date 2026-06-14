@@ -6,9 +6,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-ARG VITE_EC2_CONTROL_ENABLED
-ENV VITE_EC2_CONTROL_ENABLED=$VITE_EC2_CONTROL_ENABLED
-RUN npm run build
+# Tylko lokalny Docker (stack z backendem). AWS: npm run build + .env.production.
+RUN npm run build:docker
 
 # Runtime stage
 FROM nginx:alpine
