@@ -50,8 +50,19 @@
     return book.id === 0;
   }
 
+  function normalizeBookInSeriesNo(no: string): number {
+    const parsed = Number.parseFloat(no?.trim().replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : Number.NaN;
+  }
+
+  function normalizeBookTitle(title: string): string {
+    return title?.trim().toLowerCase() ?? '';
+  }
+
   function getBookListKey(book: Book): string {
-    return `${book.bookInSeriesNo}::${book.title}`;
+    const seriesNo = normalizeBookInSeriesNo(book.bookInSeriesNo);
+    const seriesNoKey = Number.isFinite(seriesNo) ? String(seriesNo) : book.bookInSeriesNo.trim();
+    return `${seriesNoKey}::${normalizeBookTitle(book.title)}`;
   }
 
   function getSeriesBookComponentKey(book: Book): string {
@@ -70,7 +81,14 @@
 
   function isSameBookInSeries(a: Book, b: Book): boolean {
     if (a.id > 0 && b.id > 0) return a.id === b.id;
-    return a.title === b.title && a.bookInSeriesNo === b.bookInSeriesNo;
+
+    const seriesNoA = normalizeBookInSeriesNo(a.bookInSeriesNo);
+    const seriesNoB = normalizeBookInSeriesNo(b.bookInSeriesNo);
+    if (Number.isFinite(seriesNoA) && Number.isFinite(seriesNoB) && seriesNoA === seriesNoB) {
+      return true;
+    }
+
+    return normalizeBookTitle(a.title) === normalizeBookTitle(b.title);
   }
 
   function mergeBookCandidatesIntoList(existing: Book[], candidates: Book[]): { books: Book[]; addedCount: number } {
@@ -96,9 +114,22 @@
 
   async function findNewBookInSeries(url: string) {
     try {
-      const candidates = await booksStore.getNewBooksInSeriesFromDb(props.series?.id, url);
-      if (candidates.length > 0) {
-        const { books, addedCount } = mergeBookCandidatesIntoList(booksInSeries.value, candidates);
+      const [fromDb, candidates] = await Promise.all([
+        booksStore.getBooksInSeriesFromDb(props.series?.id),
+        booksStore.getNewBooksInSeriesFromDb(props.series?.id, url),
+      ]);
+      const existingBooks = sortBooksBySeriesNo([
+        ...fromDb,
+        ...booksInSeries.value.filter(
+          book => isBookCandidate(book) && !fromDb.some(dbBook => isSameBookInSeries(dbBook, book))
+        ),
+      ]);
+      const newCandidates = candidates.filter(
+        candidate => !existingBooks.some(book => isSameBookInSeries(book, candidate))
+      );
+
+      if (newCandidates.length > 0) {
+        const { books, addedCount } = mergeBookCandidatesIntoList(existingBooks, newCandidates);
         if (addedCount > 0) {
           booksInSeries.value = books;
           carouselKey.value++;
