@@ -22,6 +22,7 @@
     monthLabel,
     noteFilter,
     selectedCategoryIds,
+    selectedLabelIds,
     selectedUsers,
     amountRange,
     amountBounds,
@@ -36,6 +37,7 @@
     loadMonth,
     resetFilters,
     initCategoryFilter,
+    initLabelFilter,
     initPeopleFilter,
     prevMonth,
     nextMonth,
@@ -54,6 +56,7 @@
     await bankStore.getCategoriesFromDb();
     await bankStore.getLabelsFromDb();
     initCategoryFilter(bankStore.categories);
+    initLabelFilter(bankStore.labels);
     initPeopleFilter();
     monthPickerDate.value = selectedMonth.value;
     await loadMonth();
@@ -89,6 +92,10 @@
 
   function onCategoryIdsUpdate(ids: number[]) {
     selectedCategoryIds.value = ids;
+  }
+
+  function onLabelIdsUpdate(ids: number[]) {
+    selectedLabelIds.value = ids;
   }
 
   function onUsersUpdate(users: typeof selectedUsers.value) {
@@ -133,6 +140,8 @@
       <TransactionFiltersPanel
         :categories="bankStore.categories"
         :selected-category-ids="selectedCategoryIds"
+        :labels="bankStore.labels"
+        :selected-label-ids="selectedLabelIds"
         :people-options="peopleOptions"
         :selected-users="selectedUsers"
         :is-admin="isAdmin"
@@ -141,8 +150,10 @@
         :amount-min="amountBounds.min"
         :amount-max="amountBounds.max"
         :loading-categories="bankStore.loadingCategories"
+        :loading-labels="bankStore.loadingLabels"
         :loading-users="usersStore.loadingUsers"
         @update:selected-category-ids="onCategoryIdsUpdate"
+        @update:selected-label-ids="onLabelIdsUpdate"
         @update:selected-users="onUsersUpdate"
         @update:note-filter="noteFilter = $event"
         @update:amount-range="amountRange = $event"

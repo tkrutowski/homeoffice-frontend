@@ -24,6 +24,7 @@
     if (route.path.includes('/finance/loan')) return 'loan';
     if (route.path.includes('/finance/fee')) return 'fee';
     if (route.path.includes('/finance/payment')) return 'payment';
+    if (route.path.includes('/finance/purchase/transactions/dashboard')) return 'transaction-dashboard';
     if (route.path.includes('/finance/purchase/transactions')) return 'transaction';
     if (route.path.includes('/finance/purchase')) return 'purchase';
     if (route.path.includes('/finance/card')) return 'card';
@@ -170,7 +171,7 @@
     {
       label: 'Transakcje',
       icon: 'pi pi-fw pi-list',
-      class: `${activeMenu.value === 'transaction' ? 'active' : ''}`,
+      class: `${activeMenu.value === 'transaction' || activeMenu.value === 'transaction-dashboard' ? 'active' : ''}`,
       disabled: !authorizationStore.hasAccessFinancePurchase,
       items: [
         {
@@ -178,6 +179,13 @@
           icon: 'pi pi-fw pi-list',
           command: () => {
             router.push({ name: 'Transactions' });
+          },
+        },
+        {
+          label: 'Dashboard',
+          icon: 'pi pi-fw pi-chart-bar',
+          command: () => {
+            router.push({ name: 'TransactionsDashboard' });
           },
         },
       ],

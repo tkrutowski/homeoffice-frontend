@@ -8,6 +8,7 @@ import type {
   TransactionCategoryDto,
   TransactionLabelDto,
 } from '@/types/BankTransaction';
+import type { BalanceQueryParams, BalanceSeriesPoint, BalanceSeriesQueryParams } from '@/types/BankTransactionDashboard';
 
 function sortCategories(categories: TransactionCategoryDto[]): TransactionCategoryDto[] {
   return [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -209,6 +210,24 @@ export const useBankTransactionsStore = defineStore('bankTransactions', {
       await httpCommon.delete(`/v1/finance/bank-transaction/${id}`);
       this.rawTransactions = this.rawTransactions.filter(t => t.id !== id);
       this.transactionsByDate = groupByDate(this.rawTransactions);
+    },
+
+    /** Stub – podmienić URL gdy backend będzie gotowy. */
+    async getCurrentBalance(_params: BalanceQueryParams): Promise<number | null> {
+      // const response = await httpCommon.get('/v1/finance/bank-transaction/balance/current', {
+      //   params: buildBalanceQueryParams(params),
+      // });
+      // return Number(response.data.balance);
+      return null;
+    },
+
+    /** Stub – podmienić URL gdy backend będzie gotowy. */
+    async getBalanceSeries(_params: BalanceSeriesQueryParams): Promise<BalanceSeriesPoint[]> {
+      // const response = await httpCommon.get('/v1/finance/bank-transaction/balance/series', {
+      //   params: buildBalanceQueryParams(params),
+      // });
+      // return response.data;
+      return [];
     },
   },
 });

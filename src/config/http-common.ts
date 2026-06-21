@@ -6,7 +6,7 @@ import router from '../router';
 import { EC2_CONTROL_ENABLED } from '@/config/ec2';
 
 /** Timeout żądań (ms). Gdy EC2 jest wyłączony, requesty wiszą w pending – po tym czasie dostajemy błąd i przekierowanie na 503. */
-const REQUEST_TIMEOUT_MS = 15000;
+const REQUEST_TIMEOUT_MS = 45000;
 
 const apiClient: AxiosInstance = axios.create({
   // baseURL: "https://goahead.focikhome.synology.me/api",

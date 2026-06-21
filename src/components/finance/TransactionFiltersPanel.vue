@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { TransactionCategoryDto } from '@/types/BankTransaction';
+  import type { TransactionCategoryDto, TransactionLabelDto } from '@/types/BankTransaction';
   import type { User } from '@/types/User';
   import { ptFieldInputText, ptSelectInField } from '@/config/formFieldPt';
   import { getCategoryDisplay } from '@/config/transactionCategoryIcons';
@@ -9,6 +9,8 @@
   const props = defineProps<{
     categories: TransactionCategoryDto[];
     selectedCategoryIds: number[];
+    labels: TransactionLabelDto[];
+    selectedLabelIds: number[];
     peopleOptions: User[];
     selectedUsers: User[];
     isAdmin: boolean;
@@ -17,11 +19,13 @@
     amountMin: number;
     amountMax: number;
     loadingCategories?: boolean;
+    loadingLabels?: boolean;
     loadingUsers?: boolean;
   }>();
 
   const emit = defineEmits<{
     'update:selectedCategoryIds': [value: number[]];
+    'update:selectedLabelIds': [value: number[]];
     'update:selectedUsers': [value: User[]];
     'update:noteFilter': [value: string];
     'update:amountRange': [value: [number, number]];
@@ -34,6 +38,15 @@
       emit(
         'update:selectedCategoryIds',
         val.map(c => c.id)
+      ),
+  });
+
+  const selectedLabels = computed({
+    get: () => props.labels.filter(l => props.selectedLabelIds.includes(l.id)),
+    set: (val: TransactionLabelDto[]) =>
+      emit(
+        'update:selectedLabelIds',
+        val.map(l => l.id)
       ),
   });
 
@@ -66,7 +79,7 @@
       </button>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <div class="flex flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Kategoria</label>
         <MultiSelect
@@ -74,6 +87,9 @@
           :options="categories"
           option-label="name"
           placeholder="Wszystkie kategorie"
+          filter
+          filter-placeholder="Szukaj…"
+          auto-filter-focus
           :loading="loadingCategories"
           :max-selected-labels="0"
           class="w-full"
@@ -103,6 +119,39 @@
                 />
                 <span v-else class="font-bold">{{ option.name.charAt(0).toUpperCase() }}</span>
               </span>
+              <span>{{ option.name }}</span>
+            </div>
+          </template>
+        </MultiSelect>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs text-surface-600 dark:text-surface-400">Etykieta</label>
+        <MultiSelect
+          v-model="selectedLabels"
+          :options="labels"
+          option-label="name"
+          placeholder="Wszystkie etykiety"
+          filter
+          filter-placeholder="Szukaj…"
+          auto-filter-focus
+          :loading="loadingLabels"
+          :max-selected-labels="0"
+          class="w-full"
+          :pt="{ label: { class: 'flex items-center gap-2' } }"
+        >
+          <template #value="{ value }">
+            <span
+              v-if="value?.length"
+              class="mr-2 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-500 text-xs font-semibold text-white dark:bg-surface-400 dark:text-surface-950"
+            >
+              {{ value.length }}
+            </span>
+            <span>Wszystkie etykiety</span>
+          </template>
+          <template #option="{ option }">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-tag text-surface-500 dark:text-surface-400" aria-hidden="true" />
               <span>{{ option.name }}</span>
             </div>
           </template>

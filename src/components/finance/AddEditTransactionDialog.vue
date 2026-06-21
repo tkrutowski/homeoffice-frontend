@@ -266,11 +266,12 @@
 
   <Dialog
     :visible="visible"
-    modal
+    :modal="false"
+    position="top"
     :header="dialogTitle"
     class="w-full max-w-[min(96rem,calc(100vw-2rem))]"
     :pt="{
-      root: { class: 'border border-surface-200 dark:border-surface-700' },
+      root: { class: 'border border-surface-200 dark:border-surface-700 shadow-lg' },
       header: { class: 'bg-surface-0 dark:bg-surface-950 border-b border-surface-200 dark:border-surface-700' },
       content: { class: 'bg-surface-0 dark:bg-surface-950 pb-1' },
       footer: { class: 'bg-surface-0 dark:bg-surface-950 border-t border-surface-200 dark:border-surface-700 pt-4' },
