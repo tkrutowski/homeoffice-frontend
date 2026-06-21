@@ -8,7 +8,11 @@ import type {
   TransactionCategoryDto,
   TransactionLabelDto,
 } from '@/types/BankTransaction';
-import type { BalanceQueryParams, BalanceSeriesPoint, BalanceSeriesQueryParams } from '@/types/BankTransactionDashboard';
+import type {
+  BalanceQueryParams,
+  BalanceSeriesPoint,
+  BalanceSeriesQueryParams,
+} from '@/types/BankTransactionDashboard';
 
 function sortCategories(categories: TransactionCategoryDto[]): TransactionCategoryDto[] {
   return [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pl'));

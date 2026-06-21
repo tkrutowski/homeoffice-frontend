@@ -18,9 +18,7 @@
     { label: 'Miesiące', value: 'month' as const },
   ];
 
-  const hasData = computed(
-    () => props.data.income.some(v => v > 0) || props.data.expenses.some(v => v > 0)
-  );
+  const hasData = computed(() => props.data.income.some(v => v > 0) || props.data.expenses.some(v => v > 0));
 
   const chartData = computed(() => ({
     labels: props.data.labels,

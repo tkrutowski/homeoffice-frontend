@@ -58,20 +58,14 @@
   const groupedByDate = computed(() => groupTransactionsByDate(categoryTransactions.value));
 
   const chartBucketData = computed(() =>
-    buildAmountsByBucket(
-      categoryTransactions.value,
-      props.dateFrom,
-      props.dateTo,
-      chartGranularity.value,
-      t => parseTransactionAmount(t.amount)
+    buildAmountsByBucket(categoryTransactions.value, props.dateFrom, props.dateTo, chartGranularity.value, t =>
+      parseTransactionAmount(t.amount)
     )
   );
 
   const hasChartData = computed(() => chartBucketData.value.amounts.some(v => v > 0));
 
-  const chartColor = computed(() =>
-    props.type === 'INCOME' ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'
-  );
+  const chartColor = computed(() => (props.type === 'INCOME' ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'));
 
   const chartBorderColor = computed(() => (props.type === 'INCOME' ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)'));
 
@@ -154,9 +148,7 @@
         </p>
       </div>
 
-      <div
-        class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900"
-      >
+      <div class="rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-900">
         <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="m-0 text-sm font-medium text-surface-900 dark:text-surface-0">Wykres w okresie</p>
           <SelectButton
@@ -171,9 +163,7 @@
         <div v-if="hasChartData" class="relative min-h-[220px]">
           <Chart type="bar" :data="chartData" :options="chartOptions" class="h-full min-h-[220px] w-full" />
         </div>
-        <p v-else class="m-0 py-8 text-center text-sm text-surface-600 dark:text-surface-400">
-          Brak danych do wykresu
-        </p>
+        <p v-else class="m-0 py-8 text-center text-sm text-surface-600 dark:text-surface-400">Brak danych do wykresu</p>
       </div>
 
       <div class="flex min-h-0 flex-col">
@@ -181,7 +171,10 @@
           Transakcje ({{ categoryTransactions.length }})
         </p>
         <div class="max-h-[min(50vh,28rem)] overflow-y-auto overflow-x-hidden">
-          <div v-if="groupedByDate.length === 0" class="py-6 text-center text-sm text-surface-600 dark:text-surface-400">
+          <div
+            v-if="groupedByDate.length === 0"
+            class="py-6 text-center text-sm text-surface-600 dark:text-surface-400"
+          >
             Brak transakcji w wybranym okresie
           </div>
           <div v-else class="flex flex-col items-center gap-2 pb-2">

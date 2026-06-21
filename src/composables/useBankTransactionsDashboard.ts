@@ -16,11 +16,7 @@ import type {
 } from '@/types/BankTransactionDashboard';
 import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
 import { UtilsService } from '@/service/UtilsService';
-import {
-  bucketKey,
-  bucketLabel,
-  enumerateBuckets,
-} from '@/utils/transactionDashboardAggregation';
+import { bucketKey, bucketLabel, enumerateBuckets } from '@/utils/transactionDashboardAggregation';
 
 function monthStart(d: Date): Date {
   return moment(d).startOf('month').toDate();
@@ -177,10 +173,7 @@ export function useBankTransactionsDashboard() {
     } else if (customRange.value) {
       const [from, to] = customRange.value;
       const days = moment(to).diff(moment(from), 'days') + 1;
-      customRange.value = [
-        moment(from).subtract(days, 'days').toDate(),
-        moment(to).subtract(days, 'days').toDate(),
-      ];
+      customRange.value = [moment(from).subtract(days, 'days').toDate(), moment(to).subtract(days, 'days').toDate()];
     }
   }
 
@@ -233,7 +226,13 @@ export function useBankTransactionsDashboard() {
   });
 
   watch(
-    [filters.noteFilter, filters.selectedCategoryIds, filters.selectedLabelIds, filters.selectedUsers, filters.amountRange],
+    [
+      filters.noteFilter,
+      filters.selectedCategoryIds,
+      filters.selectedLabelIds,
+      filters.selectedUsers,
+      filters.amountRange,
+    ],
     () => {
       void loadBalanceData();
     },

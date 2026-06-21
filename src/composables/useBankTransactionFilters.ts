@@ -2,7 +2,12 @@ import { computed, ref, type Ref } from 'vue';
 import { useBankTransactionsStore } from '@/stores/bankTransactions';
 import { useUsersStore } from '@/stores/users';
 import { useAuthorizationStore } from '@/stores/authorization';
-import type { BankTransaction, TransactionCategoryDto, TransactionCategoryType, TransactionLabelDto } from '@/types/BankTransaction';
+import type {
+  BankTransaction,
+  TransactionCategoryDto,
+  TransactionCategoryType,
+  TransactionLabelDto,
+} from '@/types/BankTransaction';
 import { UtilsService } from '@/service/UtilsService';
 import type { User } from '@/types/User';
 

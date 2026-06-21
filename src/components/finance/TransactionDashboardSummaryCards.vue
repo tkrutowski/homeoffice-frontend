@@ -16,9 +16,7 @@
 
   const balanceClass = computed(() => {
     if (props.currentBalance === null) return 'text-surface-400';
-    return props.currentBalance >= 0
-      ? 'text-emerald-600 dark:text-emerald-400'
-      : 'text-red-600 dark:text-red-400';
+    return props.currentBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400';
   });
 
   const expensesClass = 'text-red-600 dark:text-red-400';
@@ -49,9 +47,7 @@
 
     <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-700 dark:bg-surface-950">
       <p class="mb-1 text-xs text-surface-600 dark:text-surface-400">Wydatki okresu</p>
-      <p class="text-2xl font-bold tabular-nums" :class="expensesClass">
-        −{{ UtilsService.formatCurrency(expenses) }}
-      </p>
+      <p class="text-2xl font-bold tabular-nums" :class="expensesClass">−{{ UtilsService.formatCurrency(expenses) }}</p>
     </div>
 
     <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-700 dark:bg-surface-950">
