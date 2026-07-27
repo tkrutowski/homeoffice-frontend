@@ -10,9 +10,10 @@ const REQUEST_TIMEOUT_MS = 45000;
 
 const apiClient: AxiosInstance = axios.create({
   // baseURL: "https://goahead.focikhome.synology.me/api",
-  // baseURL: 'http://localhost:8077/api',
+  // baseURL: '/api',
+  baseURL: 'http://localhost:8077/api',
   // baseURL: 'http://pxcm6vnuy9.execute-api.eu-central-1.amazonaws.com/prod/api',
-  baseURL: 'https://api.homeoffice.focik.net/api',
+  // baseURL: 'https://api.homeoffice.focik.net/api',
   timeout: REQUEST_TIMEOUT_MS,
   headers: {
     'Content-type': 'application/json',

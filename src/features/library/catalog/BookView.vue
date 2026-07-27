@@ -29,6 +29,7 @@
   import { useAuthorsListQuery } from '@/features/library/authors/queries/useAuthorsQueries';
   import { useCreateAuthorMutation } from '@/features/library/authors/queries/useAuthorsMutations';
   import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { cloneBook } from '@/features/library/_shared/cloneEntities';
 
   const route = useRoute();
   const toast = useToast();
@@ -282,7 +283,7 @@
   }
 
   async function applyBookFromSearch(bookByUrl: Book) {
-    book.value = bookByUrl;
+    book.value = cloneBook(bookByUrl);
     selectedCategories.value = mapToExistingCategories(bookByUrl.categories);
 
     if (bookByUrl.series?.title) {
@@ -418,10 +419,10 @@
     () => bookData.value,
     data => {
       if (isEdit.value && data) {
-        book.value = data;
-        selectedAuthors.value = book.value.authors;
+        book.value = cloneBook(data);
+        selectedAuthors.value = [...book.value.authors];
         selectedCategories.value = mapToExistingCategories(book.value.categories);
-        selectedSeries.value = book.value.series;
+        selectedSeries.value = book.value.series ? { ...book.value.series } : null;
       }
     }
   );

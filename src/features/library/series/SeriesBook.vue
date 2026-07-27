@@ -5,6 +5,7 @@
   import ImageButton from '@/components/ImageButton.vue';
   import { useUserbooksByBookIdQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
   import { TranslationService } from '@/service/TranslationService.ts';
+  import { UtilsService } from '@/service/UtilsService';
 
   const props = defineProps({
     book: {
@@ -33,6 +34,20 @@
     emit('newBook', props.book);
   };
 
+  function formatUserbookDate(value: Date | string | null | undefined): string {
+    return value ? UtilsService.formatDateToString(value) : '';
+  }
+
+  function readFromTime(value: Date | string | null | undefined): number {
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'string' && value.length > 0) return new Date(value).getTime();
+    return 0;
+  }
+
+  function sortByReadFromDesc(a: UserBook, b: UserBook): number {
+    return readFromTime(b.readFrom) - readFromTime(a.readFrom);
+  }
+
   const ifExistsMsg = computed(() => {
     if (props.book.id === 0) {
       return 'Brak książki w biblotece.';
@@ -41,11 +56,11 @@
       let msg = '';
       existedUserbooks.value.forEach(book => {
         if (book.readingStatus === ReadingStatus.READ) {
-          msg += '\nPrzeczytana (' + book.readFrom + ' - ' + book.readTo + ')';
+          msg += `\nPrzeczytana (${formatUserbookDate(book.readFrom)} - ${formatUserbookDate(book.readTo)})`;
         } else if (book.readingStatus === ReadingStatus.NOT_READ) {
           msg += 'Nie przeczytana';
         } else if (book.readingStatus === ReadingStatus.READ_NOW) {
-          msg += 'Czytam (' + book.readFrom + ' - ... )';
+          msg += `Czytam (${formatUserbookDate(book.readFrom)} - ... )`;
         }
       });
       return msg;
@@ -141,23 +156,15 @@
       (book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW
     );
     if (readingNowBooks.length > 0) {
-      return 'Czytana od: ';
+      return 'Czytana od:';
     }
 
     const readBooks = existedUserbooks.value
       .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ)
-      .sort((a: UserBook, b: UserBook) => {
-        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom;
-        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom;
-
-        const aTime = aDate instanceof Date ? aDate.getTime() : 0;
-        const bTime = bDate instanceof Date ? bDate.getTime() : 0;
-
-        return bTime - aTime;
-      });
+      .sort(sortByReadFromDesc);
 
     if (readBooks.length > 0) {
-      return 'Przeczytana: ';
+      return 'Przeczytana:';
     }
 
     return 'Nieprzeczytana';
@@ -169,33 +176,19 @@
     }
     const readingNowBooks = existedUserbooks.value
       .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ_NOW)
-      .sort((a: UserBook, b: UserBook) => {
-        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom;
-        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom;
-
-        const aTime = aDate instanceof Date ? aDate.getTime() : 0;
-        const bTime = bDate instanceof Date ? bDate.getTime() : 0;
-
-        return bTime - aTime;
-      });
+      .sort(sortByReadFromDesc);
     if (readingNowBooks.length > 0) {
-      return readingNowBooks[0].readFrom; // Zwraca książkę z najpóźniejszą datą
+      return formatUserbookDate(readingNowBooks[0].readFrom);
     }
 
     const readBooks = existedUserbooks.value
       .filter((book: UserBook) => book.readingStatus === ReadingStatus.READ)
-      .sort((a: UserBook, b: UserBook) => {
-        const aDate = Array.isArray(a.readFrom) ? a.readFrom[0] : a.readFrom;
-        const bDate = Array.isArray(b.readFrom) ? b.readFrom[0] : b.readFrom;
-
-        const aTime = aDate instanceof Date ? aDate.getTime() : 0;
-        const bTime = bDate instanceof Date ? bDate.getTime() : 0;
-
-        return bTime - aTime;
-      });
+      .sort(sortByReadFromDesc);
 
     if (readBooks.length > 0) {
-      return readBooks[0].readFrom + '-' + readBooks[0].readTo; // Zwraca książkę z najpóźniejszą datą
+      const from = formatUserbookDate(readBooks[0].readFrom);
+      const to = formatUserbookDate(readBooks[0].readTo);
+      return from && to ? `${from} - ${to}` : from || to || null;
     }
 
     return null;
@@ -212,59 +205,52 @@
 
 <template>
   <div
-    class="border border-surface-200 dark:border-surface-700 shadow-xl rounded m-2 p-4"
-    style="width: 300px; min-width: 300px; max-width: 300px"
+    class="m-2 w-[300px] min-w-[300px] max-w-[300px] overflow-hidden rounded-lg border border-surface-200 bg-surface-0 shadow-xl dark:border-surface-700 dark:bg-surface-900"
   >
-    <div class="flex mb-4 font-medium text-xl justify-center text-primary" :title="props.book.title">
+    <div class="flex justify-center px-4 pt-4 pb-2 font-medium text-xl text-primary" :title="props.book.title">
       {{ titleCal }}
     </div>
-    <div class="mb-4 flex justify-center">
-      <div class="relative mx-auto">
-        <img
-          v-if="props.book?.cover.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com')"
-          :src="props.book.cover"
-          :alt="props.book.title"
-          class="w-full rounded cover"
-        />
-        <img
-          v-else-if="props.book?.cover.length > 0"
-          :src="props.book.cover"
-          :alt="props.book.title"
-          class="w-full rounded cover"
-        />
-        <img v-else src="../../../assets/images/no_cover.png" :alt="props.book.title" class="w-full rounded cover" />
-        <Tag
-          :value="getStatusMsg"
-          :severity="getSeverity()"
-          class="absolute left-2 top-2 text-lg font-bold rounded p-1"
-        />
+    <div class="relative w-full">
+      <img
+        v-if="props.book?.cover && props.book.cover.length > 0"
+        :src="props.book.cover"
+        :alt="props.book.title"
+        class="block h-[400px] w-full object-cover"
+      />
+      <img
+        v-else
+        src="../../../assets/images/no_cover.png"
+        :alt="props.book.title"
+        class="block h-[400px] w-full object-cover"
+      />
+      <Tag
+        :value="getStatusMsg"
+        :severity="getSeverity()"
+        class="absolute left-2 top-2 rounded p-1 text-lg font-bold"
+      />
+    </div>
+    <div class="px-4 pb-4 pt-2">
+      <div class="mb-0 flex flex-wrap items-baseline justify-center gap-x-2 font-medium">
+        <span class="text-lg">{{ getLatestReadStatus }}</span>
+        <span v-if="getLatestReadTime" class="text-sm">{{ getLatestReadTime }}</span>
       </div>
-    </div>
-    <div class="flex mb-0 font-medium justify-center items-end gap-2">
-      <span class="text-lg">{{ getLatestReadStatus }} </span>
-      <span class="text-sm pb-0.5">{{ getLatestReadTime }}</span>
-    </div>
-    <div class="flex justify-between items-center">
-      <div class="mt-0 font-semibold text-3xl">#{{ props.book.bookInSeriesNo }}</div>
-      <span :title="ifExistsMsg">
-        <ImageButton v-if="props.book?.id === 0" img-src="add-to-library" @click="newBook" />
-        <img
-          v-else-if="checkStatus === ReadingStatus.READ_NOW"
-          class="w-10 h-10 mb-2 mt-1 mr-1"
-          src="@/assets/images/reading-book.png"
-          alt="Czytana"
-        />
-        <ImageButton v-else-if="checkStatus === ReadingStatus.READ" img-src="read" @click="existUserbook" />
-        <ImageButton v-else-if="existedUserbooks.length === 0" img-src="add-to-shell" @click="newUserbook" />
-        <ImageButton v-else-if="existedUserbooks.length > 0" img-src="onShell" @click="existUserbook" />
-      </span>
+      <div class="flex items-center justify-between">
+        <div class="mt-0 text-3xl font-semibold">#{{ props.book.bookInSeriesNo }}</div>
+        <span :title="ifExistsMsg">
+          <ImageButton v-if="props.book?.id === 0" img-src="add-to-library" @click="newBook" />
+          <img
+            v-else-if="checkStatus === ReadingStatus.READ_NOW"
+            class="mb-2 mr-1 mt-1 h-10 w-10"
+            src="@/assets/images/reading-book.png"
+            alt="Czytana"
+          />
+          <ImageButton v-else-if="checkStatus === ReadingStatus.READ" img-src="read" @click="existUserbook" />
+          <ImageButton v-else-if="existedUserbooks.length === 0" img-src="add-to-shell" @click="newUserbook" />
+          <ImageButton v-else-if="existedUserbooks.length > 0" img-src="onShell" @click="existUserbook" />
+        </span>
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-  .cover {
-    height: 400px;
-    width: 250px;
-  }
-</style>
+<style scoped></style>

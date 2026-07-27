@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, type PropType, ref, watch, watchEffect } from 'vue';
+  import { computed, type PropType, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import BookFormFields from '@/features/library/catalog/BookFormFields.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
@@ -12,6 +12,7 @@
   import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
   import { useAuthorsListQuery } from '@/features/library/authors/queries/useAuthorsQueries';
   import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { cloneBook } from '@/features/library/_shared/cloneEntities';
 
   const { data: authorsData, isLoading: loadingAuthors } = useAuthorsListQuery();
   const { data: seriesData, isLoading: loadingSeries } = useSeriesListQuery();
@@ -103,12 +104,17 @@
     bookInSeriesNo: '',
   });
 
-  watchEffect(async () => {
-    book.value = props.bookToAdd;
-    selectedAuthors.value = props.bookToAdd.authors;
-    selectedCategories.value = props.bookToAdd.categories;
-    selectedSeries.value = props.bookToAdd.series;
-  });
+  watch(
+    () => props.bookToAdd,
+    bookToAdd => {
+      const cloned = cloneBook(bookToAdd);
+      book.value = cloned;
+      selectedAuthors.value = cloned.authors.map(author => ({ ...author }));
+      selectedCategories.value = cloned.categories.map(category => ({ ...category }));
+      selectedSeries.value = cloned.series ? { ...cloned.series } : null;
+    },
+    { immediate: true }
+  );
 
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);

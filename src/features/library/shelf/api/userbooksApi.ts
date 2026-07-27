@@ -1,5 +1,6 @@
 import httpCommon from '@/config/http-common';
 import type { BookStatistic, ReadingStatus, UserBook } from '@/features/library/shelf/types';
+import { UtilsService } from '@/service/UtilsService';
 import moment from 'moment';
 
 function transformUserBookDates(userbook: UserBook) {
@@ -10,29 +11,41 @@ function transformUserBookDates(userbook: UserBook) {
   };
 }
 
+function parseUserBookDates(userbook: UserBook): UserBook {
+  return {
+    ...userbook,
+    readFrom: userbook.readFrom ? (UtilsService.formatDate(userbook.readFrom) ?? null) : null,
+    readTo: userbook.readTo ? (UtilsService.formatDate(userbook.readTo) ?? null) : null,
+  };
+}
+
+function parseUserBooks(userbooks: UserBook[]): UserBook[] {
+  return userbooks.map(parseUserBookDates);
+}
+
 export async function fetchUserbooksByStatus(status: ReadingStatus): Promise<UserBook[]> {
   const response = await httpCommon.get(`/v1/library/userbook/status?status=${status}`);
-  return response.data ?? [];
+  return parseUserBooks(response.data ?? []);
 }
 
 export async function fetchUserbooksByStatusAndYear(status: ReadingStatus, year: number): Promise<UserBook[]> {
   const response = await httpCommon.get(`/v1/library/userbook/status?status=${status}&year=${year}`);
-  return response.data ?? [];
+  return parseUserBooks(response.data ?? []);
 }
 
 export async function fetchUserbook(userbookId: number): Promise<UserBook | null> {
   const response = await httpCommon.get(`/v1/library/userbook/${userbookId}`);
-  return response.data ?? null;
+  return response.data ? parseUserBookDates(response.data) : null;
 }
 
 export async function fetchUserbooksByBookId(bookId: number): Promise<UserBook[] | null> {
   const response = await httpCommon.get(`/v1/library/userbook/check?id=${bookId}`);
-  return response.data ?? null;
+  return response.data ? parseUserBooks(response.data) : null;
 }
 
 export async function searchUserbooks(query: string): Promise<UserBook[]> {
   const response = await httpCommon.get(`/v1/library/userbook/search?query=${encodeURIComponent(query)}`);
-  return response.data ?? [];
+  return parseUserBooks(response.data ?? []);
 }
 
 export async function fetchBookStatistics(): Promise<BookStatistic[]> {

@@ -48,7 +48,13 @@
     v-model:visible="showSeriesInfoDialog"
     :series="props.userbook?.book?.series"
   />
-  <Card class="w-[300px] m-4 shadow-2xl text-color">
+  <Card
+    class="w-[300px] m-4 overflow-hidden shadow-2xl text-color"
+    :pt="{
+      body: { class: 'p-0 gap-0' },
+      content: { class: 'p-0' },
+    }"
+  >
     <template #header>
       <div class="flex flex-row justify-between dark:bg-surface-700 bg-surface-200 rounded-t-2xl">
         <p class="p-3 text-primary text-2xl font-medium">
@@ -81,43 +87,41 @@
     </template>
     <template #content>
       <!--      COVER     -->
-      <div class="pt-4 flex justify-center">
+      <div class="w-full relative">
         <img
-          v-if="userbook?.book?.cover.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com')"
-          :src="userbook.book?.cover"
-          height="375"
-          width="250"
+          v-if="userbook?.book?.cover && userbook.book.cover.length > 0"
+          :src="userbook.book.cover"
           alt="Okładka do książki"
-          class="max-h-[355px] max-w-64"
+          class="block w-full h-[400px] object-cover"
         />
         <img
           v-else
           src="../../../assets/images/no_cover.png"
-          height="300"
-          width="250"
           alt="Okładka do książki"
-          class="max-h-[355px] max-w-64"
+          class="block w-full h-[400px] object-cover"
         />
       </div>
 
-      <!--   AUTHORS   -->
-      <p class="mt-1 flex justify-center text-sm">
-        {{ getAuthors }}
-      </p>
-      <p class="text-center text-xl text-primary" :title="userbook.book?.title">
-        {{ titleCal }}
-      </p>
-
-      <!--   SERIES   -->
-      <div class="book-series pl-2 pr-2">
-        <p class="text-sm" :title="userbook.book?.series?.title">
-          Cykl: <strong>{{ seriesCal }}</strong>
+      <div class="px-4 pt-2 pb-1">
+        <!--   AUTHORS   -->
+        <p class="mt-1 flex justify-center text-sm">
+          {{ getAuthors }}
         </p>
-        <p class="text-2xl">#{{ userbook.book?.bookInSeriesNo }}</p>
+        <p class="text-center text-xl text-primary" :title="userbook.book?.title">
+          {{ titleCal }}
+        </p>
+
+        <!--   SERIES   -->
+        <div class="book-series">
+          <p class="text-sm" :title="userbook.book?.series?.title">
+            Cykl: <strong>{{ seriesCal }}</strong>
+          </p>
+          <p class="text-2xl">#{{ userbook.book?.bookInSeriesNo }}</p>
+        </div>
       </div>
     </template>
     <template #footer>
-      <div class="mt-0 mb-0 flex flex-col items-center">
+      <div class="mt-0 mb-0 flex flex-col items-center px-4">
         <p class="mt-0 mb-0 text-sm">Czytana/Słuchana</p>
         <p class="mt-0 mb-2">
           <strong>{{ readFrom }}</strong> do

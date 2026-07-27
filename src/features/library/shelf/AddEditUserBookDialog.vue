@@ -16,6 +16,7 @@
     type UserBook,
   } from '@/features/library/shelf/types';
   import { UtilsService } from '@/service/UtilsService.ts';
+  import { cloneBook, cloneUserBook } from '@/features/library/_shared/cloneEntities';
   import { useToast } from 'primevue/usetoast';
   import type { AxiosError } from 'axios';
 
@@ -106,18 +107,25 @@
     useAudiobookAvailabilityQuery(audiobookBookId);
   const audiobookAvailability = computed(() => audiobookAvailabilityData.value ?? null);
 
+  function toDateOrNull(value: Date | string | null | undefined): Date | null {
+    if (value == null || value === '') return null;
+    return UtilsService.formatDate(value) ?? null;
+  }
+
   function applyUserbookFromDb(result: UserBook) {
-    userbook.value = result;
+    const cloned = cloneUserBook(result);
+    cloned.readFrom = toDateOrNull(cloned.readFrom);
+    cloned.readTo = toDateOrNull(cloned.readTo);
+    userbook.value = cloned;
     selectedBookstore.value = findBookstore(bookstoresData.value, userbook.value.idBookstore);
-    readingDateFrom.value = userbook.value.readFrom;
-    readingDateTo.value = userbook.value.readTo;
+    readingDateFrom.value = cloned.readFrom;
+    readingDateTo.value = cloned.readTo;
   }
 
   // Nowa książka na półkę: dociągnij dane katalogowe wybranej książki
   watch(newBookData, book => {
-    if (book) userbook.value.book = book;
+    if (book) userbook.value.book = cloneBook(book);
   });
-
   // Edycja: dociągnij dane zapisanej pozycji na półce
   watch(userbookData, result => {
     if (result) applyUserbookFromDb(result);

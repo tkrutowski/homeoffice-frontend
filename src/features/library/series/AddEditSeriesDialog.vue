@@ -5,8 +5,10 @@
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import { ptFieldInputText, ptTextareaField } from '@/config/formFieldPt';
   import { useSeriesQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { cloneSeries } from '@/features/library/_shared/cloneEntities';
   import type { Series } from '@/features/library/shelf/types';
   import { DocumentTextIcon, LinkIcon, QueueListIcon } from '@heroicons/vue/24/outline';
+  import { UtilsService } from '@/service/UtilsService';
 
   const emit = defineEmits<{
     (e: 'save', series: Series): void;
@@ -51,7 +53,7 @@
 
   watch(seriesDetail, ser => {
     if (ser) {
-      series.value = ser;
+      series.value = cloneSeries(ser);
       getUrl(series.value.url, 'legimi.pl', urlLegimi);
       getUrl(series.value.url, 'upolujebooka.pl', urlUpolujEbooka);
       getUrl(series.value.url, 'lubimyczytac.pl', urlLubimyCzytac);
@@ -191,7 +193,9 @@
             :class="series.hasNewBooks ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'"
             aria-hidden="true"
           />
-          <span class="text-sm text-surface-600 dark:text-surface-400">Data sprawdzenia: {{ series.checkDate }}</span>
+          <span class="text-sm text-surface-600 dark:text-surface-400"
+            >Data sprawdzenia: {{ UtilsService.formatDateToString(series.checkDate ?? undefined) || '—' }}</span
+          >
         </div>
         <div class="flex gap-4">
           <OfficeButton text="Anuluj" btn-type="office-regular" @click="cancel" />
