@@ -4,8 +4,19 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import { useAuthorsStore } from '@/features/library/authors/authors.store';
-  import { computed, ref, onMounted, watch } from 'vue';
+  import {
+    useAuthorsPageQuery,
+    useAuthorStatisticsQuery,
+  } from '@/features/library/authors/queries/useAuthorsQueries';
+  import {
+    useCreateAuthorMutation,
+    useDeleteAuthorMutation,
+    useUpdateAuthorMutation,
+  } from '@/features/library/authors/queries/useAuthorsMutations';
+  import { useBooksByAuthorQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { computed, ref, watch } from 'vue';
+  import type { AuthorPageParams } from '@/features/library/_shared/queryKeys';
   import type { Author } from '@/features/library/authors/types';
   import { useToast } from 'primevue/usetoast';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
@@ -14,7 +25,6 @@
   import type { Book } from '@/features/library/catalog/types';
   import type { UserBook } from '@/features/library/shelf/types';
   import type { AxiosError } from 'axios';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
   import NewBookDialog from '@/features/library/catalog/NewBookDialog.vue';
   // Typy dla DataTable events
@@ -23,8 +33,6 @@
     rows: number;
     first: number;
   }
-  const authorsStore = useAuthorsStore();
-  const userbookStore = useUserbooksStore();
   const toast = useToast();
 
   // filters
@@ -36,18 +44,40 @@
   };
   initFilters();
 
-  const clearFilter = async () => {
+  const pageParams = ref<AuthorPageParams>({
+    page: 0,
+    size: parseInt(localStorage.getItem('rowsPerPageAuthors') || '20', 10),
+    sort: 'id',
+    direction: 'DESC',
+    globalFilter: null,
+  });
+
+  const { data: authorsPage, isFetching: loadingAuthors } = useAuthorsPageQuery(pageParams);
+  const authors = computed(() => authorsPage.value?.content ?? []);
+  const totalAuthors = computed(() => authorsPage.value?.totalElements ?? 0);
+
+  const { data: authorStatisticsData } = useAuthorStatisticsQuery();
+  const authorStatistics = computed(() => authorStatisticsData.value ?? new Map<number, number>());
+
+  const createAuthorMutation = useCreateAuthorMutation();
+  const updateAuthorMutation = useUpdateAuthorMutation();
+  const deleteAuthorMutation = useDeleteAuthorMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
+
+  const clearFilter = () => {
     initFilters();
-    await authorsStore.filterAuthors(filters.value);
+    pageParams.value = { ...pageParams.value, page: 0, globalFilter: null };
   };
 
-  // Load authors
-  authorsStore.getAuthorsFromDbPage(0);
-
   const authorTemp = ref<Author>();
-  const authorStatistics = ref<Map<number, number>>(new Map());
   const selectedAuthor = ref<Author | null>(null);
-  const authorBooks = ref<Book[]>([]);
+
+  const selectedAuthorId = computed(() => selectedAuthor.value?.id ?? 0);
+  const { data: authorBooksData, refetch: refetchAuthorBooks } = useBooksByAuthorQuery(
+    selectedAuthorId,
+    computed(() => selectedAuthorId.value > 0)
+  );
+  const authorBooks = computed(() => authorBooksData.value ?? []);
 
   const getCounter = (author: Author) => {
     console.log('getCounter()', `${author.lastName} ${author.firstName}`);
@@ -71,8 +101,8 @@
     console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (authorTemp.value) {
-      await authorsStore
-        .deleteAuthorDb(authorTemp.value.id)
+      await deleteAuthorMutation
+        .mutateAsync(authorTemp.value.id)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -147,7 +177,7 @@
 
     try {
       if (isEditMode.value) {
-        await authorsStore.updateAuthorDb(authorData);
+        await updateAuthorMutation.mutateAsync(authorData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -155,7 +185,7 @@
           life: 3000,
         });
       } else {
-        await authorsStore.addAuthorDb(authorData);
+        await createAuthorMutation.mutateAsync(authorData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -188,8 +218,8 @@
   const submitAddUserbook = async (newUserbook: UserBook) => {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -212,31 +242,34 @@
   const afterSavedBook = async () => {
     showAddNewBookDialog.value = false;
     if (selectedAuthor.value) {
-      await onRowSelect({ data: selectedAuthor.value });
+      await refetchAuthorBooks();
     }
   };
 
-  const handlePageChange = async (event: DataTablePageEvent) => {
+  const handlePageChange = (event: DataTablePageEvent) => {
     console.log('handlePageChange()', event);
     localStorage.setItem('rowsPerPageAuthors', event.rows.toString());
-    authorsStore.authorsRowsPerPage = event.rows;
-    await authorsStore.loadAuthorsPage(event.page);
+    pageParams.value = { ...pageParams.value, page: event.page, size: event.rows };
   };
 
-  const handleSort = async (event: any) => {
+  const handleSort = (event: any) => {
     console.log('handleSort()', event);
-    await authorsStore.sortAuthors(event.sortField, event.sortOrder);
+    pageParams.value = {
+      ...pageParams.value,
+      page: 0,
+      sort: event.sortField ?? 'id',
+      direction: event.sortOrder > 0 ? 'ASC' : 'DESC',
+    };
   };
 
-  const onRowSelect = async (event: { data: Author }) => {
+  const onRowSelect = (event: { data: Author }) => {
     console.log('onRowSelect()', event.data);
     selectedAuthor.value = event.data;
-    authorBooks.value = await authorsStore.getAuthorBooks(event.data.id);
   };
 
-  const handleFilter = async () => {
+  const handleFilter = () => {
     console.log('handleFilter()', filters.value);
-    await authorsStore.filterAuthors(filters.value);
+    pageParams.value = { ...pageParams.value, page: 0, globalFilter: filters.value.global.value };
   };
 
   // Obsługa wyszukiwania globalnego z debounce
@@ -251,23 +284,13 @@
 
       // Search when value has more than 3 letters or is empty
       if (!newValue || newValue.length >= 3) {
-        searchTimeout = setTimeout(async () => {
+        searchTimeout = setTimeout(() => {
           console.log('Global search:', newValue);
-          await authorsStore.filterAuthors(filters.value);
+          handleFilter();
         }, 500); // 500ms debounce
       }
     }
   );
-
-  //------------------------------------MOUNTED------------------------------
-  onMounted(async () => {
-    console.log('onMounted AuthorsView');
-    try {
-      authorStatistics.value = await authorsStore.getAuthorStatistics();
-    } catch (error) {
-      console.error('Błąd podczas pobierania statystyk autorów:', error);
-    }
-  });
 </script>
 
 <template>
@@ -313,7 +336,7 @@
           <DataTable
             scrollable
             scrollHeight="flex"
-            :value="authorsStore.authors"
+            :value="authors"
             removable-sort
             paginator
             lazy
@@ -321,8 +344,8 @@
             v-model:filters="filters"
             filter-display="menu"
             :global-filter-fields="['lastName', 'firstName']"
-            :rows="authorsStore.authorsRowsPerPage"
-            :total-records="authorsStore.totalAuthors"
+            :rows="pageParams.size"
+            :total-records="totalAuthors"
             :rows-per-page-options="[5, 10, 20, 50]"
             table-style="width: 100%"
             row-hover
@@ -355,14 +378,14 @@
                     @click="clearFilter()"
                   />
                 </div>
-                <div v-if="authorsStore.loadingAuthors">
+                <div v-if="loadingAuthors">
                   <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
                 </div>
               </div>
             </template>
 
             <template #empty>
-              <p v-if="!authorsStore.loadingAuthors" class="text-red-500">Nie znaleziono autorów...</p>
+              <p v-if="!loadingAuthors" class="text-red-500">Nie znaleziono autorów...</p>
             </template>
 
             <!--      LAST NAME        -->

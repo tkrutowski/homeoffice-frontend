@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import { type DefineComponent, ref, watchEffect } from 'vue';
+  import { type DefineComponent, computed, nextTick, ref, watch } from 'vue';
   import type { PropType } from 'vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
   import type { Book, Series, UserBook } from '@/features/library/shelf/types';
-  import { useSeriesStore } from '@/features/library/series/series.store';
+  import { useSeriesQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { useUpdateSeriesMutation } from '@/features/library/series/queries/useSeriesMutations';
+  import { useBooksInSeriesQuery, useNewBooksInSeriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
   import { useToast } from 'primevue/usetoast';
   import AddBookToShellDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
   import SeriesBook from './SeriesBook.vue'
@@ -12,8 +14,6 @@
   import NewBookDialog from '@/features/library/catalog/NewBookDialog.vue';
   import type { AxiosError } from 'axios';
 
-  const seriesStore = useSeriesStore();
-  const userbookStore = useUserbooksStore();
   const toast = useToast();
 
   const props = defineProps({
@@ -23,21 +23,25 @@
     },
   });
 
+  const seriesId = computed(() => props.series.id);
+  const {
+    data: booksInSeriesData,
+    refetch: refetchBooksInSeries,
+    isFetching: loadingBooksInSeries,
+  } = useBooksInSeriesQuery(seriesId);
+  const { data: seriesDetailData, refetch: refetchSeriesDetail } = useSeriesQuery(seriesId);
+  const updateSeriesMutation = useUpdateSeriesMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
+
+  // Parametry wyszukiwania nowych książek ustawiane na żądanie (por. findNewBookInSeries), zapytanie nigdy nie odpala się automatycznie.
+  const searchSeriesId = ref<number>(0);
+  const searchUrl = ref<string>('');
+  const { refetch: refetchNewBooksInSeries } = useNewBooksInSeriesQuery(searchSeriesId, searchUrl, false);
+
+  const tempSeries = computed<Series>(() => seriesDetailData.value ?? props.series);
+
   const carouselKey = ref<number>(0);
   const booksInSeries = ref<Book[]>([]);
-  const tempSeries = ref<Series>({
-    id: 0,
-    url: '',
-    hasNewBooks: false,
-    checkDate: null,
-    description: '',
-    title: '',
-  });
-
-  watchEffect(async () => {
-    tempSeries.value = props.series;
-    await refresh();
-  });
 
   function sortBooksBySeriesNo(books: Book[]): Book[] {
     return [...books].sort(
@@ -103,8 +107,7 @@
     return { books: sortBooksBySeriesNo(merged), addedCount };
   }
 
-  async function refresh() {
-    const fromDb = await seriesStore.getBooksInSeriesFromDb(props.series?.id);
+  function applyBooksFromDb(fromDb: Book[]) {
     const pendingCandidates = booksInSeries.value.filter(
       book => isBookCandidate(book) && !fromDb.some(dbBook => isSameBookInSeries(dbBook, book))
     );
@@ -112,12 +115,21 @@
     carouselKey.value++;
   }
 
+  watch(booksInSeriesData, fromDb => applyBooksFromDb(fromDb ?? []), { immediate: true });
+
+  function refresh() {
+    refetchBooksInSeries();
+  }
+
   async function findNewBookInSeries(url: string) {
     try {
-      const [fromDb, candidates] = await Promise.all([
-        seriesStore.getBooksInSeriesFromDb(props.series?.id),
-        seriesStore.getNewBooksInSeriesFromDb(props.series?.id, url),
-      ]);
+      searchSeriesId.value = seriesId.value;
+      searchUrl.value = url;
+      await nextTick();
+
+      const [booksResult, newBooksResult] = await Promise.all([refetchBooksInSeries(), refetchNewBooksInSeries()]);
+      const fromDb = booksResult.data ?? [];
+      const candidates = newBooksResult.data ?? [];
       const existingBooks = sortBooksBySeriesNo([
         ...fromDb,
         ...booksInSeries.value.filter(
@@ -155,8 +167,7 @@
           life: 3000,
         });
       }
-      const series = await seriesStore.getSeriesByIdFromDb(props.series?.id);
-      if (series) tempSeries.value = series;
+      await refetchSeriesDetail();
     } catch (reason) {
       const error = reason as AxiosError;
       toast.add({
@@ -183,8 +194,8 @@
   const submitAddUserbook = async (newUserbook: UserBook) => {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -222,10 +233,9 @@
     showSeriesDialog.value = false;
     if (series && series.id > 0) {
       console.log('submitSeries(): EDIT');
-      seriesStore
-        .updateSeriesDb(series)
-        .then((res: Series) => {
-          tempSeries.value = res;
+      updateSeriesMutation
+        .mutateAsync(series)
+        .then(() => {
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
@@ -407,7 +417,7 @@
           {{ booksInSeries.length }}
           {{ getBooksCountLabel(booksInSeries.length) }}
         </p>
-        <div v-if="seriesStore.loadingBooksInSeries">
+        <div v-if="loadingBooksInSeries">
           <ProgressSpinner class="ml-2 mt-1" style="width: 30px; height: 30px" stroke-width="5" />
         </div>
       </div>

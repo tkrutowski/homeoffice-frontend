@@ -1,21 +1,27 @@
 <script setup lang="ts">
-  import { useBooksStore } from '@/features/library/catalog/books.store';
-  import { useAuthorsStore } from '@/features/library/authors/authors.store';
-  import { useSeriesStore } from '@/features/library/series/series.store';
   import { computed, type PropType, ref, watch, watchEffect } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import BookFormFields from '@/features/library/catalog/BookFormFields.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
   import { useToast } from 'primevue/usetoast';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
   import type { Author, Book, Category, Series, UserBook } from '@/features/library/shelf/types';
   import type { AxiosError } from 'axios';
+  import { useCategoriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import { useCreateBookMutation } from '@/features/library/catalog/queries/useBooksMutations';
+  import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { useAuthorsListQuery } from '@/features/library/authors/queries/useAuthorsQueries';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
 
-  const bookStore = useBooksStore();
-  const authorsStore = useAuthorsStore();
-  const seriesStore = useSeriesStore();
-  const userbookStore = useUserbooksStore();
+  const { data: authorsData, isLoading: loadingAuthors } = useAuthorsListQuery();
+  const { data: seriesData, isLoading: loadingSeries } = useSeriesListQuery();
+  const { data: categoriesData, isLoading: loadingCategories } = useCategoriesQuery();
+  const authors = computed<Author[]>(() => authorsData.value ?? []);
+  const seriesList = computed<Series[]>(() => seriesData.value ?? []);
+  const categories = computed<Category[]>(() => categoriesData.value ?? []);
+
+  const createBookMutation = useCreateBookMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
   const visible = defineModel<boolean>('visible', { default: false });
 
   const toast = useToast();
@@ -59,8 +65,8 @@
   async function submitAddUserbook(newUserbook: UserBook) {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -108,12 +114,12 @@
   const btnSaveDisabled = ref<boolean>(false);
 
   const isSaveBtnDisabled = computed(() => {
-    return bookStore.loadingBooks || seriesStore.loadingSeries || authorsStore.loadingAuthors || btnSaveDisabled.value;
+    return loadingSeries.value || loadingAuthors.value || btnSaveDisabled.value;
   });
 
   const filteredAuthors = ref<Author[]>();
   const searchAuthor = (event: { query: string }) => {
-    filteredAuthors.value = authorsStore.authors.filter((author: Author) => {
+    filteredAuthors.value = authors.value.filter((author: Author) => {
       return author.lastName.toLowerCase().includes(event.query.toLowerCase());
     });
   };
@@ -123,7 +129,7 @@
 
   const filteredSeries = ref<Series[]>();
   const searchSeries = (event: { query: string }) => {
-    filteredSeries.value = seriesStore.series.filter((series: Series) => {
+    filteredSeries.value = seriesList.value.filter((series: Series) => {
       return series.title.toLowerCase().includes(event.query.toLowerCase());
     });
   };
@@ -133,7 +139,7 @@
 
   const filteredCategories = ref<Category[]>();
   const searchCategory = (event: { query: string }) => {
-    filteredCategories.value = bookStore.categories.filter((cat: Category) => {
+    filteredCategories.value = categories.value.filter((cat: Category) => {
       return cat.name.toLowerCase().includes(event.query.toLowerCase());
     });
   };
@@ -153,7 +159,6 @@
   //---------------------------------------------------------NEW BOOK----------------------------------------------
   //
   async function newBook() {
-    console.log('newBook()');
     if (isNotValid()) {
       showError('Uzupełnij brakujące elementy');
     } else {
@@ -162,40 +167,38 @@
       book.value.authors = selectedAuthors.value;
       book.value.categories = selectedCategories.value;
       book.value.series = selectedSeries.value;
-      bookStore
-        .addBookDb(book.value)
-        .then((savedBook: Book) => {
+      try {
+        const savedBook = await createBookMutation.mutateAsync(book.value);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zapisano książkę: ' + savedBook.title,
+          life: 3000,
+        });
+        btnShowBusy.value = false;
+        savedBookId.value = savedBook.id;
+        savedBookTitle.value = savedBook.title;
+        visible.value = false;
+        emit('saved', savedBook);
+        showAddToShelfConfirmation.value = true;
+      } catch (reason) {
+        const axiosError = reason as AxiosError;
+        if (axiosError.response?.status === 409) {
           toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zapisano książkę: ' + savedBook.title,
+            severity: 'warn',
+            summary: 'Info',
+            detail: 'Książka już istnieje w bazie danych.',
             life: 3000,
           });
-          btnShowBusy.value = false;
-          savedBookId.value = savedBook.id;
-          savedBookTitle.value = savedBook.title;
-          visible.value = false;
-          emit('saved', savedBook);
-          showAddToShelfConfirmation.value = true;
-        })
-        .catch((reason: AxiosError) => {
-          console.log('reason', reason);
-          if (reason.response?.status === 409) {
-            toast.add({
-              severity: 'warn',
-              summary: 'Info',
-              detail: 'Książka już istnieje w bazie danych.',
-              life: 3000,
-            });
-          } else {
-            toast.add({
-              severity: 'error',
-              summary: 'Błąd',
-              detail: 'Błąd podczas dodawania książki.',
-              life: 3000,
-            });
-          }
-        });
+        } else {
+          toast.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Błąd podczas dodawania książki.',
+            life: 3000,
+          });
+        }
+      }
 
       btnSaveDisabled.value = false;
       btnShowBusy.value = false;
@@ -267,9 +270,9 @@
           :show-error-author="showErrorAuthor()"
           :show-error-category="showErrorCategory()"
           :show-error-cover="showErrorCover()"
-          :loading-authors="authorsStore.loadingAuthors"
-          :loading-series="seriesStore.loadingSeries"
-          :loading-categories="bookStore.loadingCategories"
+          :loading-authors="loadingAuthors"
+          :loading-series="loadingSeries"
+          :loading-categories="loadingCategories"
           :show-add-buttons="false"
           id-prefix="new-book-dialog"
           @search-author="searchAuthor"

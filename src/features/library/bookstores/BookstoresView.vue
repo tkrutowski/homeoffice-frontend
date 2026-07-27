@@ -4,23 +4,32 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
-  import { computed, ref, onMounted } from 'vue';
+  import { useBookstoresQuery } from '@/features/library/bookstores/queries/useBookstoresQueries';
+  import {
+    useCreateBookstoreMutation,
+    useDeleteBookstoreMutation,
+    useUpdateBookstoreMutation,
+  } from '@/features/library/bookstores/queries/useBookstoresMutations';
+  import { useBookstoreStatisticsQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
+  import { computed, ref } from 'vue';
   import type { Bookstore } from '@/features/library/shelf/types';
   import { useToast } from 'primevue/usetoast';
   import type { AxiosError } from 'axios';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
 
-  const bookstoreStore = useBookstoreStore();
   const toast = useToast();
 
-  // Load bookstores
-  bookstoreStore.getBookstoresFromDb();
-  const userbookStore = useUserbooksStore();
+  const { data: bookstoresData, isFetching: loadingBookstores } = useBookstoresQuery();
+  const bookstores = computed(() => bookstoresData.value ?? []);
+
+  const { data: bookstoreStatisticsData } = useBookstoreStatisticsQuery();
+  const bookstoreStatistics = computed(() => bookstoreStatisticsData.value ?? new Map<string, number>());
+
+  const createBookstoreMutation = useCreateBookstoreMutation();
+  const updateBookstoreMutation = useUpdateBookstoreMutation();
+  const deleteBookstoreMutation = useDeleteBookstoreMutation();
 
   const bookstoreTemp = ref<Bookstore>();
-  const bookstoreStatistics = ref<Map<string, number>>(new Map());
 
   const getCounter = (bookstore: Bookstore) => {
     console.log('getCounter()', bookstore.name);
@@ -42,8 +51,8 @@
     console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (bookstoreTemp.value) {
-      await bookstoreStore
-        .deleteBookstoreDb(bookstoreTemp.value.id)
+      await deleteBookstoreMutation
+        .mutateAsync(bookstoreTemp.value.id)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -98,7 +107,7 @@
 
     try {
       if (isEditMode.value) {
-        await bookstoreStore.updateBookstoreDb(bookstoreData);
+        await updateBookstoreMutation.mutateAsync(bookstoreData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -106,7 +115,7 @@
           life: 3000,
         });
       } else {
-        await bookstoreStore.addBookstoreDb(bookstoreData);
+        await createBookstoreMutation.mutateAsync(bookstoreData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -123,16 +132,6 @@
       });
     }
   };
-
-  //------------------------------------MOUNTED------------------------------
-  onMounted(async () => {
-    console.log('onMounted StatisticsView');
-    try {
-      bookstoreStatistics.value = await userbookStore.getBookstoreStatisticsFromDb();
-    } catch (error) {
-      console.error('Błąd podczas pobierania statystyk:', error);
-    }
-  });
 </script>
 
 <template>
@@ -160,24 +159,18 @@
     </template>
 
     <Panel class="my-3 mx-2">
-      <DataTable
-        :value="bookstoreStore.bookstores"
-        removable-sort
-        table-style="min-width: 50rem"
-        row-hover
-        size="small"
-      >
+      <DataTable :value="bookstores" removable-sort table-style="min-width: 50rem" row-hover size="small">
         <template #header>
           <div class="flex justify-between">
             <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową księgarnię" @click="addBookstore()" />
-            <div v-if="bookstoreStore.loadingBookstore">
+            <div v-if="loadingBookstores">
               <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
             </div>
           </div>
         </template>
 
         <template #empty>
-          <p v-if="!bookstoreStore.loadingBookstore" class="text-red-500">Nie znaleziono księgarni...</p>
+          <p v-if="!loadingBookstores" class="text-red-500">Nie znaleziono księgarni...</p>
         </template>
 
         <!--      NAME        -->

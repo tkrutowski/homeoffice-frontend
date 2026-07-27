@@ -1,13 +1,12 @@
 <script setup lang="ts">
   import type { Author, Book, UserBook } from '@/features/library/shelf/types';
   import { ReadingStatus } from '@/features/library/shelf/types';
-  import { computed, type PropType, onMounted, ref } from 'vue';
+  import { computed, type PropType, ref } from 'vue';
   import ImageButton from '@/components/ImageButton.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
+  import { useUserbooksByBookIdQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
   import { TranslationService } from '@/service/TranslationService.ts';
   import SeriesCarouselInfoDialog from '@/features/library/series/SeriesCarouselInfoDialog.vue';
 
-  const userbookStore = useUserbooksStore();
   const props = defineProps({
     book: {
       type: Object as PropType<Book>,
@@ -21,17 +20,10 @@
     (e: 'newBook', book: Book): void;
   }>();
 
-  const existedUserbooks = ref<UserBook[]>([]);
+  const bookId = computed(() => props.book?.id ?? 0);
+  const { data: existedUserbooksData } = useUserbooksByBookIdQuery(bookId);
+  const existedUserbooks = computed<UserBook[]>(() => existedUserbooksData.value ?? []);
   const showSeriesDialog = ref<boolean>(false);
-
-  onMounted(async () => {
-    refreshUserbooks();
-  });
-
-  const refreshUserbooks = async () => {
-    const userbooks = await userbookStore.getUserbooksByBookIdFromDb(props.book?.id);
-    if (userbooks && userbooks.length > 0) existedUserbooks.value = userbooks;
-  };
 
   const newUserbook = () => {
     emit('newUserbook', props.book);

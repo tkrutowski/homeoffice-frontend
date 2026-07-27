@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import UserBookSmall from '@/features/library/shelf/UserBookSmall.vue';
   import { computed, ref, watch } from 'vue';
   import type { UserBook } from '@/features/library/shelf/types';
@@ -10,16 +9,45 @@
   import { useToast } from 'primevue/usetoast';
   import type { AxiosError } from 'axios';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import {
+    useUserbooksByStatusAndYearQuery,
+    useUserbooksSearchQuery,
+  } from '@/features/library/shelf/queries/useUserbooksQueries';
+  import {
+    useDeleteUserbookMutation,
+    useUpdateUserbookMutation,
+  } from '@/features/library/shelf/queries/useUserbooksMutations';
 
   const toast = useToast();
-  const userbookStore = useUserbooksStore();
   const selectedYear = ref<number>(new Date().getFullYear());
   const displayedYear = ref<number>(new Date().getFullYear());
+  const appliedYear = ref<number>(new Date().getFullYear());
   const searchQuery = ref<string>('');
-  const userbooks = ref<UserBook[]>([]);
+  const debouncedQuery = ref<string>('');
   const searchTimeout = ref<NodeJS.Timeout | null>(null);
   const displayText = ref<string>(selectedYear.value.toString());
-  // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+
+  const isSearchActive = computed(() => debouncedQuery.value.trim().length >= 3);
+
+  const {
+    data: yearUserbooksData,
+    isFetching: yearUserbooksFetching,
+    refetch: refetchYearUserbooks,
+  } = useUserbooksByStatusAndYearQuery(ReadingStatus.READ, appliedYear);
+  const { data: searchUserbooksData, isFetching: searchUserbooksFetching } = useUserbooksSearchQuery(
+    debouncedQuery,
+    isSearchActive
+  );
+
+  const userbooks = computed<UserBook[]>(() =>
+    isSearchActive.value ? (searchUserbooksData.value ?? []) : (yearUserbooksData.value ?? [])
+  );
+  const loadingUserbooks = computed(() =>
+    isSearchActive.value ? searchUserbooksFetching.value : yearUserbooksFetching.value
+  );
+
+  const updateUserbookMutation = useUpdateUserbookMutation();
+  const deleteUserbookMutation = useDeleteUserbookMutation();
 
   // Watch dla automatycznego wyszukiwania z debounce
   watch(searchQuery, newQuery => {
@@ -32,23 +60,22 @@
     if (newQuery.length >= 3) {
       displayText.value = 'Wyszukiwanie';
       searchTimeout.value = setTimeout(() => {
-        searchBooks();
+        debouncedQuery.value = newQuery;
       }, 500); // 500ms debounce
     } else if (newQuery.length === 0) {
       displayText.value = selectedYear.value.toString();
-      getUserbooks();
+      debouncedQuery.value = '';
     }
   });
 
-  async function getUserbooks() {
+  function getUserbooks() {
     searchQuery.value = '';
-    userbooks.value = await userbookStore.getUserbooksByDate(selectedYear.value, ReadingStatus.READ);
+    debouncedQuery.value = '';
     displayedYear.value = selectedYear.value;
-  }
-
-  async function searchBooks() {
-    if (searchQuery.value.length >= 3) {
-      userbooks.value = await userbookStore.searchUserbooksFromDb(searchQuery.value);
+    if (appliedYear.value === selectedYear.value) {
+      void refetchYearUserbooks();
+    } else {
+      appliedYear.value = selectedYear.value;
     }
   }
 
@@ -73,24 +100,22 @@
   const submitEditUserbook = async (newUserbook: UserBook) => {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .updateUserbookDb(newUserbook)
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas aktualizacji książki na półkę.',
-            life: 3000,
-          });
+      try {
+        await updateUserbookMutation.mutateAsync(newUserbook);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
+          life: 3000,
         });
+      } catch (reason) {
+        toast.add({
+          severity: 'error',
+          summary: (reason as AxiosError)?.message,
+          detail: 'Błąd podczas aktualizacji książki na półkę.',
+          life: 3000,
+        });
+      }
     }
   };
   //
@@ -106,28 +131,24 @@
     return 'No message';
   });
   const submitDelete = async () => {
-    console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (tempUserbook.value) {
-      await userbookStore
-        .deleteUserbookDb(tempUserbook.value.id)
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
-            life: 3000,
-          });
-          getUserbooks(); //reset
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
-            life: 3000,
-          });
+      try {
+        await deleteUserbookMutation.mutateAsync(tempUserbook.value.id);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
+          life: 3000,
         });
+      } catch (reason) {
+        toast.add({
+          severity: 'error',
+          summary: (reason as AxiosError)?.message,
+          detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
+          life: 3000,
+        });
+      }
     }
   };
 </script>
@@ -171,8 +192,8 @@
             class="font-bold uppercase tracking-wider h-full ml-2"
             outlined
             icon="pi pi-search"
-            :disabled="userbookStore.loadingUserbooks"
-            :loading="userbookStore.loadingUserbooks"
+            :disabled="loadingUserbooks"
+            :loading="loadingUserbooks"
             @click="getUserbooks"
           />
         </template>

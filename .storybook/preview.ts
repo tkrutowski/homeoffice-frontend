@@ -1,4 +1,5 @@
 import { createPinia } from 'pinia';
+import { VueQueryPlugin } from '@tanstack/vue-query';
 import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import DialogService from 'primevue/dialogservice';
@@ -6,6 +7,7 @@ import ToastService from 'primevue/toastservice';
 import type { Preview } from '@storybook/vue3-vite';
 import { setup } from '@storybook/vue3-vite';
 import router from '../src/router';
+import { queryClient } from '../src/config/queryClient';
 
 import '../src/style.css';
 import '../src/assets/tailwind.css';
@@ -13,6 +15,7 @@ import 'primeicons/primeicons.css';
 
 setup(app => {
   app.use(createPinia());
+  app.use(VueQueryPlugin, { queryClient });
   app.use(router);
   app.use(PrimeVue, { theme: 'none' });
   app.use(ConfirmationService);

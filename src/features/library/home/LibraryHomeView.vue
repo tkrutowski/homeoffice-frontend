@@ -1,26 +1,26 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import UserBookLarge from '@/features/library/shelf/UserBookLarge.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import { ref, onMounted } from 'vue';
-  import { useSeriesStore } from '@/features/library/series/series.store';
+  import { computed, ref } from 'vue';
+  import { seriesWithNewBooks, useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { useUserbooksByStatusAndYearQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
   import SeriesCarousel from '@/features/library/series/SeriesCarusel.vue';
   import type { Series } from '@/features/library/series/types';
-  import type { UserBook } from '@/features/library/shelf/types';
+  import { ReadingStatus } from '@/features/library/shelf/types';
 
-  const userbookStore = useUserbooksStore();
-  const seriesStore = useSeriesStore();
-
-  if (seriesStore.series.length === 0) seriesStore.getSeriesFromDb();
   UtilsService.getTypesForLibrary();
 
-  const booksReadNow = ref<UserBook[]>([]);
+  const { data: seriesListData } = useSeriesListQuery();
+  const seriesHasNewBooks = computed(() => seriesWithNewBooks(seriesListData.value));
 
-  onMounted(async () => {
-    booksReadNow.value = await userbookStore.getBooksReadNowForCurrentYear();
-  });
+  const currentYear = new Date().getFullYear();
+  const { data: booksReadNowData, isFetching: loadingUserbooks } = useUserbooksByStatusAndYearQuery(
+    ReadingStatus.READ_NOW,
+    currentYear
+  );
+  const booksReadNow = computed(() => booksReadNowData.value ?? []);
 
   const responsiveOptions = ref([
     {
@@ -58,7 +58,7 @@
         <template #content>
           <ScrollPanel style="width: 100%; height: 700px">
             <div
-              v-for="series in seriesStore.getSeriesHasNewBooks"
+              v-for="series in seriesHasNewBooks"
               :key="series.id"
               class="hover:bg-surface-100 hover:dark:bg-surface-800 border border-primary rounded-lg p-4 mb-4 cursor-pointer"
               @click="showSeries(series)"
@@ -80,7 +80,7 @@
         <template #header>
           <div class="w-full flex justify-center gap-4">
             <span class="font-bold text-3xl ml-2 text-color">Aktualnie czytane...</span>
-            <div v-if="userbookStore.loadingUserbooks">
+            <div v-if="loadingUserbooks">
               <ProgressSpinner style="width: 35px; height: 35px" stroke-width="5" />
             </div>
           </div>

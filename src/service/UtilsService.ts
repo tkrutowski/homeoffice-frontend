@@ -1,4 +1,3 @@
-import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
 import { useCardsStore } from '../stores/cards';
 import { useFirmsStore } from '../stores/firms';
 import { type Author, type Category } from '@/features/library/shelf/types';
@@ -11,6 +10,9 @@ import { TranslationService } from '@/service/TranslationService.ts';
 import { TransactionType, type TransactionCategoryType } from '@/types/BankTransaction';
 import type { Card } from '@/types/Bank';
 import type { Moment } from 'moment';
+import { queryClient } from '@/config/queryClient';
+import { libraryKeys } from '@/features/library/_shared/queryKeys';
+import { fetchBookstores } from '@/features/library/bookstores/api/bookstoresApi';
 
 export const UtilsService = {
   /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
@@ -81,8 +83,10 @@ export const UtilsService = {
   },
 
   getTypesForLibrary() {
-    const bookstoreStore = useBookstoreStore();
-    if (bookstoreStore.bookstores.length === 0) bookstoreStore.getBookstoresFromDb();
+    void queryClient.prefetchQuery({
+      queryKey: libraryKeys.bookstores.list(),
+      queryFn: fetchBookstores,
+    });
   },
 
   getTypesForFinance() {

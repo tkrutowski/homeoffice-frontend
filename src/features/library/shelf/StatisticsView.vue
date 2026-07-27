@@ -1,13 +1,17 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue';
+  import { computed, ref } from 'vue';
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { type BookStatistic } from '@/features/library/shelf/types';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
+  import {
+    useBookStatisticsQuery,
+    useBookstoreStatisticsQuery,
+  } from '@/features/library/shelf/queries/useUserbooksQueries';
 
-  const userbookStore = useUserbooksStore();
-  const statistics = ref<BookStatistic[]>([]);
-  const bookstoreStatistics = ref<Map<string, number>>(new Map());
+  const { data: statisticsData } = useBookStatisticsQuery();
+  const { data: bookstoreStatisticsData } = useBookstoreStatisticsQuery();
+  const statistics = computed<BookStatistic[]>(() => statisticsData.value ?? []);
+  const bookstoreStatistics = computed<Map<string, number>>(() => bookstoreStatisticsData.value ?? new Map());
 
   const chartData = computed(() => {
     if (statistics.value.length === 0) return { labels: [], datasets: [] };
@@ -129,16 +133,6 @@
     }, 0);
   }
 
-  //------------------------------------MOUNTED------------------------------
-  onMounted(async () => {
-    console.log('onMounted StatisticsView');
-    try {
-      statistics.value = await userbookStore.getStatisticsFromDb();
-      bookstoreStatistics.value = await userbookStore.getBookstoreStatisticsFromDb();
-    } catch (error) {
-      console.error('Błąd podczas pobierania statystyk:', error);
-    }
-  });
 </script>
 
 <template>

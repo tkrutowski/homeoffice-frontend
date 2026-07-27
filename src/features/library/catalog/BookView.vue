@@ -1,7 +1,5 @@
 <script setup lang="ts">
-  import { useBooksStore } from '@/features/library/catalog/books.store';
-  import { useAuthorsStore } from '@/features/library/authors/authors.store';
-  import { useSeriesStore } from '@/features/library/series/series.store';
+  import { useQueryClient } from '@tanstack/vue-query';
   import { useRoute } from 'vue-router';
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
@@ -16,37 +14,73 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import { ListBulletIcon } from '@heroicons/vue/24/outline';
   import type { AxiosError } from 'axios';
+  import { libraryKeys } from '@/features/library/_shared/queryKeys';
+  import { useBookQuery, useCategoriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import {
+    useCreateBookMutation,
+    useCreateCategoryMutation,
+    useFetchBookFromUrlMutation,
+    useUpdateBookMutation,
+  } from '@/features/library/catalog/queries/useBooksMutations';
+  import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { useCreateSeriesMutation } from '@/features/library/series/queries/useSeriesMutations';
+  import { useAuthorsListQuery } from '@/features/library/authors/queries/useAuthorsQueries';
+  import { useCreateAuthorMutation } from '@/features/library/authors/queries/useAuthorsMutations';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
 
-  const bookStore = useBooksStore();
-  const authorsStore = useAuthorsStore();
-  const seriesStore = useSeriesStore();
-  const userbookStore = useUserbooksStore();
   const route = useRoute();
-
   const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const isEdit = ref<boolean>(false);
+  const routeBookId = computed(() => Number(route.params.bookId as string));
+
+  const { data: authorsData, isLoading: loadingAuthors } = useAuthorsListQuery();
+  const { data: seriesData, isLoading: loadingSeries } = useSeriesListQuery();
+  const { data: categoriesData, isLoading: loadingCategories } = useCategoriesQuery();
+  const { data: bookData, isFetching: loadingBook } = useBookQuery(
+    routeBookId,
+    computed(() => isEdit.value)
+  );
+
+  const authors = computed<Author[]>(() => authorsData.value ?? []);
+  const seriesList = computed<Series[]>(() => seriesData.value ?? []);
+  const categories = computed<Category[]>(() => categoriesData.value ?? []);
+
+  const createBookMutation = useCreateBookMutation();
+  const updateBookMutation = useUpdateBookMutation();
+  const createCategoryMutation = useCreateCategoryMutation();
+  const { mutateAsync: fetchBookFromUrl, isPending: searchBookLoading } = useFetchBookFromUrlMutation();
+  const createSeriesMutation = useCreateSeriesMutation();
+  const createAuthorMutation = useCreateAuthorMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
+
   const selectedAuthors = ref<Author[]>([]);
   const selectedSeries = ref<Series | null>(null);
   const selectedCategories = ref<Category[]>([]);
-  const authors = ref<Author[]>([]);
-  const book = ref<Book>({
-    id: 0,
-    series: null,
-    authors: [],
-    categories: [],
-    title: '',
-    description: '',
-    cover: '',
-    bookInSeriesNo: '',
-  });
+
+  function emptyBook(): Book {
+    return {
+      id: 0,
+      series: null,
+      authors: [],
+      categories: [],
+      title: '',
+      description: '',
+      cover: '',
+      bookInSeriesNo: '',
+    };
+  }
+
+  const book = ref<Book>(emptyBook());
 
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);
 
   const isSaveBtnDisabled = computed(() => {
-    return bookStore.loadingBooks || seriesStore.loadingSeries || authorsStore.loadingAuthors || btnSaveDisabled.value;
+    return loadingBook.value || loadingSeries.value || loadingAuthors.value || btnSaveDisabled.value;
   });
   //
   //AUTO COMPLETE
@@ -68,7 +102,7 @@
   //SERIES
   const filteredSeries = ref<Series[]>();
   const searchSeries = (event: { query: string }) => {
-    filteredSeries.value = seriesStore.series.filter((series: Series) => {
+    filteredSeries.value = seriesList.value.filter((series: Series) => {
       return series.title.toLowerCase().includes(event.query.toLowerCase());
     });
   };
@@ -79,7 +113,7 @@
   //CATEGORY
   const filteredCategories = ref<Category[]>();
   const searchCategory = (event: { query: string }) => {
-    filteredCategories.value = bookStore.categories.filter((cat: Category) => {
+    filteredCategories.value = categories.value.filter((cat: Category) => {
       return cat.name.toLowerCase().includes(event.query.toLowerCase());
     });
   };
@@ -88,17 +122,17 @@
   });
 
   function findExistingCategory(category: Category): Category | undefined {
-    return bookStore.categories.find(
+    return categories.value.find(
       (cat: Category) =>
         (category.id > 0 && cat.id === category.id) || cat.name.toLowerCase() === category.name.toLowerCase()
     );
   }
 
-  function mapToExistingCategories(categories: Category[]): Category[] {
+  function mapToExistingCategories(categoriesToMap: Category[]): Category[] {
     const matched: Category[] = [];
     const skippedNames: string[] = [];
 
-    for (const category of categories) {
+    for (const category of categoriesToMap) {
       const existing = findExistingCategory(category);
       if (existing) {
         if (!matched.some((cat: Category) => cat.id === existing.id)) {
@@ -134,9 +168,9 @@
 
   function findExistingSeries(series: Series): Series | undefined {
     if (series.id > 0) {
-      return seriesStore.series.find((s: Series) => s.id === series.id);
+      return seriesList.value.find((s: Series) => s.id === series.id);
     }
-    return seriesStore.series.find((s: Series) => s.title.toLowerCase() === series.title.toLowerCase());
+    return seriesList.value.find((s: Series) => s.title.toLowerCase() === series.title.toLowerCase());
   }
 
   const showAddModal = ref(false);
@@ -248,16 +282,6 @@
   }
 
   async function applyBookFromSearch(bookByUrl: Book) {
-    if (bookStore.categories.length === 0) {
-      await bookStore.getCategoriesFromDb();
-    }
-    if (seriesStore.series.length === 0) {
-      await seriesStore.getSeriesFromDb();
-    }
-    if (authors.value.length === 0) {
-      authors.value = await authorsStore.getAuthorsFromDb();
-    }
-
     book.value = bookByUrl;
     selectedCategories.value = mapToExistingCategories(bookByUrl.categories);
 
@@ -298,7 +322,6 @@
   //---------------------------------------------------------NEW BOOK----------------------------------------------
   //
   async function newBook() {
-    console.log('newBook()');
     if (isNotValid()) {
       showError('Uzupełnij brakujące elementy');
     } else {
@@ -307,124 +330,101 @@
       book.value.authors = selectedAuthors.value;
       book.value.categories = selectedCategories.value;
       book.value.series = selectedSeries.value;
-      bookStore
-        .addBookDb(book.value)
-        .then((savedBook: Book) => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zapisano książkę: ' + savedBook.title,
-            life: 3000,
-          });
-          btnShowBusy.value = false;
-          savedBookId.value = savedBook.id;
-          savedBookTitle.value = savedBook.title;
-          showAddToShelfConfirmation.value = true;
-        })
-        .catch((reason: AxiosError) => {
-          console.log('reason', reason);
-          if (reason.response?.status === 409) {
-            toast.add({
-              severity: 'warn',
-              summary: 'Info',
-              detail: 'Książka już istnieje w bazie danych.',
-              life: 5000,
-            });
-          } else {
-            toast.add({
-              severity: 'error',
-              summary: reason?.message,
-              detail: 'Błąd podczas dodawania książki.',
-              life: 5000,
-            });
-          }
-        })
-        .finally(() => {
-          btnSaveDisabled.value = false;
-          btnShowBusy.value = false;
-          submitted.value = false;
+      try {
+        const savedBook = await createBookMutation.mutateAsync(book.value);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zapisano książkę: ' + savedBook.title,
+          life: 3000,
         });
+        btnShowBusy.value = false;
+        savedBookId.value = savedBook.id;
+        savedBookTitle.value = savedBook.title;
+        showAddToShelfConfirmation.value = true;
+      } catch (reason) {
+        const axiosError = reason as AxiosError;
+        if (axiosError.response?.status === 409) {
+          toast.add({
+            severity: 'warn',
+            summary: 'Info',
+            detail: 'Książka już istnieje w bazie danych.',
+            life: 5000,
+          });
+        } else {
+          toast.add({
+            severity: 'error',
+            summary: axiosError?.message,
+            detail: 'Błąd podczas dodawania książki.',
+            life: 5000,
+          });
+        }
+      } finally {
+        btnSaveDisabled.value = false;
+        btnShowBusy.value = false;
+        submitted.value = false;
+      }
     }
   }
 
   //
   //-----------------------------------------------------EDIT BOOK------------------------------------------------
   //
-  const isEdit = ref<boolean>(false);
-
   async function editBook() {
     if (isNotValid()) {
       showError('Uzupełnij brakujące elementy');
     } else {
       btnSaveDisabled.value = true;
-      console.log('editBook()');
       book.value.authors = selectedAuthors.value;
       book.value.categories = selectedCategories.value;
       book.value.series = selectedSeries.value;
-      await bookStore
-        .updateBookDb(book.value)
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zaaktualizowano książkę: ' + book.value?.title,
-            life: 3000,
-          });
-          setTimeout(() => {
-            router.push({ name: 'Books' });
-          }, 3000);
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas edycji książki.',
-            life: 5000,
-          });
-          btnSaveDisabled.value = false;
+      try {
+        await updateBookMutation.mutateAsync(book.value);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaaktualizowano książkę: ' + book.value?.title,
+          life: 3000,
         });
+        setTimeout(() => {
+          router.push({ name: 'Books' });
+        }, 3000);
+      } catch (reason) {
+        const axiosError = reason as AxiosError;
+        toast.add({
+          severity: 'error',
+          summary: axiosError?.message,
+          detail: 'Błąd podczas edycji książki.',
+          life: 5000,
+        });
+        btnSaveDisabled.value = false;
+      }
     }
   }
 
   //---------------------------------------------MOUNTED--------------------------------------------
-  onMounted(async () => {
-    console.log('onMounted GET');
-    btnSaveDisabled.value = true;
-    authors.value = await authorsStore.getAuthorsFromDb();
-    if (seriesStore.series.length === 0) seriesStore.getSeriesFromDb();
-    if (bookStore.categories.length === 0) bookStore.getCategoriesFromDb();
-    btnSaveDisabled.value = false;
-  });
-
-  onMounted(async () => {
-    btnSaveDisabled.value = true;
+  onMounted(() => {
     isEdit.value = route.params.isEdit === 'true';
-    const bookId = Number(route.params.bookId as string);
+    const bookId = routeBookId.value;
     if (!isEdit.value && bookId === -1) {
-      book.value = bookStore.tempBook;
+      book.value = {} as Book;
       selectedAuthors.value = book.value.authors;
       selectedCategories.value = mapToExistingCategories(book.value.categories);
       selectedSeries.value = book.value.series;
-    } else if (!isEdit.value && bookId === 0) {
-      console.log('onMounted NEW BOOK');
-    } else {
-      console.log('onMounted EDIT BOOK');
-      bookStore
-        .getBookFromDb(bookId)
-        .then((data: Book | null) => {
-          if (data) {
-            book.value = data;
-            selectedAuthors.value = book.value.authors;
-            selectedCategories.value = mapToExistingCategories(book.value.categories);
-            selectedSeries.value = book.value.series;
-          }
-        })
-        .catch((error: AxiosError) => {
-          console.error('Błąd podczas pobierania książek:', error);
-        });
     }
-    btnSaveDisabled.value = false;
   });
+
+  watch(
+    () => bookData.value,
+    data => {
+      if (isEdit.value && data) {
+        book.value = data;
+        selectedAuthors.value = book.value.authors;
+        selectedCategories.value = mapToExistingCategories(book.value.categories);
+        selectedSeries.value = book.value.series;
+      }
+    }
+  );
   //
   //--------------------------------------------------AUTHOR
   //
@@ -436,12 +436,12 @@
     }
 
     try {
-      const newAuthor = await authorsStore.addAuthorDb({
+      const newAuthor = await createAuthorMutation.mutateAsync({
         id: 0,
         firstName: firstName,
         lastName: lastName,
       });
-      authors.value.push(newAuthor);
+      queryClient.setQueryData<Author[]>(libraryKeys.authors.list(), old => [...(old ?? []), newAuthor]);
 
       toast.add({
         severity: 'success',
@@ -480,7 +480,7 @@
     }
 
     try {
-      const newSeries = await seriesStore.addSeriesDb({
+      const newSeries = await createSeriesMutation.mutateAsync({
         id: 0,
         title: title,
         description: '',
@@ -488,6 +488,7 @@
         checkDate: null,
         hasNewBooks: false,
       });
+      queryClient.setQueryData<Series[]>(libraryKeys.series.list(), old => [...(old ?? []), newSeries]);
 
       toast.add({
         severity: 'success',
@@ -536,8 +537,8 @@
   async function submitAddUserbook(newUserbook: UserBook) {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -564,32 +565,31 @@
   }
 
   async function saveCategory(name: string) {
-    console.log('in1: ', name);
     showAddCategoryModal.value = false;
     if (name.length === 0) {
       showError('Uzupełnij brakujące elementy');
     } else {
-      await bookStore
-        .addCategoryDb({
+      try {
+        const newCategory = await createCategoryMutation.mutateAsync({
           id: 0,
           name: name,
-        })
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Dodano kategorię: ' + name,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Nie dodano kategorii: ' + name,
-            life: 5000,
-          });
         });
+        queryClient.setQueryData<Category[]>(libraryKeys.categories.list(), old => [...(old ?? []), newCategory]);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Dodano kategorię: ' + name,
+          life: 3000,
+        });
+      } catch (reason) {
+        const axiosError = reason as AxiosError;
+        toast.add({
+          severity: 'error',
+          summary: axiosError?.message,
+          detail: 'Nie dodano kategorii: ' + name,
+          life: 5000,
+        });
+      }
     }
   }
 
@@ -603,7 +603,6 @@
   const btnSearchDisabled = ref<boolean>(false);
 
   async function findBook(ai: boolean = false) {
-    console.log('START - findBook(' + searchUrl.value + ')');
     submittedSearch.value = true;
     resetForm();
     clearUrlSearchFlow();
@@ -614,7 +613,7 @@
     } else {
       btnSearchDisabled.value = true;
       try {
-        const bookByUrl = await bookStore.getBookFromUrl(searchUrl.value, ai);
+        const bookByUrl = await fetchBookFromUrl({ url: searchUrl.value, ai });
         if (bookByUrl == null) {
           changeStatusSearchIcon(false, false, true);
           setTimeout(() => changeStatusSearchIcon(false, false, false), 8000);
@@ -638,22 +637,12 @@
         });
       } finally {
         btnSearchDisabled.value = false;
-        bookStore.searchBook = false;
       }
     }
   }
 
   function resetForm() {
-    book.value = {
-      id: 0,
-      series: null,
-      authors: [],
-      categories: [],
-      title: '',
-      description: '',
-      cover: '',
-      bookInSeriesNo: '',
-    };
+    book.value = emptyBook();
     selectedAuthors.value = [];
     selectedCategories.value = [];
     selectedSeries.value = null;
@@ -773,7 +762,7 @@
                   <ListBulletIcon aria-hidden="true" />
                 </template>
               </OfficeIconButton>
-              <ProgressSpinner v-if="bookStore.loadingBooks" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
+              <ProgressSpinner v-if="loadingBook" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
             </div>
           </div>
 
@@ -781,7 +770,7 @@
             v-if="!isEdit"
             v-model:search-url="searchUrl"
             :show-error-url="showErrorUrl()"
-            :loading="bookStore.searchBook"
+            :loading="searchBookLoading"
             :btn-disabled="btnSearchDisabled"
             @search="findBook()"
             @search-ai="findBook(true)"
@@ -799,9 +788,9 @@
             :show-error-author="showErrorAuthor()"
             :show-error-category="showErrorCategory()"
             :show-error-cover="showErrorCover()"
-            :loading-authors="authorsStore.loadingAuthors"
-            :loading-series="seriesStore.loadingSeries"
-            :loading-categories="bookStore.loadingCategories"
+            :loading-authors="loadingAuthors"
+            :loading-series="loadingSeries"
+            :loading-categories="loadingCategories"
             @search-author="searchAuthor"
             @search-series="searchSeries"
             @search-category="searchCategory"

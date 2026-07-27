@@ -3,9 +3,6 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import { useBooksStore } from '@/features/library/catalog/books.store';
-  import { useSeriesStore } from '@/features/library/series/series.store';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import { computed, type DefineComponent, ref, watch } from 'vue';
   import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
   import type { Author, Book, Category, UserBook } from '@/features/library/shelf/types';
@@ -15,6 +12,11 @@
   import type { BookDto } from '@/features/library/catalog/types';
   import type { AxiosError } from 'axios';
   import ButtonOutlined from '@/components/ButtonOutlined.vue';
+  import type { BookPageParams } from '@/features/library/_shared/queryKeys';
+  import { useBooksPageQuery, useCategoriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import { useDeleteBookMutation } from '@/features/library/catalog/queries/useBooksMutations';
+  import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
 
   // Typy dla DataTable events
   interface DataTablePageEvent {
@@ -23,9 +25,14 @@
     first: number;
   }
 
-  const bookStore = useBooksStore();
-  const seriesStore = useSeriesStore();
-  const userbookStore = useUserbooksStore();
+  interface AppliedBookFilters {
+    global: string | null;
+    title: string | null;
+    author: string | null;
+    categories: string[] | null;
+    series: string[] | null;
+  }
+
   const toast = useToast();
 
   FilterService.register('filterByAuthor', (authorsFilter: Author[], filterValue: string) => {
@@ -34,6 +41,14 @@
     const displayAuthors = authorsFilter.map(author => `${author.lastName} ${author.firstName}`).join(', ');
     return displayAuthors.toLowerCase().includes(filterValue.toLowerCase());
   });
+
+  //
+  //-------------------------------------------------PAGINACJA / SORTOWANIE-------------------------------------------------
+  //
+  const page = ref<number>(0);
+  const rowsPerPage = ref<number>(parseInt(localStorage.getItem('rowsPerPageBooks') || '20', 10));
+  const sortField = ref<string>('id');
+  const sortOrder = ref<number>(-1); // 1 = ASC, -1 = DESC - domyślnie sortujemy po ID malejąco
 
   //filter
   const filters = ref();
@@ -56,29 +71,65 @@
     };
   };
   initFilters();
-  const clearFilter = async () => {
+
+  const appliedFilters = ref<AppliedBookFilters>({
+    global: null,
+    title: null,
+    author: null,
+    categories: null,
+    series: null,
+  });
+
+  function applyFilters() {
+    appliedFilters.value = {
+      global: filters.value.global?.value || null,
+      title: filters.value.title?.value || null,
+      author: filters.value.authors?.constraints?.[0]?.value || null,
+      categories: filters.value.categories?.value?.length ? filters.value.categories.value : null,
+      series: filters.value.series?.value?.length ? filters.value.series.value : null,
+    };
+    page.value = 0;
+  }
+
+  const clearFilter = () => {
     initFilters();
-    await bookStore.filterBooks(filters.value);
+    applyFilters();
   };
 
+  const bookPageParams = computed<BookPageParams>(() => ({
+    page: page.value,
+    size: rowsPerPage.value,
+    sort: sortField.value,
+    direction: sortOrder.value > 0 ? 'ASC' : 'DESC',
+    globalFilter: appliedFilters.value.global,
+    title: appliedFilters.value.title,
+    author: appliedFilters.value.author,
+    category: appliedFilters.value.categories?.length ? appliedFilters.value.categories.join(',') : null,
+    series: appliedFilters.value.series?.length ? appliedFilters.value.series.join(',') : null,
+  }));
+
+  const { data: booksPageData, isFetching: loadingBooks } = useBooksPageQuery(bookPageParams);
+  const { data: categoriesData } = useCategoriesQuery();
+  const { data: seriesData } = useSeriesListQuery();
+
+  const books = computed<Book[]>(() => booksPageData.value?.content ?? []);
+  const totalBooks = computed<number>(() => booksPageData.value?.totalElements ?? 0);
+
+  const deleteBookMutation = useDeleteBookMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
+
   const seriesFilter = computed(() => {
-    return seriesStore.series.map(series => series.title).sort((a: string, b: string) => a.localeCompare(b));
+    return (seriesData.value ?? []).map(series => series.title).sort((a: string, b: string) => a.localeCompare(b));
   });
 
   const categoriesFilter = computed(() => {
-    return bookStore.categories.map(category => category.name).sort((a: string, b: string) => a.localeCompare(b));
+    return (categoriesData.value ?? [])
+      .map(category => category.name)
+      .sort((a: string, b: string) => a.localeCompare(b));
   });
 
-  bookStore.getBooks();
-  // Load series and categories for filtering
-  if (seriesStore.series.length === 0) {
-    seriesStore.getSeriesFromDb();
-  }
-  if (bookStore.categories.length === 0) {
-    bookStore.getCategoriesFromDb();
-  }
   const booksDto = computed(() => {
-    return bookStore.books.map(mapBookToBookDto);
+    return books.value.map(mapBookToBookDto);
   });
   const expandedRows = ref([]);
   const bookTemp = ref<Book>();
@@ -116,11 +167,10 @@
     return 'No message';
   });
   const submitDelete = async () => {
-    console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (bookTemp.value) {
-      await bookStore
-        .deleteBookDb(bookTemp.value.id)
+      await deleteBookMutation
+        .mutateAsync(bookTemp.value.id)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -160,11 +210,10 @@
     showUserbookDialog.value = true;
   };
   const submitAddUserbook = async (newUserbook: UserBook) => {
-    console.log('submitAddUserbook()', newUserbook);
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -184,21 +233,20 @@
     }
   };
 
-  const handlePageChange = async (event: DataTablePageEvent) => {
-    console.log('handlePageChange()', event);
+  const handlePageChange = (event: DataTablePageEvent) => {
     localStorage.setItem('rowsPerPageBooks', event.rows.toString());
-    bookStore.rowsPerPage = event.rows;
-    await bookStore.loadPage(event.page);
+    rowsPerPage.value = event.rows;
+    page.value = event.page;
   };
 
-  const handleSort = async (event: any) => {
-    console.log('handleSort()', event);
-    await bookStore.sortBooks(event.sortField, event.sortOrder);
+  const handleSort = (event: any) => {
+    sortField.value = event.sortField ?? 'id';
+    sortOrder.value = typeof event.sortOrder === 'number' ? event.sortOrder : -1;
+    page.value = 0;
   };
 
-  const handleFilter = async () => {
-    console.log('handleFilter()', filters.value);
-    await bookStore.filterBooks(filters.value);
+  const handleFilter = () => {
+    applyFilters();
   };
 
   // Obsługa wyszukiwania globalnego z debounce
@@ -213,9 +261,8 @@
 
       // Search when value has more than 3 letters or is empty
       if (!newValue || newValue.length >= 3) {
-        searchTimeout = setTimeout(async () => {
-          console.log('Global search:', newValue);
-          await bookStore.filterBooks(filters.value);
+        searchTimeout = setTimeout(() => {
+          applyFilters();
         }, 500); // 500ms debounce
       }
     }
@@ -252,8 +299,8 @@
         paginator
         lazy
         :sort-mode="'single'"
-        :rows="bookStore.rowsPerPage"
-        :total-records="bookStore.totalBooks"
+        :rows="rowsPerPage"
+        :total-records="totalBooks"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"
@@ -271,7 +318,7 @@
             <router-link :to="{ name: 'Book', params: { isEdit: 'false', bookId: 0 } }" style="text-decoration: none">
               <ButtonOutlined text="Dodaj" icon="pi pi-plus" title="Dodaj nową książkę" />
             </router-link>
-            <div v-if="bookStore.loadingBooks">
+            <div v-if="loadingBooks">
               <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
             </div>
             <div class="flex gap-4">
@@ -294,7 +341,7 @@
         </template>
 
         <template #empty>
-          <p v-if="!bookStore.loadingBooks" class="text-red-500">Nie znaleziono książek...</p>
+          <p v-if="!loadingBooks" class="text-red-500">Nie znaleziono książek...</p>
         </template>
 
         <!--      AUTHOR        -->

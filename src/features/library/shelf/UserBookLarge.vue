@@ -4,10 +4,10 @@
   import type { PropType } from 'vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import SeriesCarouselInfoDialog from '@/features/library/series/SeriesCarouselInfoDialog.vue';
-  import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
+  import { findBookstore, useBookstoresQuery } from '@/features/library/bookstores/queries/useBookstoresQueries';
   import { TranslationService } from '@/service/TranslationService.ts';
 
-  const bookstoreStore = useBookstoreStore();
+  const { data: bookstoresData } = useBookstoresQuery();
   const props = defineProps({
     userbook: {
       type: Object as PropType<UserBook>,
@@ -25,7 +25,7 @@
     return props.userbook?.book?.categories.map((cat: Category) => cat.name).join(', ');
   });
   const getBookstoreName = computed((): string => {
-    const bookstore = bookstoreStore.getBookstore(props.userbook.idBookstore);
+    const bookstore = findBookstore(bookstoresData.value, props.userbook.idBookstore);
     if (bookstore) {
       return bookstore.name;
     }

@@ -1,14 +1,13 @@
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import type { Ref } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import { ptFieldInputText, ptTextareaField } from '@/config/formFieldPt';
-  import { useSeriesStore } from '@/features/library/series/series.store';
+  import { useSeriesQuery } from '@/features/library/series/queries/useSeriesQueries';
   import type { Series } from '@/features/library/shelf/types';
   import { DocumentTextIcon, LinkIcon, QueueListIcon } from '@heroicons/vue/24/outline';
 
-  const seriesStore = useSeriesStore();
   const emit = defineEmits<{
     (e: 'save', series: Series): void;
     (e: 'cancel'): void;
@@ -45,21 +44,19 @@
     variable.value = filteredArray.length > 0 ? filteredArray[0] : '';
   };
 
-  watch(
-    () => props.idSeries,
-    async (id: number) => {
-      if (props.isEdit && id > 0) {
-        seriesStore.getSeriesByIdFromDb(id).then((ser: Series | null) => {
-          if (ser) {
-            series.value = ser;
-            getUrl(series.value.url, 'legimi.pl', urlLegimi);
-            getUrl(series.value.url, 'upolujebooka.pl', urlUpolujEbooka);
-            getUrl(series.value.url, 'lubimyczytac.pl', urlLubimyCzytac);
-          }
-        });
-      }
-    }
+  const { data: seriesDetail } = useSeriesQuery(
+    computed(() => props.idSeries),
+    computed(() => props.isEdit && props.idSeries > 0)
   );
+
+  watch(seriesDetail, ser => {
+    if (ser) {
+      series.value = ser;
+      getUrl(series.value.url, 'legimi.pl', urlLegimi);
+      getUrl(series.value.url, 'upolujebooka.pl', urlUpolujEbooka);
+      getUrl(series.value.url, 'lubimyczytac.pl', urlLubimyCzytac);
+    }
+  });
   const isValid = () => {
     return !(showErrorTitle() || showErrorUrlLegimi() || showErrorUpolujEbooka() || showErrorLubimyCzytac());
   };

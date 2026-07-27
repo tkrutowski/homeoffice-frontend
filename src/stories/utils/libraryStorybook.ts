@@ -1,10 +1,12 @@
-import { useAuthorsStore } from '@/features/library/authors/authors.store';
-import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
-import { useBooksStore } from '@/features/library/catalog/books.store';
-import { useSeriesStore } from '@/features/library/series/series.store';
-import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
-import { mockAuthors, mockBookstores, mockSeries, mockUserBook } from '@/features/library/_shared/storybook/fixtures';
-import { ReadingStatus } from '@/features/library/shelf/types';
+import { queryClient } from '@/config/queryClient';
+import { libraryKeys } from '@/features/library/_shared/queryKeys';
+import {
+  mockAuthors,
+  mockBookstores,
+  mockCategories,
+  mockSeries,
+  mockUserBook,
+} from '@/features/library/_shared/storybook/fixtures';
 import { useAuthorizationStore } from '@/stores/authorization';
 
 const mockToken =
@@ -18,42 +20,11 @@ export function setupLibraryStorybookStores() {
   authStore.isAuthenticated = true;
   authStore.username = 'storybook';
 
-  const userbooksStore = useUserbooksStore();
-  userbooksStore.loadingUserbooks = false;
-  userbooksStore.getUserbooksByBookIdFromDb = async () => [mockUserBook];
-  userbooksStore.getBooksReadNowForCurrentYear = async () => [mockUserBook];
-  userbooksStore.getUserbooksByDate = async () => [mockUserBook];
-  userbooksStore.getUserbooksByStatusFromDb = async () => [mockUserBook];
-
-  const seriesStore = useSeriesStore();
-  seriesStore.series = mockSeries;
-  seriesStore.loadingBooksInSeries = false;
-  seriesStore.loadingSeries = false;
-  seriesStore.getSeriesFromDb = async () => undefined;
-  seriesStore.getBooksInSeriesFromDb = async () => [];
-  seriesStore.getNewBooksInSeriesFromDb = async () => [];
-  seriesStore.getSeriesByIdFromDb = async id => mockSeries.find(s => s.id === id) ?? null;
-
-  const authorsStore = useAuthorsStore();
-  authorsStore.authors = mockAuthors;
-  authorsStore.loadingAuthors = false;
-  authorsStore.getAuthorsFromDb = async () => mockAuthors;
-  authorsStore.getAuthorsFromDbPage = async () => undefined;
-  authorsStore.getAuthorBooks = async () => [];
-
-  const booksStore = useBooksStore();
-  booksStore.loadingBooks = false;
-  booksStore.categories = [
-    { id: 1, name: 'Fantasy' },
-    { id: 2, name: 'Przygoda' },
-  ];
-  booksStore.getBooksFromDb = async () => undefined;
-  booksStore.getCategoriesFromDb = async () => undefined;
-
-  const bookstoresStore = useBookstoreStore();
-  bookstoresStore.bookstores = mockBookstores;
-  bookstoresStore.loadingBookstore = false;
-  bookstoresStore.getBookstoresFromDb = async () => undefined;
-
-  userbooksStore.readingStatuses = [ReadingStatus.NOT_READ, ReadingStatus.READ_NOW, ReadingStatus.READ];
+  queryClient.setQueryData(libraryKeys.bookstores.list(), mockBookstores);
+  queryClient.setQueryData(libraryKeys.authors.list(), mockAuthors);
+  queryClient.setQueryData(libraryKeys.series.list(), mockSeries);
+  queryClient.setQueryData(libraryKeys.categories.list(), mockCategories);
+  if (mockUserBook.book) {
+    queryClient.setQueryData(libraryKeys.shelf.byBookId(mockUserBook.book.id), [mockUserBook]);
+  }
 }

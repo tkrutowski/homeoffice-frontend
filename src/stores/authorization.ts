@@ -8,6 +8,7 @@ import { usePaymentStore } from './payments';
 import { usePurchasesStore } from './purchases';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
+import { queryClient } from '@/config/queryClient';
 
 export const useAuthorizationStore = defineStore('authorization', {
   state: () => ({
@@ -284,8 +285,11 @@ export const useAuthorizationStore = defineStore('authorization', {
     clearLoginError() {
       this.loginError = null;
     },
-    logUser(token: string, refreshToken: string) {
+    logUser(token: string, refreshToken: string, clearQueryCache = false) {
       console.log('logUser: accessToken: ', token, ', refresh token: ', refreshToken);
+      if (clearQueryCache) {
+        queryClient.clear();
+      }
       this.accessToken = token;
       localStorage.setItem('accessToken', token);
       this.isAuthenticated = true;
@@ -310,7 +314,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       });
 
       console.log('login res: ', res);
-      this.logUser(res.data.accessToken, res.data.refreshToken);
+      this.logUser(res.data.accessToken, res.data.refreshToken, true);
 
       this.loading = false;
       this.clearLoginError();
@@ -335,6 +339,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       loanStore.loans = [];
       paymentStore.payments.clear();
       purchaseStore.purchasesCurrent.clear();
+      queryClient.clear();
       router.replace({ name: 'login' });
     },
     //

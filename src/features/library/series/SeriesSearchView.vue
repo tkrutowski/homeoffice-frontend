@@ -1,16 +1,13 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import type { Series } from '@/features/library/shelf/types';
-  import { useSeriesStore } from '@/features/library/series/series.store';
+  import { sortedSeries, useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
   import SeriesCarousel from '@/features/library/series/SeriesCarusel.vue';
 
-  const seriesStore = useSeriesStore();
-
-  onMounted(() => {
-    if (seriesStore.series.length === 0) seriesStore.getSeriesFromDb();
-  });
+  const { data: seriesListData, isFetching: loadingSeriesList } = useSeriesListQuery();
+  const sortedSeriesList = computed(() => sortedSeries(seriesListData.value));
   //---------------------------------------------MOUNTED--------------------------------------------
 
   const selectedSeries = ref<Series[]>([]);
@@ -24,7 +21,7 @@
 
     <Toolbar class="m-6 text-color">
       <template #start>
-        <span>Wybrano {{ selectedSeries.length }} z {{ seriesStore.getSortedSeries.length }} cykli</span>
+        <span>Wybrano {{ selectedSeries.length }} z {{ sortedSeriesList.length }} cykli</span>
       </template>
 
       <template #center>
@@ -34,12 +31,12 @@
             v-model="selectedSeries"
             filter
             display="chip"
-            :options="seriesStore.getSortedSeries"
+            :options="sortedSeriesList"
             option-label="title"
             placeholder="Wybierz..."
             :max-selected-labels="3"
             class="w-full md:w-80"
-            :loading="seriesStore.loadingBooksInSeries"
+            :loading="loadingSeriesList"
           />
         </div>
       </template>

@@ -1,18 +1,12 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { useIsFetching } from '@tanstack/vue-query';
   import { useAuthorizationStore } from '@/stores/authorization.ts';
   import router from '@/router';
   import { useRoute } from 'vue-router';
-  import { useBooksStore } from '@/features/library/catalog/books.store';
-  import { useAuthorsStore } from '@/features/library/authors/authors.store';
-  import { useSeriesStore } from '@/features/library/series/series.store';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
+  import { libraryKeys } from '@/features/library/_shared/queryKeys';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
 
-  const userbooksStore = useUserbooksStore();
-  const booksStore = useBooksStore();
-  const authorsStore = useAuthorsStore();
-  const seriesStore = useSeriesStore();
   const authorizationStore = useAuthorizationStore();
   const route = useRoute();
 
@@ -27,14 +21,8 @@
     return null; // Jeśli nie pasuje do żadnego menu
   });
 
-  const allLoading = computed(() => {
-    return (
-      userbooksStore.loadingUserbooks ||
-      booksStore.loadingBooks ||
-      authorsStore.loadingAuthors ||
-      seriesStore.loadingBooksInSeries
-    );
-  });
+  const libraryFetchingCount = useIsFetching({ queryKey: libraryKeys.all });
+  const allLoading = computed(() => libraryFetchingCount.value > 0);
 
   const items = ref([
     {

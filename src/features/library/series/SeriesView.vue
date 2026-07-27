@@ -4,8 +4,15 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddEditSeriesDialog from './AddEditSeriesDialog.vue'
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import { useSeriesStore } from '@/features/library/series/series.store';
-  import { computed, onMounted, ref, watch } from 'vue';
+  import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
+  import {
+    useCreateSeriesMutation,
+    useDeleteSeriesMutation,
+    useUpdateSeriesMutation,
+  } from '@/features/library/series/queries/useSeriesMutations';
+  import { useBooksInSeriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
+  import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { computed, ref, watch } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import type { Series } from '@/features/library/shelf/types';
   import { useToast } from 'primevue/usetoast';
@@ -14,15 +21,12 @@
   import BookSmall from '@/features/library/series/BookSmall.vue';
   import type { Book, UserBook } from '@/features/library/shelf/types';
   import type { AxiosError } from 'axios';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
   import NewBookDialog from '@/features/library/catalog/NewBookDialog.vue';
   import legimiLogo from '@/assets/images/legimi.png';
   import upolujebookaLogo from '@/assets/images/upolujebooka.png';
   import lubimyczytacLogo from '@/assets/images/lubimyczytac.png';
 
-  const seriesStore = useSeriesStore();
-  const userbookStore = useUserbooksStore();
   const toast = useToast();
   const route = useRoute();
   const router = useRouter();
@@ -40,25 +44,34 @@
     initFilters();
   };
 
+  const { data: seriesListData, isFetching: loadingSeries } = useSeriesListQuery();
+  const createSeriesMutation = useCreateSeriesMutation();
+  const updateSeriesMutation = useUpdateSeriesMutation();
+  const deleteSeriesMutation = useDeleteSeriesMutation();
+  const createUserbookMutation = useCreateUserbookMutation();
+
   // Computed property for filtered series
   const filteredSeries = computed(() => {
+    const series = seriesListData.value ?? [];
     if (!filters.value.global.value) {
-      return seriesStore.series;
+      return series;
     }
 
     const searchTerm = filters.value.global.value.toLowerCase();
-    return seriesStore.series.filter(
-      (series: Series) =>
-        series.title.toLowerCase().includes(searchTerm) || series.description?.toLowerCase().includes(searchTerm)
+    return series.filter(
+      (serie: Series) =>
+        serie.title.toLowerCase().includes(searchTerm) || serie.description?.toLowerCase().includes(searchTerm)
     );
   });
 
-  // Load series
-  seriesStore.getSeriesFromDb();
-
   const seriesTemp = ref<Series>();
   const selectedSeries = ref<Series | null>(null);
-  const seriesBooks = ref<Book[]>([]);
+  const selectedSeriesId = computed(() => selectedSeries.value?.id ?? 0);
+  const { data: seriesBooksData, refetch: refetchSeriesBooks } = useBooksInSeriesQuery(
+    selectedSeriesId,
+    computed(() => selectedSeriesId.value > 0)
+  );
+  const seriesBooks = computed(() => seriesBooksData.value ?? []);
 
   // Funkcja do formatowania daty
   const formatDate = (date: Date | null) => {
@@ -104,8 +117,8 @@
     console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (seriesTemp.value) {
-      await seriesStore
-        .deleteSeriesDb(seriesTemp.value.id)
+      await deleteSeriesMutation
+        .mutateAsync(seriesTemp.value.id)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -186,7 +199,7 @@
 
     try {
       if (isEditMode.value) {
-        await seriesStore.updateSeriesDb(seriesData);
+        await updateSeriesMutation.mutateAsync(seriesData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -194,7 +207,7 @@
           life: 3000,
         });
       } else {
-        await seriesStore.addSeriesDb(seriesData);
+        await createSeriesMutation.mutateAsync(seriesData);
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
@@ -227,8 +240,8 @@
   const submitAddUserbook = async (newUserbook: UserBook) => {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .addUserbookDb(newUserbook)
+      await createUserbookMutation
+        .mutateAsync(newUserbook)
         .then(() => {
           toast.add({
             severity: 'success',
@@ -251,25 +264,14 @@
   const afterSavedBook = async () => {
     showAddNewBookDialog.value = false;
     if (selectedSeries.value) {
-      await onRowSelect({ data: selectedSeries.value });
+      await refetchSeriesBooks();
     }
   };
 
-  const onRowSelect = async (event: { data: Series }) => {
+  const onRowSelect = (event: { data: Series }) => {
     console.log('onRowSelect()', event.data);
     selectedSeries.value = event.data;
-    seriesBooks.value = await seriesStore.getBooksInSeriesFromDb(event.data.id);
   };
-
-  //------------------------------------MOUNTED------------------------------
-  onMounted(async () => {
-    console.log('onMounted SeriesView');
-    try {
-      await seriesStore.getSeriesFromDb();
-    } catch (error) {
-      console.error('Błąd podczas pobierania cykli:', error);
-    }
-  });
 </script>
 
 <template>
@@ -343,14 +345,14 @@
                     @click="clearFilter()"
                   />
                 </div>
-                <div v-if="seriesStore.loadingSeries">
+                <div v-if="loadingSeries">
                   <ProgressSpinner class="ml-3" style="width: 35px; height: 35px" stroke-width="5" />
                 </div>
               </div>
             </template>
 
             <template #empty>
-              <p v-if="!seriesStore.loadingSeries" class="text-red-500">Nie znaleziono cykli...</p>
+              <p v-if="!loadingSeries" class="text-red-500">Nie znaleziono cykli...</p>
             </template>
 
             <!--      TITLE        -->

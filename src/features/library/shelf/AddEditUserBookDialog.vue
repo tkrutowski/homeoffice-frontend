@@ -4,12 +4,11 @@
   import AddDialog from '@/components/AddDialog.vue';
   import UserBookFormFields from '@/features/library/shelf/UserBookFormFields.vue';
   import { TranslationService } from '@/service/TranslationService.ts';
-  import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store.ts';
-  import { getAudiobookAvailability } from '@/features/library/shelf/AudiobookAvailabilityService';
-  import { useBooksStore } from '@/features/library/catalog/books.store';
+  import { findBookstore, useBookstoresQuery } from '@/features/library/bookstores/queries/useBookstoresQueries';
+  import { useCreateBookstoreMutation } from '@/features/library/bookstores/queries/useBookstoresMutations';
+  import { useUserbookQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
+  import { useAudiobookAvailabilityQuery, useBookQuery } from '@/features/library/catalog/queries/useBooksQueries';
   import {
-    type AudiobookAvailabilityResponse,
     type Bookstore,
     EditionType,
     OwnershipStatus,
@@ -22,11 +21,7 @@
 
   UtilsService.getTypesForLibrary();
 
-  const bookstoreStore = useBookstoreStore();
-  const userbookStore = useUserbooksStore();
-  const bookStore = useBooksStore();
   const toast = useToast();
-  // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb();
   const visible = defineModel<boolean>('visible', { default: false });
 
   const emit = defineEmits<{
@@ -97,79 +92,48 @@
     info: '',
   });
 
-  const audiobookAvailability = ref<AudiobookAvailabilityResponse | null>(null);
-  const loadingAudiobookAvailability = ref(false);
-  let fetchGeneration = 0;
+  const { data: bookstoresData, isLoading: loadingBookstore } = useBookstoresQuery();
+  const createBookstoreMutation = useCreateBookstoreMutation();
 
-  function clearAudiobookAvailability() {
-    fetchGeneration++;
-    audiobookAvailability.value = null;
-    loadingAudiobookAvailability.value = false;
-  }
+  const isEditEnabled = computed(() => props.isEdit && props.idBook > 0);
+  const { data: userbookData, refetch: refetchUserbook } = useUserbookQuery(() => props.idBook, isEditEnabled);
 
-  async function fetchAudiobookAvailability(bookId: number) {
-    const gen = ++fetchGeneration;
-    loadingAudiobookAvailability.value = true;
-    audiobookAvailability.value = null;
-    try {
-      const data = await getAudiobookAvailability(bookId);
-      if (gen !== fetchGeneration) return;
-      audiobookAvailability.value = data;
-    } finally {
-      if (gen === fetchGeneration) loadingAudiobookAvailability.value = false;
-    }
-  }
+  const isNewBookEnabled = computed(() => !props.isEdit && props.idBook > 0);
+  const { data: newBookData } = useBookQuery(() => props.idBook, isNewBookEnabled);
 
-  function loadAudiobookAvailabilityIfPossible() {
-    const bookId = userbook.value.book?.id;
-    if (bookId && bookId > 0) {
-      fetchAudiobookAvailability(bookId);
-    }
-  }
+  const audiobookBookId = computed(() => userbook.value.book?.id ?? 0);
+  const { data: audiobookAvailabilityData, isLoading: loadingAudiobookAvailability } =
+    useAudiobookAvailabilityQuery(audiobookBookId);
+  const audiobookAvailability = computed(() => audiobookAvailabilityData.value ?? null);
 
   function applyUserbookFromDb(result: UserBook) {
     userbook.value = result;
-    selectedBookstore.value = bookstoreStore.getBookstore(userbook.value.idBookstore);
+    selectedBookstore.value = findBookstore(bookstoresData.value, userbook.value.idBookstore);
     readingDateFrom.value = userbook.value.readFrom;
     readingDateTo.value = userbook.value.readTo;
-    loadAudiobookAvailabilityIfPossible();
   }
 
-  watch(
-    () => props.idBook,
-    async (id: number) => {
-      console.log('WATCH idBook');
-      if (!props.isEdit && id > 0) {
-        console.log('NEW USERBOOK');
-        userbook.value.book = await bookStore.getBookFromDb(id);
-        loadAudiobookAvailabilityIfPossible();
-      }
-      if (props.isEdit && id > 0) {
-        console.log('EDIT USERBOOK');
-        await userbookStore
-          .getUserbookFromDb(id)
-          .then((result: UserBook | null) => {
-            if (result) applyUserbookFromDb(result);
-          })
-          .catch((reason: AxiosError) => {
-            console.log('ERROR: ', reason);
-          });
-      }
+  // Nowa książka na półkę: dociągnij dane katalogowe wybranej książki
+  watch(newBookData, book => {
+    if (book) userbook.value.book = book;
+  });
+
+  // Edycja: dociągnij dane zapisanej pozycji na półce
+  watch(userbookData, result => {
+    if (result) applyUserbookFromDb(result);
+  });
+
+  // Dociągnięcie/aktualizacja listy księgarni po jej załadowaniu lub zmianie
+  watch(bookstoresData, bookstores => {
+    if (userbook.value.idBookstore) {
+      selectedBookstore.value = findBookstore(bookstores, userbook.value.idBookstore);
     }
-  );
+  });
 
   // Watch for dialog visibility to reload data when dialog opens
-  watch(visible, async (isVisible: boolean | undefined) => {
-    if (isVisible && props.isEdit && props.idBook > 0) {
-      console.log('WATCH visible - loading userbook data');
-      await userbookStore
-        .getUserbookFromDb(props.idBook)
-        .then((result: UserBook | null) => {
-          if (result) applyUserbookFromDb(result);
-        })
-        .catch((reason: AxiosError) => {
-          console.log('ERROR: ', reason);
-        });
+  watch(visible, (isVisible: boolean | undefined) => {
+    if (isVisible && isEditEnabled.value) {
+      void refetchUserbook();
     }
   });
   const readingDateFrom = ref<Date | null>(null);
@@ -260,7 +224,6 @@
     selectedBookstore.value = null;
     readingDateFrom.value = null;
     readingDateTo.value = null;
-    clearAudiobookAvailability();
   }
 
   function onDialogHide() {
@@ -276,8 +239,6 @@
   //--------------------------------------------------BOOKSTORE
   //
   async function saveBookstore(name: string, url: string) {
-    console.log('in1: ', name);
-    console.log('in2: ', url);
     if (name.length === 0 || url.length === 0) {
       toast.add({
         severity: 'error',
@@ -287,28 +248,22 @@
       });
     } else {
       showAddBookstoreModal.value = false;
-      await bookstoreStore
-        .addBookstoreDb({
-          id: 0,
-          name: name,
-          url: url,
-        })
-        .then(() => {
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Dodano księgarnię: ' + name,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Nie dodano księgarni: ' + name,
-            life: 5000,
-          });
+      try {
+        await createBookstoreMutation.mutateAsync({ id: 0, name, url });
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Dodano księgarnię: ' + name,
+          life: 3000,
         });
+      } catch (reason) {
+        toast.add({
+          severity: 'error',
+          summary: (reason as AxiosError)?.message,
+          detail: 'Nie dodano księgarni: ' + name,
+          life: 5000,
+        });
+      }
     }
   }
 </script>
@@ -334,7 +289,7 @@
         v-model:selected-bookstore="selectedBookstore"
         v-model:reading-date-from="readingDateFrom"
         v-model:reading-date-to="readingDateTo"
-        :bookstores="bookstoreStore.bookstores"
+        :bookstores="bookstoresData ?? []"
         :ownership-pill-options="ownershipPillOptions"
         :edition-pill-options="editionPillOptions"
         :show-error-bookstore="showErrorBookstore()"
@@ -344,7 +299,7 @@
         :show-error-date-from="showErrorDateFrom()"
         :show-error-date-to="showErrorDateTo()"
         :read-to-error-message="getReadToMessage"
-        :loading-bookstore="bookstoreStore.loadingBookstore"
+        :loading-bookstore="loadingBookstore"
         :audiobook-availability="audiobookAvailability"
         :loading-audiobook-availability="loadingAudiobookAvailability"
         @bookstore-change="userbook.idBookstore = selectedBookstore ? selectedBookstore.id : 0"

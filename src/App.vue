@@ -1,6 +1,9 @@
 <script setup lang="ts">
   import TheHeader from './components/TheHeader.vue';
   import Toast from 'primevue/toast';
+  import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
+
+  const isDev = import.meta.env.DEV;
 </script>
 
 <template>
@@ -10,5 +13,6 @@
     <main class="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       <router-view />
     </main>
+    <VueQueryDevtools v-if="isDev" />
   </div>
 </template>

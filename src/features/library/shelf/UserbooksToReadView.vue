@@ -1,23 +1,26 @@
 <script setup lang="ts">
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
   import UserBookSmall from '@/features/library/shelf/UserBookSmall.vue';
   import { useToast } from 'primevue/usetoast';
-  import { computed, ref, onMounted } from 'vue';
+  import { computed, ref } from 'vue';
   import { ReadingStatus, type UserBook } from '@/features/library/shelf/types';
   import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
   import type { AxiosError } from 'axios';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import { useUserbooksByStatusQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
+  import {
+    useDeleteUserbookMutation,
+    useUpdateUserbookMutation,
+  } from '@/features/library/shelf/queries/useUserbooksMutations';
 
   const toast = useToast();
-  const userbookStore = useUserbooksStore();
-  const userbooks = ref<UserBook[]>([]);
-  // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
 
-  onMounted(async () => {
-    userbooks.value = await userbookStore.getUserbooksByStatusFromDb(ReadingStatus.NOT_READ);
-  });
+  const { data: userbooksData, isLoading: loadingUserbooks } = useUserbooksByStatusQuery(ReadingStatus.NOT_READ);
+  const userbooks = computed<UserBook[]>(() => userbooksData.value ?? []);
+
+  const updateUserbookMutation = useUpdateUserbookMutation();
+  const deleteUserbookMutation = useDeleteUserbookMutation();
 
   //
   //-------------------------------------------------USERBOOK-------------------------------------------------
@@ -31,38 +34,22 @@
   const submitEditUserbook = async (newUserbook: UserBook) => {
     showUserbookDialog.value = false;
     if (newUserbook) {
-      await userbookStore
-        .updateUserbookDb(newUserbook)
-        .then(() => {
-          // If status has changed from NOT_READ to another value, remove the book from the list
-          if (newUserbook.readingStatus !== ReadingStatus.NOT_READ) {
-            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
-            if (index !== -1) {
-              userbooks.value.splice(index, 1);
-            }
-          } else {
-            // If status remains NOT_READ, update the book in the list
-            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
-            if (index !== -1) {
-              userbooks.value[index] = newUserbook;
-            }
-          }
-
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas aktualizacji książki na półkę.',
-            life: 3000,
-          });
+      try {
+        await updateUserbookMutation.mutateAsync(newUserbook);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
+          life: 3000,
         });
+      } catch (reason) {
+        toast.add({
+          severity: 'error',
+          summary: (reason as AxiosError)?.message,
+          detail: 'Błąd podczas aktualizacji książki na półkę.',
+          life: 3000,
+        });
+      }
     }
   };
   //
@@ -78,32 +65,24 @@
     return 'No message';
   });
   const submitDelete = async () => {
-    console.log('submitDelete()');
     showDeleteConfirmationDialog.value = false;
     if (tempUserbook.value) {
-      await userbookStore
-        .deleteUserbookDb(tempUserbook.value.id)
-        .then(() => {
-          const index = userbooks.value.findIndex(ub => ub.id === tempUserbook.value?.id);
-          if (index !== -1) {
-            userbooks.value.splice(index, 1);
-          }
-
-          toast.add({
-            severity: 'success',
-            summary: 'Potwierdzenie',
-            detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
-            life: 3000,
-          });
-        })
-        .catch((reason: AxiosError) => {
-          toast.add({
-            severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
-            life: 3000,
-          });
+      try {
+        await deleteUserbookMutation.mutateAsync(tempUserbook.value.id);
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
+          life: 3000,
         });
+      } catch (reason) {
+        toast.add({
+          severity: 'error',
+          summary: (reason as AxiosError)?.message,
+          detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
+          life: 3000,
+        });
+      }
     }
   };
 </script>
@@ -132,7 +111,7 @@
     <div>
       <div class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4">
         <h2 class="text-3xl font-semibold text-primary">Moja półka - książki w poczekalni...</h2>
-        <div v-if="userbookStore.loadingUserbooks">
+        <div v-if="loadingUserbooks">
           <ProgressSpinner style="width: 30px; height: 30px" stroke-width="5" />
         </div>
       </div>

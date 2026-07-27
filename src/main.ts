@@ -10,6 +10,8 @@ import ConfirmationService from 'primevue/confirmationservice';
 import DialogService from 'primevue/dialogservice';
 import ToastService from 'primevue/toastservice';
 import { createPinia } from 'pinia';
+import { VueQueryPlugin } from '@tanstack/vue-query';
+import { queryClient } from '@/config/queryClient';
 
 declare module 'pinia' {
   export interface PiniaCustomProperties {
@@ -24,7 +26,8 @@ pinia.use(({ store }) => {
 });
 
 const app = createApp(App);
-app.use(createPinia());
+app.use(pinia);
+app.use(VueQueryPlugin, { queryClient });
 app.use(router);
 app.use(PrimeVue, {
   theme: 'none',
