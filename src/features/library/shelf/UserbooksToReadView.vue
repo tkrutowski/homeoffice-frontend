@@ -1,0 +1,149 @@
+<script setup lang="ts">
+  import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
+  import MainPageShell from '@/components/layout/MainPageShell.vue';
+  import { useUserbooksStore } from '@/features/library/shelf/userbooks.store';
+  import UserBookSmall from '@/features/library/shelf/UserBookSmall.vue';
+  import { useToast } from 'primevue/usetoast';
+  import { computed, ref, onMounted } from 'vue';
+  import { ReadingStatus, type UserBook } from '@/features/library/shelf/types';
+  import AddEditUserBookDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
+  import type { AxiosError } from 'axios';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+
+  const toast = useToast();
+  const userbookStore = useUserbooksStore();
+  const userbooks = ref<UserBook[]>([]);
+  // if (userbookStore.userbooks.length === 0) userbookStore.getUserbooksFromDb()
+
+  onMounted(async () => {
+    userbooks.value = await userbookStore.getUserbooksByStatusFromDb(ReadingStatus.NOT_READ);
+  });
+
+  //
+  //-------------------------------------------------USERBOOK-------------------------------------------------
+  //
+  const showUserbookDialog = ref<boolean>(false);
+  const tempUserbook = ref<UserBook>();
+  const editUserbook = (newUserbook: UserBook) => {
+    tempUserbook.value = newUserbook;
+    showUserbookDialog.value = true;
+  };
+  const submitEditUserbook = async (newUserbook: UserBook) => {
+    showUserbookDialog.value = false;
+    if (newUserbook) {
+      await userbookStore
+        .updateUserbookDb(newUserbook)
+        .then(() => {
+          // If status has changed from NOT_READ to another value, remove the book from the list
+          if (newUserbook.readingStatus !== ReadingStatus.NOT_READ) {
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value.splice(index, 1);
+            }
+          } else {
+            // If status remains NOT_READ, update the book in the list
+            const index = userbooks.value.findIndex(ub => ub.id === newUserbook.id);
+            if (index !== -1) {
+              userbooks.value[index] = newUserbook;
+            }
+          }
+
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zaaktualizowano książkę na półce: ' + newUserbook.book?.title,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas aktualizacji książki na półkę.',
+            life: 3000,
+          });
+        });
+    }
+  };
+  //
+  //-------------------------------------------------USERBOOK DELETE -------------------------------------------------
+  //
+  const showDeleteConfirmationDialog = ref<boolean>(false);
+  const confirmDelete = (userbook: UserBook) => {
+    tempUserbook.value = userbook;
+    showDeleteConfirmationDialog.value = true;
+  };
+  const deleteConfirmationMessage = computed(() => {
+    if (tempUserbook.value) return `Czy chcesz usunąc z półki książkę: <b>${tempUserbook.value?.book?.title}</b>?`;
+    return 'No message';
+  });
+  const submitDelete = async () => {
+    console.log('submitDelete()');
+    showDeleteConfirmationDialog.value = false;
+    if (tempUserbook.value) {
+      await userbookStore
+        .deleteUserbookDb(tempUserbook.value.id)
+        .then(() => {
+          const index = userbooks.value.findIndex(ub => ub.id === tempUserbook.value?.id);
+          if (index !== -1) {
+            userbooks.value.splice(index, 1);
+          }
+
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Usunięto z półki książkę: ' + tempUserbook.value?.book?.title,
+            life: 3000,
+          });
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas usuwania książki z półki: ' + tempUserbook.value?.book?.title,
+            life: 3000,
+          });
+        });
+    }
+  };
+</script>
+
+<template>
+  <AddEditUserBookDialog
+    v-model:visible="showUserbookDialog"
+    :id-book="tempUserbook?.id"
+    :is-edit="true"
+    @save="submitEditUserbook"
+    @cancel="showUserbookDialog = false"
+  />
+  <ConfirmationDialog
+    v-model:visible="showDeleteConfirmationDialog"
+    :msg="deleteConfirmationMessage"
+    label="Usuń"
+    @save="submitDelete"
+    @cancel="showDeleteConfirmationDialog = false"
+  />
+
+  <MainPageShell>
+    <template #top>
+      <TheMenuLibrary />
+    </template>
+
+    <div>
+      <div class="flex mt-5 dark:bg-surface-800 bg-surface-300 h-14 justify-center items-center gap-4">
+        <h2 class="text-3xl font-semibold text-primary">Moja półka - książki w poczekalni...</h2>
+        <div v-if="userbookStore.loadingUserbooks">
+          <ProgressSpinner style="width: 30px; height: 30px" stroke-width="5" />
+        </div>
+      </div>
+
+      <div class="flex flex-row flex-wrap justify-center">
+        <div v-for="ub in userbooks" :key="ub.id">
+          <UserBookSmall :userbook="ub" @edit="editUserbook" @delete="confirmDelete" />
+        </div>
+      </div>
+    </div>
+  </MainPageShell>
+</template>
+
+<style scoped></style>

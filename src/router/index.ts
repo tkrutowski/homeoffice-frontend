@@ -26,17 +26,17 @@ import BanksView from '@/views/finance/BanksView.vue';
 import BankView from '@/views/finance/BankView.vue';
 
 //LIBRARY
-import LibraryHomeView from '@/views/library/LibraryHomeView.vue';
-import BooksView from '@/views/library/BooksView.vue';
-import BookView from '@/views/library/BookView.vue';
-import BookstoresView from '@/views/library/BookstoresView.vue';
-import AuthorsView from '@/views/library/AuthorsView.vue';
-import UserbooksReadNowView from '@/views/library/UserbooksReadNowView.vue';
-import UserbooksToReadView from '@/views/library/UserbooksToReadView.vue';
-import UserbooksReadView from '@/views/library/UserbooksReadView.vue';
-import SeriesSearchView from '@/views/library/SeriesSearchView.vue';
-import SeriesView from '@/views/library/SeriesView.vue';
-import StatisticsView from '@/views/library/StatisticsView.vue';
+import LibraryHomeView from '@/features/library/home/LibraryHomeView.vue';
+import BooksView from '@/features/library/catalog/BooksView.vue';
+import BookView from '@/features/library/catalog/BookView.vue';
+import BookstoresView from '@/features/library/bookstores/BookstoresView.vue';
+import AuthorsView from '@/features/library/authors/AuthorsView.vue';
+import UserbooksReadNowView from '@/features/library/shelf/UserbooksReadNowView.vue';
+import UserbooksToReadView from '@/features/library/shelf/UserbooksToReadView.vue';
+import UserbooksReadView from '@/features/library/shelf/UserbooksReadView.vue';
+import SeriesSearchView from '@/features/library/series/SeriesSearchView.vue';
+import SeriesView from '@/features/library/series/SeriesView.vue';
+import StatisticsView from '@/features/library/shelf/StatisticsView.vue';
 
 //ADMIN
 import PrivilegesView from '@/views/PrivilegesView.vue';

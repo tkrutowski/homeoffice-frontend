@@ -3,7 +3,7 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { useAuthorizationStore } from '@/stores/authorization';
   import FinanceHomeEntryCard from '@/components/home/FinanceHomeEntryCard.vue';
-  import LibraryHomeEntryCard from '@/components/home/LibraryHomeEntryCard.vue';
+  import LibraryHomeEntryCard from '@/features/library/home/LibraryHomeEntryCard.vue';
   import DeviceHomeEntryCard from '@/components/home/DeviceHomeEntryCard.vue';
 
   const authorizationStore = useAuthorizationStore();

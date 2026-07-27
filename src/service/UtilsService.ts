@@ -1,8 +1,8 @@
-import { useBookstoreStore } from '../stores/bookstores';
+import { useBookstoreStore } from '@/features/library/bookstores/bookstores.store';
 import { useCardsStore } from '../stores/cards';
 import { useFirmsStore } from '../stores/firms';
-import { type Author, type Category } from '../types/Book';
-import { OwnershipStatus, EditionType, ReadingStatus } from '../types/Book';
+import { type Author, type Category } from '@/features/library/shelf/types';
+import { OwnershipStatus, EditionType, ReadingStatus } from '@/features/library/shelf/types';
 import moment from 'moment';
 import type { FeeInstallment } from '../types/Fee';
 import type { Installment } from '../types/Payment';
