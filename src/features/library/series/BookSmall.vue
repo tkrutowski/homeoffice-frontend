@@ -178,7 +178,7 @@
     <!-- COVER -->
     <div class="w-full relative">
       <img
-        v-if="book?.cover != 'https://focikhome.synology.me/covers/'"
+        v-if="book?.cover && book.cover.length > 0"
         :src="book.cover"
         alt="Okładka do książki"
         class="w-full h-[400px] object-cover"
