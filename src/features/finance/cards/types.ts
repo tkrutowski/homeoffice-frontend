@@ -1,4 +1,4 @@
-export type ActiveStatus = 'ACTIVE' | 'INACTIVE' | 'ALL';
+import type { ActiveStatus } from '@/types/ActiveStatus';
 
 export interface Card {
   id: number;

@@ -18,6 +18,9 @@ import {
   fetchTransactionCategories,
   fetchTransactionLabels,
 } from '@/features/finance/transactions/api/transactionsApi';
+import { deviceKeys } from '@/features/device/_shared/queryKeys';
+import { fetchDevices, fetchDeviceTypes } from '@/features/device/devices/api/devicesApi';
+import { fetchComputers } from '@/features/device/computers/api/computersApi';
 
 export const UtilsService = {
   /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
@@ -112,6 +115,21 @@ export const UtilsService = {
     if (firmStore.firms.length === 0) {
       firmStore.getFirmsFromDb();
     }
+  },
+
+  getTypesForDevice() {
+    void queryClient.prefetchQuery({
+      queryKey: deviceKeys.devices.list(),
+      queryFn: fetchDevices,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: deviceKeys.devices.types(),
+      queryFn: fetchDeviceTypes,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: deviceKeys.computers.list(),
+      queryFn: fetchComputers,
+    });
   },
   displayAuthors(authors: Author[]) {
     return authors.map(author => author.lastName + ' ' + author.firstName).join(', ');

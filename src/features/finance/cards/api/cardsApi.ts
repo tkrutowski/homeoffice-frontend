@@ -1,6 +1,7 @@
 import moment from 'moment';
 import httpCommon from '@/config/http-common';
-import type { ActiveStatus, Card } from '@/features/finance/cards/types';
+import type { ActiveStatus } from '@/types/ActiveStatus';
+import type { Card } from '@/features/finance/cards/types';
 
 function normalizeCard(card: Card): Card {
   return {

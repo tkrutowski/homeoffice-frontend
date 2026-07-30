@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import type { AuditChangeEntry } from '@/types/DeviceDashboard';
-import type { AuditEntityType } from '@/types/DeviceDashboard';
+import type { AuditChangeEntry } from '@/features/device/home/dashboardTypes';
+import type { AuditEntityType } from '@/features/device/home/dashboardTypes';
 import { mapAuditEntryDtoToChangeEntry, type AuditEntryDto } from '@/types/Audit';
 
 export const useAuditStore = defineStore('audit', {

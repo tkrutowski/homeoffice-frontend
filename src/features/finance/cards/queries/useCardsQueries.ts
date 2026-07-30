@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { fetchCard, fetchCards, fetchCardsByUser } from '@/features/finance/cards/api/cardsApi';
 import { financeKeys } from '@/features/finance/_shared/queryKeys';
-import type { ActiveStatus } from '@/features/finance/cards/types';
+import type { ActiveStatus } from '@/types/ActiveStatus';
 
 export function useCardsListQuery(status: MaybeRefOrGetter<ActiveStatus> = 'ALL') {
   return useQuery({

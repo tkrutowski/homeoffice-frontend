@@ -1,4 +1,4 @@
-import type { ActiveStatus } from '@/features/finance/cards/types';
+import type { ActiveStatus } from '@/types/ActiveStatus';
 import type { StatusType } from '@/types/StatusType';
 
 export type LoanPageParams = {

@@ -43,11 +43,11 @@ import PrivilegesView from '@/views/PrivilegesView.vue';
 import LogsView from '@/views/LogsView.vue';
 
 //DEVICE
-import DevicesHomeView from '@/views/device/DeviceHomeView.vue';
-import DevicesGridView from '@/views/device/DevicesGridView.vue';
-import DevicesListView from '@/views/device/DevicesListView.vue';
-import DeviceView from '@/views/device/DeviceView.vue';
-import ComputersView from '@/views/device/ComputersView.vue';
+import DevicesHomeView from '@/features/device/home/DeviceHomeView.vue';
+import DevicesGridView from '@/features/device/devices/DevicesGridView.vue';
+import DevicesListView from '@/features/device/devices/DevicesListView.vue';
+import DeviceView from '@/features/device/devices/DeviceView.vue';
+import ComputersView from '@/features/device/computers/ComputersView.vue';
 
 //SHARE
 import FirmsView from '@/views/share/FirmsView.vue';

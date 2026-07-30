@@ -1,4 +1,4 @@
-import type { AuditAction, AuditChangeEntry, AuditEntityType } from '@/types/DeviceDashboard';
+import type { AuditAction, AuditChangeEntry, AuditEntityType } from '@/features/device/home/dashboardTypes';
 
 /** Odpowiedź GET /v1/audit (AuditEntryDto z backendu). */
 export interface AuditEntryDto {
