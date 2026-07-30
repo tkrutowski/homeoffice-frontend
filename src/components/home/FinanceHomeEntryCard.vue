@@ -2,10 +2,8 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import router from '@/router';
   import { useAuthorizationStore } from '@/stores/authorization';
-  import { usePurchasesStore } from '@/stores/purchases';
 
   const authorizationStore = useAuthorizationStore();
-  const purchasesStore = usePurchasesStore();
 
   function enterFinance() {
     if (!authorizationStore.hasAccessFinance) return;
@@ -44,7 +42,6 @@
 
   function goNewPurchase() {
     if (!authorizationStore.hasAccessFinancePurchase) return;
-    purchasesStore.clearPurchaseAddContext();
     router.push({
       name: 'Purchase',
       params: { isEdit: 'false', purchaseId: 0 },

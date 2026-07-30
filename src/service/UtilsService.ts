@@ -1,18 +1,23 @@
-import { useCardsStore } from '../stores/cards';
 import { useFirmsStore } from '../stores/firms';
 import { type Author, type Category } from '@/features/library/shelf/types';
 import { OwnershipStatus, EditionType, ReadingStatus } from '@/features/library/shelf/types';
 import moment from 'moment';
-import type { FeeInstallment } from '../types/Fee';
-import type { Installment } from '../types/Payment';
-import type { LoanInstallment } from '../types/Loan';
+import type { FeeInstallment } from '@/features/finance/fees/types';
+import type { Installment } from '@/features/finance/payments/types';
+import type { LoanInstallment } from '@/features/finance/loans/types';
 import { TranslationService } from '@/service/TranslationService.ts';
-import { TransactionType, type TransactionCategoryType } from '@/types/BankTransaction';
-import type { Card } from '@/types/Bank';
+import { TransactionType, type TransactionCategoryType } from '@/features/finance/transactions/types';
+import type { Card } from '@/features/finance/cards/types';
 import type { Moment } from 'moment';
 import { queryClient } from '@/config/queryClient';
 import { libraryKeys } from '@/features/library/_shared/queryKeys';
 import { fetchBookstores } from '@/features/library/bookstores/api/bookstoresApi';
+import { financeKeys } from '@/features/finance/_shared/queryKeys';
+import { fetchCards } from '@/features/finance/cards/api/cardsApi';
+import {
+  fetchTransactionCategories,
+  fetchTransactionLabels,
+} from '@/features/finance/transactions/api/transactionsApi';
 
 export const UtilsService = {
   /** Kwota w formacie polskim zawsze z sufiksem „zł” (Intl bywa niespójny między przeglądarkami / locale). */
@@ -90,10 +95,18 @@ export const UtilsService = {
   },
 
   getTypesForFinance() {
-    const cardStore = useCardsStore();
-    if (cardStore.cards.length === 0) {
-      cardStore.getCardsFromDb('ALL');
-    }
+    void queryClient.prefetchQuery({
+      queryKey: financeKeys.cards.list('ALL'),
+      queryFn: () => fetchCards('ALL'),
+    });
+    void queryClient.prefetchQuery({
+      queryKey: financeKeys.transactions.categories(),
+      queryFn: fetchTransactionCategories,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: financeKeys.transactions.labels(),
+      queryFn: fetchTransactionLabels,
+    });
 
     const firmStore = useFirmsStore();
     if (firmStore.firms.length === 0) {

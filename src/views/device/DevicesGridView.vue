@@ -10,7 +10,7 @@
   import type { Device } from '@/types/Devices';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import type { ActiveStatus } from '@/types/Bank';
+  import type { ActiveStatus } from '@/features/finance/cards/types';
   import type { AxiosError } from 'axios';
   import type { SelectChangeEvent } from 'primevue/select';
   import type { DataViewPageEvent } from 'primevue';

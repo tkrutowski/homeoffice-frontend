@@ -8,7 +8,7 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import type { AxiosError } from 'axios';
   import { useFirmsStore } from '@/stores/firms.ts';
-  import TheMenuFinance from '@/components/finance/TheMenuFinance.vue';
+  import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { CalendarDaysIcon } from '@heroicons/vue/24/outline';
   import FirmFormFields from '@/components/share/FirmFormFields.vue';

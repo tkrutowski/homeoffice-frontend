@@ -1,4 +1,4 @@
-import type { Bank } from '@/types/Bank';
+import type { Bank } from '@/features/finance/banks/types';
 import type { CompanyLookupResult } from '@/types/CompanyLookup';
 import type { Firm } from '@/types/Firm';
 

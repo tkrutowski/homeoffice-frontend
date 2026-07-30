@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
 import type { Device, DeviceType } from '@/types/Devices.ts';
-import type { ActiveStatus } from '@/types/Bank.ts';
+import type { ActiveStatus } from '@/features/finance/cards/types';
 import moment from 'moment';
 import type { FileInfo, Module } from '@/types/FileInfo.ts';
 

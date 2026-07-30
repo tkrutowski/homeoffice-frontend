@@ -14,7 +14,7 @@
   import FileUrlsPreviewDialog from '@/components/FileUrlsPreviewDialog.vue';
   import TheMenuDevice from '@/components/device/TheMenuDevice.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import type { ActiveStatus } from '@/types/Bank';
+  import type { ActiveStatus } from '@/features/finance/cards/types';
   import StatusButton from '@/components/StatusButton.vue';
   import type { AxiosError } from 'axios';
   import type { DataTablePageEvent } from 'primevue/datatable';

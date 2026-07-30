@@ -1,5 +1,5 @@
 import type { Firm } from './Firm.ts';
-import type { ActiveStatus } from './Bank.ts';
+import type { ActiveStatus } from '@/features/finance/cards/types';
 import type { FileInfo } from '@/types/FileInfo.ts';
 
 export interface Device {

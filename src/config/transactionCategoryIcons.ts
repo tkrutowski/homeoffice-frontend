@@ -1,4 +1,4 @@
-import type { TransactionCategoryDto } from '@/types/BankTransaction';
+import type { TransactionCategoryDto } from '@/features/finance/transactions/types';
 import { UtilsService } from '@/service/UtilsService';
 import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
 

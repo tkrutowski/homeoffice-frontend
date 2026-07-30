@@ -7,23 +7,23 @@ import RefreshComponent from '@/components/RefreshComponent.vue';
 import { useAuthorizationStore } from '@/stores/authorization';
 
 //FINANCE
-import FinanceHomeView from '@/views/finance/FinanceHomeView.vue';
-import LoanView from '@/views/finance/LoanView.vue';
-import LoansView from '@/views/finance/LoansView.vue';
-import FeesView from '@/views/finance/FeesView.vue';
-import FeeView from '@/views/finance/FeeView.vue';
-import PaymentsView from '@/views/finance/PaymentsView.vue';
-import PaymentFeeView from '@/views/finance/PaymentFeeView.vue';
-import PaymentLoanView from '@/views/finance/PaymentLoanView.vue';
-import PurchasesCurrentView from '@/views/finance/PurchasesCurrentView.vue';
-import TransactionsView from '@/views/finance/TransactionsView.vue';
-import TransactionsDashboardView from '@/views/finance/TransactionsDashboardView.vue';
-import PurchasesView from '@/views/finance/PurchasesView.vue';
-import PurchaseView from '@/views/finance/PurchaseView.vue';
-import CardsView from '@/views/finance/CardsView.vue';
-import CardView from '@/views/finance/CardView.vue';
-import BanksView from '@/views/finance/BanksView.vue';
-import BankView from '@/views/finance/BankView.vue';
+import FinanceHomeView from '@/features/finance/home/FinanceHomeView.vue';
+import LoanView from '@/features/finance/loans/LoanView.vue';
+import LoansView from '@/features/finance/loans/LoansView.vue';
+import FeesView from '@/features/finance/fees/FeesView.vue';
+import FeeView from '@/features/finance/fees/FeeView.vue';
+import PaymentsView from '@/features/finance/payments/PaymentsView.vue';
+import PaymentFeeView from '@/features/finance/payments/PaymentFeeView.vue';
+import PaymentLoanView from '@/features/finance/payments/PaymentLoanView.vue';
+import PurchasesCurrentView from '@/features/finance/purchases/PurchasesCurrentView.vue';
+import TransactionsView from '@/features/finance/transactions/TransactionsView.vue';
+import TransactionsDashboardView from '@/features/finance/transactions/TransactionsDashboardView.vue';
+import PurchasesView from '@/features/finance/purchases/PurchasesView.vue';
+import PurchaseView from '@/features/finance/purchases/PurchaseView.vue';
+import CardsView from '@/features/finance/cards/CardsView.vue';
+import CardView from '@/features/finance/cards/CardView.vue';
+import BanksView from '@/features/finance/banks/BanksView.vue';
+import BankView from '@/features/finance/banks/BankView.vue';
 
 //LIBRARY
 import LibraryHomeView from '@/features/library/home/LibraryHomeView.vue';

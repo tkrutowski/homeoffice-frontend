@@ -2,10 +2,6 @@ import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
 import jwt_decode from 'jwt-decode';
 import moment from 'moment';
-import { useFeeStore } from './fee';
-import { useLoansStore } from './loans';
-import { usePaymentStore } from './payments';
-import { usePurchasesStore } from './purchases';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
 import { queryClient } from '@/config/queryClient';
@@ -326,19 +322,11 @@ export const useAuthorizationStore = defineStore('authorization', {
     //
     logout(): void {
       console.log('START - logout()');
-      const feeStore = useFeeStore();
-      const loanStore = useLoansStore();
-      const paymentStore = usePaymentStore();
-      const purchaseStore = usePurchasesStore();
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('username');
       this.clearLoginError();
       this.$reset(); //store reset
-      feeStore.fees = [];
-      loanStore.loans = [];
-      paymentStore.payments.clear();
-      purchaseStore.purchasesCurrent.clear();
       queryClient.clear();
       router.replace({ name: 'login' });
     },

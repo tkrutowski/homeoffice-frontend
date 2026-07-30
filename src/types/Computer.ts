@@ -1,4 +1,4 @@
-import type { ActiveStatus } from './Bank.ts';
+import type { ActiveStatus } from '@/features/finance/cards/types';
 import type { Device } from './Devices.ts';
 
 export interface ComponentType {
