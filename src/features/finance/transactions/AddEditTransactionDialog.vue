@@ -52,9 +52,30 @@
   const createLabelMutation = useCreateTransactionLabelMutation();
 
   const categories = computed(() => categoriesQuery.data.value ?? []);
-  const labels = computed(() => labelsQuery.data.value ?? []);
+  const labels = computed(() => {
+    const allLabels = labelsQuery.data.value ?? [];
+    return sortLabelsByRecentUsage(allLabels);
+  });
   const loadingCategories = computed(() => categoriesQuery.isFetching.value);
   const loadingLabels = computed(() => labelsQuery.isFetching.value);
+
+  function getRecentlyUsedLabelIds(): number[] {
+    const stored = localStorage.getItem('recentTransactionLabels');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  function saveRecentlyUsedLabels(labelIds: number[]) {
+    // Przechowuj ostatnio 10 użytych etykiet
+    const unique = Array.from(new Set(labelIds));
+    localStorage.setItem('recentTransactionLabels', JSON.stringify(unique.slice(0, 10)));
+  }
+
+  function sortLabelsByRecentUsage(allLabels: { id: number; name: string }[]) {
+    const recentIds = getRecentlyUsedLabelIds();
+    const recentLabels = allLabels.filter(l => recentIds.includes(l.id));
+    const otherLabels = allLabels.filter(l => !recentIds.includes(l.id)).sort((a, b) => a.name.localeCompare(b.name));
+    return [...recentLabels, ...otherLabels];
+  }
 
   const keepOpen = ref(false);
   const submitted = ref(false);
@@ -254,6 +275,8 @@
         await createTransactionMutation.mutateAsync(payload);
         toast.add({ severity: 'success', summary: 'Dodano', detail: 'Transakcja dodana.', life: 3000 });
       }
+      // Zapisz ostatnio użyte etykiety
+      saveRecentlyUsedLabels(selectedLabels.value.map(l => l.id));
       emit('saved');
       if (keepOpen.value && !isEdit.value) {
         description.value = '';
