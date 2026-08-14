@@ -5,6 +5,8 @@
   defineProps<{
     monthLabel: string;
     loading?: boolean;
+    filtersOpen?: boolean;
+    summaryOpen?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -14,6 +16,8 @@
     calendarClick: [event: Event];
     'transactions-saved': [];
     'purchases-saved': [];
+    toggleFilters: [];
+    toggleSummary: [];
   }>();
 </script>
 
@@ -60,6 +64,19 @@
       />
     </div>
 
-    <div class="hidden w-[8rem] shrink-0 sm:block" aria-hidden="true" />
+    <div class="flex shrink-0 items-center gap-1">
+      <OfficeIconButton
+        :title="`${filtersOpen ? 'Ukryj' : 'Pokaż'} filtry`"
+        icon="pi pi-sliders-h"
+        :class="filtersOpen ? 'text-primary' : 'text-surface-400 dark:text-surface-600'"
+        @click="emit('toggleFilters')"
+      />
+      <OfficeIconButton
+        :title="`${summaryOpen ? 'Ukryj' : 'Pokaż'} podsumowanie`"
+        icon="pi pi-chart-bar"
+        :class="summaryOpen ? 'text-primary' : 'text-surface-400 dark:text-surface-600'"
+        @click="emit('toggleSummary')"
+      />
+    </div>
   </div>
 </template>

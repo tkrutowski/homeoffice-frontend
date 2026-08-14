@@ -73,9 +73,40 @@
   const yearPickerDate = ref<Date>(new Date());
   const rangePickerDates = ref<Date[]>([]);
 
+  // Collapsible panels state
+  const panelsOpen = ref({
+    filters: true,
+    summary: true,
+  });
+
+  // Load state from localStorage
+  function loadPanelsState() {
+    const stored = localStorage.getItem('transactionDashboardPanelsState');
+    if (stored) {
+      try {
+        const state = JSON.parse(stored);
+        panelsOpen.value = { ...panelsOpen.value, ...state };
+      } catch {
+        // Ignore parse errors, use defaults
+      }
+    }
+  }
+
+  // Save state to localStorage
+  function savePanelsState() {
+    localStorage.setItem('transactionDashboardPanelsState', JSON.stringify(panelsOpen.value));
+  }
+
+  // Toggle panel visibility
+  function togglePanel(panel: 'filters' | 'summary') {
+    panelsOpen.value[panel] = !panelsOpen.value[panel];
+    savePanelsState();
+  }
+
   UtilsService.getTypesForFinance();
 
   onMounted(async () => {
+    loadPanelsState();
     if (usersStore.users.length === 0) await usersStore.getUsersFromDb();
     initPeopleFilter();
     monthPickerDate.value = anchorDate.value;
@@ -222,43 +253,53 @@
         v-model:period-mode="periodMode"
         :period-label="periodLabel"
         :loading="loadingTransactions"
+        :filters-open="panelsOpen.filters"
+        :summary-open="panelsOpen.summary"
         @prev-period="prevPeriod"
         @next-period="nextPeriod"
         @add-click="openAddDialog"
         @calendar-click="onCalendarClick"
         @transactions-saved="onDialogSaved"
+        @toggle-filters="togglePanel('filters')"
+        @toggle-summary="togglePanel('summary')"
       />
 
-      <TransactionFiltersPanel
-        :categories="categories"
-        :selected-category-ids="selectedCategoryIds"
-        :labels="labels"
-        :selected-label-ids="selectedLabelIds"
-        :people-options="peopleOptions"
-        :selected-users="selectedUsers"
-        :is-admin="isAdmin"
-        :note-filter="noteFilter"
-        :amount-range="amountRange"
-        :amount-min="amountBounds.min"
-        :amount-max="amountBounds.max"
-        :loading-categories="loadingCategories"
-        :loading-labels="loadingLabels"
-        :loading-users="usersStore.loadingUsers"
-        @update:selected-category-ids="onCategoryIdsUpdate"
-        @update:selected-label-ids="onLabelIdsUpdate"
-        @update:selected-users="onUsersUpdate"
-        @update:note-filter="noteFilter = $event"
-        @update:amount-range="amountRange = $event"
-        @reset="onResetFilters"
-      />
+      <!-- Filtry - Collapsible Section -->
+      <div v-if="panelsOpen.filters" class="shrink-0">
+        <TransactionFiltersPanel
+          :categories="categories"
+          :selected-category-ids="selectedCategoryIds"
+          :labels="labels"
+          :selected-label-ids="selectedLabelIds"
+          :people-options="peopleOptions"
+          :selected-users="selectedUsers"
+          :is-admin="isAdmin"
+          :note-filter="noteFilter"
+          :amount-range="amountRange"
+          :amount-min="amountBounds.min"
+          :amount-max="amountBounds.max"
+          :loading-categories="loadingCategories"
+          :loading-labels="loadingLabels"
+          :loading-users="usersStore.loadingUsers"
+          @update:selected-category-ids="onCategoryIdsUpdate"
+          @update:selected-label-ids="onLabelIdsUpdate"
+          @update:selected-users="onUsersUpdate"
+          @update:note-filter="noteFilter = $event"
+          @update:amount-range="amountRange = $event"
+          @reset="onResetFilters"
+        />
+      </div>
 
-      <TransactionDashboardSummaryCards
-        :current-balance="currentBalance"
-        :net-change="summaryNetChange"
-        :expenses="summaryExpenses"
-        :income="summaryIncome"
-        :loading-balance="loadingBalance"
-      />
+      <!-- Podsumowanie - Collapsible Section -->
+      <div v-if="panelsOpen.summary" class="shrink-0">
+        <TransactionDashboardSummaryCards
+          :current-balance="currentBalance"
+          :net-change="summaryNetChange"
+          :expenses="summaryExpenses"
+          :income="summaryIncome"
+          :loading-balance="loadingBalance"
+        />
+      </div>
 
       <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-4">
         <div v-if="loadingTransactions" class="flex justify-center py-10">

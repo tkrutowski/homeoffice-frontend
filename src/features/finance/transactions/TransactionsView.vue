@@ -53,9 +53,40 @@
   const monthPickerRef = ref<InstanceType<typeof Popover> | null>(null);
   const monthPickerDate = ref<Date>(new Date());
 
+  // Collapsible panels state
+  const panelsOpen = ref({
+    filters: true,
+    summary: true,
+  });
+
+  // Load state from localStorage
+  function loadPanelsState() {
+    const stored = localStorage.getItem('transactionPanelsState');
+    if (stored) {
+      try {
+        const state = JSON.parse(stored);
+        panelsOpen.value = { ...panelsOpen.value, ...state };
+      } catch {
+        // Ignore parse errors, use defaults
+      }
+    }
+  }
+
+  // Save state to localStorage
+  function savePanelsState() {
+    localStorage.setItem('transactionPanelsState', JSON.stringify(panelsOpen.value));
+  }
+
+  // Toggle panel visibility
+  function togglePanel(panel: 'filters' | 'summary') {
+    panelsOpen.value[panel] = !panelsOpen.value[panel];
+    savePanelsState();
+  }
+
   UtilsService.getTypesForFinance();
 
   onMounted(async () => {
+    loadPanelsState();
     if (usersStore.users.length === 0) await usersStore.getUsersFromDb();
     initPeopleFilter();
     monthPickerDate.value = selectedMonth.value;
@@ -150,43 +181,53 @@
       <TransactionMonthToolbar
         :month-label="monthLabel"
         :loading="loadingTransactions"
+        :filters-open="panelsOpen.filters"
+        :summary-open="panelsOpen.summary"
         @prev-month="prevMonth"
         @next-month="nextMonth"
         @add-click="openAddDialog"
         @calendar-click="onCalendarClick"
         @transactions-saved="onDialogSaved"
+        @toggle-filters="togglePanel('filters')"
+        @toggle-summary="togglePanel('summary')"
       />
 
-      <TransactionFiltersPanel
-        :categories="categories"
-        :selected-category-ids="selectedCategoryIds"
-        :labels="labels"
-        :selected-label-ids="selectedLabelIds"
-        :people-options="peopleOptions"
-        :selected-users="selectedUsers"
-        :is-admin="isAdmin"
-        :note-filter="noteFilter"
-        :amount-range="amountRange"
-        :amount-min="amountBounds.min"
-        :amount-max="amountBounds.max"
-        :loading-categories="loadingCategories"
-        :loading-labels="loadingLabels"
-        :loading-users="usersStore.loadingUsers"
-        @update:selected-category-ids="onCategoryIdsUpdate"
-        @update:selected-label-ids="onLabelIdsUpdate"
-        @update:selected-users="onUsersUpdate"
-        @update:note-filter="noteFilter = $event"
-        @update:amount-range="amountRange = $event"
-        @reset="onResetFilters"
-      />
+      <!-- Filtry - Collapsible Section -->
+      <div v-if="panelsOpen.filters" class="shrink-0">
+        <TransactionFiltersPanel
+          :categories="categories"
+          :selected-category-ids="selectedCategoryIds"
+          :labels="labels"
+          :selected-label-ids="selectedLabelIds"
+          :people-options="peopleOptions"
+          :selected-users="selectedUsers"
+          :is-admin="isAdmin"
+          :note-filter="noteFilter"
+          :amount-range="amountRange"
+          :amount-min="amountBounds.min"
+          :amount-max="amountBounds.max"
+          :loading-categories="loadingCategories"
+          :loading-labels="loadingLabels"
+          :loading-users="usersStore.loadingUsers"
+          @update:selected-category-ids="onCategoryIdsUpdate"
+          @update:selected-label-ids="onLabelIdsUpdate"
+          @update:selected-users="onUsersUpdate"
+          @update:note-filter="noteFilter = $event"
+          @update:amount-range="amountRange = $event"
+          @reset="onResetFilters"
+        />
+      </div>
 
-      <TransactionSummaryCards
-        :net-change="summaryNetChange"
-        :expenses="summaryExpenses"
-        :income="summaryIncome"
-        :purchases-sum="purchasesCardSum"
-        :loading-purchases="loadingPurchasesSum"
-      />
+      <!-- Podsumowanie - Collapsible Section -->
+      <div v-if="panelsOpen.summary" class="shrink-0">
+        <TransactionSummaryCards
+          :net-change="summaryNetChange"
+          :expenses="summaryExpenses"
+          :income="summaryIncome"
+          :purchases-sum="purchasesCardSum"
+          :loading-purchases="loadingPurchasesSum"
+        />
+      </div>
 
       <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
         <div v-if="loadingTransactions" class="flex justify-center py-10">
