@@ -132,8 +132,10 @@
       .map(installment => installment.installmentAmountPaid)
       .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
   };
-  const calculateEndDate = (installments: FeeInstallment[]): Date | null => {
-    return installments[installments.length - 1].paymentDeadline;
+  const calculateEndDate = (installments: FeeInstallment[]): string => {
+    if (installments.length === 0) return '';
+    const deadline = installments[installments.length - 1].paymentDeadline;
+    return UtilsService.formatDateToString(deadline || undefined);
   };
   //
   //--------------------------------DISPLAY FILTER
@@ -597,10 +599,10 @@
                   <p class="mb-1 mt-3 text-left"><small>Nazwa opłaty:</small> {{ slotProps.data.name }}</p>
                   <p class="mb-1 text-left"><small>Nazwa firmy:</small> {{ slotProps.data.firm.name }}</p>
                   <p class="mb-1 text-left"><small>Nr umowy:</small> {{ slotProps.data.feeNumber }}</p>
-                  <p class="mb-1 text-left"><small>Z dnia:</small> {{ slotProps.data.date }}</p>
+                  <p class="mb-1 text-left"><small>Z dnia:</small> {{ UtilsService.formatDateToString(slotProps.data.date) }}</p>
                   <p class="mb-1 text-left">
                     <small>Data pierwszej raty:</small>
-                    {{ slotProps.data.firstPaymentDate }}
+                    {{ UtilsService.formatDateToString(slotProps.data.firstPaymentDate) }}
                   </p>
                   <p class="mb-1 text-left">
                     <small>Termin całkowitej spłaty:</small>
@@ -646,7 +648,7 @@
                     <Column field="paymentDeadline" header="Termin płatności">
                       <template #body="{ data, field }">
                         <div class="" style="text-align: center">
-                          {{ data[field] }}
+                          {{ UtilsService.formatDateToString(data[field]) }}
                         </div>
                       </template>
                     </Column>
@@ -660,7 +662,7 @@
                     <Column field="paymentDate" header="Data płatności">
                       <template #body="{ data, field }">
                         <div class="" style="text-align: center">
-                          {{ data[field] }}
+                          {{ UtilsService.formatDateToString(data[field]) }}
                         </div>
                       </template>
                     </Column>
