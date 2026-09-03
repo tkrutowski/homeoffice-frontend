@@ -196,6 +196,16 @@ function buildComputerAlerts(computers: Computer[]): DashboardAlert[] {
 }
 
 function formatComputerSummary(computer: Computer): string {
+  // Laptopy mają wbudowaną specyfikację
+  if (isIntegratedComputer(computer)) {
+    const specs = computer.laptopSpecs;
+    if (specs && (specs.cpu || specs.gpu || specs.ram || specs.storage)) {
+      const parts = [specs.cpu, specs.gpu, specs.ram, specs.storage].filter(Boolean);
+      return parts.join(' · ');
+    }
+    return 'Laptop — wbudowana specyfikacja';
+  }
+
   const cpu = computer.processor?.name ?? 'brak CPU';
   const gpu = computer.graphicCard?.[0]?.name ?? 'brak GPU';
   const ram = computer.ram?.length > 0 ? computer.ram.map(r => r.name).join(', ') : 'brak RAM';

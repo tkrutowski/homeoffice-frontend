@@ -42,6 +42,13 @@ export enum ComputerType {
   ALL = 'ALL',
 }
 
+export interface LaptopSpecs {
+  cpu?: string;
+  gpu?: string;
+  ram?: string;
+  storage?: string;
+}
+
 export interface Computer {
   id: number;
   idUser: number;
@@ -62,4 +69,6 @@ export interface Computer {
   info: string;
   activeStatus: ActiveStatus;
   computerType: ComputerType;
+  /** Specyfikacja wbudowana dla laptopów (CPU, GPU, RAM, storage) */
+  laptopSpecs?: LaptopSpecs;
 }

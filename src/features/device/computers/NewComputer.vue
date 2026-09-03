@@ -3,7 +3,7 @@
   import { useToast } from 'primevue/usetoast';
   import { useUsersStore } from '@/stores/users';
   import type { User } from '@/types/User';
-  import { ComputerType, type Computer } from '@/features/device/computers/types';
+  import { ComputerType, type Computer, type LaptopSpecs } from '@/features/device/computers/types';
   import {
     useCreateComputerMutation,
     useUpdateComputerMutation,
@@ -29,6 +29,13 @@
   const selectedUser = ref<User | null>(null);
   const computerName = ref<string>('');
   const computerInfo = ref<string>('');
+  const computerType = ref<ComputerType>(ComputerType.DESKTOP);
+  const laptopSpecs = ref<LaptopSpecs>({
+    cpu: undefined,
+    gpu: undefined,
+    ram: undefined,
+    storage: undefined,
+  });
   const btnShowBusy = ref<boolean>(false);
   const submitted = ref<boolean>(false);
 
@@ -56,6 +63,13 @@
   const resetForm = () => {
     computerName.value = '';
     computerInfo.value = '';
+    computerType.value = ComputerType.DESKTOP;
+    laptopSpecs.value = {
+      cpu: undefined,
+      gpu: undefined,
+      ram: undefined,
+      storage: undefined,
+    };
     selectedUser.value = null;
     submitted.value = false;
   };
@@ -90,6 +104,13 @@
         console.log('NewComputer - computer changed', newComputer);
         computerName.value = newComputer.name;
         computerInfo.value = newComputer.info;
+        computerType.value = newComputer.computerType ?? ComputerType.DESKTOP;
+        laptopSpecs.value = newComputer.laptopSpecs ?? {
+          cpu: undefined,
+          gpu: undefined,
+          ram: undefined,
+          storage: undefined,
+        };
         selectedUser.value = userStore.getUser(newComputer.idUser);
       } else {
         resetForm();
@@ -109,12 +130,14 @@
     let computer: Computer;
 
     if (props.computer) {
-      // Podczas edycji zachowujemy wszystkie pola i aktualizujemy tylko name, idUser i info
+      // Podczas edycji zachowujemy wszystkie pola i aktualizujemy name, idUser, info, computerType, laptopSpecs
       computer = {
         ...props.computer,
         name: computerName.value,
         idUser: selectedUser.value?.id || 0,
         info: computerInfo.value,
+        computerType: computerType.value,
+        laptopSpecs: computerType.value === ComputerType.LAPTOP ? laptopSpecs.value : undefined,
       };
     } else {
       // Dla nowego komputera tworzymy nowy obiekt z domyślnymi wartościami
@@ -137,7 +160,8 @@
         soundCard: null,
         graphicCard: [],
         usb: [],
-        computerType: ComputerType.DESKTOP,
+        computerType: computerType.value,
+        laptopSpecs: computerType.value === ComputerType.LAPTOP ? laptopSpecs.value : undefined,
       };
     }
 
@@ -220,6 +244,49 @@
           required
         />
         <small class="text-red-500 block mt-1">{{ showErrorUser() ? 'Pole jest wymagane.' : '&nbsp;' }}</small>
+      </div>
+
+      <div class="field">
+        <label class="font-medium mb-2 inline-block" for="type">Typ komputera</label>
+        <Select
+          id="type"
+          v-model="computerType"
+          :options="[
+            { label: 'Desktop', value: ComputerType.DESKTOP },
+            { label: 'Laptop', value: ComputerType.LAPTOP },
+            { label: 'Tablet', value: ComputerType.TABLET },
+          ]"
+          option-label="label"
+          option-value="value"
+          placeholder="Wybierz typ komputera"
+          class="w-full"
+        />
+      </div>
+
+      <div v-if="computerType === ComputerType.LAPTOP" class="field">
+        <label class="font-medium mb-2 inline-block">Specyfikacja laptopa (opcjonalnie)</label>
+        <div class="flex flex-col gap-2">
+          <InputText
+            v-model="laptopSpecs.cpu"
+            placeholder="Procesor (np. Intel i7, AMD Ryzen 5)"
+            maxlength="100"
+          />
+          <InputText
+            v-model="laptopSpecs.gpu"
+            placeholder="Karta graficzna (np. RTX 3060, Intel Iris)"
+            maxlength="100"
+          />
+          <InputText
+            v-model="laptopSpecs.ram"
+            placeholder="Pamięć RAM (np. 16GB, 32GB)"
+            maxlength="50"
+          />
+          <InputText
+            v-model="laptopSpecs.storage"
+            placeholder="Dysk (np. 512GB SSD, 1TB)"
+            maxlength="100"
+          />
+        </div>
       </div>
 
       <div class="field">

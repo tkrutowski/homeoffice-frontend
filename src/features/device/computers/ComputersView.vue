@@ -7,7 +7,7 @@
   import TheMenuDevice from '@/features/device/_shared/TheMenuDevice.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import type { ComponentType, Computer } from '@/features/device/computers/types';
+  import { ComputerType, type ComponentType, type Computer } from '@/features/device/computers/types';
   import ComponentCategory from '@/features/device/computers/ComponentCategory.vue';
   import DeviceDetails from '@/features/device/computers/DeviceDetails.vue';
   import AddAutoComplete from '@/components/AddAutoCompleteDialog.vue';
@@ -61,6 +61,10 @@
   });
   const hasChange = ref<boolean>(false);
   const updating = ref<boolean>(false);
+
+  const isLaptop = computed(() => {
+    return selectedComputer.value?.computerType === ComputerType.LAPTOP;
+  });
 
   //refresh view
   const refreshKey = ref<boolean>(false);
@@ -465,7 +469,13 @@
           </template>
           <template #content>
             <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-              <div v-if="refreshKey">
+              <div v-if="isLaptop" class="flex items-center justify-center h-full">
+                <div class="text-center text-surface-600 dark:text-surface-400">
+                  <i class="pi pi-info-circle text-2xl text-amber-600 mb-2 block" />
+                  <p>Laptopy mają wbudowaną specyfikację techniczną</p>
+                </div>
+              </div>
+              <div v-else-if="refreshKey">
                 <div v-for="type in COMPONENT_TYPES" :key="type.name">
                   <ComponentCategory
                     :componentType="type"
