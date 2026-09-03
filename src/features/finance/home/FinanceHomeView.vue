@@ -1,30 +1,29 @@
 <script setup lang="ts">
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
-  import { UtilsService } from '@/service/UtilsService';
+  import FinanceSummaryCard from '@/features/finance/home/FinanceSummaryCard.vue';
+  import GenericChartPanel from '@/components/GenericChartPanel.vue';
+  import ChartSkeletonGrid from '@/components/ChartSkeletonGrid.vue';
   import { ref, onMounted, computed, watch } from 'vue';
   import { useUsersStore } from '@/stores/users';
   import { useAuthorizationStore } from '@/stores/authorization';
-  import { PaymentStatus } from '@/features/finance/payments/types';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';
   import { findCardById } from '@/features/finance/cards/api/cardsApi';
-  import type { Purchase } from '@/features/finance/purchases/types';
   import { useLoansByYearStatusUserQuery } from '@/features/finance/loans/queries/useLoansQueries';
   import { useFeesByYearStatusUserQuery } from '@/features/finance/fees/queries/useFeesQueries';
-  import { fetchPurchasesByYearAndUser } from '@/features/finance/purchases/api/purchasesApi';
-  import { queryClient } from '@/config/queryClient';
-  import { financeKeys } from '@/features/finance/_shared/queryKeys';
+  import { useFinanceCharts } from '@/features/finance/home/useFinanceCharts';
 
   const usersStore = useUsersStore();
   const authorizationStore = useAuthorizationStore();
-  const cardsQuery = useCardsListQuery('ALL');
-  const cards = computed(() => cardsQuery.data.value ?? []);
-  const cardsActive = computed(() => cards.value.filter(card => card.activeStatus === 'ACTIVE'));
-  const getCard = (cardId: number) => findCardById(cards.value, cardId);
 
   const currentYear = new Date().getFullYear();
   const selectedYear = ref(currentYear);
   const showOnlyLoggedUser = ref<boolean>(true);
+
+  // ===== Queries =====
+  const cardsQuery = useCardsListQuery('ALL');
+  const cards = computed(() => cardsQuery.data.value ?? []);
+  const cardsActive = computed(() => cards.value.filter(card => card.activeStatus === 'ACTIVE'));
 
   const hasAccessToAllPayments = computed(() => {
     return authorizationStore.hasAccessFinancePaymentReadAll;
@@ -47,28 +46,13 @@
     return usersToDisplay.value[0]?.id;
   });
 
-  const loansQuery = useLoansByYearStatusUserQuery(selectedYear, PaymentStatus.TO_PAY, homeUserId);
-  const feesQuery = useFeesByYearStatusUserQuery(selectedYear, PaymentStatus.TO_PAY, homeUserId);
+  const loansQuery = useLoansByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
+  const feesQuery = useFeesByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
 
   const loans = computed(() => loansQuery.data.value ?? []);
   const fees = computed(() => feesQuery.data.value ?? []);
 
-  const isLoadingLoans = computed(() => loansQuery.isFetching.value);
-  const isLoadingFees = computed(() => feesQuery.isFetching.value);
-  const isLoadingPurchases = ref<boolean>(false);
-  const isLoadingData = computed(
-    () => isLoadingLoans.value || isLoadingFees.value || isLoadingPurchases.value || cardsQuery.isFetching.value
-  );
-
-  // Generate years array (from 2020 to current year + 5)
-  const availableYears = computed(() => {
-    const years = [];
-    for (let year = 2020; year <= currentYear + 5; year++) {
-      years.push(year);
-    }
-    return years;
-  });
-
+  // ===== Months Array =====
   const months = [
     'Styczeń',
     'Luty',
@@ -84,647 +68,65 @@
     'Grudzień',
   ];
 
-  interface ChartDataset {
-    label: string;
-    data: number[];
-    backgroundColor: string;
-    borderColor: string;
-    borderWidth: number;
-  }
-
-  interface ChartData {
-    labels: string[];
-    datasets: ChartDataset[];
-  }
-
-  // Function to create chart data for a specific user
-  const createChartData = (userId: number) => {
-    const loansMonthlyToPay: number[] = new Array(12).fill(0);
-    const loansMonthlyPaid: number[] = new Array(12).fill(0);
-    const feesMonthlyToPay: number[] = new Array(12).fill(0);
-    const feesMonthlyPaid: number[] = new Array(12).fill(0);
-
-    // Process loans
-    loans.value.forEach(loan => {
-      if (loan.idUser === userId) {
-        loan.installmentList.forEach(installment => {
-          if (installment.paymentDeadline) {
-            const paymentDate = new Date(installment.paymentDeadline);
-            if (paymentDate.getFullYear() === selectedYear.value) {
-              const month = paymentDate.getMonth();
-              if (installment.paymentStatus === PaymentStatus.TO_PAY) {
-                loansMonthlyToPay[month] += installment.installmentAmountToPay;
-              } else if (installment.paymentStatus === PaymentStatus.PAID) {
-                loansMonthlyPaid[month] += installment.installmentAmountPaid;
-              }
-            }
-          }
-        });
-      }
-    });
-
-    // Process fees
-    fees.value.forEach(fee => {
-      if (fee.idUser === userId) {
-        fee.installmentList.forEach(installment => {
-          if (installment.paymentDeadline) {
-            const paymentDate = new Date(installment.paymentDeadline);
-            if (paymentDate.getFullYear() === selectedYear.value) {
-              const month = paymentDate.getMonth();
-              if (installment.paymentStatus === PaymentStatus.TO_PAY) {
-                feesMonthlyToPay[month] += installment.installmentAmountToPay;
-              } else if (installment.paymentStatus === PaymentStatus.PAID) {
-                feesMonthlyPaid[month] += installment.installmentAmountPaid;
-              }
-            }
-          }
-        });
-      }
-    });
-
-    return {
-      loans: {
-        labels: months,
-        datasets: [
-          {
-            label: 'Kredyty do zapłaty',
-            data: loansMonthlyToPay,
-            backgroundColor: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgb(220, 53, 69)',
-            borderWidth: 1,
-            userId: userId,
-          },
-          {
-            label: 'Kredyty zapłacone',
-            data: loansMonthlyPaid,
-            backgroundColor: 'rgba(40, 167, 69, 0.5)',
-            borderColor: 'rgb(40, 167, 69)',
-            borderWidth: 1,
-            userId: userId,
-          },
-        ],
-      },
-      fees: {
-        labels: months,
-        datasets: [
-          {
-            label: 'Opłaty do zapłaty',
-            data: feesMonthlyToPay,
-            backgroundColor: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgb(220, 53, 69)',
-            borderWidth: 1,
-            userId: userId,
-          },
-          {
-            label: 'Opłaty zapłacone',
-            data: feesMonthlyPaid,
-            backgroundColor: 'rgba(40, 167, 69, 0.5)',
-            borderColor: 'rgb(40, 167, 69)',
-            borderWidth: 1,
-            userId: userId,
-          },
-        ],
-      },
-    };
-  };
-
-  // Create chart data for each user
-  const usersChartData = ref<Map<number, { loans: ChartData; fees: ChartData }>>(new Map());
-
-  // Calculate monthly payments for all users
-  const calculateMonthlyPayments = () => {
-    usersChartData.value.clear();
-    usersToDisplay.value.forEach(user => {
-      usersChartData.value.set(user.id, createChartData(user.id));
-    });
-  };
-
-  const loansChartOptions = ref({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          title: function (context: any) {
-            return context[0].label;
-          },
-          label: function (context: any) {
-            const datasetLabel = context.dataset.label;
-            const value = context.raw;
-            const month = context.label;
-            const year = selectedYear.value;
-            const userId = context.dataset.userId;
-
-            // Get loans for this month
-            let payments: { name: string; amount: number }[] = [];
-
-            // Process loans
-            loans.value.forEach(loan => {
-              if (loan.idUser === userId) {
-                loan.installmentList.forEach(installment => {
-                  if (installment.paymentDeadline) {
-                    const paymentDate = new Date(installment.paymentDeadline);
-                    if (paymentDate.getFullYear() === year && paymentDate.getMonth() === months.indexOf(month)) {
-                      if (context.datasetIndex === 0 && installment.paymentStatus === PaymentStatus.TO_PAY) {
-                        payments.push({
-                          name: loan.name,
-                          amount: installment.installmentAmountToPay,
-                        });
-                      } else if (context.datasetIndex === 1 && installment.paymentStatus === PaymentStatus.PAID) {
-                        payments.push({
-                          name: loan.name,
-                          amount: installment.installmentAmountPaid,
-                        });
-                      }
-                    }
-                  }
-                });
-              }
-            });
-
-            // Format the tooltip content
-            let tooltipContent = [`${datasetLabel}: ${UtilsService.formatCurrency(value)}`];
-            if (payments.length > 0) {
-              payments.forEach(payment => {
-                tooltipContent.push(`${payment.name}: ${UtilsService.formatCurrency(payment.amount)}`);
-              });
-            }
-            return tooltipContent;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function (value: number) {
-            return UtilsService.formatCurrency(value);
-          },
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-    },
-    locale: 'pl-PL',
+  // ===== useFinanceCharts Composable =====
+  const {
+    isLoadingPurchases,
+    usersLoansChartData,
+    usersFeesChartData,
+    usersLoansSummaryChartData,
+    usersPurchasesSummaryChartData,
+    usersPurchaseChartData,
+    loansToPay,
+    feesToPay,
+    purchasesToPay,
+    totalToPay,
+    loadDataForYear: loadChartDataForYear,
+  } = useFinanceCharts({
+    loans,
+    fees,
+    cardsActive,
+    selectedYear,
+    usersToDisplay,
+    getCard: (cardId: number) => findCardById(cards.value, cardId) ?? undefined,
+    months,
   });
 
-  const feesChartOptions = ref({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          title: function (context: any) {
-            return context[0].label;
-          },
-          label: function (context: any) {
-            const datasetLabel = context.dataset.label;
-            const value = context.raw;
-            const month = context.label;
-            const year = selectedYear.value;
-            const userId = context.dataset.userId;
+  // ===== Computed - Loading States =====
+  const isLoadingLoans = computed(() => loansQuery.isFetching.value);
+  const isLoadingFees = computed(() => feesQuery.isFetching.value);
+  const isLoadingData = computed(
+    () => isLoadingLoans.value || isLoadingFees.value || isLoadingPurchases.value || cardsQuery.isFetching.value
+  );
 
-            // Get fees for this month
-            let payments: { name: string; amount: number }[] = [];
-
-            // Process fees
-            fees.value.forEach(fee => {
-              if (fee.idUser === userId) {
-                fee.installmentList.forEach(installment => {
-                  if (installment.paymentDeadline) {
-                    const paymentDate = new Date(installment.paymentDeadline);
-                    if (paymentDate.getFullYear() === year && paymentDate.getMonth() === months.indexOf(month)) {
-                      if (context.datasetIndex === 0 && installment.paymentStatus === PaymentStatus.TO_PAY) {
-                        payments.push({
-                          name: fee.name,
-                          amount: installment.installmentAmountToPay,
-                        });
-                      } else if (context.datasetIndex === 1 && installment.paymentStatus === PaymentStatus.PAID) {
-                        payments.push({
-                          name: fee.name,
-                          amount: installment.installmentAmountPaid,
-                        });
-                      }
-                    }
-                  }
-                });
-              }
-            });
-
-            // Format the tooltip content
-            let tooltipContent = [`${datasetLabel}: ${UtilsService.formatCurrency(value)}`];
-            if (payments.length > 0) {
-              payments.forEach(payment => {
-                tooltipContent.push(`${payment.name}: ${UtilsService.formatCurrency(payment.amount)}`);
-              });
-            }
-            return tooltipContent;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function (value: number) {
-            return UtilsService.formatCurrency(value);
-          },
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-    },
-    locale: 'pl-PL',
+  // ===== Computed - Years Array =====
+  const availableYears = computed(() => {
+    const years = [];
+    for (let year = 2020; year <= currentYear + 5; year++) {
+      years.push(year);
+    }
+    return years;
   });
 
-  // Create purchase chart data for each user
-  const usersPurchaseChartData = ref<Map<number, ChartData>>(new Map());
-  const userPurchases = ref<Map<number, Map<string, Purchase[]>>>(new Map());
-
-  // Calculate monthly purchases for all users
-  const calculateMonthlyPurchases = () => {
-    usersPurchaseChartData.value.clear();
-    usersToDisplay.value.forEach(user => {
-      const userPurchaseData = userPurchases.value.get(user.id);
-      if (userPurchaseData) {
-        usersPurchaseChartData.value.set(user.id, createPurchaseChartData(user.id, userPurchaseData));
-      }
-    });
-  };
-
-  // Function to get card color
-  const getCardColor = (cardName: string) => {
-    switch (cardName) {
-      case 'ALFA 2':
-        return {
-          backgroundColor: 'rgba(128, 128, 128, 0.5)',
-          borderColor: 'rgb(128, 128, 128)',
-        };
-      case 'Millenium Debet':
-        return {
-          backgroundColor: 'rgba(75, 80, 154, 0.5)',
-          borderColor: 'rgb(26, 43, 60)',
-        };
-      case 'Impresja':
-        return {
-          backgroundColor: 'rgba(155, 0, 49, 0.5)',
-          borderColor: 'rgb(155, 0, 49)',
-        };
-      default:
-        return {
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          borderColor: 'rgb(0, 0, 0)',
-        };
-    }
-  };
-
-  // Function to create purchase chart data for a specific user
-  const createPurchaseChartData = (userId: number, userPurchaseData: Map<string, Purchase[]>) => {
-    console.log('Creating purchase chart data for user:', userId);
-    console.log('User purchases:', userPurchaseData);
-
-    const monthlyPurchases: Map<number, Map<number, number>> = new Map(); // month -> cardId -> amount
-
-    // Initialize the map for all months
-    for (let month = 0; month < 12; month++) {
-      monthlyPurchases.set(month, new Map());
-    }
-
-    // Process purchases
-    userPurchaseData.forEach((purchases, deadline) => {
-      console.log('Processing purchases for deadline:', deadline);
-      purchases.forEach(purchase => {
-        if (purchase.idUser === userId && purchase.paymentStatus === PaymentStatus.TO_PAY) {
-          if (purchase.paymentDeadline) {
-            const paymentDate = new Date(purchase.paymentDeadline);
-            if (paymentDate.getFullYear() === selectedYear.value) {
-              console.log('Processing purchase:', purchase);
-              const month = paymentDate.getMonth();
-              const cardId = purchase.idCard;
-              const currentAmount = Number(monthlyPurchases.get(month)?.get(cardId) || 0);
-              console.log('Current amount:', currentAmount);
-              monthlyPurchases.get(month)?.set(cardId, currentAmount + Number(purchase.amount));
-              console.log('Monthly purchases:', monthlyPurchases.get(month));
-              console.log(`Added purchase for month ${month}, card ${cardId}, amount ${purchase.amount}`);
-            }
-          }
-        }
-      });
-    });
-
-    // Get unique card IDs
-    const cardIds = new Set<number>();
-    monthlyPurchases.forEach(monthData => {
-      monthData.forEach((_, cardId) => cardIds.add(cardId));
-    });
-
-    console.log('Found card IDs:', Array.from(cardIds));
-
-    // Create datasets for each card
-    const datasets = Array.from(cardIds).map(cardId => {
-      const card = getCard(cardId);
-      const data = Array.from({ length: 12 }, (_, month) => {
-        return monthlyPurchases.get(month)?.get(cardId) || 0;
-      });
-      console.log(`Card ${cardId} data:`, data);
-      const cardName = card ? card.name : `Card ${cardId}`;
-      const colors = getCardColor(cardName);
-      return {
-        label: cardName,
-        data: data,
-        backgroundColor: colors.backgroundColor,
-        borderColor: colors.borderColor,
-        borderWidth: 1,
-      };
-    });
-
-    return {
-      labels: months,
-      datasets: datasets,
-    };
-  };
-
-  // Load purchases for all users
-  const loadUserPurchases = async () => {
-    userPurchases.value.clear();
-    for (const user of usersToDisplay.value) {
-      console.log('Loading purchases for user:', user.username, 'year:', selectedYear.value);
-      const purchases = await queryClient.fetchQuery({
-        queryKey: financeKeys.purchases.byYearUser(selectedYear.value, user.username),
-        queryFn: () => fetchPurchasesByYearAndUser(selectedYear.value, user.username),
-      });
-      console.log('Loaded purchases for user:', user.username, purchases);
-      userPurchases.value.set(user.id, purchases);
-    }
-  };
-
+  // ===== Methods =====
   const onYearChange = async () => {
     await loadDataForYear();
   };
 
-  // Load data for selected year and users
   const loadDataForYear = async () => {
-    console.log('Loading data for year:', selectedYear.value);
-    console.log(
-      'Users to display:',
-      usersToDisplay.value.map(u => u.username)
-    );
-
-    isLoadingPurchases.value = true;
-
     try {
       await Promise.all([usersStore.getUsersFromDb(), cardsQuery.refetch(), loansQuery.refetch(), feesQuery.refetch()]);
-
-      console.log('Year-specific data loaded');
-      console.log('Loans:', loans.value.length);
-      console.log('Fees:', fees.value.length);
-
-      await loadUserPurchases();
-      calculateMonthlyPayments();
-      calculateMonthlyPurchases();
+      await loadChartDataForYear(() => Promise.resolve());
     } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      isLoadingPurchases.value = false;
+      console.error('Error loading finance home data:', error);
     }
   };
 
-  const purchaseChartOptions = ref({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          title: function (context: any) {
-            return context[0].label;
-          },
-          label: function (context: any) {
-            const datasetLabel = context.dataset.label;
-            const value = context.raw;
-            return `${datasetLabel}: ${UtilsService.formatCurrency(value)}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function (value: number) {
-            return UtilsService.formatCurrency(value);
-          },
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-    },
-    locale: 'pl-PL',
-  });
-
-  // Add summary chart data computation
-  const summaryChartData = computed(() => {
-    console.log('Calculating summary chart data');
-    console.log('Active cards:', cardsActive.value);
-    console.log('All cards:', cards.value);
-
-    // Separate maps for loans (by bank) and purchases (by card)
-    const bankLoanTotals = new Map<number, number>();
-    const cardPurchaseTotals = new Map<number, number>();
-
-    // Initialize purchase totals for active cards
-    cardsActive.value.forEach(card => {
-      console.log('Initializing purchase totals for card:', card.name);
-      cardPurchaseTotals.set(card.id, 0);
-    });
-
-    // Calculate loan totals by bank
-    loans.value.forEach(loan => {
-      if (usersToDisplay.value.some(user => user.id === loan.idUser)) {
-        const bank = loan.bank;
-        if (bank) {
-          console.log('Processing loan for bank:', bank.name);
-          loan.installmentList.forEach(installment => {
-            if (installment.paymentStatus === PaymentStatus.TO_PAY) {
-              const current = bankLoanTotals.get(bank.id) || 0;
-              bankLoanTotals.set(bank.id, current + installment.installmentAmountToPay);
-            }
-          });
-        }
-      }
-    });
-
-    // Calculate purchase totals by card
-    userPurchases.value.forEach((purchasesMap, _) => {
-      purchasesMap.forEach(purchases => {
-        purchases.forEach(purchase => {
-          if (purchase.paymentStatus === PaymentStatus.TO_PAY) {
-            const cardId = purchase.idCard;
-            const card = getCard(cardId);
-            if (card && card.activeStatus === 'ACTIVE') {
-              console.log('Processing purchase for card:', card.name, 'amount:', purchase.amount);
-              const current = cardPurchaseTotals.get(cardId) || 0;
-              cardPurchaseTotals.set(cardId, current + Number(purchase.amount));
-            } else {
-              console.log('Skipping purchase for inactive card:', card?.name || `Card ${cardId}`);
-            }
-          }
-        });
-      });
-    });
-
-    console.log('Final bank loan totals:', Object.fromEntries(bankLoanTotals));
-    console.log('Final card purchase totals:', Object.fromEntries(cardPurchaseTotals));
-
-    // Create loan dataset by bank
-    const loanDataset = {
-      labels: Array.from(bankLoanTotals.keys()).map(bankId => {
-        const bank = loans.value.find(l => l.bank?.id === bankId)?.bank;
-        return bank ? bank.name : `Bank ${bankId}`;
-      }),
-      datasets: [
-        {
-          label: 'Kredyty do spłaty',
-          data: Array.from(bankLoanTotals.values()),
-          backgroundColor: 'rgba(220, 53, 69, 0.5)',
-          borderColor: 'rgb(220, 53, 69)',
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    // Create purchase dataset by card
-    const purchaseDataset = {
-      labels: Array.from(cardPurchaseTotals.keys()).map(cardId => {
-        const card = getCard(cardId);
-        return card ? card.name : `Karta ${cardId}`;
-      }),
-      datasets: [
-        {
-          label: 'Zakupy do spłaty',
-          data: Array.from(cardPurchaseTotals.values()),
-          backgroundColor: 'rgba(255, 193, 7, 0.5)',
-          borderColor: 'rgb(255, 193, 7)',
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    return {
-      loans: loanDataset,
-      purchases: purchaseDataset,
-    };
-  });
-
-  const summaryChartOptions = ref({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          title: function (context: any) {
-            return context[0].label;
-          },
-          label: function (context: any) {
-            const datasetLabel = context.dataset.label;
-            const value = context.raw;
-            return `${datasetLabel}: ${UtilsService.formatCurrency(value)}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function (value: number) {
-            return UtilsService.formatCurrency(value);
-          },
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-      },
-    },
-    locale: 'pl-PL',
-  });
-
+  // ===== Lifecycle =====
   onMounted(async () => {
-    console.log('Component mounted');
     await loadDataForYear();
   });
 
-  // Watch for changes in showOnlyLoggedUser
   watch(showOnlyLoggedUser, async () => {
-    console.log('showOnlyLoggedUser changed to:', showOnlyLoggedUser.value);
     await loadDataForYear();
   });
 </script>
@@ -735,11 +137,18 @@
       <TheMenuFinance />
     </template>
 
-    <div class="min-h-0 p-4">
-      <!-- Year Selection and Filter -->
-      <div class="flex justify-between items-center mb-4">
-        <div class="w-1/4"></div>
-        <!-- Empty div for spacing -->
+    <div class="min-h-0 p-4 md:p-6">
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-0">Finanse Domowe</h1>
+        <p class="mt-1 text-sm text-surface-600 dark:text-surface-400">
+          Przegląd kredytów, opłat i zakupów w jednym miejscu.
+        </p>
+      </div>
+
+      <!-- Controls -->
+      <div class="mb-6 flex justify-between items-center p-4 rounded-lg border border-surface-200 bg-surface-0 dark:border-surface-700 dark:bg-surface-950">
+        <div></div>
         <div class="flex items-center gap-4">
           <Select
             v-model="selectedYear"
@@ -749,154 +158,125 @@
             placeholder="Wybierz rok"
           />
         </div>
-        <div class="flex items-center gap-2 w-1/4 justify-end">
+        <div class="flex items-center gap-2">
           <Checkbox v-model="showOnlyLoggedUser" :binary="true" />
-          <label class="ml-2 dark:text-primary">Wyświetl tylko moje</label>
+          <label class="ml-2 text-sm font-medium text-surface-600 dark:text-surface-400">Wyświetl tylko moje</label>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div v-if="!isLoadingData" class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <FinanceSummaryCard
+          icon="💳"
+          label="Kredyty do spłaty"
+          :value="loansToPay"
+          hint="Suma wszystkich rat do spłaty"
+          color-class="red"
+        />
+        <FinanceSummaryCard
+          icon="📋"
+          label="Opłaty do spłaty"
+          :value="feesToPay"
+          hint="Ubezpieczenie, podatki, opłaty"
+          color-class="purple"
+        />
+        <FinanceSummaryCard
+          icon="🛍️"
+          label="Zakupy do spłaty"
+          :value="purchasesToPay"
+          hint="Suma niezapłaconych transakcji"
+          color-class="amber"
+        />
+        <FinanceSummaryCard
+          icon="💰"
+          label="Razem do spłaty"
+          :value="totalToPay"
+          hint="Suma wszystkich zobowiązań"
+          color-class="blue"
+        />
+      </div>
+
+      <!-- Summary Cards Skeleton -->
+      <div v-else class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div v-for="n in 4" :key="n" class="rounded-2xl border border-surface-200 bg-surface-0 p-6 dark:border-surface-700 dark:bg-surface-950">
+          <Skeleton width="70%" height="1rem" class="mb-3"></Skeleton>
+          <Skeleton width="80%" height="2rem" class="mb-3"></Skeleton>
+          <Skeleton width="100%" height="0.75rem"></Skeleton>
         </div>
       </div>
 
       <!-- Loading State for Initial Load -->
       <div v-if="isLoadingData" class="flex flex-col gap-8">
         <!-- Summary Charts Skeleton -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="card border-2 border-primary rounded-lg">
-            <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-            <div class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-          </div>
-          <div class="card border-2 border-primary rounded-lg">
-            <Skeleton width="60%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-            <div class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-          </div>
-        </div>
+        <ChartSkeletonGrid :columns="2" :rows="1" height="h-72" />
 
         <!-- User Charts Skeleton -->
-        <div v-for="n in 2" :key="n" class="flex flex-col gap-4">
-          <Skeleton width="40%" height="2rem" class="mx-auto"></Skeleton>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="card border-2 border-primary rounded-lg">
-              <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-              <div class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-            </div>
-            <div class="card border-2 border-primary rounded-lg">
-              <Skeleton width="70%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-              <div class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-            </div>
-            <div class="card border-2 border-primary rounded-lg md:col-span-2">
-              <Skeleton width="80%" height="2rem" class="mb-4 mx-auto"></Skeleton>
-              <div class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-            </div>
-          </div>
+        <div v-for="n in 2" :key="n" class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700">
+          <Skeleton width="40%" height="1.5rem" class="mx-auto"></Skeleton>
+          <ChartSkeletonGrid :columns="2" :rows="1" height="h-72" />
+          <ChartSkeletonGrid :columns="2" :rows="1" height="h-80" :full-width="true" />
         </div>
       </div>
 
       <!-- Actual Content -->
       <div v-else class="flex flex-col gap-8">
-        <!-- Summary Charts -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Loans Chart -->
-          <div class="card border-2 border-primary rounded-lg">
-            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Kredyty do spłaty</h3>
-            <div v-if="isLoadingLoans" class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-            <Chart
-              v-else
-              type="bar"
-              :data="summaryChartData.loans"
-              :options="summaryChartOptions"
-              class="h-30rem px-3"
+
+        <!-- Per-User Sections -->
+        <div v-for="user in usersToDisplay" :key="user.id" class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700">
+          <h2 class="text-2xl font-bold text-center text-surface-900 dark:text-surface-0">
+            {{ user.firstName }} {{ user.lastName }}
+          </h2>
+
+          <!-- Rząd 1: Kredyty i Zakupy do spłaty (Summary) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <GenericChartPanel
+              :chart-data="usersLoansSummaryChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+              title="Kredyty do spłaty"
+              icon="pi pi-credit-card"
+              chart-type="bar"
+              :loading="isLoadingLoans"
+            />
+            <GenericChartPanel
+              :chart-data="usersPurchasesSummaryChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+              title="Zakupy do spłaty"
+              icon="pi pi-shopping-cart"
+              chart-type="bar"
+              :loading="isLoadingPurchases"
             />
           </div>
 
-          <!-- Purchases Chart -->
-          <div class="card border-2 border-primary rounded-lg">
-            <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Zakupy do spłaty</h3>
-            <div v-if="isLoadingPurchases" class="h-30rem px-3">
-              <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-            </div>
-            <Chart
-              v-else
-              type="bar"
-              :data="summaryChartData.purchases"
-              :options="summaryChartOptions"
-              class="h-30rem px-3"
+          <!-- Rząd 2: Kredyty i Opłaty (Monthly) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <GenericChartPanel
+              :chart-data="usersLoansChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+              :title="`Płatności kredytów w ${selectedYear}`"
+              icon="pi pi-chart-bar"
+              chart-type="bar"
+              :loading="isLoadingLoans"
+              :show-totals="true"
+            />
+            <GenericChartPanel
+              :chart-data="usersFeesChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+              :title="`Płatności opłat w ${selectedYear}`"
+              icon="pi pi-chart-bar"
+              chart-type="bar"
+              :loading="isLoadingFees"
+              :show-totals="true"
             />
           </div>
-        </div>
 
-        <div v-for="user in usersToDisplay" :key="user.id" class="flex flex-col gap-4">
-          <h2 class="text-2xl font-bold text-center dark:text-primary">{{ user.firstName }} {{ user.lastName }}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Loans Chart -->
-            <div class="card border-2 border-primary rounded-lg">
-              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
-                Płatności kredytów w {{ selectedYear }}
-              </h3>
-              <div v-if="isLoadingLoans" class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-              <Chart
-                v-else
-                :id="'loans-' + user.id"
-                type="bar"
-                :data="usersChartData.get(user.id)?.loans"
-                :options="loansChartOptions"
-                class="h-30rem px-3"
-              />
-            </div>
-
-            <!-- Fees Chart -->
-            <div class="card border-2 border-primary rounded-lg">
-              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">Płatności opłat w {{ selectedYear }}</h3>
-              <div v-if="isLoadingFees" class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-              <Chart
-                v-else
-                :id="'fees-' + user.id"
-                type="bar"
-                :data="usersChartData.get(user.id)?.fees"
-                :options="feesChartOptions"
-                class="h-30rem px-3"
-              />
-            </div>
-
-            <!-- Purchases Chart -->
-            <div class="card border-2 border-primary rounded-lg md:col-span-2">
-              <h3 class="text-xl font-bold text-center mb-4 dark:text-primary">
-                Niespłacone zakupy w {{ selectedYear }}
-              </h3>
-              <div v-if="isLoadingPurchases" class="h-30rem px-3">
-                <Skeleton width="100%" height="100%" borderRadius="8px"></Skeleton>
-              </div>
-              <Chart
-                v-else
-                :id="'purchases-' + user.id"
-                type="line"
-                :data="usersPurchaseChartData.get(user.id)"
-                :options="purchaseChartOptions"
-                class="h-30rem px-3"
-              />
-            </div>
-          </div>
+          <!-- Rząd 3: Niespłacone zakupy (Full-width) -->
+          <GenericChartPanel
+            :chart-data="usersPurchaseChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+            :title="`Niespłacone zakupy w ${selectedYear}`"
+            icon="pi pi-chart-line"
+            chart-type="line"
+            :loading="isLoadingPurchases"
+            :show-totals="true"
+            panel-class="h-full min-h-[24rem]"
+          />
         </div>
       </div>
     </div>
   </MainPageShell>
 </template>
-
-<style scoped>
-  .h-30rem {
-    height: 30rem;
-  }
-</style>
