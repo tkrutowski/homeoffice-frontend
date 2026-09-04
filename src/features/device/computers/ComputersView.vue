@@ -7,7 +7,7 @@
   import TheMenuDevice from '@/features/device/_shared/TheMenuDevice.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import { ComputerType, type ComponentType, type Computer } from '@/features/device/computers/types';
+  import { isLaptop, isDesktop, type ComponentType, type Computer, type DesktopComputer } from '@/features/device/computers/types';
   import ComponentCategory from '@/features/device/computers/ComponentCategory.vue';
   import DeviceDetails from '@/features/device/computers/DeviceDetails.vue';
   import AddAutoComplete from '@/components/AddAutoCompleteDialog.vue';
@@ -62,8 +62,8 @@
   const hasChange = ref<boolean>(false);
   const updating = ref<boolean>(false);
 
-  const isLaptop = computed(() => {
-    return selectedComputer.value?.computerType === ComputerType.LAPTOP;
+  const isLaptopComputer = computed(() => {
+    return selectedComputer.value ? isLaptop(selectedComputer.value) : false;
   });
 
   //refresh view
@@ -91,9 +91,11 @@
 
     selectedComputer.value = cloneComputer(computer);
 
-    const fullComputer = await fetchComputer(computer.id);
-    if (fullComputer) {
-      selectedComputer.value = cloneComputer(fullComputer);
+    if (computer.id) {
+      const fullComputer = await fetchComputer(computer.id, computer.computerType as 'DESKTOP' | 'LAPTOP');
+      if (fullComputer) {
+        selectedComputer.value = cloneComputer(fullComputer);
+      }
     }
 
     setTimeout(() => {
@@ -165,9 +167,14 @@
       updating.value = true;
       try {
         await updateComputerMutation.mutateAsync(selectedComputer.value);
-        const updatedComputer = await fetchComputer(selectedComputer.value.id);
-        if (updatedComputer) {
-          selectedComputer.value = cloneComputer(updatedComputer);
+        if (selectedComputer.value.id) {
+          const updatedComputer = await fetchComputer(
+            selectedComputer.value.id,
+            selectedComputer.value.computerType as 'DESKTOP' | 'LAPTOP'
+          );
+          if (updatedComputer) {
+            selectedComputer.value = cloneComputer(updatedComputer);
+          }
         }
 
         toast.add({
@@ -197,8 +204,9 @@
   const addToDisplayMap = async (componentType: ComponentType) => {
     console.log('START - addToDisplayMap dla typu:', componentType.name);
 
-    if (selectedComputer.value != null) {
-      const oneDeviceOrListOfDevices: Device | Device[] | null = selectedComputer.value[componentType.column];
+    if (selectedComputer.value != null && isDesktop(selectedComputer.value)) {
+      const desktop = selectedComputer.value as DesktopComputer;
+      const oneDeviceOrListOfDevices: any = (desktop as any)[componentType.column];
 
       let devices: Device[] = [];
 
@@ -210,7 +218,7 @@
 
       deviceDetailsMap.value.set(componentType, devices);
     } else {
-      console.log('Brak wybranego komputera');
+      console.log('Brak wybranego komputera lub to laptop');
     }
 
     console.log('KONIEC - addToDisplayMap');
@@ -244,7 +252,7 @@
   async function addComponent(id: number) {
     showAddModal.value = false;
 
-    if (selectedComputer.value !== null && componentType.value !== null) {
+    if (selectedComputer.value !== null && componentType.value !== null && isDesktop(selectedComputer.value)) {
       const device = await fetchDevice(id);
 
       if (!device) {
@@ -252,7 +260,8 @@
         return;
       }
 
-      let columnValue = selectedComputer.value[componentType.value.column];
+      const desktop = selectedComputer.value as DesktopComputer;
+      let columnValue: any = (desktop as any)[componentType.value.column];
 
       if (
         componentType.value.column === 'ram' ||
@@ -267,10 +276,12 @@
 
         if (!deviceExists) {
           arr.push(device);
-          selectedComputer.value[componentType.value.column] = [...arr];
+          (desktop as any)[componentType.value.column] = [...arr];
+          selectedComputer.value = { ...desktop };
         }
       } else {
-        selectedComputer.value[componentType.value.column] = device;
+        (desktop as any)[componentType.value.column] = device;
+        selectedComputer.value = { ...desktop };
       }
 
       if (deviceDetailsMap.value.has(componentType.value)) {
@@ -289,21 +300,24 @@
 
   function removeComponent(part: ComponentType, device: Device) {
     console.log('removeComponent', part, device);
-    if (selectedComputer.value !== null) {
+    if (selectedComputer.value !== null && isDesktop(selectedComputer.value)) {
       // Usuwamy z selectedComputer
+      const desktop = selectedComputer.value as DesktopComputer;
       const arrayFields = ['ram', 'disk', 'cooling', 'display', 'graphicCard', 'usb'] as const;
 
       if (arrayFields.includes(part.column as (typeof arrayFields)[number])) {
         // To są tablice Device[]
-        const arr = selectedComputer.value[part.column] as Device[];
+        const arr = (desktop as any)[part.column] as Device[];
         const index = arr.findIndex(d => d.id === device.id);
         if (index !== -1) {
           arr.splice(index, 1);
-          selectedComputer.value[part.column] = [...arr] as any;
+          (desktop as any)[part.column] = [...arr];
+          selectedComputer.value = { ...desktop };
         }
       } else {
         // To są pojedyncze Device - ustawiamy na null
-        selectedComputer.value[part.column] = null as any;
+        (desktop as any)[part.column] = null;
+        selectedComputer.value = { ...desktop };
       }
 
       // Usuwamy z displayMap
@@ -348,7 +362,7 @@
   const showDeleteConfirmation = ref<boolean>(false);
 
   async function deleteComputer() {
-    if (selectedComputer.value) {
+    if (selectedComputer.value && selectedComputer.value.id) {
       const name = selectedComputer.value.name;
       try {
         await deleteComputerMutation.mutateAsync(selectedComputer.value.id);
@@ -469,7 +483,7 @@
           </template>
           <template #content>
             <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-              <div v-if="isLaptop" class="flex items-center justify-center h-full">
+              <div v-if="isLaptopComputer" class="flex items-center justify-center h-full">
                 <div class="text-center text-surface-600 dark:text-surface-400">
                   <i class="pi pi-info-circle text-2xl text-amber-600 mb-2 block" />
                   <p>Laptopy mają wbudowaną specyfikację techniczną</p>

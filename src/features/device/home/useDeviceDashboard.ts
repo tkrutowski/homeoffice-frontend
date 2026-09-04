@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import type { Device } from '@/features/device/devices/types';
-import type { Computer } from '@/features/device/computers/types';
-import { ComputerType } from '@/features/device/computers/types';
+import type { Computer, DesktopComputer, LaptopComputer } from '@/features/device/computers/types';
+import { isLaptop, isDesktop } from '@/features/device/computers/types';
 import type {
   CategoryAggregate,
   ComputerListItem,
@@ -23,14 +23,6 @@ const MAX_RECENT_CHANGES = 5;
 /** Typy urządzeń scalane w jedną linię „Inne” na wykresie kosztów. */
 export const CHART_CATEGORIES_MERGED_INTO_OTHER = ['Konsola', 'Kamery', 'RTV'] as const;
 
-/** Laptop kupowany jako całość — bez alertów o brakujących częściach (CPU, RAM, dysk…). */
-const LAPTOP_DEVICE_TYPE_NAME = 'Komputer-laptop';
-
-function isIntegratedComputer(computer: Computer): boolean {
-  if (computer.computerType === ComputerType.LAPTOP) return true;
-  const typeStr = String(computer.computerType ?? '').trim();
-  return typeStr.localeCompare(LAPTOP_DEVICE_TYPE_NAME, 'pl', { sensitivity: 'accent' }) === 0;
-}
 
 function getCategoryName(device: Device): string {
   return device.deviceType?.name?.trim() || UNCATEGORIZED;
@@ -150,45 +142,51 @@ function buildComputerAlerts(computers: Computer[]): DashboardAlert[] {
   for (const computer of computers) {
     if (computer.activeStatus !== 'ACTIVE') continue;
 
-    if (isIntegratedComputer(computer)) {
+    // Laptopy mają wbudowaną specyfikację — brak alertów
+    if (isLaptop(computer)) {
       continue;
     }
 
-    if (!computer.processor) {
-      alerts.push({
-        id: `computer-${computer.id}-cpu`,
-        severity: 'warn',
-        message: `${computer.name} — brak przypisanego procesora`,
-        entityType: 'COMPUTER',
-        entityId: computer.id,
-      });
-    }
-    if (!computer.motherboard) {
-      alerts.push({
-        id: `computer-${computer.id}-mb`,
-        severity: 'warn',
-        message: `${computer.name} — brak przypisanej płyty głównej`,
-        entityType: 'COMPUTER',
-        entityId: computer.id,
-      });
-    }
-    if (!computer.ram?.length) {
-      alerts.push({
-        id: `computer-${computer.id}-ram`,
-        severity: 'warn',
-        message: `${computer.name} — brak przypisanej pamięci RAM`,
-        entityType: 'COMPUTER',
-        entityId: computer.id,
-      });
-    }
-    if (!computer.disk?.length) {
-      alerts.push({
-        id: `computer-${computer.id}-disk`,
-        severity: 'warn',
-        message: `${computer.name} — brak przypisanego dysku systemowego`,
-        entityType: 'COMPUTER',
-        entityId: computer.id,
-      });
+    // Desktop — sprawdzaj komponenty
+    if (isDesktop(computer)) {
+      const desktop = computer as DesktopComputer;
+
+      if (!desktop.processor) {
+        alerts.push({
+          id: `computer-${computer.id}-cpu`,
+          severity: 'warn',
+          message: `${computer.name} — brak przypisanego procesora`,
+          entityType: 'COMPUTER',
+          entityId: computer.id,
+        });
+      }
+      if (!desktop.motherboard) {
+        alerts.push({
+          id: `computer-${computer.id}-mb`,
+          severity: 'warn',
+          message: `${computer.name} — brak przypisanej płyty głównej`,
+          entityType: 'COMPUTER',
+          entityId: computer.id,
+        });
+      }
+      if (!desktop.ram?.length) {
+        alerts.push({
+          id: `computer-${computer.id}-ram`,
+          severity: 'warn',
+          message: `${computer.name} — brak przypisanej pamięci RAM`,
+          entityType: 'COMPUTER',
+          entityId: computer.id,
+        });
+      }
+      if (!desktop.disk?.length) {
+        alerts.push({
+          id: `computer-${computer.id}-disk`,
+          severity: 'warn',
+          message: `${computer.name} — brak przypisanego dysku systemowego`,
+          entityType: 'COMPUTER',
+          entityId: computer.id,
+        });
+      }
     }
   }
 
@@ -196,34 +194,37 @@ function buildComputerAlerts(computers: Computer[]): DashboardAlert[] {
 }
 
 function formatComputerSummary(computer: Computer): string {
-  // Laptopy mają wbudowaną specyfikację
-  if (isIntegratedComputer(computer)) {
-    const specs = computer.laptopSpecs;
-    if (specs && (specs.cpu || specs.gpu || specs.ram || specs.storage)) {
-      const parts = [specs.cpu, specs.gpu, specs.ram, specs.storage].filter(Boolean);
+  // Laptopy — wyświetl specyfikację
+  if (isLaptop(computer)) {
+    const laptop = computer as LaptopComputer;
+    const parts = [laptop.cpu, laptop.gpu, laptop.ram, laptop.storage, laptop.display].filter(Boolean);
+    if (parts.length > 0) {
       return parts.join(' · ');
     }
     return 'Laptop — wbudowana specyfikacja';
   }
 
-  const cpu = computer.processor?.name ?? 'brak CPU';
-  const gpu = computer.graphicCard?.[0]?.name ?? 'brak GPU';
-  const ram = computer.ram?.length > 0 ? computer.ram.map(r => r.name).join(', ') : 'brak RAM';
-  const disk = computer.disk?.length > 0 ? computer.disk.map(d => d.name).join(', ') : 'brak dysku';
+  // Desktop — wyświetl komponenty
+  if (isDesktop(computer)) {
+    const desktop = computer as DesktopComputer;
+    const cpu = desktop.processor?.name ?? 'brak CPU';
+    const gpu = desktop.graphicCard?.[0]?.name ?? 'brak GPU';
+    const ram = desktop.ram?.length > 0 ? desktop.ram.map(r => r.name).join(', ') : 'brak RAM';
+    const disk = desktop.disk?.length > 0 ? desktop.disk.map(d => d.name).join(', ') : 'brak dysku';
 
-  return [cpu, gpu, ram, disk].join(' · ');
+    return [cpu, gpu, ram, disk].join(' · ');
+  }
+
+  // Fallback — nie powinno się zdarzyć
+  return 'Komputer';
 }
 
-function getComputerIcon(computerType: ComputerType): string {
-  switch (computerType) {
-    case ComputerType.LAPTOP:
-      return 'pi pi-mobile';
-    case ComputerType.TABLET:
-      return 'pi pi-tablet';
-    case ComputerType.DESKTOP:
-    default:
-      return 'pi pi-desktop';
+function getComputerIcon(computer: Computer): string {
+  if (isLaptop(computer)) {
+    return 'pi pi-mobile';
   }
+  // TODO: Add TABLET support when needed
+  return 'pi pi-desktop';
 }
 
 /** Koszty zakupów z listy urządzeń (GET /v1/devices) — oś X: lata, linie: kategorie typu urządzenia. */
@@ -325,13 +326,16 @@ export function useDeviceDashboard() {
   const alerts = computed(() => [...buildComputerAlerts(computers.value), ...buildDeviceAlerts(devices.value)]);
 
   const computerListItems = computed((): ComputerListItem[] =>
-    computers.value.slice(0, MAX_COMPUTERS).map(c => ({
-      id: c.id,
-      name: c.name,
-      summary: formatComputerSummary(c),
-      isActive: c.activeStatus === 'ACTIVE',
-      icon: getComputerIcon(c.computerType),
-    }))
+    computers.value
+      .slice(0, MAX_COMPUTERS)
+      .filter(c => c.id !== undefined)
+      .map(c => ({
+        id: c.id!,
+        name: c.name,
+        summary: formatComputerSummary(c),
+        isActive: c.activeStatus === 'ACTIVE',
+        icon: getComputerIcon(c),
+      }))
   );
 
   const recentPurchases = computed((): RecentPurchaseItem[] =>

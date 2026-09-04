@@ -1,5 +1,6 @@
 import type { Device } from '@/features/device/devices/types';
-import type { Computer } from '@/features/device/computers/types';
+import type { Computer, DesktopComputer } from '@/features/device/computers/types';
+import { isDesktop } from '@/features/device/computers/types';
 
 export function cloneDevice(device: Device): Device {
   const details =
@@ -25,20 +26,28 @@ function cloneDeviceOrNull(device: Device | null): Device | null {
 }
 
 export function cloneComputer(computer: Computer): Computer {
-  return {
-    ...computer,
-    processor: cloneDeviceOrNull(computer.processor),
-    motherboard: cloneDeviceOrNull(computer.motherboard),
-    ram: computer.ram.map(cloneDevice),
-    disk: computer.disk.map(cloneDevice),
-    power: cloneDeviceOrNull(computer.power),
-    cooling: computer.cooling.map(cloneDevice),
-    display: computer.display.map(cloneDevice),
-    keyboard: cloneDeviceOrNull(computer.keyboard),
-    mouse: cloneDeviceOrNull(computer.mouse),
-    computerCase: cloneDeviceOrNull(computer.computerCase),
-    soundCard: cloneDeviceOrNull(computer.soundCard),
-    graphicCard: computer.graphicCard.map(cloneDevice),
-    usb: computer.usb.map(cloneDevice),
-  };
+  if (isDesktop(computer)) {
+    const desktop = computer as DesktopComputer;
+    return {
+      ...desktop,
+      processor: cloneDeviceOrNull(desktop.processor),
+      motherboard: cloneDeviceOrNull(desktop.motherboard),
+      ram: desktop.ram.map(cloneDevice),
+      disk: desktop.disk.map(cloneDevice),
+      power: cloneDeviceOrNull(desktop.power),
+      cooling: desktop.cooling.map(cloneDevice),
+      display: desktop.display.map(cloneDevice),
+      keyboard: cloneDeviceOrNull(desktop.keyboard),
+      mouse: cloneDeviceOrNull(desktop.mouse),
+      computerCase: cloneDeviceOrNull(desktop.computerCase),
+      soundCard: cloneDeviceOrNull(desktop.soundCard),
+      graphicCard: desktop.graphicCard.map(cloneDevice),
+      usb: desktop.usb.map(cloneDevice),
+    };
+  } else {
+    // Laptop — po prostu clone bez zmian
+    return {
+      ...computer,
+    };
+  }
 }

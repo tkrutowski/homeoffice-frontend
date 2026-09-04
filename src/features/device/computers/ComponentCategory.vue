@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed, type PropType, ref } from 'vue';
-  import type { ComponentType, Computer } from '@/features/device/computers/types';
+  import type { ComponentType, Computer, DesktopComputer } from '@/features/device/computers/types';
+  import { isDesktop } from '@/features/device/computers/types';
   import {
     ComputerDesktopIcon,
     CpuChipIcon,
@@ -40,7 +41,13 @@
       return 0;
     }
 
-    const component = props.computer[props.componentType.column];
+    // Tylko desktopy mają komponenty
+    if (!isDesktop(props.computer)) {
+      return 0;
+    }
+
+    const desktop = props.computer as DesktopComputer;
+    const component = desktop[props.componentType.column as keyof DesktopComputer];
 
     if (Array.isArray(component)) {
       return component.length;

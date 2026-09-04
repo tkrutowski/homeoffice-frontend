@@ -25,7 +25,9 @@ export function useUpdateComputerMutation() {
     mutationFn: (computer: Computer) => updateComputer(computer),
     onSuccess: computer => {
       void queryClient.invalidateQueries({ queryKey: deviceKeys.computers.all() });
-      void queryClient.invalidateQueries({ queryKey: deviceKeys.computers.detail(computer.id) });
+      if (computer.id) {
+        void queryClient.invalidateQueries({ queryKey: deviceKeys.computers.detail(computer.id) });
+      }
     },
   });
 }
@@ -43,8 +45,15 @@ export function useDeleteComputerMutation() {
 export function useUpdateComputerStatusMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ computerId, status }: { computerId: number; status: ActiveStatus }) =>
-      updateComputerStatus(computerId, status),
+    mutationFn: ({
+      computerId,
+      status,
+      type,
+    }: {
+      computerId: number;
+      status: ActiveStatus;
+      type: 'DESKTOP' | 'LAPTOP';
+    }) => updateComputerStatus(computerId, status, type),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: deviceKeys.computers.all() });
     },

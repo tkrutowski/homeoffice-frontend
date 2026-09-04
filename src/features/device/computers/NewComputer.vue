@@ -1,17 +1,23 @@
 <script setup lang="ts">
-  import { onMounted, ref, watch } from 'vue';
-  import { useToast } from 'primevue/usetoast';
-  import { useUsersStore } from '@/stores/users';
-  import type { User } from '@/types/User';
-  import { ComputerType, type Computer, type LaptopSpecs } from '@/features/device/computers/types';
-  import {
-    useCreateComputerMutation,
-    useUpdateComputerMutation,
-  } from '@/features/device/computers/queries/useComputersMutations';
-  import type { AxiosError } from 'axios';
-  import OfficeButton from '@/components/OfficeButton.vue';
+import {onMounted, ref, watch} from 'vue';
+import {useToast} from 'primevue/usetoast';
+import {useUsersStore} from '@/stores/users';
+import type {User} from '@/types/User';
+import {
+  type Computer,
+  ComputerType,
+  type DesktopComputer,
+  isLaptop,
+  type LaptopComputer,
+} from '@/features/device/computers/types';
+import {
+  useCreateComputerMutation,
+  useUpdateComputerMutation,
+} from '@/features/device/computers/queries/useComputersMutations';
+import type {AxiosError} from 'axios';
+import OfficeButton from '@/components/OfficeButton.vue';
 
-  const props = defineProps<{
+const props = defineProps<{
     visible: boolean;
     computer: Computer | null;
   }>();
@@ -29,13 +35,13 @@
   const selectedUser = ref<User | null>(null);
   const computerName = ref<string>('');
   const computerInfo = ref<string>('');
-  const computerType = ref<ComputerType>(ComputerType.DESKTOP);
-  const laptopSpecs = ref<LaptopSpecs>({
-    cpu: undefined,
-    gpu: undefined,
-    ram: undefined,
-    storage: undefined,
-  });
+  const computerType = ref<'DESKTOP' | 'LAPTOP' | 'TABLET'>(ComputerType.DESKTOP);
+  // Pola dla laptopa
+  const laptopCpu = ref<string>('');
+  const laptopGpu = ref<string>('');
+  const laptopRam = ref<string>('');
+  const laptopStorage = ref<string>('');
+  const laptopDisplay = ref<string>('');
   const btnShowBusy = ref<boolean>(false);
   const submitted = ref<boolean>(false);
 
@@ -64,12 +70,11 @@
     computerName.value = '';
     computerInfo.value = '';
     computerType.value = ComputerType.DESKTOP;
-    laptopSpecs.value = {
-      cpu: undefined,
-      gpu: undefined,
-      ram: undefined,
-      storage: undefined,
-    };
+    laptopCpu.value = '';
+    laptopGpu.value = '';
+    laptopRam.value = '';
+    laptopStorage.value = '';
+    laptopDisplay.value = '';
     selectedUser.value = null;
     submitted.value = false;
   };
@@ -103,14 +108,25 @@
       if (newComputer) {
         console.log('NewComputer - computer changed', newComputer);
         computerName.value = newComputer.name;
-        computerInfo.value = newComputer.info;
+        computerInfo.value = newComputer.info ?? '';
         computerType.value = newComputer.computerType ?? ComputerType.DESKTOP;
-        laptopSpecs.value = newComputer.laptopSpecs ?? {
-          cpu: undefined,
-          gpu: undefined,
-          ram: undefined,
-          storage: undefined,
-        };
+
+        // Resetuj pola laptopa
+        laptopCpu.value = '';
+        laptopGpu.value = '';
+        laptopRam.value = '';
+        laptopStorage.value = '';
+        laptopDisplay.value = '';
+
+        // Jeśli to laptop, załaduj jego dane
+        if (isLaptop(newComputer)) {
+          laptopCpu.value = newComputer.cpu ?? '';
+          laptopGpu.value = newComputer.gpu ?? '';
+          laptopRam.value = newComputer.ram ?? '';
+          laptopStorage.value = newComputer.storage ?? '';
+          laptopDisplay.value = newComputer.display ?? '';
+        }
+
         selectedUser.value = userStore.getUser(newComputer.idUser);
       } else {
         resetForm();
@@ -130,39 +146,66 @@
     let computer: Computer;
 
     if (props.computer) {
-      // Podczas edycji zachowujemy wszystkie pola i aktualizujemy name, idUser, info, computerType, laptopSpecs
-      computer = {
-        ...props.computer,
-        name: computerName.value,
-        idUser: selectedUser.value?.id || 0,
-        info: computerInfo.value,
-        computerType: computerType.value,
-        laptopSpecs: computerType.value === ComputerType.LAPTOP ? laptopSpecs.value : undefined,
-      };
+      // Podczas edycji aktualizujemy dane zależnie od typu
+      if (computerType.value === ComputerType.LAPTOP) {
+        computer = {
+          ...(props.computer as LaptopComputer),
+          name: computerName.value,
+          idUser: selectedUser.value?.id || 0,
+          info: computerInfo.value,
+          computerType: ComputerType.LAPTOP,
+          cpu: laptopCpu.value || undefined,
+          gpu: laptopGpu.value || undefined,
+          ram: laptopRam.value || undefined,
+          storage: laptopStorage.value || undefined,
+          display: laptopDisplay.value || undefined,
+        };
+      } else {
+        computer = {
+          ...(props.computer as DesktopComputer),
+          name: computerName.value,
+          idUser: selectedUser.value?.id || 0,
+          info: computerInfo.value,
+          computerType: ComputerType.DESKTOP,
+        };
+      }
     } else {
-      // Dla nowego komputera tworzymy nowy obiekt z domyślnymi wartościami
-      computer = {
-        id: 0,
-        idUser: selectedUser.value?.id || 0,
-        name: computerName.value,
-        activeStatus: 'ACTIVE',
-        computerCase: null,
-        cooling: [],
-        power: null,
-        disk: [],
-        display: [],
-        keyboard: null,
-        motherboard: null,
-        mouse: null,
-        ram: [],
-        info: computerInfo.value,
-        processor: null,
-        soundCard: null,
-        graphicCard: [],
-        usb: [],
-        computerType: computerType.value,
-        laptopSpecs: computerType.value === ComputerType.LAPTOP ? laptopSpecs.value : undefined,
-      };
+      // Dla nowego komputera
+      if (computerType.value === ComputerType.LAPTOP) {
+        computer = {
+          idUser: selectedUser.value?.id || 0,
+          name: computerName.value,
+          activeStatus: 'ACTIVE',
+          info: computerInfo.value,
+          computerType: ComputerType.LAPTOP,
+          cpu: laptopCpu.value || undefined,
+          gpu: laptopGpu.value || undefined,
+          ram: laptopRam.value || undefined,
+          storage: laptopStorage.value || undefined,
+          display: laptopDisplay.value || undefined,
+        };
+      } else {
+        computer = {
+          idUser: selectedUser.value?.id || 0,
+          name: computerName.value,
+          activeStatus: 'ACTIVE',
+          computerCase: null,
+          cooling: [],
+          power: null,
+          disk: [],
+          display: [],
+          keyboard: null,
+          motherboard: null,
+          mouse: null,
+          ram: [],
+          info: computerInfo.value,
+          processor: null,
+          soundCard: null,
+          graphicCard: [],
+          usb: [],
+          computerType: ComputerType.DESKTOP,
+        };
+      }
     }
 
     try {
@@ -267,23 +310,28 @@
         <label class="font-medium mb-2 inline-block">Specyfikacja laptopa (opcjonalnie)</label>
         <div class="flex flex-col gap-2">
           <InputText
-            v-model="laptopSpecs.cpu"
+            v-model="laptopCpu"
             placeholder="Procesor (np. Intel i7, AMD Ryzen 5)"
             maxlength="100"
           />
           <InputText
-            v-model="laptopSpecs.gpu"
+            v-model="laptopGpu"
             placeholder="Karta graficzna (np. RTX 3060, Intel Iris)"
             maxlength="100"
           />
           <InputText
-            v-model="laptopSpecs.ram"
+            v-model="laptopRam"
             placeholder="Pamięć RAM (np. 16GB, 32GB)"
             maxlength="50"
           />
           <InputText
-            v-model="laptopSpecs.storage"
+            v-model="laptopStorage"
             placeholder="Dysk (np. 512GB SSD, 1TB)"
+            maxlength="100"
+          />
+          <InputText
+            v-model="laptopDisplay"
+            placeholder="Wyświetlacz (np. 15.6&quot; FHD, 14&quot; Retina)"
             maxlength="100"
           />
         </div>

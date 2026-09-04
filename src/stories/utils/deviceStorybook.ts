@@ -18,5 +18,7 @@ export function setupDeviceStorybookStores() {
   queryClient.setQueryData(deviceKeys.devices.detail(mockDevice.id), mockDevice);
   queryClient.setQueryData(deviceKeys.devices.types(), [mockDeviceType]);
   queryClient.setQueryData(deviceKeys.computers.list(), [mockComputer]);
-  queryClient.setQueryData(deviceKeys.computers.detail(mockComputer.id), mockComputer);
+  if (mockComputer.id) {
+    queryClient.setQueryData(deviceKeys.computers.detail(mockComputer.id), mockComputer);
+  }
 }

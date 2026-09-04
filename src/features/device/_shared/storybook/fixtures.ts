@@ -1,5 +1,5 @@
 import type { Device, DeviceType } from '@/features/device/devices/types';
-import type { Computer } from '@/features/device/computers/types';
+import type { DesktopComputer, LaptopComputer } from '@/features/device/computers/types';
 import { ComputerType } from '@/features/device/computers/types';
 import type {
   AuditChangeEntry,
@@ -29,21 +29,29 @@ export const mockDevice: Device = {
     otherInfo: '',
     address: { id: 1, city: 'Warszawa', street: '', zip: '' },
   },
-  name: 'Intel Core i7-13700K',
+  name: 'Procesor Intel Core i7-14700KF',
   purchaseDate: new Date('2024-03-15'),
-  purchaseAmount: 1899,
+  purchaseAmount: 2099,
   sellDate: null,
   sellAmount: 0,
   warrantyEndDate: new Date('2027-03-15'),
   insuranceEndDate: null,
   otherInfo: '',
   activeStatus: 'ACTIVE',
-  details: new Map([['Socket', 'LGA1700'], ['Rdzenie', '16']]),
-  imageUrl: '',
+  details: new Map([
+    ['Kod producenta', 'BX8071514700KF'],
+    ['Seria procesora', 'Intel Core i7-14XXX'],
+    ['Typ gniazda', 'Socket 1700'],
+    ['Częstotliwość taktowania procesora', '3400 MHz'],
+    ['Częstotliwość taktowania turbo', '5600 MHz'],
+    ['Ilość rdzeni', '20 szt.'],
+    ['Zintegrowana karta graficzna', 'nie'],
+  ]),
+  imageUrl: 'https://via.placeholder.com/350x350/00A651/FFFFFF?text=Intel+Core+i7',
   files: [],
 };
 
-export const mockComputer: Computer = {
+export const mockDesktopComputer: DesktopComputer = {
   id: 1,
   idUser: 1,
   name: 'PC Biurko',
@@ -64,6 +72,23 @@ export const mockComputer: Computer = {
   activeStatus: 'ACTIVE',
   computerType: ComputerType.DESKTOP,
 };
+
+export const mockLaptopComputer: LaptopComputer = {
+  id: 2,
+  idUser: 1,
+  name: 'MacBook Pro',
+  cpu: 'Apple M3 Pro',
+  gpu: '16-core GPU',
+  ram: '18GB unified memory',
+  storage: '1TB SSD',
+  display: '16" Liquid Retina XDR',
+  info: 'Premium development machine',
+  activeStatus: 'ACTIVE',
+  computerType: ComputerType.LAPTOP,
+};
+
+// Alias for backward compatibility
+export const mockComputer = mockDesktopComputer;
 
 export const mockCategoryAggregates: CategoryAggregate[] = [
   {

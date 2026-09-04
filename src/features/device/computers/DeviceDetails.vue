@@ -76,7 +76,8 @@
                 style="max-width: 300px; object-fit: contain"
               />
               <div class="ml-10">
-                <div v-for="[key, value] in Object.entries(dev.details)" :key="key">
+                <p v-if="dev.details?.size === 0" class="text-lg text-surface-500">Brak szczegółów</p>
+                <div v-for="[key, value] in dev.details" v-else :key="key">
                   <p>
                     {{ key }}:<span class="font-bold ml-2">{{ value }}</span>
                   </p>
