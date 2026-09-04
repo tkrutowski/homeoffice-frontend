@@ -20,7 +20,10 @@
   import { findCardById, filterCardsByUser, filterCardsByUserAndStatus } from '@/features/finance/cards/api/cardsApi';
   import { PaymentStatus } from '@/features/finance/payments/types';
   import { usePurchaseQuery } from '@/features/finance/purchases/queries/usePurchasesQueries';
-  import { useCreatePurchaseMutation, useUpdatePurchaseMutation } from '@/features/finance/purchases/queries/usePurchasesMutations';
+  import {
+    useCreatePurchaseMutation,
+    useUpdatePurchaseMutation,
+  } from '@/features/finance/purchases/queries/usePurchasesMutations';
   import { clonePurchase } from '@/features/finance/_shared/cloneEntities';
   import AddFirmDialog from '@/components/share/AddFirmDialog.vue';
   import {
@@ -195,7 +198,10 @@
   const isEdit = ref<boolean>(false);
 
   const purchaseId = computed(() => Number(route.params.purchaseId as string));
-  const purchaseQuery = usePurchaseQuery(purchaseId, computed(() => isEdit.value));
+  const purchaseQuery = usePurchaseQuery(
+    purchaseId,
+    computed(() => isEdit.value)
+  );
 
   watch(
     () => purchaseQuery.data.value,

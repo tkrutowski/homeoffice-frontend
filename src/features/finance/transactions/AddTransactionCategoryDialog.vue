@@ -8,7 +8,10 @@
   import { ptFieldInputText } from '@/config/formFieldPt';
   import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
   import { UtilsService } from '@/service/UtilsService';
-  import type { TransactionCategoryCreatePayload, TransactionCategoryType } from '@/features/finance/transactions/types';
+  import type {
+    TransactionCategoryCreatePayload,
+    TransactionCategoryType,
+  } from '@/features/finance/transactions/types';
 
   const visible = defineModel<boolean>('visible', { default: false });
 

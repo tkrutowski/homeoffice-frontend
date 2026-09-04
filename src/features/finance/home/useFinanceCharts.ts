@@ -27,15 +27,7 @@ export interface UseFinanceChartsOptions {
 }
 
 export function useFinanceCharts(options: UseFinanceChartsOptions) {
-  const {
-    loans,
-    fees,
-    cardsActive,
-    selectedYear,
-    usersToDisplay,
-    getCard,
-    months,
-  } = options;
+  const { loans, fees, cardsActive, selectedYear, usersToDisplay, getCard, months } = options;
 
   // ===== Ref State =====
   const userPurchases = ref<Map<number, Map<string, Purchase[]>>>(new Map());
@@ -51,23 +43,29 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
   // ===== Computed - Summary Totals =====
   const loansToPay = computed(() => {
     return loans.value.reduce((sum, loan) => {
-      return sum + loan.installmentList.reduce((installmentSum, inst) => {
-        if (inst.paymentStatus === 'TO_PAY') {
-          return installmentSum + inst.installmentAmountToPay;
-        }
-        return installmentSum;
-      }, 0);
+      return (
+        sum +
+        loan.installmentList.reduce((installmentSum, inst) => {
+          if (inst.paymentStatus === 'TO_PAY') {
+            return installmentSum + inst.installmentAmountToPay;
+          }
+          return installmentSum;
+        }, 0)
+      );
     }, 0);
   });
 
   const feesToPay = computed(() => {
     return fees.value.reduce((sum, fee) => {
-      return sum + fee.installmentList.reduce((installmentSum, inst) => {
-        if (inst.paymentStatus === 'TO_PAY') {
-          return installmentSum + inst.installmentAmountToPay;
-        }
-        return installmentSum;
-      }, 0);
+      return (
+        sum +
+        fee.installmentList.reduce((installmentSum, inst) => {
+          if (inst.paymentStatus === 'TO_PAY') {
+            return installmentSum + inst.installmentAmountToPay;
+          }
+          return installmentSum;
+        }, 0)
+      );
     }, 0);
   });
 
@@ -120,12 +118,7 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
       // Wykresy miesiące
       usersLoansChartData.value.set(
         user.id,
-        FinanceChartService.createLoansChartData(
-          loans.value,
-          user.id,
-          selectedYear.value,
-          months
-        )
+        FinanceChartService.createLoansChartData(loans.value, user.id, selectedYear.value, months)
       );
 
       usersFeesChartData.value.set(
@@ -141,12 +134,7 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
 
       usersPurchasesSummaryChartData.value.set(
         user.id,
-        FinanceChartService.createPurchasesSummaryChartData(
-          cardsActive.value,
-          userPurchases.value,
-          user.id,
-          getCard
-        )
+        FinanceChartService.createPurchasesSummaryChartData(cardsActive.value, userPurchases.value, user.id, getCard)
       );
 
       // Wykres zakupów
@@ -154,13 +142,7 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
       if (userPurchaseData) {
         usersPurchaseChartData.value.set(
           user.id,
-          FinanceChartService.createPurchaseChartData(
-            user.id,
-            userPurchaseData,
-            selectedYear.value,
-            months,
-            getCard
-          )
+          FinanceChartService.createPurchaseChartData(user.id, userPurchaseData, selectedYear.value, months, getCard)
         );
       }
     });
@@ -170,9 +152,7 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
    * Ładuje dane dla wybranego roku
    * Pobiera użytkowników, karty, kredyty, opłaty i zakupy
    */
-  const loadDataForYear = async (
-    loadExternalData: () => Promise<void>
-  ): Promise<void> => {
+  const loadDataForYear = async (loadExternalData: () => Promise<void>): Promise<void> => {
     isLoadingPurchases.value = true;
 
     try {

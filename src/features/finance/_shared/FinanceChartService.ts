@@ -14,12 +14,7 @@ export class FinanceChartService {
   /**
    * Tworzy dane wykresu kredytów (miesiące - do zapłaty i zapłacone)
    */
-  static createLoansChartData(
-    loans: Loan[],
-    userId: number,
-    selectedYear: number,
-    months: string[]
-  ): GenericChartData {
+  static createLoansChartData(loans: Loan[], userId: number, selectedYear: number, months: string[]): GenericChartData {
     const loansMonthlyToPay: number[] = new Array(12).fill(0);
     const loansMonthlyPaid: number[] = new Array(12).fill(0);
 
@@ -77,12 +72,7 @@ export class FinanceChartService {
   /**
    * Tworzy dane wykresu opłat (miesiące - do zapłaty i zapłacone)
    */
-  static createFeesChartData(
-    fees: Fee[],
-    userId: number,
-    selectedYear: number,
-    months: string[]
-  ): GenericChartData {
+  static createFeesChartData(fees: Fee[], userId: number, selectedYear: number, months: string[]): GenericChartData {
     const feesMonthlyToPay: number[] = new Array(12).fill(0);
     const feesMonthlyPaid: number[] = new Array(12).fill(0);
 
@@ -140,10 +130,7 @@ export class FinanceChartService {
   /**
    * Tworzy dane wykresu podsumowania kredytów (po bankach)
    */
-  static createLoansSummaryChartData(
-    loans: Loan[],
-    userId: number
-  ): GenericChartData {
+  static createLoansSummaryChartData(loans: Loan[], userId: number): GenericChartData {
     const bankLoanTotals = new Map<number, number>();
     const bankNames = new Map<number, string>();
 

@@ -31,12 +31,7 @@
   });
 
   const allLoading = computed(() => {
-    return (
-      loansFetching.value > 0 ||
-      feesFetching.value > 0 ||
-      cardsFetching.value > 0 ||
-      paymentsFetching.value > 0
-    );
+    return loansFetching.value > 0 || feesFetching.value > 0 || cardsFetching.value > 0 || paymentsFetching.value > 0;
   });
 
   const items = ref([

@@ -466,9 +466,7 @@
               </p>
               <p>
                 <span>DO SPŁATY RAZEM:</span>
-                <span class="ml-2 font-medium tabular-nums">{{
-                  UtilsService.formatCurrency(feesSumToPay)
-                }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(feesSumToPay) }}</span>
               </p>
             </div>
           </div>
@@ -599,7 +597,9 @@
                   <p class="mb-1 mt-3 text-left"><small>Nazwa opłaty:</small> {{ slotProps.data.name }}</p>
                   <p class="mb-1 text-left"><small>Nazwa firmy:</small> {{ slotProps.data.firm.name }}</p>
                   <p class="mb-1 text-left"><small>Nr umowy:</small> {{ slotProps.data.feeNumber }}</p>
-                  <p class="mb-1 text-left"><small>Z dnia:</small> {{ UtilsService.formatDateToString(slotProps.data.date) }}</p>
+                  <p class="mb-1 text-left">
+                    <small>Z dnia:</small> {{ UtilsService.formatDateToString(slotProps.data.date) }}
+                  </p>
                   <p class="mb-1 text-left">
                     <small>Data pierwszej raty:</small>
                     {{ UtilsService.formatDateToString(slotProps.data.firstPaymentDate) }}

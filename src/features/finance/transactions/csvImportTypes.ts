@@ -1,4 +1,8 @@
-import type { TransactionCategoryDto, TransactionLabelDto, TransactionType } from '@/features/finance/transactions/types';
+import type {
+  TransactionCategoryDto,
+  TransactionLabelDto,
+  TransactionType,
+} from '@/features/finance/transactions/types';
 
 export interface AsyncTaskStartResponse {
   jobId: string;

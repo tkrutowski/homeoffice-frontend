@@ -1,7 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { PaymentStatus } from '@/features/finance/payments/types';
 import type { Purchase } from '@/features/finance/purchases/types';
-import { createPurchase, deletePurchase, updatePurchase, updatePurchaseStatus } from '@/features/finance/purchases/api/purchasesApi';
+import {
+  createPurchase,
+  deletePurchase,
+  updatePurchase,
+  updatePurchaseStatus,
+} from '@/features/finance/purchases/api/purchasesApi';
 import { financeKeys } from '@/features/finance/_shared/queryKeys';
 
 export function useCreatePurchaseMutation() {
@@ -42,10 +47,10 @@ export function useUpdatePurchaseStatusMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ purchaseId, status }: { purchaseId: number; status: PaymentStatus }) => updatePurchaseStatus(purchaseId, status),
+    mutationFn: ({ purchaseId, status }: { purchaseId: number; status: PaymentStatus }) =>
+      updatePurchaseStatus(purchaseId, status),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: financeKeys.purchases.all() });
     },
   });
 }
-

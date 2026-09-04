@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { UtilsService } from '@/service/UtilsService';
+  import { UtilsService } from '@/service/UtilsService';
 
-export interface FinanceSummaryCardProps {
-  icon: string;
-  label: string;
-  value: number;
-  hint: string;
-  colorClass: 'red' | 'purple' | 'amber' | 'blue';
-}
+  export interface FinanceSummaryCardProps {
+    icon: string;
+    label: string;
+    value: number;
+    hint: string;
+    colorClass: 'red' | 'purple' | 'amber' | 'blue';
+  }
 
-defineProps<FinanceSummaryCardProps>();
+  defineProps<FinanceSummaryCardProps>();
 </script>
 
 <template>

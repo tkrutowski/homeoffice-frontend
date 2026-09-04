@@ -243,7 +243,11 @@
                   <CalendarDaysIcon aria-hidden="true" />
                 </template>
               </OfficeIconButton>
-              <ProgressSpinner v-if="bankQuery.isFetching.value" class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8" stroke-width="5" />
+              <ProgressSpinner
+                v-if="bankQuery.isFetching.value"
+                class="h-8 w-8 [&>svg]:h-8 [&>svg]:w-8"
+                stroke-width="5"
+              />
             </div>
           </div>
 

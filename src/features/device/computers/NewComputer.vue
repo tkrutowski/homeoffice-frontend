@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {useUsersStore} from '@/stores/users';
-import type {User} from '@/types/User';
-import {
-  type Computer,
-  ComputerType,
-  type DesktopComputer,
-  isLaptop,
-  type LaptopComputer,
-} from '@/features/device/computers/types';
-import {
-  useCreateComputerMutation,
-  useUpdateComputerMutation,
-} from '@/features/device/computers/queries/useComputersMutations';
-import type {AxiosError} from 'axios';
-import OfficeButton from '@/components/OfficeButton.vue';
+  import { onMounted, ref, watch } from 'vue';
+  import { useToast } from 'primevue/usetoast';
+  import { useUsersStore } from '@/stores/users';
+  import type { User } from '@/types/User';
+  import {
+    type Computer,
+    ComputerType,
+    type DesktopComputer,
+    isLaptop,
+    type LaptopComputer,
+  } from '@/features/device/computers/types';
+  import {
+    useCreateComputerMutation,
+    useUpdateComputerMutation,
+  } from '@/features/device/computers/queries/useComputersMutations';
+  import type { AxiosError } from 'axios';
+  import OfficeButton from '@/components/OfficeButton.vue';
 
-const props = defineProps<{
+  const props = defineProps<{
     visible: boolean;
     computer: Computer | null;
   }>();
@@ -309,31 +309,11 @@ const props = defineProps<{
       <div v-if="computerType === ComputerType.LAPTOP" class="field">
         <label class="font-medium mb-2 inline-block">Specyfikacja laptopa (opcjonalnie)</label>
         <div class="flex flex-col gap-2">
-          <InputText
-            v-model="laptopCpu"
-            placeholder="Procesor (np. Intel i7, AMD Ryzen 5)"
-            maxlength="100"
-          />
-          <InputText
-            v-model="laptopGpu"
-            placeholder="Karta graficzna (np. RTX 3060, Intel Iris)"
-            maxlength="100"
-          />
-          <InputText
-            v-model="laptopRam"
-            placeholder="Pamięć RAM (np. 16GB, 32GB)"
-            maxlength="50"
-          />
-          <InputText
-            v-model="laptopStorage"
-            placeholder="Dysk (np. 512GB SSD, 1TB)"
-            maxlength="100"
-          />
-          <InputText
-            v-model="laptopDisplay"
-            placeholder="Wyświetlacz (np. 15.6&quot; FHD, 14&quot; Retina)"
-            maxlength="100"
-          />
+          <InputText v-model="laptopCpu" placeholder="Procesor (np. Intel i7, AMD Ryzen 5)" maxlength="100" />
+          <InputText v-model="laptopGpu" placeholder="Karta graficzna (np. RTX 3060, Intel Iris)" maxlength="100" />
+          <InputText v-model="laptopRam" placeholder="Pamięć RAM (np. 16GB, 32GB)" maxlength="50" />
+          <InputText v-model="laptopStorage" placeholder="Dysk (np. 512GB SSD, 1TB)" maxlength="100" />
+          <InputText v-model="laptopDisplay" placeholder='Wyświetlacz (np. 15.6" FHD, 14" Retina)' maxlength="100" />
         </div>
       </div>
 

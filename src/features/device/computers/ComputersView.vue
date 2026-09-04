@@ -7,7 +7,13 @@
   import TheMenuDevice from '@/features/device/_shared/TheMenuDevice.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import { UtilsService } from '@/service/UtilsService';
-  import { isLaptop, isDesktop, type ComponentType, type Computer, type DesktopComputer } from '@/features/device/computers/types';
+  import {
+    isLaptop,
+    isDesktop,
+    type ComponentType,
+    type Computer,
+    type DesktopComputer,
+  } from '@/features/device/computers/types';
   import ComponentCategory from '@/features/device/computers/ComponentCategory.vue';
   import DeviceDetails from '@/features/device/computers/DeviceDetails.vue';
   import AddAutoComplete from '@/components/AddAutoCompleteDialog.vue';

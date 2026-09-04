@@ -19,7 +19,10 @@ function parsePayment(payment: Payment): Payment {
   };
 }
 
-export async function fetchPaymentsByStatusYear(status: PaymentStatus, year: number): Promise<PaymentsByStatusYearResult> {
+export async function fetchPaymentsByStatusYear(
+  status: PaymentStatus,
+  year: number
+): Promise<PaymentsByStatusYearResult> {
   const response = await httpCommon.get('/v1/finance/payment', {
     params: {
       status,
@@ -37,4 +40,3 @@ export async function fetchPaymentsByStatusYear(status: PaymentStatus, year: num
 
   return paymentsTemp as PaymentsByStatusYearResult;
 }
-

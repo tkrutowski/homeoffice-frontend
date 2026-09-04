@@ -26,9 +26,7 @@ export function useLoansByYearStatusUserQuery(
   enabled: MaybeRefOrGetter<boolean> = true
 ) {
   return useQuery({
-    queryKey: computed(() =>
-      financeKeys.loans.byYearStatusUser(toValue(year), toValue(status), toValue(userId))
-    ),
+    queryKey: computed(() => financeKeys.loans.byYearStatusUser(toValue(year), toValue(status), toValue(userId))),
     queryFn: () => fetchLoansByYearAndStatusAndUser(toValue(year), toValue(status), toValue(userId)),
     enabled: computed(() => toValue(enabled)),
   });

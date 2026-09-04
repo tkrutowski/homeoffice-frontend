@@ -9,8 +9,10 @@ export function usePaymentsByStatusYearQuery(params: MaybeRefOrGetter<{ status: 
   return useQuery({
     queryKey: computed(() => financeKeys.payments.byStatusYear(toValue(params).status, toValue(params).year)),
     queryFn: async () => {
-      return fetchPaymentsByStatusYear(toValue(params).status, toValue(params).year) as unknown as PaymentsByStatusYearResult;
+      return fetchPaymentsByStatusYear(
+        toValue(params).status,
+        toValue(params).year
+      ) as unknown as PaymentsByStatusYearResult;
     },
   });
 }
-

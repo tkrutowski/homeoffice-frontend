@@ -1,10 +1,6 @@
 import { useQuery } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import {
-  fetchAuthors,
-  fetchAuthorsPage,
-  fetchAuthorStatistics,
-} from '@/features/library/authors/api/authorsApi';
+import { fetchAuthors, fetchAuthorsPage, fetchAuthorStatistics } from '@/features/library/authors/api/authorsApi';
 import { libraryKeys, type AuthorPageParams } from '@/features/library/_shared/queryKeys';
 
 export function useAuthorsListQuery(enabled: MaybeRefOrGetter<boolean> = true) {

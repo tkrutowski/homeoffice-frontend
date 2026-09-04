@@ -15,7 +15,11 @@ import type {
 } from '@/features/finance/transactions/dashboardTypes';
 import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
 import { UtilsService } from '@/service/UtilsService';
-import { bucketKey, bucketLabel, enumerateBuckets } from '@/features/finance/transactions/transactionDashboardAggregation';
+import {
+  bucketKey,
+  bucketLabel,
+  enumerateBuckets,
+} from '@/features/finance/transactions/transactionDashboardAggregation';
 import { useTransactionsBetweenQuery } from '@/features/finance/transactions/queries/useTransactionsQueries';
 import { fetchBalanceSeries, fetchCurrentBalance } from '@/features/finance/transactions/api/transactionsApi';
 import { resolveTransactionCategory } from '@/features/finance/transactions/transactionEnrichment';

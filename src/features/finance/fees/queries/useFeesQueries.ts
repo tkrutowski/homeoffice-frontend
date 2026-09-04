@@ -38,9 +38,7 @@ export function useFeesByYearStatusUserQuery(
   enabled: MaybeRefOrGetter<boolean> = true
 ) {
   return useQuery({
-    queryKey: computed(() =>
-      financeKeys.fees.byYearStatusUser(toValue(year), toValue(status), toValue(userId))
-    ),
+    queryKey: computed(() => financeKeys.fees.byYearStatusUser(toValue(year), toValue(status), toValue(userId))),
     queryFn: () => fetchFeesByYearAndStatusAndUser(toValue(year), toValue(status), toValue(userId)),
     enabled: computed(() => toValue(enabled)),
   });

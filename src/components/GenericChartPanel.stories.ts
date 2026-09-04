@@ -82,9 +82,7 @@ const mockBarChartData: GenericChartData = {
       borderWidth: 1,
     },
   ],
-  categoryTotals: [
-    { label: 'Kredyty do spłaty', total: 12000, color: 'rgb(239, 68, 68)' },
-  ],
+  categoryTotals: [{ label: 'Kredyty do spłaty', total: 12000, color: 'rgb(239, 68, 68)' }],
 };
 
 const mockPieChartData: GenericChartData = {
@@ -270,7 +268,7 @@ export const DarkMode: Story = {
     backgrounds: { default: 'dark' },
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="dark">

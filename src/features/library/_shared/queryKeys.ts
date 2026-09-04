@@ -29,11 +29,9 @@ export const libraryKeys = {
     detail: (id: number) => [...libraryKeys.books.all(), 'detail', id] as const,
     byAuthor: (authorId: number) => [...libraryKeys.books.all(), 'author', authorId] as const,
     bySeries: (seriesId: number) => [...libraryKeys.books.all(), 'series', seriesId] as const,
-    newBySeries: (seriesId: number, url: string) =>
-      [...libraryKeys.books.all(), 'series-new', seriesId, url] as const,
+    newBySeries: (seriesId: number, url: string) => [...libraryKeys.books.all(), 'series-new', seriesId, url] as const,
     fromUrl: (url: string, ai: boolean) => [...libraryKeys.books.all(), 'from-url', url, ai] as const,
-    audiobookAvailability: (bookId: number) =>
-      [...libraryKeys.books.all(), 'audiobook-availability', bookId] as const,
+    audiobookAvailability: (bookId: number) => [...libraryKeys.books.all(), 'audiobook-availability', bookId] as const,
   },
 
   categories: {

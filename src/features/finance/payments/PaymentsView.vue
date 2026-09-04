@@ -113,12 +113,7 @@
     </Toolbar>
     <div class="ml-6 mr-6">
       <div v-for="[userId, paymentsForUser] in paymentsEntries" :key="userId">
-        <UserPayments
-          :id-user="+userId"
-          :year="debouncedYear"
-          :payments="paymentsForUser"
-          :loading="paymentsLoading"
-        />
+        <UserPayments :id-user="+userId" :year="debouncedYear" :payments="paymentsForUser" :loading="paymentsLoading" />
       </div>
     </div>
   </MainPageShell>

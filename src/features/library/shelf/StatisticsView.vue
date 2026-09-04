@@ -132,7 +132,6 @@
       }
     }, 0);
   }
-
 </script>
 
 <template>

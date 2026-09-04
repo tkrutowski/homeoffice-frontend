@@ -4,10 +4,7 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import {
-    useAuthorsPageQuery,
-    useAuthorStatisticsQuery,
-  } from '@/features/library/authors/queries/useAuthorsQueries';
+  import { useAuthorsPageQuery, useAuthorStatisticsQuery } from '@/features/library/authors/queries/useAuthorsQueries';
   import {
     useCreateAuthorMutation,
     useDeleteAuthorMutation,

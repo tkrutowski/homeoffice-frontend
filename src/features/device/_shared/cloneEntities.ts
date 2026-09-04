@@ -17,7 +17,9 @@ export function cloneDevice(device: Device): Device {
     insuranceEndDate: device.insuranceEndDate ? new Date(device.insuranceEndDate) : null,
     files: [...(device.files ?? [])],
     deviceType: device.deviceType ? { ...device.deviceType } : null,
-    firm: device.firm ? { ...device.firm, address: device.firm.address ? { ...device.firm.address } : device.firm.address } : null,
+    firm: device.firm
+      ? { ...device.firm, address: device.firm.address ? { ...device.firm.address } : device.firm.address }
+      : null,
   };
 }
 

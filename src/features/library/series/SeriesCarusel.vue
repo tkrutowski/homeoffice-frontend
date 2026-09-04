@@ -8,9 +8,9 @@
   import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
   import { useToast } from 'primevue/usetoast';
   import AddBookToShellDialog from '@/features/library/shelf/AddEditUserBookDialog.vue';
-  import SeriesBook from './SeriesBook.vue'
+  import SeriesBook from './SeriesBook.vue';
   import { UtilsService } from '@/service/UtilsService.ts';
-  import AddEditSeriesDialog from './AddEditSeriesDialog.vue'
+  import AddEditSeriesDialog from './AddEditSeriesDialog.vue';
   import NewBookDialog from '@/features/library/catalog/NewBookDialog.vue';
   import type { AxiosError } from 'axios';
 

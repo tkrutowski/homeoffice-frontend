@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import PurchaseCurrentItem from '@/features/finance/purchases/PurchaseCurrentItem.vue';
-import moment from 'moment';
-import { computed, type PropType } from 'vue';
+  import moment from 'moment';
+  import { computed, type PropType } from 'vue';
   import { UtilsService } from '@/service/UtilsService.ts';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';
   import { findCardById } from '@/features/finance/cards/api/cardsApi';

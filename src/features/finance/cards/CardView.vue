@@ -11,8 +11,8 @@
   import router from '@/router';
   import IconButton from '@/components/OfficeIconButton.vue';
   import type { User } from '@/types/User';
-import type { Bank } from '@/features/finance/banks/types';
-import type { Card } from '@/features/finance/cards/types';
+  import type { Bank } from '@/features/finance/banks/types';
+  import type { Card } from '@/features/finance/cards/types';
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';

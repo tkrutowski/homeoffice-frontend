@@ -5,7 +5,7 @@
   import { useToast } from 'primevue/usetoast';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import TransactionCategorySelect from '@/features/finance/transactions/TransactionCategorySelect.vue';
-import { useBankCsvImportStore } from '@/features/finance/transactions/bankCsvImport.store';
+  import { useBankCsvImportStore } from '@/features/finance/transactions/bankCsvImport.store';
   import { useFirmsStore } from '@/stores/firms';
   import { useUsersStore } from '@/stores/users';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';

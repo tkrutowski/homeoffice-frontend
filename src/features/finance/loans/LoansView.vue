@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { FilterMatchMode } from '@primevue/core/api';
-  import { computed, type DefineComponent, ref, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
   import StatusButton from '@/components/StatusButton.vue';
@@ -12,7 +12,10 @@
 
   import { useToast } from 'primevue/usetoast';
   import { useLoansPageQuery } from '@/features/finance/loans/queries/useLoansQueries';
-  import { useDeleteLoanMutation, useUpdateLoanStatusMutation } from '@/features/finance/loans/queries/useLoansMutations';
+  import {
+    useDeleteLoanMutation,
+    useUpdateLoanStatusMutation,
+  } from '@/features/finance/loans/queries/useLoansMutations';
   import { useBanksListQuery } from '@/features/finance/banks/queries/useBanksQueries';
   import type { LoanPageParams } from '@/features/finance/_shared/queryKeys';
 
@@ -175,7 +178,6 @@
     currentPage.value = 0;
   };
 
-  const dataTableRef = ref<DefineComponent | null>(null);
   const filteredLoanAmount = computed(() => {
     let sum = 0;
     loans.value.forEach((loan: Loan) => {
@@ -469,9 +471,7 @@
               </p>
               <p>
                 <span>DO SPŁATY RAZEM:</span>
-                <span class="ml-2 font-medium tabular-nums">{{
-                  UtilsService.formatCurrency(loansSumToPay)
-                }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(loansSumToPay) }}</span>
               </p>
             </div>
           </div>
@@ -599,7 +599,9 @@
                   <p class="mb-1 mt-3 text-left"><small>Nazwa kredytu:</small> {{ slotProps.data.name }}</p>
                   <p class="text-left mb-1"><small>Nazwa banku:</small> {{ slotProps.data.bank.name }}</p>
                   <p class="mb-1 text-left"><small>Nr kredytu:</small> {{ slotProps.data.loanNumber }}</p>
-                  <p class="mb-1 text-left"><small>Z dnia:</small> {{ UtilsService.formatDateToString(slotProps.data.date) }}</p>
+                  <p class="mb-1 text-left">
+                    <small>Z dnia:</small> {{ UtilsService.formatDateToString(slotProps.data.date) }}
+                  </p>
                   <p class="mb-1 text-left">
                     <small>Data pierwszej raty:</small>
                     {{ UtilsService.formatDateToString(slotProps.data.firstPaymentDate) }}

@@ -2,7 +2,7 @@
   import TheMenuLibrary from '@/features/library/_shared/TheMenuLibrary.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-  import AddEditSeriesDialog from './AddEditSeriesDialog.vue'
+  import AddEditSeriesDialog from './AddEditSeriesDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useSeriesListQuery } from '@/features/library/series/queries/useSeriesQueries';
   import {

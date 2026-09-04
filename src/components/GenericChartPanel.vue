@@ -39,10 +39,11 @@
   watch(
     () => {
       if (typeof window === 'undefined') return false;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ||
-             document.documentElement.classList.contains('dark');
+      return (
+        window.matchMedia('(prefers-color-scheme: dark)').matches || document.documentElement.classList.contains('dark')
+      );
     },
-    (value) => {
+    value => {
       isDark.value = value;
     },
     { immediate: true }

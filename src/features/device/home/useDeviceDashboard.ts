@@ -23,7 +23,6 @@ const MAX_RECENT_CHANGES = 5;
 /** Typy urządzeń scalane w jedną linię „Inne” na wykresie kosztów. */
 export const CHART_CATEGORIES_MERGED_INTO_OTHER = ['Konsola', 'Kamery', 'RTV'] as const;
 
-
 function getCategoryName(device: Device): string {
   return device.deviceType?.name?.trim() || UNCATEGORIZED;
 }

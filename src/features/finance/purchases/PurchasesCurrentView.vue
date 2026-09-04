@@ -268,9 +268,7 @@
             :on-remove-from-selection="removeFromSelection"
           />
         </div>
-        <h1 v-if="purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">
-          Wszystko spłacone
-        </h1>
+        <h1 v-if="purchasesCurrent.size === 0" class="flex justify-center mt-5 mb-5">Wszystko spłacone</h1>
       </div>
     </div>
   </MainPageShell>

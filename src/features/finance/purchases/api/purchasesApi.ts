@@ -100,10 +100,7 @@ export async function fetchPurchasesSumToPay(): Promise<number> {
   return Number(response.data);
 }
 
-export async function fetchPurchasesByYearAndUser(
-  year: number,
-  username?: string
-): Promise<Map<string, Purchase[]>> {
+export async function fetchPurchasesByYearAndUser(year: number, username?: string): Promise<Map<string, Purchase[]>> {
   if (!username) return new Map<string, Purchase[]>();
 
   const current = await fetchPurchasesCurrent(username);
@@ -149,4 +146,3 @@ export async function fetchPurchasesSumBetween(dateFrom: string, dateTo: string,
 
   return sum;
 }
-

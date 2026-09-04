@@ -1,21 +1,14 @@
 import httpCommon from '@/config/http-common';
-import type {
-  AsyncTaskStartResponse,
-  BankCsvImportResponse,
-} from '@/features/finance/transactions/csvImportTypes';
+import type { AsyncTaskStartResponse, BankCsvImportResponse } from '@/features/finance/transactions/csvImportTypes';
 
-export type CsvImportJobResult =
-  | { status: 'pending' }
-  | { status: 'ready'; data: BankCsvImportResponse };
+export type CsvImportJobResult = { status: 'pending' } | { status: 'ready'; data: BankCsvImportResponse };
 
 export async function startCsvImportJob(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('csvFile', file);
-  const response = await httpCommon.post<AsyncTaskStartResponse>(
-    '/v1/finance/bank-transaction/import/bank',
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
-  );
+  const response = await httpCommon.post<AsyncTaskStartResponse>('/v1/finance/bank-transaction/import/bank', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data.jobId;
 }
 

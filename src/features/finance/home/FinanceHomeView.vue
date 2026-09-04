@@ -147,7 +147,9 @@
       </div>
 
       <!-- Controls -->
-      <div class="mb-6 flex justify-between items-center p-4 rounded-lg border border-surface-200 bg-surface-0 dark:border-surface-700 dark:bg-surface-950">
+      <div
+        class="mb-6 flex justify-between items-center p-4 rounded-lg border border-surface-200 bg-surface-0 dark:border-surface-700 dark:bg-surface-950"
+      >
         <div></div>
         <div class="flex items-center gap-4">
           <Select
@@ -198,7 +200,11 @@
 
       <!-- Summary Cards Skeleton -->
       <div v-else class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div v-for="n in 4" :key="n" class="rounded-2xl border border-surface-200 bg-surface-0 p-6 dark:border-surface-700 dark:bg-surface-950">
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="rounded-2xl border border-surface-200 bg-surface-0 p-6 dark:border-surface-700 dark:bg-surface-950"
+        >
           <Skeleton width="70%" height="1rem" class="mb-3"></Skeleton>
           <Skeleton width="80%" height="2rem" class="mb-3"></Skeleton>
           <Skeleton width="100%" height="0.75rem"></Skeleton>
@@ -211,7 +217,11 @@
         <ChartSkeletonGrid :columns="2" :rows="1" height="h-72" />
 
         <!-- User Charts Skeleton -->
-        <div v-for="n in 2" :key="n" class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700">
+        <div
+          v-for="n in 2"
+          :key="n"
+          class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700"
+        >
           <Skeleton width="40%" height="1.5rem" class="mx-auto"></Skeleton>
           <ChartSkeletonGrid :columns="2" :rows="1" height="h-72" />
           <ChartSkeletonGrid :columns="2" :rows="1" height="h-80" :full-width="true" />
@@ -220,9 +230,12 @@
 
       <!-- Actual Content -->
       <div v-else class="flex flex-col gap-8">
-
         <!-- Per-User Sections -->
-        <div v-for="user in usersToDisplay" :key="user.id" class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700">
+        <div
+          v-for="user in usersToDisplay"
+          :key="user.id"
+          class="flex flex-col gap-6 pt-8 border-t border-surface-200 dark:border-surface-700"
+        >
           <h2 class="text-2xl font-bold text-center text-surface-900 dark:text-surface-0">
             {{ user.firstName }} {{ user.lastName }}
           </h2>
@@ -237,7 +250,9 @@
               :loading="isLoadingLoans"
             />
             <GenericChartPanel
-              :chart-data="usersPurchasesSummaryChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }"
+              :chart-data="
+                usersPurchasesSummaryChartData.get(user.id) || { labels: [], datasets: [], categoryTotals: [] }
+              "
               title="Zakupy do spłaty"
               icon="pi pi-shopping-cart"
               chart-type="bar"

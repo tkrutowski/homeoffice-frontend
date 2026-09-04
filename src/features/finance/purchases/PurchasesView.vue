@@ -13,8 +13,14 @@
 
   import { useToast } from 'primevue/usetoast';
   import type { PurchasePageParams } from '@/features/finance/_shared/queryKeys';
-  import { usePurchasesPageQuery, usePurchasesSumToPayQuery } from '@/features/finance/purchases/queries/usePurchasesQueries';
-  import { useDeletePurchaseMutation, useUpdatePurchaseStatusMutation } from '@/features/finance/purchases/queries/usePurchasesMutations';
+  import {
+    usePurchasesPageQuery,
+    usePurchasesSumToPayQuery,
+  } from '@/features/finance/purchases/queries/usePurchasesQueries';
+  import {
+    useDeletePurchaseMutation,
+    useUpdatePurchaseStatusMutation,
+  } from '@/features/finance/purchases/queries/usePurchasesMutations';
 
   import type { StatusType } from '@/types/StatusType';
   import type { DataTablePageEvent } from 'primevue/datatable';
@@ -379,7 +385,12 @@
                   @click="goToNewPurchase"
                 />
                 <BankCsvImportControl
-                  @purchases-saved="async () => { await purchasesQuery.refetch(); await purchasesSumToPayQuery.refetch(); }"
+                  @purchases-saved="
+                    async () => {
+                      await purchasesQuery.refetch();
+                      await purchasesSumToPayQuery.refetch();
+                    }
+                  "
                 />
                 <div
                   class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
@@ -458,9 +469,7 @@
               </p>
               <p>
                 <span>DO SPŁATY RAZEM:</span>
-                <span class="ml-2 font-medium tabular-nums">{{
-                  UtilsService.formatCurrency(purchasesSumToPay)
-                }}</span>
+                <span class="ml-2 font-medium tabular-nums">{{ UtilsService.formatCurrency(purchasesSumToPay) }}</span>
               </p>
             </div>
           </div>

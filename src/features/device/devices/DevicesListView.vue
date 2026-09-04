@@ -66,7 +66,9 @@
 
   const deviceTypeFilter = computed(() => {
     return [
-      ...new Set(devices.value.filter((dev: Device) => dev.deviceType).map((dev: Device) => dev.deviceType?.name ?? '')),
+      ...new Set(
+        devices.value.filter((dev: Device) => dev.deviceType).map((dev: Device) => dev.deviceType?.name ?? '')
+      ),
     ].sort((a: string, b: string) => (a ?? '').localeCompare(b ?? ''));
   });
 
