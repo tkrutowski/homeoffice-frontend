@@ -2,7 +2,6 @@
   import { computed, ref, watch } from 'vue';
   import moment from 'moment';
   import { useToast } from 'primevue/usetoast';
-  import type { AxiosError } from 'axios';
   import { useFirmsStore } from '@/stores/firms';
   import { useUsersStore } from '@/stores/users';
   import type {
@@ -13,10 +12,8 @@
   } from '@/features/finance/transactions/types';
   import type { Firm } from '@/types/Firm';
   import { ptDatePickerField, ptFieldInputText, ptSelectInField } from '@/config/formFieldPt';
-  import AddFirmDialog from '@/components/share/AddFirmDialog.vue';
-  import AddTransactionCategoryDialog from '@/features/finance/transactions/AddTransactionCategoryDialog.vue';
+  import QuickAddTransactionDialogs from '@/features/finance/transactions/QuickAddTransactionDialogs.vue';
   import TransactionCategorySelect from '@/features/finance/transactions/TransactionCategorySelect.vue';
-  import AddDialog from '@/components/AddDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { UtilsService } from '@/service/UtilsService';
   import {
@@ -24,12 +21,11 @@
     useTransactionLabelsQuery,
   } from '@/features/finance/transactions/queries/useTransactionsQueries';
   import {
-    useCreateTransactionCategoryMutation,
-    useCreateTransactionLabelMutation,
     useCreateTransactionMutation,
     useUpdateTransactionMutation,
   } from '@/features/finance/transactions/queries/useTransactionsMutations';
   import { resolveTransactionCategory } from '@/features/finance/transactions/transactionEnrichment';
+  import { useQuickAddTransactionDictionaries } from '@/features/finance/transactions/useQuickAddTransactionDictionaries';
 
   const props = defineProps<{
     visible: boolean;
@@ -48,8 +44,8 @@
   const labelsQuery = useTransactionLabelsQuery();
   const createTransactionMutation = useCreateTransactionMutation();
   const updateTransactionMutation = useUpdateTransactionMutation();
-  const createCategoryMutation = useCreateTransactionCategoryMutation();
-  const createLabelMutation = useCreateTransactionLabelMutation();
+  const { showNewFirmModal, showNewCategoryModal, showNewLabelModal, createFirm, createCategory, createLabel } =
+    useQuickAddTransactionDictionaries();
 
   const categories = computed(() => categoriesQuery.data.value ?? []);
   const labels = computed(() => {
@@ -80,9 +76,6 @@
   const keepOpen = ref(false);
   const submitted = ref(false);
   const saving = ref(false);
-  const showNewFirmModal = ref(false);
-  const showNewLabelModal = ref(false);
-  const showNewCategoryModal = ref(false);
 
   const selectedCategory = ref<TransactionCategoryDto | null>(null);
   const selectedLabels = ref<{ id: number; name: string }[]>([]);
@@ -178,72 +171,21 @@
 
   async function newFirm(firm: Firm) {
     showNewFirmModal.value = false;
-    try {
-      await firmStore.addFirmDb(firm);
-      const created = firmStore.firms.find(f => f.name === firm.name) ?? firmStore.firms.at(-1) ?? null;
-      if (created) selectedFirm.value = created;
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Dodano firmę: ' + firm.name,
-        life: 3000,
-      });
-    } catch (reason) {
-      const axiosError = reason as AxiosError<{ message?: string }>;
-      toast.add({
-        severity: 'error',
-        summary: 'Błąd podczas dodawania firmy.',
-        detail: axiosError?.response?.data?.message ?? 'Nie udało się dodać firmy.',
-        life: 5000,
-      });
-    }
+    const created = await createFirm(firm);
+    if (created) selectedFirm.value = created;
   }
 
   async function newCategory(payload: TransactionCategoryCreatePayload) {
     showNewCategoryModal.value = false;
-    try {
-      const created = await createCategoryMutation.mutateAsync(payload);
-      selectedCategory.value = created;
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Dodano kategorię: ' + created.name,
-        life: 3000,
-      });
-    } catch (reason) {
-      const axiosError = reason as AxiosError<{ message?: string }>;
-      toast.add({
-        severity: 'error',
-        summary: 'Błąd podczas dodawania kategorii.',
-        detail: axiosError?.response?.data?.message ?? 'Nie udało się dodać kategorii.',
-        life: 5000,
-      });
-    }
+    const created = await createCategory(payload);
+    if (created) selectedCategory.value = created;
   }
 
   async function newLabel(name: string) {
     showNewLabelModal.value = false;
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    try {
-      const created = await createLabelMutation.mutateAsync(trimmed);
-      if (!selectedLabels.value.some(l => l.id === created.id)) {
-        selectedLabels.value = [...selectedLabels.value, created];
-      }
-      toast.add({
-        severity: 'success',
-        summary: 'Potwierdzenie',
-        detail: 'Dodano etykietę: ' + created.name,
-        life: 3000,
-      });
-    } catch (reason) {
-      const axiosError = reason as AxiosError<{ message?: string }>;
-      toast.add({
-        severity: 'error',
-        summary: 'Błąd podczas dodawania etykiety.',
-        detail: axiosError?.response?.data?.message ?? 'Nie udało się dodać etykiety.',
-        life: 5000,
-      });
+    const created = await createLabel(name);
+    if (created && !selectedLabels.value.some(l => l.id === created.id)) {
+      selectedLabels.value = [...selectedLabels.value, created];
     }
   }
 
@@ -294,20 +236,13 @@
 </script>
 
 <template>
-  <AddFirmDialog v-model:visible="showNewFirmModal" @save="newFirm" @cancel="showNewFirmModal = false" />
-
-  <AddTransactionCategoryDialog
-    v-model:visible="showNewCategoryModal"
-    @save="newCategory"
-    @cancel="showNewCategoryModal = false"
-  />
-
-  <AddDialog
-    v-model:visible="showNewLabelModal"
-    msg="Nowa etykieta"
-    label1="Nazwa etykiety"
-    @save="newLabel"
-    @cancel="showNewLabelModal = false"
+  <QuickAddTransactionDialogs
+    v-model:show-firm="showNewFirmModal"
+    v-model:show-category="showNewCategoryModal"
+    v-model:show-label="showNewLabelModal"
+    @save-firm="newFirm"
+    @save-category="newCategory"
+    @save-label="newLabel"
   />
 
   <Dialog

@@ -4,6 +4,7 @@
   import { storeToRefs } from 'pinia';
   import { useToast } from 'primevue/usetoast';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import QuickAddTransactionDialogs from '@/features/finance/transactions/QuickAddTransactionDialogs.vue';
   import TransactionCategorySelect from '@/features/finance/transactions/TransactionCategorySelect.vue';
   import { useBankCsvImportStore } from '@/features/finance/transactions/bankCsvImport.store';
   import { useFirmsStore } from '@/stores/firms';
@@ -14,9 +15,11 @@
     useTransactionLabelsQuery,
   } from '@/features/finance/transactions/queries/useTransactionsQueries';
   import { UtilsService } from '@/service/UtilsService';
-  import { TransactionType } from '@/features/finance/transactions/types';
+  import { TransactionType, type TransactionCategoryCreatePayload } from '@/features/finance/transactions/types';
   import type { BankTransactionImportRow, PurchaseImportRow } from '@/features/finance/transactions/csvImportTypes';
+  import type { Firm } from '@/types/Firm';
   import { ptDatePickerField, ptSelectInField } from '@/config/formFieldPt';
+  import { useQuickAddTransactionDictionaries } from '@/features/finance/transactions/useQuickAddTransactionDictionaries';
 
   const emit = defineEmits<{
     'transactions-saved': [];
@@ -30,6 +33,8 @@
   const cardsQuery = useCardsListQuery('ALL');
   const categoriesQuery = useTransactionCategoriesQuery();
   const labelsQuery = useTransactionLabelsQuery();
+  const { showNewFirmModal, showNewCategoryModal, showNewLabelModal, createFirm, createCategory, createLabel } =
+    useQuickAddTransactionDictionaries();
   const cards = computed(() => cardsQuery.data.value ?? []);
   const categories = computed(() => categoriesQuery.data.value ?? []);
   const labels = computed(() => labelsQuery.data.value ?? []);
@@ -54,6 +59,10 @@
 
   const fileInputRef = ref<HTMLInputElement | null>(null);
   const hideExistingRows = ref(false);
+
+  const newFirmTargetRow = ref<BankTransactionImportRow | PurchaseImportRow | null>(null);
+  const newCategoryTargetRow = ref<BankTransactionImportRow | null>(null);
+  const newLabelTargetRow = ref<BankTransactionImportRow | null>(null);
 
   const visibleTransactionRows = computed(() =>
     hideExistingRows.value ? transactionRows.value.filter(r => !r.exists) : transactionRows.value
@@ -113,6 +122,47 @@
 
   function isRowSelectable(data: BankTransactionImportRow | PurchaseImportRow) {
     return !data.exists;
+  }
+
+  function openNewFirmModal(row: BankTransactionImportRow | PurchaseImportRow) {
+    newFirmTargetRow.value = row;
+    showNewFirmModal.value = true;
+  }
+
+  function openNewCategoryModal(row: BankTransactionImportRow) {
+    newCategoryTargetRow.value = row;
+    showNewCategoryModal.value = true;
+  }
+
+  function openNewLabelModal(row: BankTransactionImportRow) {
+    newLabelTargetRow.value = row;
+    showNewLabelModal.value = true;
+  }
+
+  async function newFirm(firm: Firm) {
+    showNewFirmModal.value = false;
+    const targetRow = newFirmTargetRow.value;
+    newFirmTargetRow.value = null;
+    const created = await createFirm(firm);
+    if (created && targetRow) targetRow.idFirm = created.id;
+  }
+
+  async function newCategory(payload: TransactionCategoryCreatePayload) {
+    showNewCategoryModal.value = false;
+    const targetRow = newCategoryTargetRow.value;
+    newCategoryTargetRow.value = null;
+    const created = await createCategory(payload);
+    if (created && targetRow) targetRow.transactionCategory = created;
+  }
+
+  async function newLabel(name: string) {
+    showNewLabelModal.value = false;
+    const targetRow = newLabelTargetRow.value;
+    newLabelTargetRow.value = null;
+    const created = await createLabel(name);
+    if (created && targetRow && !targetRow.transactionLabel.some(l => l.id === created.id)) {
+      targetRow.transactionLabel = [...targetRow.transactionLabel, created];
+    }
   }
 
   async function loadDictionaries() {
@@ -230,6 +280,15 @@
 </script>
 
 <template>
+  <QuickAddTransactionDialogs
+    v-model:show-firm="showNewFirmModal"
+    v-model:show-category="showNewCategoryModal"
+    v-model:show-label="showNewLabelModal"
+    @save-firm="newFirm"
+    @save-category="newCategory"
+    @save-label="newLabel"
+  />
+
   <input
     ref="fileInputRef"
     type="file"
@@ -322,20 +381,29 @@
           >
             <Column selection-mode="multiple" header-style="width: 3rem" />
 
-            <Column header="Firma" style="min-width: 10rem">
+            <Column header="Firma" style="min-width: 12rem">
               <template #body="{ data }">
-                <Select
-                  v-model="data.idFirm"
-                  :options="sortedFirms"
-                  option-label="name"
-                  option-value="id"
-                  placeholder="Firma"
-                  filter
-                  filter-placeholder="Szukaj…"
-                  :disabled="data.exists"
-                  class="w-full"
-                  :pt="ptCellSelect"
-                />
+                <div class="flex w-full items-center gap-1">
+                  <Select
+                    v-model="data.idFirm"
+                    :options="sortedFirms"
+                    option-label="name"
+                    option-value="id"
+                    placeholder="Firma"
+                    filter
+                    filter-placeholder="Szukaj…"
+                    :disabled="data.exists"
+                    class="w-full min-w-0 flex-1"
+                    :pt="ptCellSelect"
+                  />
+                  <OfficeIconButton
+                    title="Dodaj firmę"
+                    icon="pi pi-plus"
+                    :btn-disabled="data.exists"
+                    class="h-7 w-7 shrink-0 border border-surface-300 bg-surface-50 p-0 text-xs text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0"
+                    @click="openNewFirmModal(data)"
+                  />
+                </div>
               </template>
             </Column>
 
@@ -393,33 +461,51 @@
               </template>
             </Column>
 
-            <Column header="Etykiety" style="min-width: 11rem">
+            <Column header="Etykiety" style="min-width: 13rem">
               <template #body="{ data }">
-                <MultiSelect
-                  v-model="data.transactionLabel"
-                  :options="labels"
-                  option-label="name"
-                  placeholder="Etykiety"
-                  filter
-                  filter-placeholder="Szukaj…"
-                  :disabled="data.exists"
-                  class="w-full"
-                  :pt="ptCellSelect"
-                />
+                <div class="flex w-full items-center gap-1">
+                  <MultiSelect
+                    v-model="data.transactionLabel"
+                    :options="labels"
+                    option-label="name"
+                    placeholder="Etykiety"
+                    filter
+                    filter-placeholder="Szukaj…"
+                    :disabled="data.exists"
+                    class="w-full min-w-0 flex-1"
+                    :pt="ptCellSelect"
+                  />
+                  <OfficeIconButton
+                    title="Dodaj etykietę"
+                    icon="pi pi-plus"
+                    :btn-disabled="data.exists"
+                    class="h-7 w-7 shrink-0 border border-surface-300 bg-surface-50 p-0 text-xs text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0"
+                    @click="openNewLabelModal(data)"
+                  />
+                </div>
               </template>
             </Column>
 
-            <Column header="Kategoria" style="min-width: 12rem">
+            <Column header="Kategoria" style="min-width: 14rem">
               <template #body="{ data }">
-                <div
-                  class="min-h-9 rounded-md border border-surface-300 bg-surface-0 dark:border-surface-600 dark:bg-surface-950"
-                  :class="{ 'border-red-500 dark:border-red-400': !data.exists && !data.transactionCategory }"
-                >
-                  <TransactionCategorySelect
-                    v-model="data.transactionCategory"
-                    :categories="categories"
-                    :loading="loadingCategories"
-                    :invalid="!data.exists && !data.transactionCategory"
+                <div class="flex w-full items-center gap-1">
+                  <div
+                    class="min-h-9 min-w-0 flex-1 rounded-md border border-surface-300 bg-surface-0 dark:border-surface-600 dark:bg-surface-950"
+                    :class="{ 'border-red-500 dark:border-red-400': !data.exists && !data.transactionCategory }"
+                  >
+                    <TransactionCategorySelect
+                      v-model="data.transactionCategory"
+                      :categories="categories"
+                      :loading="loadingCategories"
+                      :invalid="!data.exists && !data.transactionCategory"
+                    />
+                  </div>
+                  <OfficeIconButton
+                    title="Dodaj kategorię"
+                    :icon="loadingCategories ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"
+                    :btn-disabled="data.exists"
+                    class="h-7 w-7 shrink-0 border border-surface-300 bg-surface-50 p-0 text-xs text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0"
+                    @click="openNewCategoryModal(data)"
                   />
                 </div>
               </template>
@@ -497,20 +583,29 @@
               </template>
             </Column>
 
-            <Column header="Firma" style="min-width: 10rem">
+            <Column header="Firma" style="min-width: 12rem">
               <template #body="{ data }">
-                <Select
-                  v-model="data.idFirm"
-                  :options="sortedFirms"
-                  option-label="name"
-                  option-value="id"
-                  placeholder="Firma"
-                  filter
-                  filter-placeholder="Szukaj…"
-                  :disabled="data.exists"
-                  class="w-full"
-                  :pt="ptCellSelect"
-                />
+                <div class="flex w-full items-center gap-1">
+                  <Select
+                    v-model="data.idFirm"
+                    :options="sortedFirms"
+                    option-label="name"
+                    option-value="id"
+                    placeholder="Firma"
+                    filter
+                    filter-placeholder="Szukaj…"
+                    :disabled="data.exists"
+                    class="w-full min-w-0 flex-1"
+                    :pt="ptCellSelect"
+                  />
+                  <OfficeIconButton
+                    title="Dodaj firmę"
+                    icon="pi pi-plus"
+                    :btn-disabled="data.exists"
+                    class="h-7 w-7 shrink-0 border border-surface-300 bg-surface-50 p-0 text-xs text-surface-500 hover:border-primary hover:text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-400 dark:hover:text-surface-0"
+                    @click="openNewFirmModal(data)"
+                  />
+                </div>
               </template>
             </Column>
 
