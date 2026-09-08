@@ -111,6 +111,12 @@ export const financeKeys = {
     job: (jobId: string) => [...financeKeys.csvImport.all(), 'job', jobId] as const,
   },
 
+  loanProposals: {
+    all: () => [...financeKeys.all, 'loanProposals'] as const,
+    list: (status?: string) => [...financeKeys.loanProposals.all(), 'list', status ?? 'ALL'] as const,
+    detail: (id: number) => [...financeKeys.loanProposals.all(), 'detail', id] as const,
+  },
+
   home: {
     all: () => [...financeKeys.all, 'home'] as const,
   },

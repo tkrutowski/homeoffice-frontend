@@ -19,7 +19,7 @@ function parseLoanInstallment(installment: LoanInstallment): LoanInstallment {
   };
 }
 
-function parseLoan(loan: Loan): Loan {
+export function parseLoan(loan: Loan): Loan {
   return {
     ...loan,
     date: loan.date ? new Date(loan.date) : null,
@@ -62,7 +62,7 @@ export async function fetchLoan(loanId: number): Promise<Loan | null> {
   return response.data ? parseLoan(response.data) : null;
 }
 
-function toLoanPayload(loan: Loan) {
+export function toLoanPayload(loan: Loan) {
   return {
     ...loan,
     date: loan.date ? moment(loan.date).format('YYYY-MM-DD') : null,

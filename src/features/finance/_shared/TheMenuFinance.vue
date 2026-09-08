@@ -1,11 +1,13 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed } from 'vue';
   import { useIsFetching } from '@tanstack/vue-query';
   import { useAuthorizationStore } from '@/stores/authorization.ts';
   import router from '@/router';
   import { useRoute } from 'vue-router';
   import { financeKeys } from '@/features/finance/_shared/queryKeys';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import { useLoanProposalsListQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
+  import { LoanProposalStatus } from '@/features/finance/loanProposals/types';
 
   const route = useRoute();
   const authorizationStore = useAuthorizationStore();
@@ -14,6 +16,13 @@
   const feesFetching = useIsFetching({ queryKey: financeKeys.fees.all() });
   const cardsFetching = useIsFetching({ queryKey: financeKeys.cards.all() });
   const paymentsFetching = useIsFetching({ queryKey: financeKeys.payments.all() });
+
+  // Licznik propozycji kredytów czekających na przejrzenie (odświeżany co 60s, patrz useLoanProposalsListQuery)
+  const loanProposalsQuery = useLoanProposalsListQuery(LoanProposalStatus.EXTRACTED);
+  const extractedProposalsCount = computed(() => loanProposalsQuery.data.value?.length ?? 0);
+  const loanProposalsMenuLabel = computed(() =>
+    extractedProposalsCount.value > 0 ? `Propozycje kredytów (${extractedProposalsCount.value})` : 'Propozycje kredytów'
+  );
 
   const activeMenu = computed(() => {
     console.log('activeMenu', route.path);
@@ -34,7 +43,7 @@
     return loansFetching.value > 0 || feesFetching.value > 0 || cardsFetching.value > 0 || paymentsFetching.value > 0;
   });
 
-  const items = ref([
+  const items = computed(() => [
     {
       label: 'Home',
       icon: 'pi pi-fw pi-home',
@@ -78,6 +87,13 @@
             } else {
               router.push({ name: 'Loans' });
             }
+          },
+        },
+        {
+          label: loanProposalsMenuLabel.value,
+          icon: 'pi pi-fw pi-envelope',
+          command: () => {
+            router.push({ name: 'LoanProposals' });
           },
         },
       ],

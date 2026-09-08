@@ -3,7 +3,12 @@
   import { useCreateLoanMutation, useUpdateLoanMutation } from '@/features/finance/loans/queries/useLoansMutations';
   import { useBanksListQuery } from '@/features/finance/banks/queries/useBanksQueries';
   import { useCreateBankMutation } from '@/features/finance/banks/queries/useBanksMutations';
-  import { cloneLoan } from '@/features/finance/_shared/cloneEntities';
+  import { cloneLoan, mapLoanProposalToLoanDraft } from '@/features/finance/_shared/cloneEntities';
+  import { useLoanProposalQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
+  import {
+    useAcceptLoanProposalMutation,
+    useIgnoreLoanProposalMutation,
+  } from '@/features/finance/loanProposals/queries/useLoanProposalsMutations';
   import { useUsersStore } from '@/stores/users';
   import { useRoute } from 'vue-router';
   import { computed, onMounted, ref, watch } from 'vue';
@@ -17,6 +22,7 @@
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
   import { PaymentStatus } from '@/features/finance/payments/types';
@@ -30,6 +36,7 @@
     InformationCircleIcon,
     CalculatorIcon,
     DocumentTextIcon,
+    EnvelopeIcon,
   } from '@heroicons/vue/24/outline';
 
   const userStore = useUsersStore();
@@ -41,6 +48,18 @@
   const updateLoanMutation = useUpdateLoanMutation();
   const banksQuery = useBanksListQuery();
   const createBankMutation = useCreateBankMutation();
+
+  // ------------------------------------ PROPOZYCJA KREDYTU Z E-MAILA (przegląd/akceptacja) ------------------------------------
+  const proposalId = computed<number | null>(() =>
+    route.params.proposalId ? Number(route.params.proposalId as string) : null
+  );
+  const proposalQuery = useLoanProposalQuery(
+    proposalId,
+    computed(() => proposalId.value !== null)
+  );
+  const acceptLoanProposalMutation = useAcceptLoanProposalMutation();
+  const ignoreLoanProposalMutation = useIgnoreLoanProposalMutation();
+  const showIgnoreProposalDialog = ref<boolean>(false);
 
   const toast = useToast();
   const selectedUser = ref<User | null>();
@@ -68,14 +87,22 @@
   const btnSaveDisabled = ref<boolean>(false);
 
   const isSaveBtnDisabled = computed(() => {
-    return loanQuery.isFetching.value || userStore.loadingUsers || banksQuery.isFetching.value || btnSaveDisabled.value;
+    return (
+      loanQuery.isFetching.value ||
+      proposalQuery.isFetching.value ||
+      userStore.loadingUsers ||
+      banksQuery.isFetching.value ||
+      btnSaveDisabled.value
+    );
   });
   //
   //------------------------------------------------------SAVE-----------------------------------------
   //
   function saveLoan() {
     submitted.value = true;
-    if (isEdit.value) {
+    if (proposalId.value !== null) {
+      acceptProposal();
+    } else if (isEdit.value) {
       editLoan();
     } else {
       newLoan();
@@ -158,6 +185,68 @@
     }
   }
 
+  //
+  //---------------------------------------------ZAAKCEPTUJ PROPOZYCJĘ KREDYTU-------------------------------------
+  //
+  async function acceptProposal() {
+    if (proposalId.value === null) return;
+    if (isNotValid()) {
+      showError('Uzupełnij brakujące elementy');
+    } else {
+      btnSaveDisabled.value = true;
+      btnShowBusy.value = true;
+      acceptLoanProposalMutation
+        .mutateAsync({ proposalId: proposalId.value, loan: loan.value })
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zapisano kredyt: ' + loan.value?.name,
+            life: 3000,
+          });
+          setTimeout(() => {
+            router.push({ name: 'LoanProposals' });
+          }, 3000);
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas zapisywania kredytu z propozycji',
+            life: 3000,
+          });
+        })
+        .finally(() => {
+          btnSaveDisabled.value = false;
+          btnShowBusy.value = false;
+        });
+    }
+  }
+
+  async function submitIgnoreProposal() {
+    if (proposalId.value === null) return;
+    await ignoreLoanProposalMutation
+      .mutateAsync(proposalId.value)
+      .then(() => {
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Odrzucono propozycję kredytu',
+          life: 3000,
+        });
+        router.push({ name: 'LoanProposals' });
+      })
+      .catch((reason: AxiosError) => {
+        toast.add({
+          severity: 'error',
+          summary: reason?.message,
+          detail: 'Błąd podczas odrzucania propozycji',
+          life: 5000,
+        });
+      });
+    showIgnoreProposalDialog.value = false;
+  }
+
   watch(
     () => loanQuery.data.value,
     data => {
@@ -168,6 +257,32 @@
       }
     }
   );
+
+  // Backend nie zwraca dla propozycji pełnego obiektu Bank — tylko dopasowane bankId (patrz loanProposalsApi.ts).
+  // Dopasowujemy je do listy banków, gdy tylko obie części danych są już załadowane (kolejność może być dowolna).
+  function resolveProposalBankIfNeeded() {
+    const data = proposalQuery.data.value;
+    const banks = banksQuery.data.value;
+    if (data?.bankId && banks && !loan.value.bank) {
+      const matchedBank = banks.find(bank => bank.id === data.bankId) ?? null;
+      loan.value.bank = matchedBank;
+      selectedBank.value = matchedBank;
+    }
+  }
+
+  watch(
+    () => proposalQuery.data.value,
+    data => {
+      if (data) {
+        loan.value = mapLoanProposalToLoanDraft(data);
+        selectedBank.value = loan.value.bank;
+        selectedUser.value = userStore.getUser(loan.value.idUser);
+        resolveProposalBankIfNeeded();
+      }
+    }
+  );
+
+  watch(() => banksQuery.data.value, resolveProposalBankIfNeeded);
 
   //---------------------------------------MOUNTED------------------------------------------------
   onMounted(async () => {
@@ -337,6 +452,14 @@
 <template>
   <AddBankDialog v-model:visible="showNewBankModal" @save="newBank" @cancel="showNewBankModal = false" />
 
+  <ConfirmationDialog
+    v-model:visible="showIgnoreProposalDialog"
+    msg="Czy chcesz odrzucić tę propozycję kredytu?"
+    label="Odrzuć"
+    @save="submitIgnoreProposal"
+    @cancel="showIgnoreProposalDialog = false"
+  />
+
   <MainPageShell>
     <template #top>
       <TheMenuFinance />
@@ -351,19 +474,58 @@
             <h1
               class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
             >
-              {{ isEdit ? `Edycja kredytu: ${loan?.name}` : 'Nowy kredyt' }}
+              {{
+                proposalId !== null
+                  ? 'Przegląd propozycji kredytu'
+                  : isEdit
+                    ? `Edycja kredytu: ${loan?.name}`
+                    : 'Nowy kredyt'
+              }}
             </h1>
             <div class="flex shrink-0 items-center gap-2 sm:justify-end">
               <OfficeIconButton
-                title="Powrót do listy kredytów"
+                :title="proposalId !== null ? 'Powrót do propozycji kredytów' : 'Powrót do listy kredytów'"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Loans' })"
+                @click="() => router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />
                 </template>
               </OfficeIconButton>
             </div>
+          </div>
+
+          <div v-if="proposalId !== null && proposalQuery.data.value" class="mb-6">
+            <FormSectionCard title="Źródło propozycji" :icon="EnvelopeIcon">
+              <dl class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Temat</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">{{ proposalQuery.data.value.sourceSubject }}</dd>
+                </div>
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Od</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">
+                    {{ proposalQuery.data.value.originalSenderEmail ?? proposalQuery.data.value.sourceEmailFrom }}
+                  </dd>
+                  <dd
+                    v-if="
+                      proposalQuery.data.value.originalSenderEmail &&
+                      proposalQuery.data.value.sourceEmailFrom &&
+                      proposalQuery.data.value.originalSenderEmail !== proposalQuery.data.value.sourceEmailFrom
+                    "
+                    class="text-xs text-surface-500 dark:text-surface-400"
+                  >
+                    przekazano z: {{ proposalQuery.data.value.sourceEmailFrom }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Otrzymano</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">
+                    {{ UtilsService.formatDateToString(proposalQuery.data.value.receivedAt) }}
+                  </dd>
+                </div>
+              </dl>
+            </FormSectionCard>
           </div>
 
           <div class="flex flex-col gap-6">
@@ -636,7 +798,15 @@
             </FormSectionCard>
           </div>
 
-          <div class="mt-8 flex justify-end">
+          <div class="mt-8 flex justify-end gap-3">
+            <OfficeButton
+              v-if="proposalId !== null"
+              text="odrzuć propozycję"
+              btn-type="office-regular"
+              type="button"
+              :btn-disabled="isSaveBtnDisabled"
+              @click="showIgnoreProposalDialog = true"
+            />
             <OfficeButton
               text="zapisz"
               btn-type="office-save"

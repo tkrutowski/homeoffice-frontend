@@ -12,6 +12,9 @@
   import { useLoansByYearStatusUserQuery } from '@/features/finance/loans/queries/useLoansQueries';
   import { useFeesByYearStatusUserQuery } from '@/features/finance/fees/queries/useFeesQueries';
   import { useFinanceCharts } from '@/features/finance/home/useFinanceCharts';
+  import { useLoanProposalsListQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
+  import { LoanProposalStatus } from '@/features/finance/loanProposals/types';
+  import router from '@/router';
 
   const usersStore = useUsersStore();
   const authorizationStore = useAuthorizationStore();
@@ -48,6 +51,16 @@
 
   const loansQuery = useLoansByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
   const feesQuery = useFeesByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
+
+  // ===== Propozycje kredytów z e-maila =====
+  const loanProposalsQuery = useLoanProposalsListQuery(LoanProposalStatus.EXTRACTED);
+  const extractedProposalsCount = computed(() => loanProposalsQuery.data.value?.length ?? 0);
+  const extractedProposalsLabel = computed(() => {
+    const n = extractedProposalsCount.value;
+    if (n === 1) return 'nową propozycję kredytu';
+    if (n >= 2 && n <= 4) return 'nowe propozycje kredytów';
+    return 'nowych propozycji kredytów';
+  });
 
   const loans = computed(() => loansQuery.data.value ?? []);
   const fees = computed(() => feesQuery.data.value ?? []);
@@ -145,6 +158,20 @@
           Przegląd kredytów, opłat i zakupów w jednym miejscu.
         </p>
       </div>
+
+      <!-- Propozycje kredytów z e-maila -->
+      <button
+        v-if="extractedProposalsCount > 0"
+        type="button"
+        class="mb-6 flex w-full items-center justify-between gap-3 rounded-lg border border-primary-200 bg-primary-50 p-4 text-left transition-colors hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-950 dark:hover:bg-primary-900"
+        @click="router.push({ name: 'LoanProposals' })"
+      >
+        <span class="flex items-center gap-3 text-sm font-medium text-primary-800 dark:text-primary-200">
+          <i class="pi pi-envelope" aria-hidden="true" />
+          Masz {{ extractedProposalsCount }} {{ extractedProposalsLabel }} do przejrzenia
+        </span>
+        <i class="pi pi-arrow-right text-primary-600 dark:text-primary-300" aria-hidden="true" />
+      </button>
 
       <!-- Controls -->
       <div

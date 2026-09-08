@@ -10,6 +10,7 @@ import { useAuthorizationStore } from '@/stores/authorization';
 import FinanceHomeView from '@/features/finance/home/FinanceHomeView.vue';
 import LoanView from '@/features/finance/loans/LoanView.vue';
 import LoansView from '@/features/finance/loans/LoansView.vue';
+import LoanProposalsView from '@/features/finance/loanProposals/LoanProposalsView.vue';
 import FeesView from '@/features/finance/fees/FeesView.vue';
 import FeeView from '@/features/finance/fees/FeeView.vue';
 import PaymentsView from '@/features/finance/payments/PaymentsView.vue';
@@ -163,6 +164,18 @@ const routes = [
   {
     path: '/finance/loan/:isEdit/:loanId',
     name: 'Loan',
+    component: LoanView,
+    props: true,
+  },
+  // LOAN PROPOSAL
+  {
+    path: '/finance/loan-proposal/all',
+    name: 'LoanProposals',
+    component: LoanProposalsView,
+  },
+  {
+    path: '/finance/loan-proposal/review/:proposalId',
+    name: 'LoanProposalReview',
     component: LoanView,
     props: true,
   },
