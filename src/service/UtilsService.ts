@@ -7,8 +7,7 @@ import type { Installment } from '@/features/finance/payments/types';
 import type { LoanInstallment } from '@/features/finance/loans/types';
 import { TranslationService } from '@/service/TranslationService.ts';
 import { TransactionType, type TransactionCategoryType } from '@/features/finance/transactions/types';
-import type { Card } from '@/features/finance/cards/types';
-import type { Moment } from 'moment';
+import { CardType } from '@/features/finance/cards/types';
 import { queryClient } from '@/config/queryClient';
 import { libraryKeys } from '@/features/library/_shared/queryKeys';
 import { fetchBookstores } from '@/features/library/bookstores/api/bookstoresApi';
@@ -246,22 +245,11 @@ export const UtilsService = {
     return `pi pi-${slug}`;
   },
 
-  /** Termin płatności zakupu na podstawie karty i daty zakupu (logika z formularza zakupu). */
-  calculatePurchasePaymentDeadline(card: Card, date: Date): Date {
-    const purchaseDate: Moment = moment(date);
-    let deadlineDate: Moment = purchaseDate.add(1, 'months');
-
-    if (purchaseDate.date() > card.closingDay) {
-      deadlineDate = deadlineDate.add(1, 'months');
-    }
-
-    deadlineDate = deadlineDate.date(card.repaymentDay);
-
-    if (deadlineDate.month() === 0 && purchaseDate.month() === 11) {
-      deadlineDate = deadlineDate.add(1, 'year');
-    }
-
-    return deadlineDate.toDate();
+  getCardTypeOption() {
+    return Object.keys(CardType).map(key => ({
+      label: TranslationService.translateEnum('CardType', key),
+      value: CardType[key as keyof typeof CardType],
+    }));
   },
 
   /** Normalizacja koloru hex do #RRGGBB (uppercase). */

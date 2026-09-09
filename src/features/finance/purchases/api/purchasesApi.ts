@@ -66,6 +66,14 @@ export async function fetchPurchase(purchaseId: number): Promise<Purchase | null
   return response.data ? parsePurchase(response.data) : null;
 }
 
+/** Podgląd terminu płatności wyliczanego przez backend na podstawie karty i daty zakupu (CREDIT / DEFERRED_PAYMENT). */
+export async function fetchPurchasePaymentDeadline(idCard: number, purchaseDate: Date): Promise<Date> {
+  const response = await httpCommon.get(`/v1/finance/purchase/payment-deadline`, {
+    params: { idCard, purchaseDate: moment(purchaseDate).format('YYYY-MM-DD') },
+  });
+  return new Date(response.data);
+}
+
 export async function createPurchase(purchase: Purchase): Promise<Purchase> {
   const response = await httpCommon.post(`/v1/finance/purchase`, toPurchasePayload(purchase));
   return parsePurchase(response.data);

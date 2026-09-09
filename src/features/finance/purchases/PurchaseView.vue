@@ -20,6 +20,7 @@
   import { findCardById, filterCardsByUser, filterCardsByUserAndStatus } from '@/features/finance/cards/api/cardsApi';
   import { PaymentStatus } from '@/features/finance/payments/types';
   import { usePurchaseQuery } from '@/features/finance/purchases/queries/usePurchasesQueries';
+  import { fetchPurchasePaymentDeadline } from '@/features/finance/purchases/api/purchasesApi';
   import {
     useCreatePurchaseMutation,
     useUpdatePurchaseMutation,
@@ -109,7 +110,7 @@
     [selectedCard, selectedUser, purchase.value.purchaseDate],
     () => {
       if (isCalculatePossible() && selectedCard.value && purchase.value.purchaseDate) {
-        calculateDeadline(selectedCard.value, purchase.value.purchaseDate);
+        void calculateDeadline(selectedCard.value, purchase.value.purchaseDate);
       }
     }
     // , { deep: true }
@@ -119,14 +120,24 @@
     () => purchase.value.purchaseDate,
     () => {
       if (isCalculatePossible() && selectedCard.value && purchase.value.purchaseDate) {
-        calculateDeadline(selectedCard.value, purchase.value?.purchaseDate);
+        void calculateDeadline(selectedCard.value, purchase.value?.purchaseDate);
       }
     }
   );
 
-  function calculateDeadline(card: Card, date: Date) {
+  const calculatingDeadline = ref<boolean>(false);
+
+  async function calculateDeadline(card: Card, date: Date) {
     console.log('Calculating deadline...');
-    purchase.value.paymentDeadline = UtilsService.calculatePurchasePaymentDeadline(card, date);
+    calculatingDeadline.value = true;
+    try {
+      purchase.value.paymentDeadline = await fetchPurchasePaymentDeadline(card.id, date);
+    } catch (error) {
+      console.error('Nie udało się pobrać terminu płatności', error);
+      purchase.value.paymentDeadline = null;
+    } finally {
+      calculatingDeadline.value = false;
+    }
   }
 
   //
@@ -622,18 +633,25 @@
             <!-- Termin spłaty -->
             <div class="flex flex-col gap-2">
               <label class="text-sm text-surface-600 dark:text-surface-400" for="purchase-deadline"
-                >Termin spłaty</label
+                >Termin spłaty (wyliczany automatycznie na podstawie karty)</label
               >
               <DatePicker
                 id="purchase-deadline"
                 v-model="purchase.paymentDeadline"
                 :pt="ptDatePickerField"
                 show-icon
+                disabled
                 date-format="dd.mm.yy"
                 :invalid="showErrorDeadline()"
               />
               <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">
-                {{ showErrorDeadline() ? 'Pole jest wymagane.' : '\u00a0' }}
+                {{
+                  calculatingDeadline
+                    ? 'Obliczanie terminu...'
+                    : showErrorDeadline()
+                      ? 'Wybierz u\u017cytkownika, kart\u0119 i dat\u0119 zakupu.'
+                      : '\u00a0'
+                }}
               </small>
             </div>
 

@@ -15,7 +15,6 @@ import { fetchCards, findCardById } from '@/features/finance/cards/api/cardsApi'
 import { createPurchase } from '@/features/finance/purchases/api/purchasesApi';
 import { financeKeys } from '@/features/finance/_shared/queryKeys';
 import { queryClient } from '@/config/queryClient';
-import { UtilsService } from '@/service/UtilsService';
 import moment from 'moment';
 
 const POLL_INTERVAL_MS = 3000;
@@ -235,7 +234,8 @@ export const useBankCsvImportStore = defineStore('bankCsvImport', {
             name: row.name,
             purchaseDate,
             amount: Number(row.amount),
-            paymentDeadline: UtilsService.calculatePurchasePaymentDeadline(card, purchaseDate),
+            // Termin płatności wylicza backend na podstawie karty i daty zakupu (endpoint payment-deadline / zapis zakupu).
+            paymentDeadline: null,
             paymentDate: null,
             paymentStatus: PaymentStatus.TO_PAY,
             installment: false,
