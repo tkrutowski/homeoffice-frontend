@@ -10,6 +10,8 @@
   import type { Purchase } from '@/features/finance/purchases/types';
   import type { Card } from '@/features/finance/cards/types';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+  import FormSectionCard from '@/components/FormSectionCard.vue';
   import { UtilsService } from '@/service/UtilsService';
   import type { AxiosError } from 'axios';
 
@@ -25,7 +27,12 @@
     useCreatePurchaseMutation,
     useUpdatePurchaseMutation,
   } from '@/features/finance/purchases/queries/usePurchasesMutations';
-  import { clonePurchase } from '@/features/finance/_shared/cloneEntities';
+  import { useLoanProposalQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
+  import {
+    useAcceptLoanProposalAsPurchaseMutation,
+    useIgnoreLoanProposalMutation,
+  } from '@/features/finance/loanProposals/queries/useLoanProposalsMutations';
+  import { clonePurchase, mapLoanProposalToPurchaseDraft } from '@/features/finance/_shared/cloneEntities';
   import AddFirmDialog from '@/components/share/AddFirmDialog.vue';
   import {
     UserIcon,
@@ -34,6 +41,7 @@
     BanknotesIcon,
     CalendarDaysIcon,
     TableCellsIcon,
+    EnvelopeIcon,
   } from '@heroicons/vue/24/outline';
 
   const userStore = useUsersStore();
@@ -61,15 +69,32 @@
     paymentDeadline: null,
     paymentDate: null,
     paymentStatus: PaymentStatus.TO_PAY,
-    installment: false,
     otherInfo: '',
   });
+
+  // ------------------------------------ PROPOZYCJA ZAKUPU Z E-MAILA (przegląd/akceptacja) ------------------------------------
+  const proposalId = computed<number | null>(() =>
+    route.params.proposalId ? Number(route.params.proposalId as string) : null
+  );
+  const proposalQuery = useLoanProposalQuery(
+    proposalId,
+    computed(() => proposalId.value !== null)
+  );
+  const acceptLoanProposalAsPurchaseMutation = useAcceptLoanProposalAsPurchaseMutation();
+  const ignoreLoanProposalMutation = useIgnoreLoanProposalMutation();
+  const showIgnoreProposalDialog = ref<boolean>(false);
 
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);
 
   const isSaveBtnDisabled = computed(() => {
-    return cardsQuery.isFetching.value || userStore.loadingUsers || firmStore.loadingFirms || btnSaveDisabled.value;
+    return (
+      cardsQuery.isFetching.value ||
+      userStore.loadingUsers ||
+      firmStore.loadingFirms ||
+      proposalQuery.isFetching.value ||
+      btnSaveDisabled.value
+    );
   });
   //
   //AUTO COMPLETE
@@ -160,7 +185,9 @@
 
   function savePurchase() {
     submitted.value = true;
-    if (isEdit.value) {
+    if (proposalId.value !== null) {
+      acceptProposal();
+    } else if (isEdit.value) {
       editPurchase();
     } else {
       newPurchase();
@@ -260,6 +287,74 @@
         });
     }
   }
+
+  //
+  //---------------------------------------------ZAAKCEPTUJ PROPOZYCJĘ ZAKUPU-------------------------------
+  //
+  async function acceptProposal() {
+    if (proposalId.value === null) return;
+    if (isNotValid()) {
+      showError('Uzupełnij brakujące elementy');
+    } else {
+      btnSaveDisabled.value = true;
+      btnShowBusy.value = true;
+      await acceptLoanProposalAsPurchaseMutation
+        .mutateAsync({ proposalId: proposalId.value, purchase: purchase.value })
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zapisano zakup: ' + purchase.value?.name,
+            life: 3000,
+          });
+          btnShowBusy.value = false;
+          setTimeout(() => {
+            router.push({ name: 'LoanProposals' });
+          }, 3000);
+        })
+        .catch((reason: AxiosError) => {
+          btnShowBusy.value = false;
+          btnSaveDisabled.value = false;
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail: 'Błąd podczas zapisywania zakupu z propozycji',
+            life: 3000,
+          });
+        });
+    }
+  }
+
+  async function submitIgnoreProposal() {
+    if (proposalId.value === null) return;
+    await ignoreLoanProposalMutation
+      .mutateAsync(proposalId.value)
+      .then(() => {
+        toast.add({
+          severity: 'success',
+          summary: 'Potwierdzenie',
+          detail: 'Odrzucono propozycję',
+          life: 3000,
+        });
+        router.push({ name: 'LoanProposals' });
+      })
+      .catch((reason: AxiosError) => {
+        toast.add({
+          severity: 'error',
+          summary: reason?.message,
+          detail: 'Błąd podczas odrzucania propozycji',
+          life: 5000,
+        });
+      });
+    showIgnoreProposalDialog.value = false;
+  }
+
+  watch(
+    () => proposalQuery.data.value,
+    data => {
+      if (data) purchase.value = mapLoanProposalToPurchaseDraft(data);
+    }
+  );
 
   //---------------------------------------------MOUNTED--------------------------------------------
   onMounted(async () => {
@@ -429,6 +524,14 @@
 <template>
   <AddFirmDialog v-model:visible="showNewFirmModal" @save="newFirm" @cancel="showNewFirmModal = false" />
 
+  <ConfirmationDialog
+    v-model:visible="showIgnoreProposalDialog"
+    msg="Czy chcesz odrzucić tę propozycję?"
+    label="Odrzuć"
+    @save="submitIgnoreProposal"
+    @cancel="showIgnoreProposalDialog = false"
+  />
+
   <MainPageShell>
     <template #top>
       <TheMenuFinance />
@@ -443,10 +546,27 @@
             <h1
               class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
             >
-              {{ isEdit ? `Edycja zakupu: ${purchase?.name}` : 'Nowy zakup' }}
+              {{
+                proposalId !== null
+                  ? 'Przegląd propozycji zakupu'
+                  : isEdit
+                    ? `Edycja zakupu: ${purchase?.name}`
+                    : 'Nowy zakup'
+              }}
             </h1>
             <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
               <OfficeIconButton
+                v-if="proposalId !== null"
+                title="Powrót do propozycji z e-maila"
+                class="text-orange-500"
+                @click="() => router.push({ name: 'LoanProposals' })"
+              >
+                <template #icon>
+                  <CalendarDaysIcon aria-hidden="true" />
+                </template>
+              </OfficeIconButton>
+              <OfficeIconButton
+                v-if="proposalId === null"
                 title="Powrót do listy aktualnych zakupów"
                 class="text-orange-500"
                 @click="() => router.push({ name: 'PurchasesCurrent' })"
@@ -456,6 +576,7 @@
                 </template>
               </OfficeIconButton>
               <OfficeIconButton
+                v-if="proposalId === null"
                 title="Powrót do listy wszystkich zakupów"
                 class="text-orange-500"
                 @click="() => router.push({ name: 'Purchases' })"
@@ -465,6 +586,39 @@
                 </template>
               </OfficeIconButton>
             </div>
+          </div>
+
+          <div v-if="proposalId !== null && proposalQuery.data.value" class="mb-6">
+            <FormSectionCard title="Źródło propozycji" :icon="EnvelopeIcon">
+              <dl class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Temat</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">{{ proposalQuery.data.value.sourceSubject }}</dd>
+                </div>
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Od</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">
+                    {{ proposalQuery.data.value.originalSenderEmail ?? proposalQuery.data.value.sourceEmailFrom }}
+                  </dd>
+                  <dd
+                    v-if="
+                      proposalQuery.data.value.originalSenderEmail &&
+                      proposalQuery.data.value.sourceEmailFrom &&
+                      proposalQuery.data.value.originalSenderEmail !== proposalQuery.data.value.sourceEmailFrom
+                    "
+                    class="text-xs text-surface-500 dark:text-surface-400"
+                  >
+                    przekazano z: {{ proposalQuery.data.value.sourceEmailFrom }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-surface-500 dark:text-surface-400">Otrzymano</dt>
+                  <dd class="text-surface-800 dark:text-surface-200">
+                    {{ UtilsService.formatDateToString(proposalQuery.data.value.receivedAt) }}
+                  </dd>
+                </div>
+              </dl>
+            </FormSectionCard>
           </div>
 
           <div class="flex flex-col gap-6">
@@ -664,7 +818,15 @@
             </div>
           </div>
 
-          <div class="mt-8 flex justify-end">
+          <div class="mt-8 flex justify-end gap-3">
+            <OfficeButton
+              v-if="proposalId !== null"
+              text="odrzuć propozycję"
+              btn-type="office-regular"
+              type="button"
+              :btn-disabled="isSaveBtnDisabled"
+              @click="showIgnoreProposalDialog = true"
+            />
             <OfficeButton
               text="zapisz"
               btn-type="office-save"

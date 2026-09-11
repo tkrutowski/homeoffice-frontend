@@ -645,12 +645,6 @@
                     <small>Kwota zakupu:</small>
                     {{ UtilsService.formatCurrency(slotProps.data.amount) }}
                   </p>
-                  <p class="mb-1 text-left">
-                    <small>Raty: </small>
-                    <span :class="slotProps.data.installment ? 'text-green-500' : 'text-red-500'">
-                      {{ slotProps.data.installment ? 'TAK' : 'NIE' }}
-                    </span>
-                  </p>
                 </Fieldset>
                 <Fieldset legend="Dodatkowe informacje">
                   <Textarea id="description" v-model="slotProps.data.otherInfo" fluid rows="5" cols="30" readonly />

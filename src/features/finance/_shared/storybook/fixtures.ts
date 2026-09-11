@@ -128,7 +128,6 @@ export const mockPurchase: Purchase = {
   paymentDate: null,
   otherInfo: 'Biedronka',
   paymentStatus: PaymentStatus.TO_PAY,
-  installment: false,
 };
 
 export const mockCategory: TransactionCategoryDto = {

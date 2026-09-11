@@ -52,14 +52,14 @@
   const loansQuery = useLoansByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
   const feesQuery = useFeesByYearStatusUserQuery(selectedYear, 'TO_PAY', homeUserId);
 
-  // ===== Propozycje kredytów z e-maila =====
+  // ===== Propozycje z e-maila (kredyt i/lub zakup) =====
   const loanProposalsQuery = useLoanProposalsListQuery(LoanProposalStatus.EXTRACTED);
   const extractedProposalsCount = computed(() => loanProposalsQuery.data.value?.length ?? 0);
   const extractedProposalsLabel = computed(() => {
     const n = extractedProposalsCount.value;
-    if (n === 1) return 'nową propozycję kredytu';
-    if (n >= 2 && n <= 4) return 'nowe propozycje kredytów';
-    return 'nowych propozycji kredytów';
+    if (n === 1) return 'nową propozycję z e-maila';
+    if (n >= 2 && n <= 4) return 'nowe propozycje z e-maila';
+    return 'nowych propozycji z e-maila';
   });
 
   const loans = computed(() => loansQuery.data.value ?? []);
@@ -159,7 +159,7 @@
         </p>
       </div>
 
-      <!-- Propozycje kredytów z e-maila -->
+      <!-- Propozycje z e-maila -->
       <button
         v-if="extractedProposalsCount > 0"
         type="button"

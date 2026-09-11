@@ -11,7 +11,7 @@ export type PurchasesPageResult = {
   totalPages: number;
 };
 
-function parsePurchase(p: Purchase | any): Purchase {
+export function parsePurchase(p: Purchase | any): Purchase {
   return {
     ...p,
     purchaseDate: p.purchaseDate ? new Date(p.purchaseDate) : null,
