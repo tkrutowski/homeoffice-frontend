@@ -83,7 +83,7 @@ src/
 ├── views/                # Auth, Admin, Share, MainHome (not Library/Finance/Device)
 ├── stores/               # Shared Pinia only (see below)
 ├── types/                # Cross-cutting types only (User, Firm, ActiveStatus, FileInfo, …)
-├── composables/          # Cross-cutting only (e.g. useEc2Control — not module domain)
+├── composables/          # Cross-cutting only (e.g. useEc2Control, useAppNotifications — not module domain)
 ├── service/              # UtilsService, TranslationService, FileService, …
 ├── config/               # HTTP client, queryClient, colors, icons, form presets
 ├── assets/               # CSS, PrimeVue theme, images
@@ -125,6 +125,15 @@ src/
   - `getTypesForLibrary()` — bookstores
   - `getTypesForFinance()` — cards, transaction categories/labels (+ firms Pinia if empty)
   - `getTypesForDevice()` — devices list, device types, computers list
+
+### Global Notifications (bell in `TheHeader`)
+- Cross-cutting "things needing attention" (e.g. Finance email proposals), shown everywhere via `NotificationsBell.vue` in `TheHeader.vue` — not gated to a single module's menu/dashboard
+- Contract: `AppNotification` in `src/types/Notification.ts` — `{ id, module, icon, label, count, route, severity?, toastMessages? }`
+- Per-module adapter: `features/<domain>/_shared/notifications.ts` exporting `use<Domain>Notifications()` (see `features/finance/_shared/notifications.ts`) — reuses that domain's existing Query hooks (same `queryKey` → no extra requests), and gates them with `enabled: authStore.isAuthenticatedOrToken` since the bell/watcher are mounted even on the login screen
+  - Must always return an entry, even at `count: 0` — don't filter empty sources out. `NotificationsBell` filters `count > 0` for display, but `useNotificationsWatcher` needs `toastMessages` available at every count (including the transition down to 0) to diff correctly
+- Aggregator: `src/composables/useAppNotifications.ts` — combines every module's list; add `useLibraryNotifications()` etc. here as new domains gain notifications
+- Sticky-toast watcher: `src/composables/useNotificationsWatcher.ts` — diffs `count` per source, shows a manually-dismissed Toast (no `life`) on increase/decrease. **Singleton** — called exactly once, in `App.vue`. Never call it again elsewhere (duplicate calls duplicate Toasts)
+- `NotificationsBell.vue` (`src/components/`) — the dropdown UI; safe to read `useAppNotifications()` from multiple places (Query dedupes), unlike the watcher
 
 ### Feature modules (slices)
 
@@ -190,6 +199,7 @@ _shared/     TheMenuDevice, queryKeys, cloneEntities, storybook/
 ### Theme System
 - **Switcher component** (`ThemeSwitcher.vue`) applies class `dark` or `light` to `<html>`
 - Tailwind's `darkMode: ['selector', '[class="dark"]']` (see `tailwind.config.js`) activates `dark:` variants
+- **`TheHeader.vue` exception:** its own background is hardcoded dark (`#515455`) regardless of theme — content placed directly in the header (e.g. `NotificationsBell`, `ThemeSwitcher`) must use fixed light-on-dark colors (e.g. `text-surface-0`, `text-primary`), not theme-relative `dark:` pairs, or it goes invisible in light mode
 
 ### Color Palette: Prime Surface Tokens
 Always use **Surface tokens** for consistent theming (light and dark):
@@ -263,6 +273,7 @@ These rules in `.cursor/rules/` enforce project-specific practices:
 - **Add a feature view:** under `features/<domain>/<slice>/`, register route to that file
 - **Add Share/Admin view:** `src/views/...`, Pinia store in `src/stores/` if needed
 - **Add a reusable shared component:** `src/components/ComponentName.vue` (+ optional `*.stories.ts`)
+- **Add a notification source to the global bell:** create `features/<domain>/_shared/notifications.ts` with `use<Domain>Notifications()` (returns `AppNotification[]`, always-present entry even at `count: 0`) reusing existing Query hooks, then register it in `src/composables/useAppNotifications.ts`
 - **Add a utility function:** prefer `UtilsService` for cross-feature helpers
 - **Storybook stub:** fixtures in feature `_shared/storybook/` + `setup*StorybookStores()` with `setQueryData`
 - **Style a view:** Tailwind + Surface tokens; PrimeVue `pt` where possible

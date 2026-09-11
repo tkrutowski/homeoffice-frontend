@@ -4,11 +4,15 @@ import { fetchLoanProposal, fetchLoanProposals } from '@/features/finance/loanPr
 import { financeKeys } from '@/features/finance/_shared/queryKeys';
 import type { LoanProposalStatus } from '@/features/finance/loanProposals/types';
 
-export function useLoanProposalsListQuery(status: MaybeRefOrGetter<LoanProposalStatus | undefined>) {
+export function useLoanProposalsListQuery(
+  status: MaybeRefOrGetter<LoanProposalStatus | undefined>,
+  enabled: MaybeRefOrGetter<boolean> = true
+) {
   return useQuery({
     queryKey: computed(() => financeKeys.loanProposals.list(toValue(status))),
     queryFn: () => fetchLoanProposals(toValue(status)),
     refetchInterval: 60_000,
+    enabled: computed(() => toValue(enabled)),
   });
 }
 

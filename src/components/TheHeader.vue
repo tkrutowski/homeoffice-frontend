@@ -2,6 +2,7 @@
   import { useAuthorizationStore } from '@/stores/authorization';
   import ThemeSwitcher from './ThemeSwitcher.vue';
   import InstanceControl from '@/components/share/InstanceControl.vue';
+  import NotificationsBell from '@/components/NotificationsBell.vue';
   import { EC2_CONTROL_ENABLED, EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
 
   const authStore = useAuthorizationStore();
@@ -16,7 +17,10 @@
         <InstanceControl :idInstance="'i-0c84ab8759cefd840'" :nameInstance="'Smartgaz'" />
         <InstanceControl :idInstance="EC2_INSTANCE_ID" :nameInstance="EC2_INSTANCE_NAME" />
       </div>
-      <theme-switcher />
+      <div class="flex items-center justify-end gap-2">
+        <NotificationsBell v-if="authStore.isAuthenticatedOrToken" />
+        <theme-switcher />
+      </div>
       <h5 v-if="authStore.isAuthenticatedOrToken" class="flex justify-end font-bold pr-1 text-primary">
         Użytkownik: {{ authStore.username }}
       </h5>
