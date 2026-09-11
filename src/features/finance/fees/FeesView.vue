@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, type DefineComponent, ref, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { FilterMatchMode } from '@primevue/core/api';
   import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
@@ -180,7 +180,6 @@
     return sum;
   });
 
-  const dataTableRef = ref<DefineComponent | null>(null);
   const filteredFeeAmount = computed(() => {
     let sum = 0;
     fees.value.forEach((fee: Fee) => {
@@ -358,7 +357,6 @@
 
     <Panel class="my-3 mx-2">
       <DataTable
-        ref="dataTableRef"
         v-model:expandedRows="expandedRows"
         v-model:filters="filters"
         :value="fees"

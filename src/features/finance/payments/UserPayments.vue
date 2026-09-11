@@ -50,7 +50,6 @@
   const showStatusChangeConfirmationDialog = ref<boolean>(false);
   const selectedPaymentTemp = ref<Payment | null>(null);
 
-  const dataTableRef = ref(null);
   const cm = ref<InstanceType<typeof ContextMenu> | null>(null);
 
   const onRowSelect = (event: any) => {
@@ -295,7 +294,6 @@
     />
 
     <DataTable
-      ref="dataTableRef"
       v-model:selection="selectedPayment"
       :loading="loadingPayments"
       :sort-order="1"

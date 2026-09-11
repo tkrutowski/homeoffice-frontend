@@ -19,7 +19,7 @@
     "@vue/eslint-config-typescript": "14.9.0",
     "axios": "1.20.0",
     "chart.js": "4.5.1",
-    "eslint": "9.39.5",
+    "eslint": "10.10.0",
     "jwt-decode": "4.0.0",
     "moment": "2.30.1",
     "pinia": "2.3.1",
@@ -35,16 +35,16 @@
     "@tanstack/vue-query-devtools": "^6.1.48",
     "@tsconfig/node22": "22.0.6",
     "@types/node": "22.20.2",
-    "@vitejs/plugin-vue": "5.2.4",
-    "@vue/tsconfig": "0.7.0",
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vue/tsconfig": "0.9.1",
     "autoprefixer": "10.5.6",
     "postcss-import": "16.1.1",
     "prettier": "3.9.6",
     "storybook": "^10.6.0",
-    "typescript": "~5.6.2",
+    "typescript": "6.0.3",
     "unplugin-vue-components": "0.27.5",
-    "vite": "6.4.3",
+    "vite": "8.3.0",
     "vite-plugin-vue-devtools": "8.2.1",
-    "vue-tsc": "3.0.5"
+    "vue-tsc": "3.3.11"
   }
 }

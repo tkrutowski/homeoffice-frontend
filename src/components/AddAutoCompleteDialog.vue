@@ -17,7 +17,6 @@
 
   const selected = ref<T | null>(null);
   const filtered = ref<T[]>([]);
-  const inputRef = ref(null);
 
   watch(
     () => props.visible,
@@ -52,7 +51,6 @@
     <div class="flex flex-col w-full">
       <label for="input-customer">{{ msg }}</label>
       <AutoComplete
-        ref="inputRef"
         id="input-customer"
         v-model="selected"
         dropdown
