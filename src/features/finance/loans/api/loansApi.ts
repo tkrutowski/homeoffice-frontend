@@ -1,9 +1,10 @@
 import moment from 'moment';
 import httpCommon from '@/config/http-common';
-import type { Loan, LoanInstallment } from '@/features/finance/loans/types';
+import type { Loan, LoanFromPurchasesDraft, LoanInstallment } from '@/features/finance/loans/types';
 import type { LoanPageParams } from '@/features/finance/_shared/queryKeys';
 import type { StatusType } from '@/types/StatusType';
 import { PaymentStatus } from '@/features/finance/payments/types';
+import { parsePurchase } from '@/features/finance/purchases/api/purchasesApi';
 
 export type LoansPageResult = {
   content: Loan[];
@@ -96,6 +97,30 @@ export async function updateLoanInstallment(installment: LoanInstallment): Promi
   };
   await httpCommon.put(`/v1/finance/loan/installment`, payload);
   return fetchLoan(installment.idLoan);
+}
+
+/** Podgląd przed zamianą zaznaczonych zakupów na kredyt — nie blokuje na niczym poza pustą listą / nieistniejącym id. */
+export async function fetchLoanFromPurchasesDraft(purchaseIds: number[]): Promise<LoanFromPurchasesDraft> {
+  const response = await httpCommon.get(`/v1/finance/loan/from-purchases/draft`, {
+    params: { purchaseIds: purchaseIds.join(',') },
+  });
+  const data = response.data;
+  return {
+    suggestedAmount: Number(data.suggestedAmount),
+    suggestedName: data.suggestedName ?? '',
+    suggestedDate: data.suggestedDate ? new Date(data.suggestedDate) : null,
+    purchases: (data.purchases ?? []).map(parsePurchase),
+    warnings: data.warnings ?? [],
+  };
+}
+
+/** Właściwa konwersja — zaznaczone zakupy dostają idLoan + status CONVERTED, znikają z list „do zapłaty”. */
+export async function convertPurchasesToLoan(purchaseIds: number[], loan: Loan): Promise<Loan> {
+  const response = await httpCommon.post(`/v1/finance/loan/from-purchases`, {
+    purchaseIds,
+    loan: toLoanPayload(loan),
+  });
+  return parseLoan(response.data);
 }
 
 export async function fetchLoansByYearAndStatusAndUser(

@@ -96,6 +96,15 @@
     if (selectedUser.value) void getCurrentPurchaseByUser();
   }
 
+  //--------------------------------------ZAMIANA ZAZNACZONYCH ZAKUPÓW NA KREDYT
+  function goToConvertSelectedToLoan() {
+    if (purchasesToPay.value.length === 0) return;
+    router.push({
+      name: 'LoanFromPurchases',
+      params: { purchaseIds: purchasesToPay.value.map(p => p.id).join(',') },
+    });
+  }
+
   async function applyUsernameFromRouteQuery() {
     const raw = route.query.username;
     const username = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
@@ -206,6 +215,13 @@
               @click="goToNewPurchase"
             />
             <BankCsvImportControl @purchases-saved="onPurchasesImported" />
+            <OfficeIconButton
+              title="Zamień zaznaczone zakupy na kredyt"
+              class="text-blue-500"
+              icon="pi pi-sync"
+              :btn-disabled="purchasesToPay.length == 0"
+              @click="goToConvertSelectedToLoan"
+            />
             <OfficeIconButton
               title="Odświerz listę zakupów"
               class="text-green-500"

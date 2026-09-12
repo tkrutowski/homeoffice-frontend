@@ -239,6 +239,7 @@ export const useBankCsvImportStore = defineStore('bankCsvImport', {
             paymentDate: null,
             paymentStatus: PaymentStatus.TO_PAY,
             otherInfo: row.otherInfo ?? '',
+            idLoan: null,
           };
 
           try {

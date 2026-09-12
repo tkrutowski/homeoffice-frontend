@@ -1,9 +1,17 @@
 <script setup lang="ts">
-  import { useLoanQuery } from '@/features/finance/loans/queries/useLoansQueries';
-  import { useCreateLoanMutation, useUpdateLoanMutation } from '@/features/finance/loans/queries/useLoansMutations';
+  import { useLoanFromPurchasesDraftQuery, useLoanQuery } from '@/features/finance/loans/queries/useLoansQueries';
+  import {
+    useConvertPurchasesToLoanMutation,
+    useCreateLoanMutation,
+    useUpdateLoanMutation,
+  } from '@/features/finance/loans/queries/useLoansMutations';
   import { useBanksListQuery } from '@/features/finance/banks/queries/useBanksQueries';
   import { useCreateBankMutation } from '@/features/finance/banks/queries/useBanksMutations';
-  import { cloneLoan, mapLoanProposalToLoanDraft } from '@/features/finance/_shared/cloneEntities';
+  import {
+    cloneLoan,
+    mapLoanProposalToLoanDraft,
+    mapPurchasesDraftToLoanDraft,
+  } from '@/features/finance/_shared/cloneEntities';
   import { useLoanProposalQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
   import {
     useAcceptLoanProposalMutation,
@@ -37,6 +45,8 @@
     CalculatorIcon,
     DocumentTextIcon,
     EnvelopeIcon,
+    ShoppingCartIcon,
+    ExclamationTriangleIcon,
   } from '@heroicons/vue/24/outline';
 
   const userStore = useUsersStore();
@@ -48,6 +58,30 @@
   const updateLoanMutation = useUpdateLoanMutation();
   const banksQuery = useBanksListQuery();
   const createBankMutation = useCreateBankMutation();
+
+  // ------------------------------------ ZAMIANA ZAKUPÓW NA KREDYT (PurchasesView / PurchasesCurrentView) ------------------------------------
+  const purchaseIds = computed<number[]>(() => {
+    const raw = route.params.purchaseIds;
+    const value = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+    if (!value) return [];
+    return value
+      .split(',')
+      .map(Number)
+      .filter(id => !isNaN(id) && id > 0);
+  });
+  const isConvertMode = computed<boolean>(() => purchaseIds.value.length > 0);
+  const purchasesDraftQuery = useLoanFromPurchasesDraftQuery(
+    purchaseIds,
+    computed(() => isConvertMode.value)
+  );
+  const convertPurchasesToLoanMutation = useConvertPurchasesToLoanMutation();
+  /** Backend: warning zawierający ten fragment oznacza, że submit zostanie odrzucony (400) — gasimy przycisk zapisu wcześniej. */
+  const hasBlockingWarning = computed(() =>
+    (purchasesDraftQuery.data.value?.warnings ?? []).some(w => w.includes('zostanie odrzucona'))
+  );
+  const selectedPurchasesSum = computed(() =>
+    (purchasesDraftQuery.data.value?.purchases ?? []).reduce((sum, p) => sum + Number(p.amount), 0)
+  );
 
   // ------------------------------------ PROPOZYCJA KREDYTU Z E-MAILA (przegląd/akceptacja) ------------------------------------
   const proposalId = computed<number | null>(() =>
@@ -83,6 +117,11 @@
     installmentList: [],
   });
 
+  /** Różnica kwoty kredytu względem sumy zaznaczonych zakupów (tolerancja backendu: 0,01 zł) — tylko w trybie konwersji. */
+  const amountDiffFromSelectedPurchases = computed(() =>
+    Number((loan.value.amount - selectedPurchasesSum.value).toFixed(2))
+  );
+
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);
 
@@ -90,9 +129,11 @@
     return (
       loanQuery.isFetching.value ||
       proposalQuery.isFetching.value ||
+      purchasesDraftQuery.isFetching.value ||
       userStore.loadingUsers ||
       banksQuery.isFetching.value ||
-      btnSaveDisabled.value
+      btnSaveDisabled.value ||
+      (isConvertMode.value && hasBlockingWarning.value)
     );
   });
   //
@@ -100,7 +141,9 @@
   //
   function saveLoan() {
     submitted.value = true;
-    if (proposalId.value !== null) {
+    if (isConvertMode.value) {
+      convertFromPurchases();
+    } else if (proposalId.value !== null) {
       acceptProposal();
     } else if (isEdit.value) {
       editLoan();
@@ -247,6 +290,45 @@
     showIgnoreProposalDialog.value = false;
   }
 
+  //
+  //---------------------------------------------ZAMIANA ZAKUPÓW NA KREDYT-------------------------------------
+  //
+  async function convertFromPurchases() {
+    console.log('convertFromPurchases()');
+    if (isNotValid()) {
+      showError('Uzupełnij brakujące elementy');
+    } else {
+      btnSaveDisabled.value = true;
+      btnShowBusy.value = true;
+      convertPurchasesToLoanMutation
+        .mutateAsync({ purchaseIds: purchaseIds.value, loan: loan.value })
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Potwierdzenie',
+            detail: 'Zamieniono zakupy na kredyt: ' + loan.value?.name,
+            life: 3000,
+          });
+          setTimeout(() => {
+            router.push({ name: 'Loans' });
+          }, 3000);
+        })
+        .catch((reason: AxiosError) => {
+          toast.add({
+            severity: 'error',
+            summary: reason?.message,
+            detail:
+              (reason?.response?.data as { message: string })?.message ?? 'Błąd podczas zamiany zakupów na kredyt',
+            life: 5000,
+          });
+        })
+        .finally(() => {
+          btnSaveDisabled.value = false;
+          btnShowBusy.value = false;
+        });
+    }
+  }
+
   watch(
     () => loanQuery.data.value,
     data => {
@@ -283,6 +365,17 @@
   );
 
   watch(() => banksQuery.data.value, resolveProposalBankIfNeeded);
+
+  watch(
+    () => purchasesDraftQuery.data.value,
+    data => {
+      if (data) {
+        loan.value = mapPurchasesDraftToLoanDraft(data);
+        selectedBank.value = loan.value.bank;
+        selectedUser.value = userStore.getUser(loan.value.idUser);
+      }
+    }
+  );
 
   //---------------------------------------MOUNTED------------------------------------------------
   onMounted(async () => {
@@ -475,18 +568,31 @@
               class="min-w-0 flex-1 text-left text-2xl font-medium tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl"
             >
               {{
-                proposalId !== null
-                  ? 'Przegląd propozycji kredytu'
-                  : isEdit
-                    ? `Edycja kredytu: ${loan?.name}`
-                    : 'Nowy kredyt'
+                isConvertMode
+                  ? 'Zamiana zakupów na kredyt'
+                  : proposalId !== null
+                    ? 'Przegląd propozycji kredytu'
+                    : isEdit
+                      ? `Edycja kredytu: ${loan?.name}`
+                      : 'Nowy kredyt'
               }}
             </h1>
             <div class="flex shrink-0 items-center gap-2 sm:justify-end">
               <OfficeIconButton
-                :title="proposalId !== null ? 'Powrót do propozycji z e-maila' : 'Powrót do listy kredytów'"
+                :title="
+                  isConvertMode
+                    ? 'Powrót do listy zakupów'
+                    : proposalId !== null
+                      ? 'Powrót do propozycji z e-maila'
+                      : 'Powrót do listy kredytów'
+                "
                 class="text-orange-500"
-                @click="() => router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })"
+                @click="
+                  () =>
+                    isConvertMode
+                      ? router.back()
+                      : router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })
+                "
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />
@@ -495,7 +601,50 @@
             </div>
           </div>
 
-          <div v-if="proposalId !== null && proposalQuery.data.value" class="mb-6">
+          <div v-if="isConvertMode" class="mb-6">
+            <FormSectionCard title="Zakupy do zamiany na kredyt" :icon="ShoppingCartIcon">
+              <div
+                v-if="purchasesDraftQuery.isFetching.value"
+                class="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400"
+              >
+                <i class="pi pi-spin pi-spinner" aria-hidden="true" />
+                Wczytywanie podglądu...
+              </div>
+              <template v-else-if="purchasesDraftQuery.data.value">
+                <ul class="flex flex-col gap-1 text-sm">
+                  <li
+                    v-for="p in purchasesDraftQuery.data.value.purchases"
+                    :key="p.id"
+                    class="flex items-center justify-between gap-3 text-surface-700 dark:text-surface-300"
+                  >
+                    <span class="min-w-0 truncate">{{ p.name }}</span>
+                    <span class="shrink-0 font-medium tabular-nums">{{ UtilsService.formatCurrency(p.amount) }}</span>
+                  </li>
+                </ul>
+                <div
+                  class="mt-3 flex items-center justify-between gap-3 border-t border-surface-200 pt-3 text-sm font-semibold text-surface-900 dark:border-surface-700 dark:text-surface-0"
+                >
+                  <span>Razem</span>
+                  <span class="tabular-nums">{{ UtilsService.formatCurrency(selectedPurchasesSum) }}</span>
+                </div>
+                <ul
+                  v-if="purchasesDraftQuery.data.value.warnings.length > 0"
+                  class="mt-4 flex flex-col gap-1 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+                >
+                  <li
+                    v-for="(warning, idx) in purchasesDraftQuery.data.value.warnings"
+                    :key="idx"
+                    class="flex items-start gap-2"
+                  >
+                    <ExclamationTriangleIcon class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{{ warning }}</span>
+                  </li>
+                </ul>
+              </template>
+            </FormSectionCard>
+          </div>
+
+          <div v-if="!isConvertMode && proposalId !== null && proposalQuery.data.value" class="mb-6">
             <FormSectionCard title="Źródło propozycji" :icon="EnvelopeIcon">
               <dl class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
                 <div>
@@ -675,9 +824,23 @@
                         @focus="UtilsService.selectText"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
-                      showErrorAmount() ? 'Pole jest wymagane.' : '\u00a0'
-                    }}</small>
+                    <small
+                      class="min-h-[1.25rem] text-sm"
+                      :class="
+                        showErrorAmount()
+                          ? 'text-red-600 dark:text-red-400'
+                          : isConvertMode && amountDiffFromSelectedPurchases !== 0
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-surface-500 dark:text-surface-400'
+                      "
+                      >{{
+                        showErrorAmount()
+                          ? 'Pole jest wymagane.'
+                          : isConvertMode && amountDiffFromSelectedPurchases !== 0
+                            ? `Różnica względem sumy zaznaczonych zakupów: ${UtilsService.formatCurrency(amountDiffFromSelectedPurchases)}`
+                            : ' '
+                      }}</small
+                    >
                   </div>
 
                   <div class="flex flex-col gap-2">
@@ -800,7 +963,7 @@
 
           <div class="mt-8 flex justify-end gap-3">
             <OfficeButton
-              v-if="proposalId !== null"
+              v-if="!isConvertMode && proposalId !== null"
               text="odrzuć propozycję"
               btn-type="office-regular"
               type="button"
@@ -808,7 +971,7 @@
               @click="showIgnoreProposalDialog = true"
             />
             <OfficeButton
-              text="zapisz"
+              :text="isConvertMode ? 'zamień na kredyt' : 'zapisz'"
               btn-type="office-save"
               type="submit"
               :loading="btnShowBusy"

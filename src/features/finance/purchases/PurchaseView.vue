@@ -70,6 +70,7 @@
     paymentDate: null,
     paymentStatus: PaymentStatus.TO_PAY,
     otherInfo: '',
+    idLoan: null,
   });
 
   // ------------------------------------ PROPOZYCJA ZAKUPU Z E-MAILA (przegląd/akceptacja) ------------------------------------

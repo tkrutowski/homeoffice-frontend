@@ -71,6 +71,8 @@ export const financeKeys = {
     detail: (id: number) => [...financeKeys.loans.all(), 'detail', id] as const,
     byYearStatusUser: (year: number, status: StatusType, userId?: number) =>
       [...financeKeys.loans.all(), 'by-year-status-user', year, status, userId ?? null] as const,
+    fromPurchasesDraft: (purchaseIds: number[]) =>
+      [...financeKeys.loans.all(), 'from-purchases-draft', purchaseIds] as const,
   },
 
   fees: {

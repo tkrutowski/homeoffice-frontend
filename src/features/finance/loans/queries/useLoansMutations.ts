@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import {
+  convertPurchasesToLoan,
   createLoan,
   deleteLoan,
   updateLoan,
@@ -38,6 +39,21 @@ export function useDeleteLoanMutation() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: financeKeys.loans.all() });
       void queryClient.invalidateQueries({ queryKey: financeKeys.payments.all() });
+      // Usunięcie kredytu przywraca powiązane zakupy do TO_PAY po stronie backendu.
+      void queryClient.invalidateQueries({ queryKey: financeKeys.purchases.all() });
+    },
+  });
+}
+
+/** Zamiana zaznaczonych zakupów na kredyt — POST /finance/loan/from-purchases. Zakupy dostają idLoan + status CONVERTED. */
+export function useConvertPurchasesToLoanMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ purchaseIds, loan }: { purchaseIds: number[]; loan: Loan }) =>
+      convertPurchasesToLoan(purchaseIds, loan),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: financeKeys.loans.all() });
+      void queryClient.invalidateQueries({ queryKey: financeKeys.purchases.all() });
     },
   });
 }
