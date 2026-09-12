@@ -1,6 +1,6 @@
 import type { Bank } from '@/features/finance/banks/types';
 import type { Card } from '@/features/finance/cards/types';
-import type { Loan, LoanInstallment } from '@/features/finance/loans/types';
+import type { Loan, LoanFromPurchasesDraft, LoanInstallment } from '@/features/finance/loans/types';
 import type { Fee, FeeInstallment } from '@/features/finance/fees/types';
 import type { Purchase } from '@/features/finance/purchases/types';
 import type { LoanProposal } from '@/features/finance/loanProposals/types';
@@ -102,6 +102,31 @@ export function mapLoanProposalToLoanDraft(proposal: LoanProposal): Loan {
 }
 
 /**
+ * Buduje świeży draft `Loan` (id:0, bez rat) na podstawie podglądu zamiany zakupów na kredyt
+ * (GET /finance/loan/from-purchases/draft) — do wstępnego wypełnienia formularza kredytu.
+ * Bank i reszta danych ratalnych nie są sugerowane przez backend — użytkownik uzupełnia je ręcznie.
+ */
+export function mapPurchasesDraftToLoanDraft(draft: LoanFromPurchasesDraft): Loan {
+  return {
+    id: 0,
+    bank: null,
+    idUser: draft.purchases[0]?.idUser ?? 0,
+    name: draft.suggestedName,
+    amount: draft.suggestedAmount,
+    date: draft.suggestedDate ?? new Date(),
+    loanNumber: '',
+    accountNumber: '',
+    firstPaymentDate: null,
+    numberOfInstallments: 1,
+    installmentAmount: 0,
+    loanStatus: PaymentStatus.TO_PAY,
+    loanCost: 0,
+    otherInfo: '',
+    installmentList: [],
+  };
+}
+
+/**
  * Buduje świeży draft `Purchase` (id:0) na podstawie propozycji z e-maila — do wstępnego wypełnienia
  * formularza zakupu. Kartę, firmę i użytkownika użytkownik wybiera ręcznie (backend nie prefilluje ich
  * w propozycji) — termin spłaty też nieprefillowany, wylicza go backend po wyborze karty.
@@ -120,5 +145,6 @@ export function mapLoanProposalToPurchaseDraft(proposal: LoanProposal): Purchase
     paymentDate: null,
     otherInfo: base?.otherInfo ?? '',
     paymentStatus: PaymentStatus.TO_PAY,
+    idLoan: null,
   };
 }

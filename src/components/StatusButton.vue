@@ -20,6 +20,7 @@
       :class="{
         'pi pi-times-circle': btnType === 'TO_PAY' || btnType === 'INACTIVE',
         'pi pi-check-circle': btnType === 'PAID' || btnType === 'ACTIVE',
+        'pi pi-link': btnType === 'CONVERTED',
       }"
     ></i>
   </Button>

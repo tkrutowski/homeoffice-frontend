@@ -1,5 +1,6 @@
 import type { Bank } from '@/features/finance/banks/types';
 import type { PaymentStatus } from '@/features/finance/payments/types';
+import type { Purchase } from '@/features/finance/purchases/types';
 
 export interface Loan {
   id: number;
@@ -27,4 +28,13 @@ export interface LoanInstallment {
   paymentDeadline: Date | null;
   paymentDate: Date | null;
   paymentStatus: PaymentStatus;
+}
+
+/** Podgląd/sugestia przed zamianą zakupów na kredyt — GET /finance/loan/from-purchases/draft. */
+export interface LoanFromPurchasesDraft {
+  suggestedAmount: number;
+  suggestedName: string;
+  suggestedDate: Date | null;
+  purchases: Purchase[];
+  warnings: string[];
 }

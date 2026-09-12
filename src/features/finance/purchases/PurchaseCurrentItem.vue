@@ -290,7 +290,7 @@
         {{ UtilsService.formatCurrency(rowPurchase.amount) }}
       </span>
       <button
-        v-if="!isPaid"
+        v-if="!isPaid && rowPurchase.paymentStatus !== PaymentStatus.CONVERTED"
         type="button"
         :class="payCtaButtonClass"
         title="Oznacz zakup jako spłacony"

@@ -32,6 +32,7 @@ export const Translations: Record<string, Record<string, string>> = {
     PAID: 'Zapłacone',
     TO_PAY: 'Do zapłaty',
     OVER_DUE: 'Przeterminowana',
+    CONVERTED: 'Zamieniony na kredyt',
   },
   ComputerType: {
     LAPTOP: 'Laptop',

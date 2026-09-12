@@ -26,4 +26,6 @@ export interface Purchase {
   paymentDate: Date | null;
   otherInfo: string;
   paymentStatus: PaymentStatus;
+  /** null = zwykły zakup; liczba = wchłonięty przez kredyt o tym id (zamiana zakupów na kredyt). */
+  idLoan: number | null;
 }

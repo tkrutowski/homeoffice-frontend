@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { fetchLoan, fetchLoansByYearAndStatusAndUser, fetchLoansPage } from '@/features/finance/loans/api/loansApi';
+import {
+  fetchLoan,
+  fetchLoanFromPurchasesDraft,
+  fetchLoansByYearAndStatusAndUser,
+  fetchLoansPage,
+} from '@/features/finance/loans/api/loansApi';
 import { financeKeys, type LoanPageParams } from '@/features/finance/_shared/queryKeys';
 import type { StatusType } from '@/types/StatusType';
 
@@ -16,6 +21,17 @@ export function useLoanQuery(loanId: MaybeRefOrGetter<number>, enabled: MaybeRef
     queryKey: computed(() => financeKeys.loans.detail(toValue(loanId))),
     queryFn: () => fetchLoan(toValue(loanId)),
     enabled: computed(() => toValue(enabled) && toValue(loanId) > 0),
+  });
+}
+
+export function useLoanFromPurchasesDraftQuery(
+  purchaseIds: MaybeRefOrGetter<number[]>,
+  enabled: MaybeRefOrGetter<boolean> = true
+) {
+  return useQuery({
+    queryKey: computed(() => financeKeys.loans.fromPurchasesDraft(toValue(purchaseIds))),
+    queryFn: () => fetchLoanFromPurchasesDraft(toValue(purchaseIds)),
+    enabled: computed(() => toValue(enabled) && toValue(purchaseIds).length > 0),
   });
 }
 

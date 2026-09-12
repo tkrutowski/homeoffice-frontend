@@ -19,6 +19,8 @@ export enum PaymentStatus {
   TO_PAY = 'TO_PAY',
   OVER_DUE = 'OVER_DUE',
   ALL = 'ALL',
+  /** Tylko dla Purchase — zakup wchłonięty przez kredyt (zamiana zakupów na kredyt), patrz idLoan. */
+  CONVERTED = 'CONVERTED',
 }
 
 export enum PaymentMethod {

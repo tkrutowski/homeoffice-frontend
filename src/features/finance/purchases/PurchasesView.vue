@@ -186,6 +186,14 @@
     purchaseTemp.value = purchase;
     showStatusChangeConfirmationDialog.value = true;
   };
+  /** Zakup CONVERTED nie ma statusu do przełączenia — przycisk statusu działa wtedy jak link do powiązanego kredytu. */
+  const onStatusButtonClick = (purchase: Purchase) => {
+    if (purchase.paymentStatus === PaymentStatus.CONVERTED) {
+      if (purchase.idLoan) router.push({ name: 'Loan', params: { isEdit: 'true', loanId: purchase.idLoan } });
+      return;
+    }
+    confirmStatusChange(purchase);
+  };
   const changeStatusConfirmationMessage = computed(() => {
     if (purchaseTemp.value)
       return `Czy chcesz zmienić status zakupu: <b>${purchaseTemp.value?.name}</b> na <b>${
@@ -306,6 +314,25 @@
     return sum;
   });
 
+  /** Zakup CONVERTED nie może być ponownie wybrany do konwersji ani zapłaty — usuwamy go z zaznaczenia od razu po kliknięciu. */
+  const onRowSelect = (event: { data: Purchase }) => {
+    if (event.data.paymentStatus === PaymentStatus.CONVERTED) {
+      selectedPurchases.value = selectedPurchases.value.filter(p => p.id !== event.data.id);
+    }
+  };
+
+  /** Wyszarzenie wiersza zakupu wchłoniętego przez kredyt — rozliczenie idzie teraz przez raty kredytu. */
+  const rowClass = (data: Purchase) => (data.paymentStatus === PaymentStatus.CONVERTED ? 'opacity-50 grayscale' : '');
+
+  //--------------------------------------ZAMIANA ZAZNACZONYCH ZAKUPÓW NA KREDYT
+  const goToConvertSelectedToLoan = () => {
+    if (selectedPurchases.value.length === 0) return;
+    router.push({
+      name: 'LoanFromPurchases',
+      params: { purchaseIds: selectedPurchases.value.map(p => p.id).join(',') },
+    });
+  };
+
   // Obsługa wyszukiwania globalnego z debounce
   let searchTimeout: NodeJS.Timeout | null = null;
 
@@ -366,11 +393,13 @@
         table-style="min-width: 50rem"
         filter-display="menu"
         :global-filter-fields="['name', 'firm.name', 'purchaseDate']"
+        :row-class="rowClass"
         row-hover
         size="small"
         @page="handlePageChange"
         @sort="handleSort"
         @filter="handleFilter"
+        @row-select="onRowSelect"
         paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         current-page-report-template="Od {first} do {last} (Wszystkich zakupów: {totalRecords})"
       >
@@ -391,6 +420,13 @@
                       await purchasesSumToPayQuery.refetch();
                     }
                   "
+                />
+                <OfficeIconButton
+                  title="Zamień zaznaczone zakupy na kredyt"
+                  class="text-blue-500"
+                  icon="pi pi-sync"
+                  :btn-disabled="selectedPurchases.length === 0"
+                  @click="goToConvertSelectedToLoan"
                 />
                 <div
                   class="h-9 w-px shrink-0 bg-surface-300 dark:bg-surface-600"
@@ -587,10 +623,10 @@
         <Column field="paymentStatus" header="Status" style="width: 100px">
           <template #body="{ data, field }">
             <StatusButton
-              title="Zmień status zakupu"
+              :title="data[field] === 'CONVERTED' ? 'Przejdź do powiązanego kredytu' : 'Zmień status zakupu'"
               :btn-type="data[field]"
-              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
-              @click="confirmStatusChange(data)"
+              :color-icon="data[field] === 'PAID' ? '#2da687' : data[field] === 'CONVERTED' ? '#6b7280' : '#dc3545'"
+              @click="onStatusButtonClick(data)"
             />
           </template>
         </Column>
@@ -606,9 +642,14 @@
               />
               <OfficeIconButton
                 class="text-red-500"
-                title="Usuń zakup"
+                :title="
+                  slotProps.data.paymentStatus === 'CONVERTED'
+                    ? 'Nie można usunąć zakupu powiązanego z kredytem — usuń kredyt, aby go odłączyć'
+                    : 'Usuń zakup'
+                "
                 icon="pi pi-trash"
                 severity="danger"
+                :btn-disabled="slotProps.data.paymentStatus === 'CONVERTED'"
                 @click="confirmDeletePurchase(slotProps.data)"
               />
             </div>
