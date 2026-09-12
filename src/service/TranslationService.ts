@@ -38,6 +38,10 @@ export const Translations: Record<string, Record<string, string>> = {
     DESKTOP: 'Desktop',
     TABLET: 'Tablet',
   },
+  CardType: {
+    CREDIT: 'Kredytowa',
+    DEFERRED_PAYMENT: 'Płatność odroczona',
+  },
 };
 
 export const TranslationService = {

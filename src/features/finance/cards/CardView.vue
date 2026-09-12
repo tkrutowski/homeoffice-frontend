@@ -12,7 +12,7 @@
   import IconButton from '@/components/OfficeIconButton.vue';
   import type { User } from '@/types/User';
   import type { Bank } from '@/features/finance/banks/types';
-  import type { Card } from '@/features/finance/cards/types';
+  import { CardType, type Card } from '@/features/finance/cards/types';
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
@@ -47,15 +47,28 @@
     name: '',
     activationDate: null,
     limit: 0,
+    cardType: CardType.CREDIT,
     repaymentDay: 1,
     expirationDate: null,
     otherInfo: '',
     activeStatus: 'ACTIVE',
     cardNumber: '',
     closingDay: 1,
+    paymentTermDays: undefined,
     imageUrl: '',
     multi: false,
   });
+
+  const cardTypeOptions = UtilsService.getCardTypeOption();
+
+  function onCardTypeChange() {
+    if (card.value.cardType === CardType.CREDIT) {
+      if (!card.value.closingDay) card.value.closingDay = 1;
+      if (!card.value.repaymentDay) card.value.repaymentDay = 1;
+    } else if (!card.value.paymentTermDays) {
+      card.value.paymentTermDays = 30;
+    }
+  }
 
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);
@@ -204,12 +217,14 @@
       name: '',
       activationDate: null,
       limit: 0,
+      cardType: CardType.CREDIT,
       repaymentDay: 1,
       expirationDate: null,
       otherInfo: '',
       activeStatus: 'ACTIVE',
       cardNumber: '',
       closingDay: 1,
+      paymentTermDays: undefined,
       imageUrl: '',
       multi: false,
     };
@@ -240,7 +255,10 @@
       showErrorUser() ||
       showErrorBank() ||
       showErrorExpirationDate() ||
-      showErrorActivationDate()
+      showErrorActivationDate() ||
+      showErrorClosingDay() ||
+      showErrorRepaymentDay() ||
+      showErrorPaymentTermDays()
     );
   };
   const showErrorName = () => {
@@ -263,6 +281,15 @@
   };
   const showErrorActivationDate = () => {
     return submitted.value && !card.value.activationDate;
+  };
+  const showErrorClosingDay = () => {
+    return submitted.value && card.value.cardType === CardType.CREDIT && !card.value.closingDay;
+  };
+  const showErrorRepaymentDay = () => {
+    return submitted.value && card.value.cardType === CardType.CREDIT && !card.value.repaymentDay;
+  };
+  const showErrorPaymentTermDays = () => {
+    return submitted.value && card.value.cardType === CardType.DEFERRED_PAYMENT && !card.value.paymentTermDays;
   };
 
   const ptFieldInputText = {
@@ -447,7 +474,30 @@
                 </div>
               </template>
               <div class="flex flex-col gap-5">
-                <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-type">Typ karty</label>
+                    <div
+                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                    >
+                      <div
+                        class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
+                      >
+                        <CreditCardIcon class="h-5 w-5" aria-hidden="true" />
+                      </div>
+                      <Select
+                        id="card-type"
+                        v-model="card.cardType"
+                        :pt="ptSelectInField"
+                        :options="cardTypeOptions"
+                        option-label="label"
+                        option-value="value"
+                        @change="onCardTypeChange"
+                      />
+                    </div>
+                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                  </div>
+
                   <div class="flex min-w-0 flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="card-limit"
                       >Limit na karcie</label
@@ -477,7 +527,9 @@
                       showErrorLimit() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
+                </div>
 
+                <div v-if="card.cardType === CardType.CREDIT" class="grid grid-cols-1 gap-5 lg:grid-cols-2">
                   <div class="flex min-w-0 flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="card-closing-day"
                       >Dzień zamknięcia</label
@@ -490,8 +542,11 @@
                       show-buttons
                       :min="1"
                       :max="28"
+                      :invalid="showErrorClosingDay()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorClosingDay() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
                   </div>
 
                   <div class="flex min-w-0 flex-col gap-2">
@@ -506,8 +561,31 @@
                       show-buttons
                       :min="1"
                       :max="28"
+                      :invalid="showErrorRepaymentDay()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorRepaymentDay() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
+                  </div>
+                </div>
+                <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <div class="flex min-w-0 flex-col gap-2">
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-payment-term-days"
+                      >Termin płatności (dni od zakupu)</label
+                    >
+                    <InputNumber
+                      id="card-payment-term-days"
+                      v-model="card.paymentTermDays"
+                      :pt="ptFieldInputText"
+                      mode="decimal"
+                      show-buttons
+                      :min="1"
+                      :max="365"
+                      :invalid="showErrorPaymentTermDays()"
+                    />
+                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      showErrorPaymentTermDays() ? 'Pole jest wymagane.' : '\u00a0'
+                    }}</small>
                   </div>
                 </div>
 

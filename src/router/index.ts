@@ -179,6 +179,12 @@ const routes = [
     component: LoanView,
     props: true,
   },
+  {
+    path: '/finance/loan-proposal/review-purchase/:proposalId',
+    name: 'PurchaseProposalReview',
+    component: PurchaseView,
+    props: true,
+  },
   // FEE
   {
     path: '/finance/fee/all',

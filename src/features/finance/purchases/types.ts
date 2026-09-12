@@ -26,5 +26,4 @@ export interface Purchase {
   paymentDate: Date | null;
   otherInfo: string;
   paymentStatus: PaymentStatus;
-  installment: boolean;
 }

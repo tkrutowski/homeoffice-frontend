@@ -1,5 +1,5 @@
 import type { Bank } from '@/features/finance/banks/types';
-import type { Card } from '@/features/finance/cards/types';
+import { CardType, type Card } from '@/features/finance/cards/types';
 import type { Fee } from '@/features/finance/fees/types';
 import type { Loan } from '@/features/finance/loans/types';
 import type { Payment } from '@/features/finance/payments/types';
@@ -28,6 +28,7 @@ export const mockCard: Card = {
   name: 'Visa Gold',
   activationDate: new Date('2024-01-15'),
   limit: 8000,
+  cardType: CardType.CREDIT,
   repaymentDay: 10,
   expirationDate: new Date('2028-12-31'),
   otherInfo: '',
@@ -127,7 +128,6 @@ export const mockPurchase: Purchase = {
   paymentDate: null,
   otherInfo: 'Biedronka',
   paymentStatus: PaymentStatus.TO_PAY,
-  installment: false,
 };
 
 export const mockCategory: TransactionCategoryDto = {

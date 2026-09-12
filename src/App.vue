@@ -2,8 +2,12 @@
   import TheHeader from './components/TheHeader.vue';
   import Toast from 'primevue/toast';
   import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
+  import { useNotificationsWatcher } from '@/composables/useNotificationsWatcher';
 
   const isDev = import.meta.env.DEV;
+
+  // Singleton — patrz komentarz w useNotificationsWatcher. Nie wołać nigdzie indziej.
+  useNotificationsWatcher();
 </script>
 
 <template>

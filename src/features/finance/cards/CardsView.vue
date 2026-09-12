@@ -10,8 +10,9 @@
   import OfficeButton from '@/components/OfficeButton.vue';
   import type { StatusType } from '@/types/StatusType';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-  import type { Card } from '@/features/finance/cards/types';
+  import { CardType, type Card } from '@/features/finance/cards/types';
   import { UtilsService } from '@/service/UtilsService';
+  import { TranslationService } from '@/service/TranslationService';
   import router from '@/router';
   import type { AxiosError } from 'axios';
   import type { ResponseData } from '@/types/User.ts';
@@ -160,6 +161,14 @@
     });
   };
 
+  const cardTypeLabel = (card: Card) => TranslationService.translateEnum('CardType', card.cardType);
+
+  const cardDeadlineInfo = (card: Card) => {
+    return card.cardType === CardType.DEFERRED_PAYMENT
+      ? `Termin płatności: ${card.paymentTermDays} dni od zakupu`
+      : `Dzień spłaty: ${card.repaymentDay}`;
+  };
+
   const toolbarLoading = computed(() => banksQuery.isFetching.value || cardsQuery.isFetching.value);
 
   const refreshCards = async () => {
@@ -269,7 +278,8 @@
                       <div class="text-sm font-medium mt-2">
                         {{ UtilsService.formatDateToString(item.expirationDate) }}
                       </div>
-                      <div class="text-sm font-medium mt-2">Dzień spłaty: {{ item.repaymentDay }}</div>
+                      <div class="text-sm font-medium mt-2">{{ cardTypeLabel(item) }}</div>
+                      <div class="text-sm font-medium mt-2">{{ cardDeadlineInfo(item) }}</div>
                     </div>
                   </div>
                   <div class="flex flex-col md:items-end gap-8 w-1/3">

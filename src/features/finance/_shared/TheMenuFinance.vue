@@ -17,11 +17,13 @@
   const cardsFetching = useIsFetching({ queryKey: financeKeys.cards.all() });
   const paymentsFetching = useIsFetching({ queryKey: financeKeys.payments.all() });
 
-  // Licznik propozycji kredytów czekających na przejrzenie (odświeżany co 60s, patrz useLoanProposalsListQuery)
+  // Licznik propozycji z e-maila (kredyt i/lub zakup) czekających na przejrzenie (odświeżany co 60s, patrz useLoanProposalsListQuery)
   const loanProposalsQuery = useLoanProposalsListQuery(LoanProposalStatus.EXTRACTED);
   const extractedProposalsCount = computed(() => loanProposalsQuery.data.value?.length ?? 0);
   const loanProposalsMenuLabel = computed(() =>
-    extractedProposalsCount.value > 0 ? `Propozycje kredytów (${extractedProposalsCount.value})` : 'Propozycje kredytów'
+    extractedProposalsCount.value > 0
+      ? `Propozycje z e-maila (${extractedProposalsCount.value})`
+      : 'Propozycje z e-maila'
   );
 
   const activeMenu = computed(() => {

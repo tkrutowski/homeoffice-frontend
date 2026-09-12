@@ -58,8 +58,11 @@
     return statusFilterOptions.find(option => option.value === status)?.label ?? status;
   };
 
-  const reviewProposal = (proposal: LoanProposal) => {
+  const reviewProposalAsLoan = (proposal: LoanProposal) => {
     router.push({ name: 'LoanProposalReview', params: { proposalId: proposal.id } });
+  };
+  const reviewProposalAsPurchase = (proposal: LoanProposal) => {
+    router.push({ name: 'PurchaseProposalReview', params: { proposalId: proposal.id } });
   };
 
   //
@@ -72,8 +75,7 @@
     showIgnoreConfirmationDialog.value = true;
   };
   const ignoreConfirmationMessage = computed(() => {
-    if (proposalTemp.value)
-      return `Czy chcesz odrzucić propozycję kredytu: <b>${proposalTemp.value.sourceSubject}</b>?`;
+    if (proposalTemp.value) return `Czy chcesz odrzucić propozycję: <b>${proposalTemp.value.sourceSubject}</b>?`;
     return 'No message';
   });
   const submitIgnore = async () => {
@@ -84,7 +86,7 @@
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail: 'Odrzucono propozycję kredytu',
+            detail: 'Odrzucono propozycję',
             life: 3000,
           });
         })
@@ -109,7 +111,7 @@
     showDeleteConfirmationDialog.value = true;
   };
   const deleteConfirmationMessage = computed(() => {
-    if (proposalTemp.value) return `Czy chcesz usunąć propozycję kredytu: <b>${proposalTemp.value.sourceSubject}</b>?`;
+    if (proposalTemp.value) return `Czy chcesz usunąć propozycję: <b>${proposalTemp.value.sourceSubject}</b>?`;
     return 'No message';
   });
   const submitDelete = async () => {
@@ -120,7 +122,7 @@
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
-            detail: 'Usunięto propozycję kredytu',
+            detail: 'Usunięto propozycję',
             life: 3000,
           });
         })
@@ -210,7 +212,7 @@
 
         <template #empty>
           <p v-if="!loading" class="text-surface-500 dark:text-surface-400">
-            Brak propozycji kredytów do wyświetlenia.
+            Brak propozycji z e-maila do wyświetlenia.
           </p>
         </template>
 
@@ -232,15 +234,22 @@
             </span>
           </template>
         </Column>
-        <Column header="Akcja" :exportable="false" style="max-width: 8rem">
+        <Column header="Akcja" :exportable="false" style="max-width: 11rem">
           <template #body="slotProps">
             <div class="flex flex-row gap-1 justify-start">
               <OfficeIconButton
-                v-if="slotProps.data.status === LoanProposalStatus.EXTRACTED"
+                v-if="slotProps.data.status === LoanProposalStatus.EXTRACTED && slotProps.data.proposedLoan"
                 class="text-orange-500"
-                title="Przejrzyj propozycję"
-                icon="pi pi-file-edit"
-                @click="reviewProposal(slotProps.data)"
+                title="Przejrzyj jako kredyt"
+                icon="pi pi-percentage"
+                @click="reviewProposalAsLoan(slotProps.data)"
+              />
+              <OfficeIconButton
+                v-if="slotProps.data.status === LoanProposalStatus.EXTRACTED && slotProps.data.proposedPurchase"
+                class="text-orange-500"
+                title="Przejrzyj jako zakup"
+                icon="pi pi-shopping-cart"
+                @click="reviewProposalAsPurchase(slotProps.data)"
               />
               <OfficeIconButton
                 v-if="slotProps.data.status === LoanProposalStatus.EXTRACTED"

@@ -3,7 +3,7 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import { computed, type DefineComponent, ref, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
   import type { Author, Book, Category, UserBook } from '@/features/library/shelf/types';
   import router from '@/router';
@@ -152,8 +152,6 @@
     return categories.map(category => category.name).join(', ');
   };
 
-  const dataTableRef = ref<DefineComponent | null>(null);
-
   //
   //-------------------------------------------------DELETE -------------------------------------------------
   //
@@ -291,7 +289,6 @@
 
     <Panel class="my-3 mx-2">
       <DataTable
-        ref="dataTableRef"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
         :value="booksDto"

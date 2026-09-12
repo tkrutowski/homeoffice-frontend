@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
@@ -23,7 +23,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           return decoded.authorities.includes('ROLE_ADMIN');
         } else {
           return false;
@@ -36,7 +36,7 @@ export const useAuthorizationStore = defineStore('authorization', {
     isAuthenticatedOrToken(): boolean {
       try {
         if (this.accessToken) {
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           return this.isAuthenticated || moment.unix(decoded.exp).isAfter(moment());
         }
         return this.isAuthenticated;
@@ -50,7 +50,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_GOAHEAD') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -66,7 +66,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('FINANCE_PAYMENT_READ_ALL') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -82,7 +82,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -98,7 +98,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_PURCHASE') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -114,7 +114,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return (
             decoded.authorities.includes('FINANCE_PURCHASE_WRITE_ALL') || decoded.authorities.includes('ROLE_ADMIN')
@@ -132,7 +132,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_PAYMENT') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -148,7 +148,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_LOAN') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -164,7 +164,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_FEE') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -180,7 +180,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_FIRM') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -196,7 +196,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_FINANCE_BANK') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -212,7 +212,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_LIBRARY') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -228,7 +228,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_DEVICE') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -244,7 +244,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('ROLE_COMPUTER') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -260,7 +260,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       try {
         if (this.accessToken) {
           // console.log("token : ", this.token);
-          const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
           // console.log("token decoded: ", decoded);
           return decoded.authorities.includes('COMPUTER_WRITE_ALL') || decoded.authorities.includes('ROLE_ADMIN');
         } else {
@@ -289,7 +289,7 @@ export const useAuthorizationStore = defineStore('authorization', {
       this.accessToken = token;
       localStorage.setItem('accessToken', token);
       this.isAuthenticated = true;
-      const decoded = jwt_decode<CustomJwtPayload>(this.accessToken);
+      const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
       if (decoded.sub) {
         this.username = decoded.sub;
         localStorage.setItem('username', decoded.sub);

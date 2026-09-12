@@ -71,6 +71,9 @@ export function cloneLoanProposal(proposal: LoanProposal): LoanProposal {
   return {
     ...proposal,
     proposedLoan: proposal.proposedLoan ? cloneLoan(proposal.proposedLoan) : null,
+    proposedPurchase: proposal.proposedPurchase
+      ? { ...proposal.proposedPurchase, purchaseDate: new Date(proposal.proposedPurchase.purchaseDate) }
+      : null,
     receivedAt: new Date(proposal.receivedAt),
     handledAt: proposal.handledAt ? new Date(proposal.handledAt) : null,
   };
@@ -95,5 +98,27 @@ export function mapLoanProposalToLoanDraft(proposal: LoanProposal): Loan {
     loanCost: base?.loanCost ?? 0,
     otherInfo: base?.otherInfo ?? '',
     installmentList: [],
+  };
+}
+
+/**
+ * Buduje świeży draft `Purchase` (id:0) na podstawie propozycji z e-maila — do wstępnego wypełnienia
+ * formularza zakupu. Kartę, firmę i użytkownika użytkownik wybiera ręcznie (backend nie prefilluje ich
+ * w propozycji) — termin spłaty też nieprefillowany, wylicza go backend po wyborze karty.
+ */
+export function mapLoanProposalToPurchaseDraft(proposal: LoanProposal): Purchase {
+  const base = proposal.proposedPurchase;
+  return {
+    id: 0,
+    idCard: 0,
+    idFirm: 0,
+    idUser: 0,
+    name: base?.name || proposal.sourceSubject || '',
+    purchaseDate: base?.purchaseDate ? new Date(base.purchaseDate) : new Date(),
+    amount: base?.amount ?? 0,
+    paymentDeadline: null,
+    paymentDate: null,
+    otherInfo: base?.otherInfo ?? '',
+    paymentStatus: PaymentStatus.TO_PAY,
   };
 }

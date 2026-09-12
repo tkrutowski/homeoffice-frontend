@@ -231,7 +231,7 @@
         toast.add({
           severity: 'success',
           summary: 'Potwierdzenie',
-          detail: 'Odrzucono propozycję kredytu',
+          detail: 'Odrzucono propozycję',
           life: 3000,
         });
         router.push({ name: 'LoanProposals' });
@@ -454,7 +454,7 @@
 
   <ConfirmationDialog
     v-model:visible="showIgnoreProposalDialog"
-    msg="Czy chcesz odrzucić tę propozycję kredytu?"
+    msg="Czy chcesz odrzucić tę propozycję?"
     label="Odrzuć"
     @save="submitIgnoreProposal"
     @cancel="showIgnoreProposalDialog = false"
@@ -484,7 +484,7 @@
             </h1>
             <div class="flex shrink-0 items-center gap-2 sm:justify-end">
               <OfficeIconButton
-                :title="proposalId !== null ? 'Powrót do propozycji kredytów' : 'Powrót do listy kredytów'"
+                :title="proposalId !== null ? 'Powrót do propozycji z e-maila' : 'Powrót do listy kredytów'"
                 class="text-orange-500"
                 @click="() => router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })"
               >
