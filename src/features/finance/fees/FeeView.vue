@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useRoute } from 'vue-router';
   import { computed, onMounted, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
@@ -33,11 +34,30 @@
 
   const userStore = useUsersStore();
   const firmStore = useFirmsStore();
+  const authorizationStore = useAuthorizationStore();
   const route = useRoute();
   const toast = useToast();
   const selectedUser = ref<User | null>(null);
   const selectedFirm = ref<Firm | null>(null);
   const selectedFeeFrequency = ref<FeeFrequency | null>(null);
+
+  // Bez uprawnienia READ_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinanceFeeReadAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value
+      ? userStore.users
+      : userStore.users.filter(user => user.username === authorizationStore.username)
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez READ_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): User | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.getLoggedUser;
+      fee.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUser(idUser);
+  }
 
   const isEdit = ref<boolean>(false);
   const copyFromId = computed(() => {
@@ -182,14 +202,14 @@
   }
 
   //---------------------------------------------MOUNTED--------------------------------------------
-  onMounted(() => {
+  onMounted(async () => {
     console.log('onMounted GET');
-    if (userStore.users.length === 0) userStore.getUsersFromDb();
+    if (userStore.users.length === 0) await userStore.getUsersFromDb();
     if (firmStore.firms.length === 0) firmStore.getFirmsFromDb();
-  });
-
-  onMounted(() => {
     isEdit.value = route.params.isEdit === 'true';
+    if (!isEdit.value && copyFromId.value === null) {
+      selectedUser.value = resolveSelectedUser(fee.value.idUser);
+    }
   });
 
   watch(
@@ -208,7 +228,7 @@
         fee.value = cloneFee(data);
       }
       selectedFirm.value = fee.value.firm;
-      selectedUser.value = userStore.getUser(fee.value.idUser);
+      selectedUser.value = resolveSelectedUser(fee.value.idUser);
       selectedFeeFrequency.value = fee.value.feeFrequency;
     }
   );
@@ -452,10 +472,11 @@
                         id="fee-user"
                         v-model="selectedUser"
                         :pt="ptSelectInField"
-                        :options="userStore.users"
+                        :options="userSelectOptions"
                         :option-label="user => user.firstName + ' ' + user.lastName"
                         placeholder="Wybierz użytkownika"
                         :loading="userStore.loadingUsers"
+                        :disabled="!canSelectAnyUser"
                         required
                         @change="fee.idUser = selectedUser ? selectedUser.id : 0"
                       />

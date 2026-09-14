@@ -12,6 +12,7 @@
   import type { Purchase } from '@/features/finance/purchases/types';
   import type { User } from '@/types/User.ts';
   import { useUsersStore } from '@/stores/users.ts';
+  import { useAuthorizationStore } from '@/stores/authorization.ts';
   import { usePurchasesCurrentQuery } from '@/features/finance/purchases/queries/usePurchasesQueries';
   import { useUpdatePurchaseStatusMutation } from '@/features/finance/purchases/queries/usePurchasesMutations';
   import router from '@/router';
@@ -20,7 +21,11 @@
   const route = useRoute();
   const toast = useToast();
   const userStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
   const updatePurchaseStatusMutation = useUpdatePurchaseStatusMutation();
+
+  // Bez uprawnienia WRITE_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinancePurchaseWriteAll);
 
   /** Ostatnia osoba z listy „bieżących” — po powrocie z formularza (router.back) odtwarzamy Select i odświeżamy dane */
   const PURCHASES_CURRENT_USER_STORAGE_KEY = 'purchasesCurrentSelectedUsername';
@@ -247,6 +252,7 @@
               :options="userStore.getUserByPrivileges"
               :option-label="user => user.firstName + ' ' + user.lastName"
               :loading="userStore.loadingUsers"
+              :disabled="!canSelectAnyUser"
               @change="onUserSelectChange"
               required
             />

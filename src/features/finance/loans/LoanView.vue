@@ -18,6 +18,7 @@
     useIgnoreLoanProposalMutation,
   } from '@/features/finance/loanProposals/queries/useLoanProposalsMutations';
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useRoute } from 'vue-router';
   import { computed, onMounted, ref, watch } from 'vue';
   import type { Loan } from '@/features/finance/loans/types';
@@ -50,6 +51,7 @@
   } from '@heroicons/vue/24/outline';
 
   const userStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
   const route = useRoute();
   const isEdit = ref<boolean>(false);
   const loanId = computed(() => Number(route.params.loanId as string));
@@ -98,6 +100,24 @@
   const toast = useToast();
   const selectedUser = ref<User | null>();
   const selectedBank = ref<Bank | null>();
+
+  // Bez uprawnienia READ_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinanceLoanReadAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value
+      ? userStore.users
+      : userStore.users.filter(user => user.username === authorizationStore.username)
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez READ_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): User | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.getLoggedUser;
+      loan.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUser(idUser);
+  }
 
   const loan = ref<Loan>({
     id: 0,
@@ -335,7 +355,7 @@
       if (data) {
         loan.value = cloneLoan(data);
         selectedBank.value = loan.value.bank;
-        selectedUser.value = userStore.getUser(loan.value.idUser);
+        selectedUser.value = resolveSelectedUser(loan.value.idUser);
       }
     }
   );
@@ -358,7 +378,7 @@
       if (data) {
         loan.value = mapLoanProposalToLoanDraft(data);
         selectedBank.value = loan.value.bank;
-        selectedUser.value = userStore.getUser(loan.value.idUser);
+        selectedUser.value = resolveSelectedUser(loan.value.idUser);
         resolveProposalBankIfNeeded();
       }
     }
@@ -372,7 +392,7 @@
       if (data) {
         loan.value = mapPurchasesDraftToLoanDraft(data);
         selectedBank.value = loan.value.bank;
-        selectedUser.value = userStore.getUser(loan.value.idUser);
+        selectedUser.value = resolveSelectedUser(loan.value.idUser);
       }
     }
   );
@@ -385,6 +405,9 @@
     isEdit.value = route.params.isEdit === 'true';
     if (isEdit.value === false) {
       console.log('onMounted NEW LOAN');
+      if (!isConvertMode.value && proposalId.value === null) {
+        selectedUser.value = resolveSelectedUser(loan.value.idUser);
+      }
     } else {
       console.log('onMounted EDIT LOAN');
     }
@@ -712,10 +735,11 @@
                         id="loan-user"
                         v-model="selectedUser"
                         :pt="ptSelectInField"
-                        :options="userStore.users"
+                        :options="userSelectOptions"
                         :option-label="user => user.firstName + ' ' + user.lastName"
                         placeholder="Wybierz użytkownika"
                         :loading="userStore.loadingUsers"
+                        :disabled="!canSelectAnyUser"
                         @change="loan.idUser = selectedUser ? selectedUser.id : 0"
                       />
                     </div>

@@ -16,6 +16,7 @@
   import type { AxiosError } from 'axios';
 
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useRoute } from 'vue-router';
   import { useFirmsStore } from '@/stores/firms';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';
@@ -46,6 +47,7 @@
 
   const userStore = useUsersStore();
   const firmStore = useFirmsStore();
+  const authorizationStore = useAuthorizationStore();
   const route = useRoute();
   const cardsQuery = useCardsListQuery('ALL');
   const cards = computed(() => cardsQuery.data.value ?? []);
@@ -57,6 +59,19 @@
   const selectedFirm = ref<Firm | null>(null);
   const selectedCard = ref<Card | null>(null);
   const optionCard = ref<Card[]>();
+
+  // Bez uprawnienia WRITE_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinancePurchaseWriteAll);
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez WRITE_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): User | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.getLoggedUser;
+      purchase.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUser(idUser);
+  }
 
   const purchase = ref<Purchase>({
     id: 0,
@@ -249,7 +264,7 @@
       purchase.value = clonePurchase(data);
       selectedFirm.value = firmStore.getFirm(data.idFirm);
       selectedCard.value = findCardById(cards.value, data.idCard);
-      selectedUser.value = userStore.getUser(data.idUser);
+      selectedUser.value = resolveSelectedUser(data.idUser);
     },
     { immediate: true }
   );
@@ -353,7 +368,10 @@
   watch(
     () => proposalQuery.data.value,
     data => {
-      if (data) purchase.value = mapLoanProposalToPurchaseDraft(data);
+      if (data) {
+        purchase.value = mapLoanProposalToPurchaseDraft(data);
+        selectedUser.value = resolveSelectedUser(purchase.value.idUser);
+      }
     }
   );
 
@@ -366,6 +384,9 @@
     if (firmStore.firms.length === 0) await firmStore.getFirmsFromDb();
 
     isEdit.value = route.params.isEdit === 'true';
+    if (!isEdit.value && proposalId.value === null) {
+      selectedUser.value = resolveSelectedUser(purchase.value.idUser);
+    }
     btnSaveDisabled.value = false;
   });
 
@@ -660,6 +681,7 @@
                   :option-label="user => user.firstName + ' ' + user.lastName"
                   placeholder="Wybierz użytkownika"
                   :loading="userStore.loadingUsers"
+                  :disabled="!canSelectAnyUser"
                   required
                   @change="purchase.idUser = selectedUser ? selectedUser.id : 0"
                 />

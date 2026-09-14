@@ -30,12 +30,17 @@
   import { findCardById } from '@/features/finance/cards/api/cardsApi';
   import { useFirmsStore } from '@/stores/firms';
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
 
   const toast = useToast();
   const cardsQuery = useCardsListQuery('ALL');
   const cards = computed(() => cardsQuery.data.value ?? []);
   const firmsStore = useFirmsStore();
   const usersStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
+
+  // Bez uprawnienia READ_ALL użytkownik widzi tylko swoje zakupy — kolumna „Użytkownik” jest wtedy zbędna.
+  const canSeeAllUsers = computed(() => authorizationStore.hasAccessFinancePurchaseReadAll);
 
   const rowsPerPage = ref<number>(parseInt(localStorage.getItem('rowsPerPagePurchases') || '10', 10));
   const currentPage = ref<number>(0);
@@ -519,6 +524,7 @@
 
         <!--  USER  -->
         <Column
+          v-if="canSeeAllUsers"
           field="idUser"
           header="Użytkownik"
           :sortable="true"
@@ -663,7 +669,7 @@
             <div class="flex flex-col md:flex-row gap-4">
               <div class="basis-1/2">
                 <Fieldset legend="Ogólne informacje" class="">
-                  <p class="mb-1 mt-3 text-left">
+                  <p v-if="canSeeAllUsers" class="mb-1 mt-3 text-left">
                     <small>Użytkownik:</small> {{ getUserFullName(slotProps.data.idUser) }}
                   </p>
                   <p class="mb-1 text-left"><small>Nazwa zakupu:</small> {{ slotProps.data.name }}</p>
