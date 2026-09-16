@@ -30,7 +30,7 @@
   <div class="relative">
     <button
       type="button"
-      class="flex h-12 w-12 items-center justify-center rounded-full text-surface-0 transition-colors hover:bg-white/10"
+      class="flex h-11 w-11 items-center justify-center rounded-lg text-surface-0 transition-colors hover:bg-white/10"
       :aria-label="totalCount > 0 ? `Powiadomienia (${totalCount})` : 'Powiadomienia'"
       @click="toggle"
     >
@@ -38,7 +38,7 @@
         v-if="totalCount > 0"
         :value="totalCount"
         severity="danger"
-        class="flex h-12 w-12 items-center justify-center"
+        class="flex h-11 w-11 items-center justify-center"
       >
         <i class="pi pi-bell text-2xl" aria-hidden="true" />
       </OverlayBadge>
