@@ -21,9 +21,13 @@
         <NotificationsBell v-if="authStore.isAuthenticatedOrToken" />
         <theme-switcher />
       </div>
-      <h5 v-if="authStore.isAuthenticatedOrToken" class="flex justify-end font-bold pr-1 text-primary">
-        Użytkownik: {{ authStore.username }}
-      </h5>
+      <router-link
+        v-if="authStore.isAuthenticatedOrToken"
+        :to="{ name: 'AccountSettings' }"
+        class="flex justify-end font-bold pr-1 text-primary hover:underline"
+      >
+        <h5>Użytkownik: {{ authStore.username }}</h5>
+      </router-link>
     </div>
   </div>
   <br />

@@ -54,6 +54,9 @@ import ComputersView from '@/features/device/computers/ComputersView.vue';
 import FirmsView from '@/views/share/FirmsView.vue';
 import FirmView from '@/views/share/FirmView.vue';
 
+//ACCOUNT
+import AccountSettingsView from '@/features/account/AccountSettingsView.vue';
+
 const routes = [
   {
     path: '/',
@@ -80,6 +83,12 @@ const routes = [
     name: 'refresh',
     component: RefreshComponent,
     props: true,
+  },
+  //----------------------------------------------ACCOUNT--------------------------------------------
+  {
+    path: '/account/settings',
+    name: 'AccountSettings',
+    component: AccountSettingsView,
   },
   //----------------------------------------------ADMIN--------------------------------------------
   {
