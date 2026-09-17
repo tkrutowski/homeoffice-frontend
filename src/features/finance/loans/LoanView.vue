@@ -26,7 +26,7 @@
   import { useToast } from 'primevue/usetoast';
   import router from '@/router';
   import type { Bank } from '@/features/finance/banks/types';
-  import type { User } from '@/types/User';
+  import type { UserName } from '@/types/User';
   import FormSectionCard from '@/components/FormSectionCard.vue';
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
@@ -98,25 +98,23 @@
   const showIgnoreProposalDialog = ref<boolean>(false);
 
   const toast = useToast();
-  const selectedUser = ref<User | null>();
+  const selectedUser = ref<UserName | null>();
   const selectedBank = ref<Bank | null>();
 
   // Bez uprawnienia READ_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
   const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinanceLoanReadAll);
   const userSelectOptions = computed(() =>
-    canSelectAnyUser.value
-      ? userStore.users
-      : userStore.users.filter(user => user.username === authorizationStore.username)
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
   );
 
   /** Zwraca użytkownika do ustawienia w formularzu — bez READ_ALL zawsze wymusza zalogowanego użytkownika. */
-  function resolveSelectedUser(idUser: number): User | null {
+  function resolveSelectedUser(idUser: number): UserName | null {
     if (!canSelectAnyUser.value) {
-      const loggedUser = userStore.getLoggedUser;
+      const loggedUser = userStore.loggedUserName;
       loan.value.idUser = loggedUser ? loggedUser.id : 0;
       return loggedUser;
     }
-    return userStore.getUser(idUser);
+    return userStore.getUserName(idUser);
   }
 
   const loan = ref<Loan>({
@@ -150,7 +148,8 @@
       loanQuery.isFetching.value ||
       proposalQuery.isFetching.value ||
       purchasesDraftQuery.isFetching.value ||
-      userStore.loadingUsers ||
+      userStore.loadingUserNames ||
+      userStore.loadingLoggedUserName ||
       banksQuery.isFetching.value ||
       btnSaveDisabled.value ||
       (isConvertMode.value && hasBlockingWarning.value)
@@ -401,7 +400,10 @@
   onMounted(async () => {
     console.log('onMounted GET');
     btnSaveDisabled.value = true;
-    if (userStore.users.length === 0) await userStore.getUsersFromDb();
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
     isEdit.value = route.params.isEdit === 'true';
     if (isEdit.value === false) {
       console.log('onMounted NEW LOAN');
@@ -738,7 +740,7 @@
                         :options="userSelectOptions"
                         :option-label="user => user.firstName + ' ' + user.lastName"
                         placeholder="Wybierz użytkownika"
-                        :loading="userStore.loadingUsers"
+                        :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
                         :disabled="!canSelectAnyUser"
                         @change="loan.idUser = selectedUser ? selectedUser.id : 0"
                       />

@@ -62,7 +62,7 @@ export function useBankTransactionsView() {
       purchasesCardSum.value = await fetchPurchasesSumBetween(
         dateFrom.value,
         dateTo.value,
-        filters.isAdmin.value && userIds.length === usersStore.users.length ? undefined : userIds
+        filters.isAdmin.value && userIds.length === usersStore.userNames.length ? undefined : userIds
       );
     } finally {
       loadingPurchasesSum.value = false;

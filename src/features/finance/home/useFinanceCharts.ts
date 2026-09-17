@@ -9,7 +9,7 @@ import type { GenericChartData } from '@/components/chartTypes';
 import type { Loan } from '@/features/finance/loans/types';
 import type { Fee } from '@/features/finance/fees/types';
 import type { Purchase } from '@/features/finance/purchases/types';
-import type { User } from '@/types/User';
+import type { UserName } from '@/types/User';
 import type { Card } from '@/features/finance/cards/types';
 import { FinanceChartService } from '@/features/finance/_shared/FinanceChartService';
 import { fetchPurchasesByYearAndUser } from '@/features/finance/purchases/api/purchasesApi';
@@ -21,7 +21,7 @@ export interface UseFinanceChartsOptions {
   fees: Ref<Fee[]>;
   cardsActive: Ref<Card[]>;
   selectedYear: Ref<number>;
-  usersToDisplay: Ref<User[]>;
+  usersToDisplay: Ref<UserName[]>;
   getCard: (cardId: number) => Card | undefined;
   months: string[];
 }
@@ -96,8 +96,8 @@ export function useFinanceCharts(options: UseFinanceChartsOptions) {
     userPurchases.value.clear();
     for (const user of usersToDisplay.value) {
       const purchases = await queryClient.fetchQuery({
-        queryKey: financeKeys.purchases.byYearUser(selectedYear.value, user.username),
-        queryFn: () => fetchPurchasesByYearAndUser(selectedYear.value, user.username),
+        queryKey: financeKeys.purchases.byYearUser(selectedYear.value, user.id),
+        queryFn: () => fetchPurchasesByYearAndUser(selectedYear.value, user.id),
       });
       userPurchases.value.set(user.id, purchases);
     }

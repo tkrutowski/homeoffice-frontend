@@ -79,7 +79,9 @@
 
   const sortedFirms = computed(() => [...firmsStore.firms].sort((a, b) => a.name.localeCompare(b.name)));
   const sortedUsers = computed(() =>
-    [...usersStore.users].sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`))
+    [...usersStore.userNames].sort((a, b) =>
+      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+    )
   );
   const sortedCards = computed(() => [...cards.value].sort((a, b) => a.name.localeCompare(b.name)));
 
@@ -168,7 +170,7 @@
   async function loadDictionaries() {
     await Promise.all([
       firmsStore.firms.length === 0 ? firmsStore.getFirmsFromDb() : Promise.resolve(),
-      usersStore.users.length === 0 ? usersStore.getUsersFromDb() : Promise.resolve(),
+      usersStore.userNames.length === 0 ? usersStore.getUserNamesFromDb() : Promise.resolve(),
       cards.value.length === 0 ? cardsQuery.refetch() : Promise.resolve(),
       categories.value.length === 0 ? categoriesQuery.refetch() : Promise.resolve(),
       labels.value.length === 0 ? labelsQuery.refetch() : Promise.resolve(),

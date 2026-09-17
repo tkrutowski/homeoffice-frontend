@@ -73,7 +73,7 @@
   });
 
   const userFilter = computed(() => {
-    return usersStore.users.sort((a, b) => {
+    return [...usersStore.userNames].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
       const nameB = `${b.firstName} ${b.lastName}`;
       return nameA.localeCompare(nameB);
@@ -128,7 +128,7 @@
 
     const f = filters.value;
     if (f?.global?.value) params.globalFilter = f.global.value;
-    if (f?.idUser?.value?.username) params.username = f.idUser.value.username;
+    if (f?.idUser?.value?.id) params.userId = f.idUser.value.id;
     if (f?.name?.value) params.name = f.name.value;
     if (f?.idFirm?.value) params.idFirm = f.idFirm.value;
     if (f?.idCard?.value) params.idCard = f.idCard.value;
@@ -157,10 +157,10 @@
   const purchasesSumToPay = computed(() => purchasesSumToPayQuery.data.value ?? 0);
 
   firmsStore.getFirmsFromDb();
-  if (usersStore.users.length === 0) usersStore.getUsersFromDb();
+  if (usersStore.userNames.length === 0) usersStore.getUserNamesFromDb();
 
   const getUserFullName = (idUser: number): string => {
-    return usersStore.getUserFullName(idUser);
+    return usersStore.getUserNameFullName(idUser);
   };
 
   const getFirmName = (idFirm: number): string => {

@@ -25,11 +25,11 @@ export function usePurchaseQuery(purchaseId: MaybeRefOrGetter<number>, enabled: 
   });
 }
 
-export function usePurchasesCurrentQuery(username: MaybeRefOrGetter<string | null>) {
+export function usePurchasesCurrentQuery(userId: MaybeRefOrGetter<number | null>) {
   return useQuery({
-    queryKey: computed(() => financeKeys.purchases.current(toValue(username))),
-    queryFn: () => fetchPurchasesCurrent(toValue(username) as string),
-    enabled: computed(() => Boolean(toValue(username))),
+    queryKey: computed(() => financeKeys.purchases.current(toValue(userId))),
+    queryFn: () => fetchPurchasesCurrent(toValue(userId) as number),
+    enabled: computed(() => Boolean(toValue(userId))),
   });
 }
 
@@ -42,12 +42,12 @@ export function usePurchasesSumToPayQuery() {
 
 export function usePurchasesByYearAndUserQuery(
   year: MaybeRefOrGetter<number>,
-  username: MaybeRefOrGetter<string | undefined> = undefined,
+  userId: MaybeRefOrGetter<number | undefined> = undefined,
   enabled: MaybeRefOrGetter<boolean> = true
 ) {
   return useQuery({
-    queryKey: computed(() => financeKeys.purchases.byYearUser(toValue(year), toValue(username))),
-    queryFn: () => fetchPurchasesByYearAndUser(toValue(year), toValue(username)),
+    queryKey: computed(() => financeKeys.purchases.byYearUser(toValue(year), toValue(userId))),
+    queryFn: () => fetchPurchasesByYearAndUser(toValue(year), toValue(userId)),
     enabled: computed(() => toValue(enabled)),
   });
 }

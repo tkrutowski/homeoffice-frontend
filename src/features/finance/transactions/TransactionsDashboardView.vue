@@ -107,7 +107,10 @@
 
   onMounted(async () => {
     loadPanelsState();
-    if (usersStore.users.length === 0) await usersStore.getUsersFromDb();
+    await Promise.all([
+      usersStore.userNames.length === 0 ? usersStore.getUserNamesFromDb() : Promise.resolve(),
+      usersStore.loggedUserName ? Promise.resolve() : usersStore.getLoggedUserNameFromDb(),
+    ]);
     initPeopleFilter();
     monthPickerDate.value = anchorDate.value;
     yearPickerDate.value = anchorDate.value;
@@ -280,7 +283,7 @@
           :amount-max="amountBounds.max"
           :loading-categories="loadingCategories"
           :loading-labels="loadingLabels"
-          :loading-users="usersStore.loadingUsers"
+          :loading-users="usersStore.loadingUserNames || usersStore.loadingLoggedUserName"
           @update:selected-category-ids="onCategoryIdsUpdate"
           @update:selected-label-ids="onLabelIdsUpdate"
           @update:selected-users="onUsersUpdate"

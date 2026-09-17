@@ -214,7 +214,7 @@
   };
 
   const getUserFullName = (id: number) => {
-    return userStore.getUserFullName(id);
+    return userStore.getUserNameFullName(id);
   };
 
   const changeStatusConfirmationMessage = computed(() => {
