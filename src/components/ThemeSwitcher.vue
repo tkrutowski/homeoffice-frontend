@@ -1,13 +1,12 @@
 <template>
-  <div class="card flex justify-end p-2">
-    <Button
-      class="inline-flex w-8 h-8 p-0 items-center justify-center surface-0 dark:surface-500 border border-primary rounded"
-      @click="onThemeToggle"
-      outlined
-      :icon="`dark:text-white pi ${iconClass}`"
-    >
-    </Button>
-  </div>
+  <button
+    type="button"
+    class="flex h-11 w-11 items-center justify-center rounded-lg text-surface-0 transition-colors hover:bg-white/10"
+    :aria-label="iconClass === 'pi-moon' ? 'Przełącz na jasny motyw' : 'Przełącz na ciemny motyw'"
+    @click="onThemeToggle"
+  >
+    <i :class="`pi ${iconClass} text-2xl`" aria-hidden="true"></i>
+  </button>
 </template>
 
 <script setup lang="ts">

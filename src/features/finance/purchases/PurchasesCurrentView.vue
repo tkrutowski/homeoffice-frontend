@@ -10,8 +10,9 @@
   import BankCsvImportControl from '@/features/finance/transactions/BankCsvImportControl.vue';
   import { useToast } from 'primevue/usetoast';
   import type { Purchase } from '@/features/finance/purchases/types';
-  import type { User } from '@/types/User.ts';
+  import type { UserName } from '@/types/User.ts';
   import { useUsersStore } from '@/stores/users.ts';
+  import { useAuthorizationStore } from '@/stores/authorization.ts';
   import { usePurchasesCurrentQuery } from '@/features/finance/purchases/queries/usePurchasesQueries';
   import { useUpdatePurchaseStatusMutation } from '@/features/finance/purchases/queries/usePurchasesMutations';
   import router from '@/router';
@@ -20,20 +21,33 @@
   const route = useRoute();
   const toast = useToast();
   const userStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
   const updatePurchaseStatusMutation = useUpdatePurchaseStatusMutation();
 
-  /** Ostatnia osoba z listy „bieżących” — po powrocie z formularza (router.back) odtwarzamy Select i odświeżamy dane */
-  const PURCHASES_CURRENT_USER_STORAGE_KEY = 'purchasesCurrentSelectedUsername';
+  // Bez uprawnienia WRITE_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinancePurchaseWriteAll);
+
+  /** Ostatni wybrany użytkownik — po powrocie z formularza (router.back) odtwarzamy Select i odświeżamy dane */
+  const PURCHASES_CURRENT_USER_STORAGE_KEY = 'purchasesCurrentSelectedUserId';
+
+  const selectedUser = ref<UserName | null>(null);
+  const purchasesToPay = ref<Purchase[]>([]);
+
+  const userSelectOptions = computed<UserName[]>(() =>
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
+  );
 
   UtilsService.getTypesForFinance();
   onMounted(async () => {
-    if (userStore.users.length <= 0) await userStore.getUsersFromDb();
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
+    selectedUser.value = userStore.loggedUserName;
     await restorePurchasesCurrentUser();
   });
-  const selectedUser = ref<User | null>(userStore.getLoggedUser);
-  const purchasesToPay = ref<Purchase[]>([]);
 
-  const purchasesCurrentQuery = usePurchasesCurrentQuery(computed(() => selectedUser.value?.username ?? null));
+  const purchasesCurrentQuery = usePurchasesCurrentQuery(computed(() => selectedUser.value?.id ?? null));
   const purchasesCurrent = computed(() => purchasesCurrentQuery.data.value ?? new Map<string, Purchase[]>());
   const loadingCurrent = computed(() => purchasesCurrentQuery.isFetching.value);
 
@@ -62,9 +76,11 @@
   }
 
   async function restorePurchasesCurrentUser() {
+    if (!canSelectAnyUser.value) return;
     const saved = sessionStorage.getItem(PURCHASES_CURRENT_USER_STORAGE_KEY);
     if (!saved) return;
-    const user = userStore.users.find((u: User) => u.username === saved);
+    const savedId = Number(saved);
+    const user = userStore.userNames.find((u: UserName) => u.id === savedId);
     if (!user) {
       sessionStorage.removeItem(PURCHASES_CURRENT_USER_STORAGE_KEY);
       return;
@@ -78,8 +94,8 @@
   }
 
   function goToNewPurchase() {
-    if (selectedUser.value?.username) {
-      sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);
+    if (selectedUser.value?.id) {
+      sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, String(selectedUser.value.id));
     }
     router.push({ name: 'Purchase', params: { isEdit: 'false', purchaseId: 0 } });
   }
@@ -89,7 +105,7 @@
     purchasesToPay.value = [];
     if (!selectedUser.value) return;
     await purchasesCurrentQuery.refetch();
-    sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, selectedUser.value.username);
+    sessionStorage.setItem(PURCHASES_CURRENT_USER_STORAGE_KEY, String(selectedUser.value.id));
   }
 
   function onPurchasesImported() {
@@ -105,13 +121,16 @@
     });
   }
 
-  async function applyUsernameFromRouteQuery() {
-    const raw = route.query.username;
-    const username = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
-    if (!username || typeof username !== 'string') return;
+  async function applyUserIdFromRouteQuery() {
+    const raw = route.query.userId;
+    const rawUserId = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+    const userId = rawUserId ? Number(rawUserId) : null;
+    if (!userId || Number.isNaN(userId)) return;
+    // Bez WRITE_ALL nie wolno przełączyć się na cudzego usera przez ?userId= w URL.
+    if (!canSelectAnyUser.value) return;
 
-    if (userStore.users.length === 0) await userStore.getUsersFromDb();
-    const user = userStore.users.find((u: User) => u.username === username);
+    if (userStore.userNames.length === 0) await userStore.getUserNamesFromDb();
+    const user = userStore.userNames.find((u: UserName) => u.id === userId);
     if (user) {
       selectedUser.value = user;
       await getCurrentPurchaseByUser();
@@ -120,10 +139,10 @@
   }
 
   watch(
-    () => route.query.username,
+    () => route.query.userId,
     q => {
-      const username = typeof q === 'string' ? q : Array.isArray(q) ? q[0] : null;
-      if (username) void applyUsernameFromRouteQuery();
+      const raw = typeof q === 'string' ? q : Array.isArray(q) ? q[0] : null;
+      if (raw) void applyUserIdFromRouteQuery();
     },
     { immediate: true }
   );
@@ -244,9 +263,10 @@
             <Select
               id="input-customer"
               v-model="selectedUser"
-              :options="userStore.getUserByPrivileges"
+              :options="userSelectOptions"
               :option-label="user => user.firstName + ' ' + user.lastName"
-              :loading="userStore.loadingUsers"
+              :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
+              :disabled="!canSelectAnyUser"
               @change="onUserSelectChange"
               required
             />

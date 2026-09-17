@@ -6,11 +6,12 @@
   import { useBanksListQuery } from '@/features/finance/banks/queries/useBanksQueries';
   import { cloneCard } from '@/features/finance/_shared/cloneEntities';
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useToast } from 'primevue/usetoast';
   import OfficeButton from '@/components/OfficeButton.vue';
   import router from '@/router';
   import IconButton from '@/components/OfficeIconButton.vue';
-  import type { User } from '@/types/User';
+  import type { UserName } from '@/types/User';
   import type { Bank } from '@/features/finance/banks/types';
   import { CardType, type Card } from '@/features/finance/cards/types';
   import FormSectionCard from '@/components/FormSectionCard.vue';
@@ -38,6 +39,7 @@
   const banks = computed(() => banksQuery.data.value ?? []);
   const sortedBanks = computed(() => [...banks.value].sort((a, b) => a.name.localeCompare(b.name)));
   const userStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
   const toast = useToast();
 
   const card = ref<Card>({
@@ -73,7 +75,23 @@
   const btnShowBusy = ref<boolean>(false);
   const btnSaveDisabled = ref<boolean>(false);
 
-  const selectedUser = ref<User | null>(null);
+  const selectedUser = ref<UserName | null>(null);
+
+  // Bez uprawnienia READ_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinancePaymentReadAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez READ_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): UserName | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.loggedUserName;
+      card.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUserName(idUser);
+  }
 
   function onUserChange() {
     if (selectedUser.value) {
@@ -189,7 +207,7 @@
     data => {
       if (data) {
         card.value = cloneCard(data);
-        selectedUser.value = userStore.getUser(card.value.idUser);
+        selectedUser.value = resolveSelectedUser(card.value.idUser);
         selectedBank.value = banks.value.find(bank => bank.id === card.value.idBank) ?? null;
       }
     }
@@ -199,10 +217,14 @@
   onMounted(async () => {
     console.log('onMounted GET');
     btnSaveDisabled.value = true;
-    if (userStore.users.length === 0) await userStore.getUsersFromDb();
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
     isEdit.value = route.params.isEdit === 'true';
     if (!isEdit.value && cardId.value === 0) {
       console.log('onMounted NEW CARD');
+      selectedUser.value = resolveSelectedUser(card.value.idUser);
     } else {
       console.log('onMounted EDIT CARD');
     }
@@ -229,7 +251,7 @@
       multi: false,
     };
     selectedBank.value = null;
-    selectedUser.value = null;
+    selectedUser.value = resolveSelectedUser(0);
     submitted.value = false;
     btnSaveDisabled.value = false;
   }
@@ -607,10 +629,11 @@
                         id="card-user"
                         v-model="selectedUser"
                         :pt="ptSelectInField"
-                        :options="userStore.getUsers"
+                        :options="userSelectOptions"
                         :option-label="data => data.firstName + ' ' + data.lastName"
                         placeholder="Wybierz użytkownika"
-                        :loading="userStore.loadingUsers"
+                        :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
+                        :disabled="!canSelectAnyUser"
                         @change="onUserChange"
                       />
                     </div>

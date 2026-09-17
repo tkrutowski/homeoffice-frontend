@@ -35,7 +35,7 @@
 
   onMounted(async () => {
     console.log('onMounted PaymentView');
-    if (userStore.users.length === 0) await userStore.refreshUsers();
+    if (userStore.userNames.length === 0) await userStore.getUserNamesFromDb();
     await firmsStore.getFirmsFromDb();
   });
 

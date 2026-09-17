@@ -8,7 +8,7 @@ import type {
   TransactionLabelDto,
 } from '@/features/finance/transactions/types';
 import { UtilsService } from '@/service/UtilsService';
-import type { User } from '@/types/User';
+import type { UserName } from '@/types/User';
 import {
   useTransactionCategoriesQuery,
   useTransactionLabelsQuery,
@@ -39,15 +39,15 @@ export function useBankTransactionFilters(rawTransactions: Ref<BankTransaction[]
   const noteFilter = ref('');
   const selectedCategoryIds = ref<number[]>([]);
   const selectedLabelIds = ref<number[]>([]);
-  const selectedUsers = ref<User[]>([]);
+  const selectedUsers = ref<UserName[]>([]);
   const amountRange = ref<[number, number]>([0, 0]);
   const amountRangeInitialized = ref(false);
 
   const isAdmin = computed(() => authStore.hasAccessAdmin);
 
   const peopleOptions = computed(() => {
-    if (isAdmin.value) return usersStore.users;
-    const logged = usersStore.getLoggedUser;
+    if (isAdmin.value) return usersStore.userNames;
+    const logged = usersStore.loggedUserName;
     return logged ? [logged] : [];
   });
 
@@ -72,7 +72,7 @@ export function useBankTransactionFilters(rawTransactions: Ref<BankTransaction[]
   }
 
   function initPeopleFilter() {
-    const logged = usersStore.getLoggedUser;
+    const logged = usersStore.loggedUserName;
     selectedUsers.value = logged ? [logged] : [];
   }
 
@@ -100,7 +100,7 @@ export function useBankTransactionFilters(rawTransactions: Ref<BankTransaction[]
     }
 
     const userIds = selectedUsers.value.map(u => u.id);
-    const allUserIds = usersStore.users.map(u => u.id);
+    const allUserIds = usersStore.userNames.map(u => u.id);
     if (userIds.length > 0 && userIds.length < allUserIds.length) {
       list = list.filter(t => userIds.includes(t.idUser));
     }
@@ -147,7 +147,7 @@ export function useBankTransactionFilters(rawTransactions: Ref<BankTransaction[]
     const labelIds = selectedLabelIds.value;
     const allLabels = labels.value.map(l => l.id);
     const userIds = selectedUsers.value.map(u => u.id);
-    const allUserIds = usersStore.users.map(u => u.id);
+    const allUserIds = usersStore.userNames.map(u => u.id);
     const note = noteFilter.value.trim();
 
     const params: {

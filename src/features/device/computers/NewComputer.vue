@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { onMounted, ref, watch } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import { useToast } from 'primevue/usetoast';
   import { useUsersStore } from '@/stores/users';
-  import type { User } from '@/types/User';
+  import { useAuthorizationStore } from '@/stores/authorization';
+  import type { UserName } from '@/types/User';
   import {
     type Computer,
     ComputerType,
@@ -28,11 +29,26 @@
   }>();
 
   const userStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
   const createComputerMutation = useCreateComputerMutation();
   const updateComputerMutation = useUpdateComputerMutation();
   const toast = useToast();
 
-  const selectedUser = ref<User | null>(null);
+  const selectedUser = ref<UserName | null>(null);
+
+  // Bez uprawnienia WRITE_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessComputerWriteAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez WRITE_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): UserName | null {
+    if (!canSelectAnyUser.value) {
+      return userStore.loggedUserName;
+    }
+    return userStore.getUserName(idUser);
+  }
   const computerName = ref<string>('');
   const computerInfo = ref<string>('');
   const computerType = ref<'DESKTOP' | 'LAPTOP' | 'TABLET'>(ComputerType.DESKTOP);
@@ -86,18 +102,19 @@
 
   // Load users if not loaded
   onMounted(async () => {
-    if (userStore.users.length === 0) {
-      await userStore.getUsersFromDb();
-    }
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
   });
 
   // Watch for visibility changes to reset form
   watch(
     () => props.visible,
     newValue => {
-      if (newValue && userStore.users.length === 0) {
-        userStore.getUsersFromDb();
-      }
+      if (!newValue) return;
+      if (userStore.userNames.length === 0) userStore.getUserNamesFromDb();
+      if (!userStore.loggedUserName) userStore.getLoggedUserNameFromDb();
     }
   );
 
@@ -127,9 +144,10 @@
           laptopDisplay.value = newComputer.display ?? '';
         }
 
-        selectedUser.value = userStore.getUser(newComputer.idUser);
+        selectedUser.value = resolveSelectedUser(newComputer.idUser);
       } else {
         resetForm();
+        selectedUser.value = resolveSelectedUser(0);
       }
     },
     { immediate: true }
@@ -279,9 +297,10 @@
           id="user"
           v-model="selectedUser"
           :invalid="showErrorUser()"
-          :options="userStore.getUserByPrivileges"
+          :options="userSelectOptions"
           :option-label="user => user.firstName + ' ' + user.lastName"
-          :loading="userStore.loadingUsers"
+          :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
+          :disabled="!canSelectAnyUser"
           placeholder="Wybierz użytkownika"
           class="w-full"
           required

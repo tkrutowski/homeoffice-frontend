@@ -39,7 +39,7 @@ export type PurchasePageParams = {
   sort: string;
   direction: 'ASC' | 'DESC';
   globalFilter?: string | null;
-  username?: string | null;
+  userId?: number | null;
   name?: string | null;
   idFirm?: number | null;
   idCard?: number | null;
@@ -88,10 +88,10 @@ export const financeKeys = {
     all: () => [...financeKeys.all, 'purchases'] as const,
     page: (params: PurchasePageParams) => [...financeKeys.purchases.all(), 'page', params] as const,
     detail: (id: number) => [...financeKeys.purchases.all(), 'detail', id] as const,
-    current: (username: string | null) => [...financeKeys.purchases.all(), 'current', username] as const,
+    current: (userId: number | null) => [...financeKeys.purchases.all(), 'current', userId] as const,
     sumToPay: () => [...financeKeys.purchases.all(), 'sum-to-pay'] as const,
-    byYearUser: (year: number, username?: string | null) =>
-      [...financeKeys.purchases.all(), 'by-year-user', year, username ?? null] as const,
+    byYearUser: (year: number, userId?: number | null) =>
+      [...financeKeys.purchases.all(), 'by-year-user', year, userId ?? null] as const,
   },
 
   payments: {

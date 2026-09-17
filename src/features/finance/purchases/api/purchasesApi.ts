@@ -38,7 +38,7 @@ function buildPurchaseSearchParams(params: PurchasePageParams): URLSearchParams 
   });
 
   if (params.globalFilter) search.append('globalFilter', params.globalFilter);
-  if (params.username) search.append('username', params.username);
+  if (params.userId !== undefined && params.userId !== null) search.append('userId', params.userId.toString());
   if (params.name) search.append('name', params.name);
   if (params.idFirm !== undefined && params.idFirm !== null) search.append('firmId', params.idFirm.toString());
   if (params.idCard !== undefined && params.idCard !== null) search.append('cardId', params.idCard.toString());
@@ -92,8 +92,8 @@ export async function updatePurchaseStatus(purchaseId: number, status: PaymentSt
   await httpCommon.put(`/v1/finance/purchase/status/${purchaseId}`, { value: status });
 }
 
-export async function fetchPurchasesCurrent(username: string): Promise<Map<string, Purchase[]>> {
-  const response = await httpCommon.get(`/v1/finance/purchase/current/${username}`);
+export async function fetchPurchasesCurrent(userId: number): Promise<Map<string, Purchase[]>> {
+  const response = await httpCommon.get(`/v1/finance/purchase/current/${userId}`);
   const raw = (response.data ?? {}) as Record<string, unknown>;
 
   const map = new Map<string, Purchase[]>();
@@ -108,10 +108,10 @@ export async function fetchPurchasesSumToPay(): Promise<number> {
   return Number(response.data);
 }
 
-export async function fetchPurchasesByYearAndUser(year: number, username?: string): Promise<Map<string, Purchase[]>> {
-  if (!username) return new Map<string, Purchase[]>();
+export async function fetchPurchasesByYearAndUser(year: number, userId?: number): Promise<Map<string, Purchase[]>> {
+  if (!userId) return new Map<string, Purchase[]>();
 
-  const current = await fetchPurchasesCurrent(username);
+  const current = await fetchPurchasesCurrent(userId);
   const purchasesMap = new Map<string, Purchase[]>();
 
   for (const [deadline, purchases] of current.entries()) {

@@ -30,12 +30,17 @@
   import { findCardById } from '@/features/finance/cards/api/cardsApi';
   import { useFirmsStore } from '@/stores/firms';
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
 
   const toast = useToast();
   const cardsQuery = useCardsListQuery('ALL');
   const cards = computed(() => cardsQuery.data.value ?? []);
   const firmsStore = useFirmsStore();
   const usersStore = useUsersStore();
+  const authorizationStore = useAuthorizationStore();
+
+  // Bez uprawnienia READ_ALL użytkownik widzi tylko swoje zakupy — kolumna „Użytkownik” jest wtedy zbędna.
+  const canSeeAllUsers = computed(() => authorizationStore.hasAccessFinancePurchaseReadAll);
 
   const rowsPerPage = ref<number>(parseInt(localStorage.getItem('rowsPerPagePurchases') || '10', 10));
   const currentPage = ref<number>(0);
@@ -68,7 +73,7 @@
   });
 
   const userFilter = computed(() => {
-    return usersStore.users.sort((a, b) => {
+    return [...usersStore.userNames].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
       const nameB = `${b.firstName} ${b.lastName}`;
       return nameA.localeCompare(nameB);
@@ -123,7 +128,7 @@
 
     const f = filters.value;
     if (f?.global?.value) params.globalFilter = f.global.value;
-    if (f?.idUser?.value?.username) params.username = f.idUser.value.username;
+    if (f?.idUser?.value?.id) params.userId = f.idUser.value.id;
     if (f?.name?.value) params.name = f.name.value;
     if (f?.idFirm?.value) params.idFirm = f.idFirm.value;
     if (f?.idCard?.value) params.idCard = f.idCard.value;
@@ -152,10 +157,10 @@
   const purchasesSumToPay = computed(() => purchasesSumToPayQuery.data.value ?? 0);
 
   firmsStore.getFirmsFromDb();
-  if (usersStore.users.length === 0) usersStore.getUsersFromDb();
+  if (usersStore.userNames.length === 0) usersStore.getUserNamesFromDb();
 
   const getUserFullName = (idUser: number): string => {
-    return usersStore.getUserFullName(idUser);
+    return usersStore.getUserNameFullName(idUser);
   };
 
   const getFirmName = (idFirm: number): string => {
@@ -519,6 +524,7 @@
 
         <!--  USER  -->
         <Column
+          v-if="canSeeAllUsers"
           field="idUser"
           header="Użytkownik"
           :sortable="true"
@@ -663,7 +669,7 @@
             <div class="flex flex-col md:flex-row gap-4">
               <div class="basis-1/2">
                 <Fieldset legend="Ogólne informacje" class="">
-                  <p class="mb-1 mt-3 text-left">
+                  <p v-if="canSeeAllUsers" class="mb-1 mt-3 text-left">
                     <small>Użytkownik:</small> {{ getUserFullName(slotProps.data.idUser) }}
                   </p>
                   <p class="mb-1 text-left"><small>Nazwa zakupu:</small> {{ slotProps.data.name }}</p>

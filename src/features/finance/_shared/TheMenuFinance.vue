@@ -238,7 +238,7 @@
       label: 'Firmy',
       icon: 'pi pi-fw pi-building',
       class: `${activeMenu.value === 'firm' ? 'active' : ''}`,
-      disabled: !authorizationStore.hasAccessFinanceFirm,
+      disabled: !authorizationStore.hasAccessFinance,
       items: [
         {
           label: 'Nowa firma',
@@ -268,7 +268,7 @@
       label: 'Banki',
       icon: 'pi pi-fw pi-building',
       class: `${activeMenu.value === 'bank' ? 'active' : ''}`,
-      disabled: !authorizationStore.hasAccessFinanceBank,
+      disabled: !authorizationStore.hasAccessFinance,
       items: [
         {
           label: 'Nowy bank',

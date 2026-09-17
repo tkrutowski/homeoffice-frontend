@@ -5,6 +5,7 @@
   import GenericChartPanel from '@/components/GenericChartPanel.vue';
   import ChartSkeletonGrid from '@/components/ChartSkeletonGrid.vue';
   import { ref, onMounted, computed, watch } from 'vue';
+  import type { UserName } from '@/types/User';
   import { useUsersStore } from '@/stores/users';
   import { useAuthorizationStore } from '@/stores/authorization';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';
@@ -28,20 +29,28 @@
   const cards = computed(() => cardsQuery.data.value ?? []);
   const cardsActive = computed(() => cards.value.filter(card => card.activeStatus === 'ACTIVE'));
 
-  const hasAccessToAllPayments = computed(() => {
-    return authorizationStore.hasAccessFinancePaymentReadAll;
+  /**
+   * Dashboard łączy kredyty, opłaty i zakupy z trzech osobnych endpointów, każdy z własnym
+   * uprawnieniem *_READ_ALL/WRITE_ALL — checkbox ma sens (i nie generuje 403 w trakcie ładowania)
+   * tylko gdy user ma je wszystkie naraz.
+   */
+  const canViewAllUsersDashboard = computed(() => {
+    return (
+      authorizationStore.hasAccessFinancePaymentReadAll &&
+      authorizationStore.hasAccessFinanceLoanReadAll &&
+      authorizationStore.hasAccessFinanceFeeReadAll &&
+      authorizationStore.hasAccessFinancePurchaseWriteAll
+    );
   });
 
-  const usersToDisplay = computed(() => {
+  const usersToDisplay = computed<UserName[]>(() => {
     if (showOnlyLoggedUser.value) {
-      const user = usersStore.users.find(user => user.username === authorizationStore.username);
-      return user ? [user] : [];
+      return usersStore.loggedUserName ? [usersStore.loggedUserName] : [];
     }
-    if (hasAccessToAllPayments.value) {
-      return usersStore.users;
+    if (canViewAllUsersDashboard.value) {
+      return usersStore.userNames;
     }
-    const user = usersStore.users.find(user => user.username === authorizationStore.username);
-    return user ? [user] : [];
+    return usersStore.loggedUserName ? [usersStore.loggedUserName] : [];
   });
 
   const homeUserId = computed(() => {
@@ -127,7 +136,13 @@
 
   const loadDataForYear = async () => {
     try {
-      await Promise.all([usersStore.getUsersFromDb(), cardsQuery.refetch(), loansQuery.refetch(), feesQuery.refetch()]);
+      await Promise.all([
+        usersStore.getUserNamesFromDb(),
+        usersStore.loggedUserName ? Promise.resolve() : usersStore.getLoggedUserNameFromDb(),
+        cardsQuery.refetch(),
+        loansQuery.refetch(),
+        feesQuery.refetch(),
+      ]);
       await loadChartDataForYear(() => Promise.resolve());
     } catch (error) {
       console.error('Error loading finance home data:', error);
@@ -187,7 +202,7 @@
             placeholder="Wybierz rok"
           />
         </div>
-        <div class="flex items-center gap-2">
+        <div v-if="canViewAllUsersDashboard" class="flex items-center gap-2">
           <Checkbox v-model="showOnlyLoggedUser" :binary="true" />
           <label class="ml-2 text-sm font-medium text-surface-600 dark:text-surface-400">Wyświetl tylko moje</label>
         </div>

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
 import { useAuthorizationStore } from './authorization.ts';
-import type { User, Role, Privilege } from '@/types/User';
+import type { User, Role, Privilege, UserName, SelfUser } from '@/types/User';
 
 export const useUsersStore = defineStore('user', {
   state: () => ({
@@ -11,9 +11,15 @@ export const useUsersStore = defineStore('user', {
     loadingUsers: false,
     loadingPrivileges: false,
     loadingRoles: false,
+    loadingUserNames: false,
+    loadingLoggedUserName: false,
 
     users: [] as User[],
     roles: [] as Role[],
+    /** Lekka lista wszystkich userów (GET /v1/user/names) — dostępna dla każdego zalogowanego, bez ROLE_ADMIN. */
+    userNames: [] as UserName[],
+    /** Dane zalogowanego użytkownika (GET /v1/user/me) — do ustalenia „siebie” bez pełnej listy userów. */
+    loggedUserName: null as SelfUser | null,
   }),
 
   //getters = computed
@@ -21,16 +27,6 @@ export const useUsersStore = defineStore('user', {
     getUsers: state => {
       console.log('getUsers from pinia', state);
       return state.users;
-    },
-    getUserByPrivileges: state => {
-      const authorization = useAuthorizationStore();
-      if (authorization.hasAccessFinancePurchaseWriteAll) {
-        return state.users;
-      }
-      const user = state.users.find((user: User) => user.username === authorization.username);
-      console.log('getUserByPrivileges', user);
-      if (user) return [user];
-      else return [];
     },
     getLoggedUser: state => {
       const authorization = useAuthorizationStore();
@@ -58,6 +54,22 @@ export const useUsersStore = defineStore('user', {
       if (user) return user;
       else return null;
     },
+    //
+    //GET USER NAME by id (z lekkiej listy userNames)
+    //
+    getUserName(idUser: number): UserName | null {
+      const user = this.userNames.find((user: UserName) => user.id === idUser);
+      if (user) return user;
+      else return null;
+    },
+    //
+    //GET USER FULL NAME (z lekkiej listy userNames)
+    //
+    getUserNameFullName(idUser: number): string {
+      const user = this.userNames.find(user => user.id === idUser);
+      if (user) return user.firstName + ' ' + user.lastName;
+      else return 'Brak danych';
+    },
     getNotUserRoles(userRoles: Role[]) {
       console.log('userRoles', userRoles);
       return this.getRolesAllFromDb().then((roles: Role[]) => {
@@ -68,9 +80,6 @@ export const useUsersStore = defineStore('user', {
         );
         return roles.filter(role => !userRoles.some(userRole => userRole.id === role.id));
       });
-    },
-    async refreshUsers() {
-      await this.getUsersFromDb();
     },
     //--------------------------------------DATABASE--------------------------------------
     //
@@ -85,6 +94,38 @@ export const useUsersStore = defineStore('user', {
       this.users = response.data;
       this.loadingUsers = false;
       console.log('END - getUsersFromDb()');
+    },
+    //
+    //GET USER NAMES (lekka lista, dostępna dla każdego zalogowanego — bez ROLE_ADMIN)
+    //
+    async getUserNamesFromDb(): Promise<void> {
+      console.log('START - getUserNamesFromDb()');
+      this.loadingUserNames = true;
+
+      const response = await httpCommon.get(`/v1/user/names`);
+      console.log('getUserNamesFromDb() - Ilosc[]: ' + response.data.length);
+      this.userNames = response.data;
+      this.loadingUserNames = false;
+      console.log('END - getUserNamesFromDb()');
+    },
+    //
+    //GET LOGGED USER (self-service, bez ROLE_ADMIN) — do ustalenia „siebie” bez pełnej listy userów
+    //
+    async getLoggedUserNameFromDb(): Promise<SelfUser> {
+      console.log('START - getLoggedUserNameFromDb()');
+      this.loadingLoggedUserName = true;
+
+      const response = await httpCommon.get(`/v1/user/me`);
+      const me: SelfUser = {
+        id: response.data.id,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        username: response.data.username,
+      };
+      this.loggedUserName = me;
+      this.loadingLoggedUserName = false;
+      console.log('END - getLoggedUserNameFromDb()');
+      return me;
     },
     //
     //GET  USER FROM DB BY ID

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import OfficeButton from '@/components/OfficeButton.vue';
-  import type { User } from '@/types/User';
+  import type { UserName } from '@/types/User';
   import { computed, onMounted, ref, watch } from 'vue';
   import router from '@/router';
   import { useToast } from 'primevue/usetoast';
@@ -16,6 +16,7 @@
   import type { AxiosError } from 'axios';
 
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useRoute } from 'vue-router';
   import { useFirmsStore } from '@/stores/firms';
   import { useCardsListQuery } from '@/features/finance/cards/queries/useCardsQueries';
@@ -46,6 +47,7 @@
 
   const userStore = useUsersStore();
   const firmStore = useFirmsStore();
+  const authorizationStore = useAuthorizationStore();
   const route = useRoute();
   const cardsQuery = useCardsListQuery('ALL');
   const cards = computed(() => cardsQuery.data.value ?? []);
@@ -53,10 +55,26 @@
   const toast = useToast();
   const createPurchaseMutation = useCreatePurchaseMutation();
   const updatePurchaseMutation = useUpdatePurchaseMutation();
-  const selectedUser = ref<User | null>(null);
+  const selectedUser = ref<UserName | null>(null);
   const selectedFirm = ref<Firm | null>(null);
   const selectedCard = ref<Card | null>(null);
   const optionCard = ref<Card[]>();
+
+  // Bez uprawnienia WRITE_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinancePurchaseWriteAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez WRITE_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): UserName | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.loggedUserName;
+      purchase.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUserName(idUser);
+  }
 
   const purchase = ref<Purchase>({
     id: 0,
@@ -91,7 +109,8 @@
   const isSaveBtnDisabled = computed(() => {
     return (
       cardsQuery.isFetching.value ||
-      userStore.loadingUsers ||
+      userStore.loadingUserNames ||
+      userStore.loadingLoggedUserName ||
       firmStore.loadingFirms ||
       proposalQuery.isFetching.value ||
       btnSaveDisabled.value
@@ -249,7 +268,7 @@
       purchase.value = clonePurchase(data);
       selectedFirm.value = firmStore.getFirm(data.idFirm);
       selectedCard.value = findCardById(cards.value, data.idCard);
-      selectedUser.value = userStore.getUser(data.idUser);
+      selectedUser.value = resolveSelectedUser(data.idUser);
     },
     { immediate: true }
   );
@@ -353,7 +372,10 @@
   watch(
     () => proposalQuery.data.value,
     data => {
-      if (data) purchase.value = mapLoanProposalToPurchaseDraft(data);
+      if (data) {
+        purchase.value = mapLoanProposalToPurchaseDraft(data);
+        selectedUser.value = resolveSelectedUser(purchase.value.idUser);
+      }
     }
   );
 
@@ -362,10 +384,16 @@
     console.log('onMounted PURCHASE');
     btnSaveDisabled.value = true;
 
-    if (userStore.users.length === 0) await userStore.getUsersFromDb();
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
     if (firmStore.firms.length === 0) await firmStore.getFirmsFromDb();
 
     isEdit.value = route.params.isEdit === 'true';
+    if (!isEdit.value && proposalId.value === null) {
+      selectedUser.value = resolveSelectedUser(purchase.value.idUser);
+    }
     btnSaveDisabled.value = false;
   });
 
@@ -656,10 +684,11 @@
                   id="purchase-user"
                   v-model="selectedUser"
                   :pt="ptSelectInField"
-                  :options="userStore.getUserByPrivileges"
+                  :options="userSelectOptions"
                   :option-label="user => user.firstName + ' ' + user.lastName"
                   placeholder="Wybierz użytkownika"
-                  :loading="userStore.loadingUsers"
+                  :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
+                  :disabled="!canSelectAnyUser"
                   required
                   @change="purchase.idUser = selectedUser ? selectedUser.id : 0"
                 />

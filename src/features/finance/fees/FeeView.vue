@@ -1,11 +1,12 @@
 <script setup lang="ts">
   import { useUsersStore } from '@/stores/users';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { useRoute } from 'vue-router';
   import { computed, onMounted, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import router from '@/router';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
-  import type { User } from '@/types/User';
+  import type { UserName } from '@/types/User';
   import { useFeeQuery, useFeeFrequencyTypesQuery } from '@/features/finance/fees/queries/useFeesQueries';
   import { useCreateFeeMutation, useUpdateFeeMutation } from '@/features/finance/fees/queries/useFeesMutations';
   import { cloneFee } from '@/features/finance/_shared/cloneEntities';
@@ -33,11 +34,28 @@
 
   const userStore = useUsersStore();
   const firmStore = useFirmsStore();
+  const authorizationStore = useAuthorizationStore();
   const route = useRoute();
   const toast = useToast();
-  const selectedUser = ref<User | null>(null);
+  const selectedUser = ref<UserName | null>(null);
   const selectedFirm = ref<Firm | null>(null);
   const selectedFeeFrequency = ref<FeeFrequency | null>(null);
+
+  // Bez uprawnienia READ_ALL użytkownik może wybrać (i widzieć) tylko siebie — pole jest wtedy zablokowane.
+  const canSelectAnyUser = computed(() => authorizationStore.hasAccessFinanceFeeReadAll);
+  const userSelectOptions = computed(() =>
+    canSelectAnyUser.value ? userStore.userNames : userStore.loggedUserName ? [userStore.loggedUserName] : []
+  );
+
+  /** Zwraca użytkownika do ustawienia w formularzu — bez READ_ALL zawsze wymusza zalogowanego użytkownika. */
+  function resolveSelectedUser(idUser: number): UserName | null {
+    if (!canSelectAnyUser.value) {
+      const loggedUser = userStore.loggedUserName;
+      fee.value.idUser = loggedUser ? loggedUser.id : 0;
+      return loggedUser;
+    }
+    return userStore.getUserName(idUser);
+  }
 
   const isEdit = ref<boolean>(false);
   const copyFromId = computed(() => {
@@ -75,7 +93,8 @@
     return (
       feeFrequencyTypesQuery.isFetching.value ||
       feeQuery.isFetching.value ||
-      userStore.loadingUsers ||
+      userStore.loadingUserNames ||
+      userStore.loadingLoggedUserName ||
       firmStore.loadingFirms ||
       btnSaveDisabled.value
     );
@@ -182,14 +201,17 @@
   }
 
   //---------------------------------------------MOUNTED--------------------------------------------
-  onMounted(() => {
+  onMounted(async () => {
     console.log('onMounted GET');
-    if (userStore.users.length === 0) userStore.getUsersFromDb();
+    await Promise.all([
+      userStore.userNames.length === 0 ? userStore.getUserNamesFromDb() : Promise.resolve(),
+      userStore.loggedUserName ? Promise.resolve() : userStore.getLoggedUserNameFromDb(),
+    ]);
     if (firmStore.firms.length === 0) firmStore.getFirmsFromDb();
-  });
-
-  onMounted(() => {
     isEdit.value = route.params.isEdit === 'true';
+    if (!isEdit.value && copyFromId.value === null) {
+      selectedUser.value = resolveSelectedUser(fee.value.idUser);
+    }
   });
 
   watch(
@@ -208,7 +230,7 @@
         fee.value = cloneFee(data);
       }
       selectedFirm.value = fee.value.firm;
-      selectedUser.value = userStore.getUser(fee.value.idUser);
+      selectedUser.value = resolveSelectedUser(fee.value.idUser);
       selectedFeeFrequency.value = fee.value.feeFrequency;
     }
   );
@@ -452,10 +474,11 @@
                         id="fee-user"
                         v-model="selectedUser"
                         :pt="ptSelectInField"
-                        :options="userStore.users"
+                        :options="userSelectOptions"
                         :option-label="user => user.firstName + ' ' + user.lastName"
                         placeholder="Wybierz użytkownika"
-                        :loading="userStore.loadingUsers"
+                        :loading="userStore.loadingUserNames || userStore.loadingLoggedUserName"
+                        :disabled="!canSelectAnyUser"
                         required
                         @change="fee.idUser = selectedUser ? selectedUser.id : 0"
                       />

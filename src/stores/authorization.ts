@@ -93,6 +93,22 @@ export const useAuthorizationStore = defineStore('authorization', {
         return false;
       }
     },
+    hasAccessFinancePurchaseReadAll(): boolean {
+      console.log('hasAccessFinancePurchaseReadAll()');
+      try {
+        if (this.accessToken) {
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
+          return (
+            decoded.authorities.includes('FINANCE_PURCHASE_READ_ALL') || decoded.authorities.includes('ROLE_ADMIN')
+          );
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.log('hasAccessFinancePurchaseReadAll() ERROR', error);
+        return false;
+      }
+    },
     hasAccessFinancePurchase(): boolean {
       console.log('hasAccessFinancePurchase()');
       try {
@@ -143,6 +159,20 @@ export const useAuthorizationStore = defineStore('authorization', {
         return false;
       }
     },
+    hasAccessFinanceLoanReadAll(): boolean {
+      console.log('hasAccessFinanceLoanReadAll()');
+      try {
+        if (this.accessToken) {
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
+          return decoded.authorities.includes('FINANCE_LOAN_READ_ALL') || decoded.authorities.includes('ROLE_ADMIN');
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.log('hasAccessFinanceLoanReadAll() ERROR', error);
+        return false;
+      }
+    },
     hasAccessFinanceLoan(): boolean {
       console.log('hasAccessFinanceLoan()');
       try {
@@ -156,6 +186,20 @@ export const useAuthorizationStore = defineStore('authorization', {
         }
       } catch (error) {
         console.log('hasAccessFinanceLoan() ERROR', error);
+        return false;
+      }
+    },
+    hasAccessFinanceFeeReadAll(): boolean {
+      console.log('hasAccessFinanceFeeReadAll()');
+      try {
+        if (this.accessToken) {
+          const decoded = jwtDecode<CustomJwtPayload>(this.accessToken);
+          return decoded.authorities.includes('FINANCE_FEE_READ_ALL') || decoded.authorities.includes('ROLE_ADMIN');
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.log('hasAccessFinanceFeeReadAll() ERROR', error);
         return false;
       }
     },

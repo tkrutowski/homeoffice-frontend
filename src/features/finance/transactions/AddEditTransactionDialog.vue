@@ -196,7 +196,7 @@
       return;
     }
 
-    const loggedUser = usersStore.getLoggedUser;
+    const loggedUser = usersStore.loggedUserName;
     const payload: BankTransactionCreatePayload = {
       idFirm: selectedFirm.value!.id,
       idUser: props.editTransaction?.idUser ?? loggedUser?.id,

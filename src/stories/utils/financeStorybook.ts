@@ -61,7 +61,7 @@ export function setupFinanceStorybookStores() {
   });
   queryClient.setQueryData(financeKeys.purchases.detail(mockPurchase.id), mockPurchase);
   queryClient.setQueryData(
-    financeKeys.purchases.current('storybook'),
+    financeKeys.purchases.current(mockPurchase.idUser),
     new Map<string, Array<typeof mockPurchase>>([['2026-08-10', [mockPurchase]]])
   );
   queryClient.setQueryData(financeKeys.purchases.sumToPay(), mockPurchase.amount);

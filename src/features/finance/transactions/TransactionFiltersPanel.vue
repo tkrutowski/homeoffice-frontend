@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type { TransactionCategoryDto, TransactionLabelDto } from '@/features/finance/transactions/types';
-  import type { User } from '@/types/User';
+  import type { UserName } from '@/types/User';
   import { ptFieldInputText, ptSelectInField } from '@/config/formFieldPt';
   import { getCategoryDisplay } from '@/config/transactionCategoryIcons';
   import { TRANSACTION_CATEGORY_DEFAULT_COLOR } from '@/config/transactionCategoryColors';
@@ -11,8 +11,8 @@
     selectedCategoryIds: number[];
     labels: TransactionLabelDto[];
     selectedLabelIds: number[];
-    peopleOptions: User[];
-    selectedUsers: User[];
+    peopleOptions: UserName[];
+    selectedUsers: UserName[];
     isAdmin: boolean;
     noteFilter: string;
     amountRange: [number, number];
@@ -26,7 +26,7 @@
   const emit = defineEmits<{
     'update:selectedCategoryIds': [value: number[]];
     'update:selectedLabelIds': [value: number[]];
-    'update:selectedUsers': [value: User[]];
+    'update:selectedUsers': [value: UserName[]];
     'update:noteFilter': [value: string];
     'update:amountRange': [value: [number, number]];
     reset: [];
@@ -52,7 +52,7 @@
 
   const selectedPeople = computed({
     get: () => props.selectedUsers,
-    set: (val: User[]) => emit('update:selectedUsers', val),
+    set: (val: UserName[]) => emit('update:selectedUsers', val),
   });
 
   const note = computed({
@@ -65,7 +65,7 @@
     set: (v: [number, number]) => emit('update:amountRange', v),
   });
 
-  function userLabel(u: User) {
+  function userLabel(u: UserName) {
     return `${u.firstName} ${u.lastName}`;
   }
 </script>
