@@ -38,7 +38,11 @@
 
     <div class="flex items-center gap-4">
       <div v-if="EC2_CONTROL_ENABLED" class="flex items-center gap-1">
-        <InstanceControl :idInstance="'i-0c84ab8759cefd840'" :nameInstance="'Smartgaz'" />
+        <InstanceControl
+          v-if="authStore.hasAccessAdmin"
+          :idInstance="'i-0c84ab8759cefd840'"
+          :nameInstance="'Smartgaz'"
+        />
         <InstanceControl :idInstance="EC2_INSTANCE_ID" :nameInstance="EC2_INSTANCE_NAME" />
       </div>
 
