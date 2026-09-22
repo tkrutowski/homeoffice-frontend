@@ -18,6 +18,12 @@ export interface ProposedPurchase {
   amount: number;
   purchaseDate: Date;
   otherInfo: string | null;
+  /** Best-effort dopasowanie backendu po nadawcy e-maila — może się nie powieść (wtedy `null`, pole zostaje puste). */
+  idUser: number | null;
+  /** Best-effort dopasowanie backendu po nazwie karty w temacie e-maila — może się nie powieść (wtedy `null`, pole zostaje puste). */
+  idCard: number | null;
+  /** Best-effort dopasowanie backendu po nazwie firmy w treści/temacie e-maila — może się nie powieść (wtedy `null`, pole zostaje puste). */
+  idFirm: number | null;
 }
 
 export interface LoanProposal {

@@ -128,16 +128,17 @@ export function mapPurchasesDraftToLoanDraft(draft: LoanFromPurchasesDraft): Loa
 
 /**
  * Buduje świeży draft `Purchase` (id:0) na podstawie propozycji z e-maila — do wstępnego wypełnienia
- * formularza zakupu. Kartę, firmę i użytkownika użytkownik wybiera ręcznie (backend nie prefilluje ich
- * w propozycji) — termin spłaty też nieprefillowany, wylicza go backend po wyborze karty.
+ * formularza zakupu. Kartę, firmę i użytkownika backend dopasowuje best-effort (mogą wyjść `null`,
+ * gdy dopasowanie się nie powiedzie) — to tylko podpowiedź, użytkownik może je swobodnie zmienić.
+ * Termin spłaty nieprefillowany, wylicza go backend po wyborze karty.
  */
 export function mapLoanProposalToPurchaseDraft(proposal: LoanProposal): Purchase {
   const base = proposal.proposedPurchase;
   return {
     id: 0,
-    idCard: 0,
-    idFirm: 0,
-    idUser: 0,
+    idCard: base?.idCard ?? 0,
+    idFirm: base?.idFirm ?? 0,
+    idUser: base?.idUser ?? 0,
     name: base?.name || proposal.sourceSubject || '',
     purchaseDate: base?.purchaseDate ? new Date(base.purchaseDate) : new Date(),
     amount: base?.amount ?? 0,

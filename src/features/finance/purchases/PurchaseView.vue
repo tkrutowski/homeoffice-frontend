@@ -374,7 +374,10 @@
     data => {
       if (data) {
         purchase.value = mapLoanProposalToPurchaseDraft(data);
+        // Podpowiedzi z backendu (idUser/idCard/idFirm) — best-effort, mogą nie trafić (id=0 → dropdown pusty jak dziś).
         selectedUser.value = resolveSelectedUser(purchase.value.idUser);
+        selectedCard.value = findCardById(cards.value, purchase.value.idCard);
+        selectedFirm.value = firmStore.getFirm(purchase.value.idFirm);
       }
     }
   );
