@@ -6,9 +6,12 @@
   import { useRoute } from 'vue-router';
   import { deviceKeys } from '@/features/device/_shared/queryKeys';
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
+  import { useHoverMenubar } from '@/composables/useHoverMenubar';
 
   const authorizationStore = useAuthorizationStore();
   const route = useRoute();
+  const menubarRef = ref();
+  const { onMenuMouseLeave } = useHoverMenubar(menubarRef);
 
   const activeMenu = computed(() => {
     console.log('activeMenu', route.path);
@@ -102,7 +105,7 @@
 </script>
 
 <template>
-  <Menubar :model="items" class="main-menu">
+  <Menubar ref="menubarRef" :model="items" class="main-menu" @mouseleave="onMenuMouseLeave">
     <template #start>
       <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
     </template>

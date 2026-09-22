@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useAuthorizationStore } from '@/stores/authorization';
+  import { useHoverMenubar } from '@/composables/useHoverMenubar';
   import router from '../router';
 
   const authorizationStore = useAuthorizationStore();
+  const menubarRef = ref();
+  const { onMenuMouseLeave } = useHoverMenubar(menubarRef);
   const items = ref([
     {
       label: 'Home',
@@ -62,7 +65,7 @@
 </script>
 
 <template>
-  <Menubar :model="items">
+  <Menubar ref="menubarRef" :model="items" @mouseleave="onMenuMouseLeave">
     <template #start>
       <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
     </template>

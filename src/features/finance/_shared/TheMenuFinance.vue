@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useIsFetching } from '@tanstack/vue-query';
   import { useAuthorizationStore } from '@/stores/authorization.ts';
   import router from '@/router';
@@ -8,9 +8,12 @@
   import OfficeIconButton from '@/components/OfficeIconButton.vue';
   import { useLoanProposalsListQuery } from '@/features/finance/loanProposals/queries/useLoanProposalsQueries';
   import { LoanProposalStatus } from '@/features/finance/loanProposals/types';
+  import { useHoverMenubar } from '@/composables/useHoverMenubar';
 
   const route = useRoute();
   const authorizationStore = useAuthorizationStore();
+  const menubarRef = ref();
+  const { onMenuMouseLeave } = useHoverMenubar(menubarRef);
 
   const loansFetching = useIsFetching({ queryKey: financeKeys.loans.all() });
   const feesFetching = useIsFetching({ queryKey: financeKeys.fees.all() });
@@ -298,7 +301,7 @@
 </script>
 
 <template>
-  <Menubar :model="items">
+  <Menubar ref="menubarRef" :model="items" @mouseleave="onMenuMouseLeave">
     <template #start>
       <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
     </template>
