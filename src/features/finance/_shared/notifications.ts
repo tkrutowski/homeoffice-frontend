@@ -4,6 +4,9 @@ import { useLoanProposalsListQuery } from '@/features/finance/loanProposals/quer
 import { LoanProposalStatus } from '@/features/finance/loanProposals/types';
 import type { AppNotification } from '@/types/Notification';
 
+/** Id źródła powiadomienia — reużywany przez mutacje do wyciszenia własnego Toasta watchera, patrz `suppressNotificationToast`. */
+export const FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID = 'finance-loanProposals';
+
 /**
  * Powiadomienia modułu Finance dla globalnego dzwonka (patrz `useAppNotifications`).
  * Reużywa istniejący `useLoanProposalsListQuery` (ten sam `queryKey` co w `TheMenuFinance` /
@@ -21,7 +24,7 @@ export function useFinanceNotifications() {
 
   return computed<AppNotification[]>(() => [
     {
-      id: 'finance-loanProposals',
+      id: FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID,
       module: 'finance',
       icon: 'pi pi-envelope',
       label: `Propozycje z e-maila (${extractedCount.value})`,

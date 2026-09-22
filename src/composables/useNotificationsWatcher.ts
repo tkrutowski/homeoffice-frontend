@@ -2,6 +2,7 @@ import { ref, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthorizationStore } from '@/stores/authorization';
 import { useAppNotifications } from '@/composables/useAppNotifications';
+import { consumeNotificationToastSuppression } from '@/composables/notificationToastSuppression';
 
 /**
  * Obserwuje `useAppNotifications` i przy każdej zmianie licznika (`count`) danego źródła pokazuje
@@ -10,6 +11,9 @@ import { useAppNotifications } from '@/composables/useAppNotifications';
  * - licznik spadł → pozycja obsłużona/usunięta (np. przez innego użytkownika / na innym urządzeniu).
  *
  * Nie odpala Toastów przy pierwszym odczycie (start aplikacji / dopiero po zalogowaniu) — tylko baseline.
+ *
+ * Zmiana licznika spowodowana lokalną akcją użytkownika (np. odrzucenie propozycji, które samo pokazuje
+ * swój Toast) jest pomijana — patrz `suppressNotificationToast` w `notificationToastSuppression.ts`.
  *
  * WAŻNE: wołać DOKŁADNIE RAZ, w `App.vue` (obok istniejącego `<Toast />`). Powtórne wywołanie
  * (np. z poziomu `NotificationsBell.vue`) zdublowałoby Toasty — `NotificationsBell` ma czytać dane
@@ -35,6 +39,9 @@ export function useNotificationsWatcher() {
           if (!notification.toastMessages) continue;
           const previous = previousCounts.value.get(notification.id) ?? notification.count;
           if (notification.count === previous) continue;
+
+          // Zmiana wywołana lokalną akcją użytkownika (mutacja już pokazała własny Toast) — pomiń.
+          if (consumeNotificationToastSuppression(notification.id)) continue;
 
           if (notification.count > previous) {
             toast.add({

@@ -6,6 +6,8 @@ import {
   ignoreLoanProposal,
 } from '@/features/finance/loanProposals/api/loanProposalsApi';
 import { financeKeys } from '@/features/finance/_shared/queryKeys';
+import { FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID } from '@/features/finance/_shared/notifications';
+import { suppressNotificationToast } from '@/composables/notificationToastSuppression';
 import type { Loan } from '@/features/finance/loans/types';
 import type { Purchase } from '@/features/finance/purchases/types';
 
@@ -14,6 +16,7 @@ export function useAcceptLoanProposalMutation() {
   return useMutation({
     mutationFn: ({ proposalId, loan }: { proposalId: number; loan: Loan }) => acceptLoanProposal(proposalId, loan),
     onSuccess: () => {
+      suppressNotificationToast(FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID);
       void queryClient.invalidateQueries({ queryKey: financeKeys.loanProposals.all() });
       void queryClient.invalidateQueries({ queryKey: financeKeys.loans.all() });
     },
@@ -26,6 +29,7 @@ export function useAcceptLoanProposalAsPurchaseMutation() {
     mutationFn: ({ proposalId, purchase }: { proposalId: number; purchase: Purchase }) =>
       acceptLoanProposalAsPurchase(proposalId, purchase),
     onSuccess: () => {
+      suppressNotificationToast(FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID);
       void queryClient.invalidateQueries({ queryKey: financeKeys.loanProposals.all() });
       void queryClient.invalidateQueries({ queryKey: financeKeys.purchases.all() });
     },
@@ -37,6 +41,7 @@ export function useIgnoreLoanProposalMutation() {
   return useMutation({
     mutationFn: (proposalId: number) => ignoreLoanProposal(proposalId),
     onSuccess: () => {
+      suppressNotificationToast(FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID);
       void queryClient.invalidateQueries({ queryKey: financeKeys.loanProposals.all() });
     },
   });
@@ -47,6 +52,7 @@ export function useDeleteLoanProposalMutation() {
   return useMutation({
     mutationFn: (proposalId: number) => deleteLoanProposal(proposalId),
     onSuccess: () => {
+      suppressNotificationToast(FINANCE_LOAN_PROPOSALS_NOTIFICATION_ID);
       void queryClient.invalidateQueries({ queryKey: financeKeys.loanProposals.all() });
     },
   });
