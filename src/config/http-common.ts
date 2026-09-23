@@ -11,9 +11,9 @@ const REQUEST_TIMEOUT_MS = 45000;
 const apiClient: AxiosInstance = axios.create({
   // baseURL: "https://goahead.focikhome.synology.me/api",
   // baseURL: '/api',
-  // baseURL: 'http://localhost:8077/api',
+  baseURL: 'http://localhost:8077/api',
   // baseURL: 'http://pxcm6vnuy9.execute-api.eu-central-1.amazonaws.com/prod/api',
-  baseURL: 'https://api.homeoffice.focik.net/api',
+  // baseURL: 'https://api.homeoffice.focik.net/api',
   timeout: REQUEST_TIMEOUT_MS,
   headers: {
     'Content-type': 'application/json',
@@ -26,6 +26,7 @@ apiClient.interceptors.request.use(
     if (
       path.endsWith('/login') ||
       path.endsWith('/refresh') ||
+      path.endsWith('/auth/google') ||
       path === '/v1/auth/test' ||
       config.url?.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com/homeoffice/')
     ) {
@@ -46,6 +47,13 @@ apiClient.interceptors.response.use(
   async error => {
     console.log('ERROR interceptor: ', error);
     const authStore = useAuthorizationStore();
+
+    // Logowanie Google: błędy (400 - konto niepowiązane, 401 - nieprawidłowy token) obsługiwane bezpośrednio
+    // w authorizationStore.loginWithGoogle() - pomijamy tu refresh/logout, żeby nie dublować efektów ubocznych.
+    const errorPath = error.config?.url?.split('?')[0] ?? '';
+    if (errorPath.endsWith('/auth/google')) {
+      return Promise.reject(error);
+    }
 
     if (error.response && error.response.status === 401) {
       console.log('Unauthorized - Sprawdzam refresh token...');

@@ -6,6 +6,7 @@
   import { useToast } from 'primevue/usetoast';
   import ProgressBar from 'primevue/progressbar';
   import { useEc2Control } from '@/composables/useEc2Control';
+  import { useGoogleSignIn } from '@/composables/useGoogleSignIn';
   import { EC2_INSTANCE_ID } from '@/config/ec2';
 
   const authorizationStore = useAuthorizationStore();
@@ -14,6 +15,8 @@
   const password = ref<string>('');
   const toast = useToast();
   const { ensureInstanceRunning } = useEc2Control();
+  const { renderButton: renderGoogleButton } = useGoogleSignIn();
+  const googleButtonContainer = ref<HTMLElement | null>(null);
 
   type LoginPhase = 'idle' | 'checking' | 'starting' | 'waiting' | 'waiting_app' | 'logging_in';
   const loginPhase = ref<LoginPhase>('idle');
@@ -29,9 +32,13 @@
   onMounted(() => {
     console.log('MOUNTED');
     authorizationStore.loginError = null;
+
+    if (googleButtonContainer.value) {
+      renderGoogleButton(googleButtonContainer.value, handleGoogleCredential, { width: 320 });
+    }
   });
 
-  async function login() {
+  async function withEc2AndLogin(performLogin: () => Promise<boolean>) {
     loginPhase.value = 'checking';
 
     try {
@@ -45,7 +52,7 @@
       });
 
       loginPhase.value = 'logging_in';
-      const result = await authorizationStore.login(username.value, password.value);
+      const result = await performLogin();
       if (result) {
         goBack();
       }
@@ -60,6 +67,14 @@
     } finally {
       loginPhase.value = 'idle';
     }
+  }
+
+  async function login() {
+    await withEc2AndLogin(() => authorizationStore.login(username.value, password.value));
+  }
+
+  async function handleGoogleCredential(idToken: string) {
+    await withEc2AndLogin(() => authorizationStore.loginWithGoogle(idToken));
   }
 
   watch(
@@ -138,6 +153,16 @@
         <p class="text-right mb-4">
           <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
         </p>
+
+        <!-- DIVIDER -->
+        <div class="flex items-center gap-3 my-4">
+          <div class="h-px flex-1 bg-surface-200 dark:bg-surface-700"></div>
+          <span class="text-sm text-surface-600 dark:text-surface-400">lub</span>
+          <div class="h-px flex-1 bg-surface-200 dark:bg-surface-700"></div>
+        </div>
+
+        <!-- GOOGLE SIGN-IN -->
+        <div ref="googleButtonContainer" class="flex justify-center"></div>
       </form>
     </div>
   </MainPageShell>

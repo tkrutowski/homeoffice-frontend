@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import httpCommon from '@/config/http-common';
 import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
+import type { AxiosError } from 'axios';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
 import { queryClient } from '@/config/queryClient';
@@ -360,6 +361,32 @@ export const useAuthorizationStore = defineStore('authorization', {
       this.clearLoginError();
       console.log('END - login()');
       return true;
+    },
+    //
+    //LOGIN PRZEZ GOOGLE
+    //
+    async loginWithGoogle(idToken: string) {
+      console.log('START - loginWithGoogle()');
+      this.loading = true;
+      try {
+        const res = await httpCommon.post('/v1/auth/google', { idToken });
+        this.logUser(res.data.accessToken, res.data.refreshToken, true);
+        this.clearLoginError();
+        console.log('END - loginWithGoogle()');
+        return true;
+      } catch (error) {
+        const axiosError = error as AxiosError<{ message?: string; details?: string }>;
+        if (axiosError.response?.status === 400) {
+          this.setLoginError(
+            'To konto Google nie jest powiązane z żadnym kontem w aplikacji. Skontaktuj się z administratorem.'
+          );
+        } else {
+          this.setLoginError('Nie udało się zalogować przez Google.');
+        }
+        return false;
+      } finally {
+        this.loading = false;
+      }
     },
     //
     //LOGOUT
