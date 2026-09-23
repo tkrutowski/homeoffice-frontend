@@ -11,6 +11,7 @@
     useDeleteUserbookMutation,
     useUpdateUserbookMutation,
   } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { UtilsService } from '@/service/UtilsService';
 
   import { useToast } from 'primevue/usetoast';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
@@ -47,9 +48,9 @@
       } catch (reason) {
         toast.add({
           severity: 'error',
-          summary: (reason as AxiosError)?.message,
-          detail: 'Błąd podczas aktualizacji książki.',
-          life: 3000,
+          summary: 'Błąd',
+          detail: UtilsService.getApiErrorMessage(reason, 'Błąd podczas aktualizacji książki.'),
+          life: 5000,
         });
       }
     }

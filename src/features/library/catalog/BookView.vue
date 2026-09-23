@@ -30,6 +30,7 @@
   import { useCreateAuthorMutation } from '@/features/library/authors/queries/useAuthorsMutations';
   import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
   import { cloneBook } from '@/features/library/_shared/cloneEntities';
+  import { UtilsService } from '@/service/UtilsService';
 
   const route = useRoute();
   const toast = useToast();
@@ -552,8 +553,11 @@
           toast.add({
             severity: 'error',
             summary: 'Błąd',
-            detail: 'Nie udało się dodać książki na półkę: ' + (error.response?.data as string) || error.message,
-            life: 3000,
+            detail: UtilsService.getApiErrorMessage(
+              error,
+              'Nie udało się dodać książki na półkę: ' + newUserbook.book?.title
+            ),
+            life: 5000,
           });
         });
     }

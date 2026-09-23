@@ -12,6 +12,7 @@
   } from '@/features/library/series/queries/useSeriesMutations';
   import { useBooksInSeriesQuery } from '@/features/library/catalog/queries/useBooksQueries';
   import { useCreateUserbookMutation } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { UtilsService } from '@/service/UtilsService';
   import { computed, ref, watch } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import type { Series } from '@/features/library/shelf/types';
@@ -258,8 +259,11 @@
           toast.add({
             severity: 'error',
             summary: 'Błąd',
-            detail: 'Nie udało się dodać książki na półkę: ' + (error.response?.data as string) || error.message,
-            life: 3000,
+            detail: UtilsService.getApiErrorMessage(
+              error,
+              'Nie udało się dodać książki na półkę: ' + newUserbook.book?.title
+            ),
+            life: 5000,
           });
         });
     }

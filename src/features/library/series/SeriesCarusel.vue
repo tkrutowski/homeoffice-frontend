@@ -210,9 +210,12 @@
         .catch((reason: AxiosError) => {
           toast.add({
             severity: 'error',
-            summary: reason?.message,
-            detail: 'Błąd podczas dodawania książki na półkę.',
-            life: 3000,
+            summary: 'Błąd',
+            detail: UtilsService.getApiErrorMessage(
+              reason,
+              'Nie udało się dodać książki na półkę: ' + newUserbook.book?.title
+            ),
+            life: 5000,
           });
         });
     }

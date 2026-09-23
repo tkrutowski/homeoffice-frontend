@@ -6,7 +6,7 @@
   import { TranslationService } from '@/service/TranslationService.ts';
   import { findBookstore, useBookstoresQuery } from '@/features/library/bookstores/queries/useBookstoresQueries';
   import { useCreateBookstoreMutation } from '@/features/library/bookstores/queries/useBookstoresMutations';
-  import { useUserbookQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
+  import { useUserbookQuery, useUserbooksByBookIdQuery } from '@/features/library/shelf/queries/useUserbooksQueries';
   import { useAudiobookAvailabilityQuery, useBookQuery } from '@/features/library/catalog/queries/useBooksQueries';
   import {
     type Bookstore,
@@ -107,6 +107,22 @@
     useAudiobookAvailabilityQuery(audiobookBookId);
   const audiobookAvailability = computed(() => audiobookAvailabilityData.value ?? null);
 
+  // Tylko jedna pozycja na półce może być "W poczekalni" lub "Czytana" (na "Przeczytane" nie ma limitu).
+  const bookIdForDuplicateCheck = computed(() => userbook.value.book?.id ?? 0);
+  const { data: existingUserbooksData } = useUserbooksByBookIdQuery(bookIdForDuplicateCheck);
+  const existingUserbooks = computed<UserBook[]>(() => existingUserbooksData.value ?? []);
+  const conflictingUserbook = computed<UserBook | null>(() => {
+    const status = userbook.value.readingStatus;
+    if (status !== ReadingStatus.NOT_READ && status !== ReadingStatus.READ_NOW) return null;
+    return existingUserbooks.value.find(ub => ub.id !== userbook.value.id && ub.readingStatus === status) ?? null;
+  });
+  const duplicateStatusMessage = computed(() => {
+    const conflict = conflictingUserbook.value;
+    if (!conflict) return '';
+    const statusLabel = TranslationService.translateEnum('ReadingStatus', conflict.readingStatus);
+    return `Ta książka jest już na półce w statusie „${statusLabel}”. Zaktualizuj istniejący wpis zamiast dodawać nowy.`;
+  });
+
   function toDateOrNull(value: Date | string | null | undefined): Date | null {
     if (value == null || value === '') return null;
     return UtilsService.formatDate(value) ?? null;
@@ -180,8 +196,12 @@
       showErrorDateFrom() ||
       showErrorDateTo() ||
       showErrorReadingStatus() ||
-      showErrorEditionType()
+      showErrorEditionType() ||
+      showErrorDuplicateStatus()
     );
+  };
+  const showErrorDuplicateStatus = () => {
+    return submitted.value && conflictingUserbook.value !== null;
   };
   const showErrorBookstore = () => {
     return submitted.value && userbook.value.idBookstore === 0;
@@ -326,6 +346,8 @@
         :show-error-reading-status="showErrorReadingStatus()"
         :show-error-date-from="showErrorDateFrom()"
         :show-error-date-to="showErrorDateTo()"
+        :show-error-duplicate-status="showErrorDuplicateStatus()"
+        :duplicate-status-message="duplicateStatusMessage"
         :read-to-error-message="getReadToMessage"
         :loading-bookstore="loadingBookstore"
         :audiobook-availability="audiobookAvailability"

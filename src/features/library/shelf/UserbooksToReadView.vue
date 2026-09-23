@@ -13,6 +13,7 @@
     useDeleteUserbookMutation,
     useUpdateUserbookMutation,
   } from '@/features/library/shelf/queries/useUserbooksMutations';
+  import { UtilsService } from '@/service/UtilsService';
 
   const toast = useToast();
 
@@ -45,9 +46,9 @@
       } catch (reason) {
         toast.add({
           severity: 'error',
-          summary: (reason as AxiosError)?.message,
-          detail: 'Błąd podczas aktualizacji książki na półkę.',
-          life: 3000,
+          summary: 'Błąd',
+          detail: UtilsService.getApiErrorMessage(reason, 'Błąd podczas aktualizacji książki na półkę.'),
+          life: 5000,
         });
       }
     }

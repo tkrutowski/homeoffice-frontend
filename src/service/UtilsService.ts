@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios';
 import { useFirmsStore } from '../stores/firms';
 import { type Author, type Category } from '@/features/library/shelf/types';
 import { OwnershipStatus, EditionType, ReadingStatus } from '@/features/library/shelf/types';
@@ -250,6 +251,12 @@ export const UtilsService = {
       label: TranslationService.translateEnum('CardType', key),
       value: CardType[key as keyof typeof CardType],
     }));
+  },
+
+  /** Komunikat z `response.data.message` błędu API (np. 409 Conflict z backendu); `fallback`, gdy go brak. */
+  getApiErrorMessage(error: unknown, fallback: string): string {
+    const data = (error as AxiosError | undefined)?.response?.data as { message?: string } | undefined;
+    return data?.message ?? fallback;
   },
 
   /** Normalizacja koloru hex do #RRGGBB (uppercase). */
