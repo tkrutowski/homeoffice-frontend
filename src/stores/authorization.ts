@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
-import httpCommon from '@/config/http-common';
+import httpCommon, { WEBAUTHN_BASE_URL } from '@/config/http-common';
 import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
 import type { AxiosError } from 'axios';
 import type { CustomJwtPayload } from '@/types/User.ts';
 import router from '../router';
 import { queryClient } from '@/config/queryClient';
+import { useWebAuthn } from '@/composables/useWebAuthn';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 
 export const useAuthorizationStore = defineStore('authorization', {
   state: () => ({
@@ -383,6 +385,43 @@ export const useAuthorizationStore = defineStore('authorization', {
         } else {
           this.setLoginError('Nie udało się zalogować przez Google.');
         }
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    //
+    //LOGIN PRZEZ PASSKEY (odcisk palca / Face ID / Windows Hello)
+    //
+    async loginWithPasskey() {
+      console.log('START - loginWithPasskey()');
+      this.loading = true;
+      try {
+        const optionsRes = await httpCommon.post<PublicKeyCredentialRequestOptionsJSON>(
+          '/webauthn/authenticate/options',
+          undefined,
+          { baseURL: WEBAUTHN_BASE_URL, withCredentials: true }
+        );
+
+        const { performAuthentication } = useWebAuthn();
+        const credential = await performAuthentication(optionsRes.data);
+        if (!credential) {
+          // Użytkownik anulował prompt biometrii - ciche anulowanie, nie błąd
+          console.log('loginWithPasskey() - anulowano przez użytkownika');
+          return false;
+        }
+
+        await httpCommon.post('/login/webauthn', credential, { baseURL: WEBAUTHN_BASE_URL, withCredentials: true });
+        const tokenRes = await httpCommon.post('/webauthn/token', undefined, {
+          baseURL: WEBAUTHN_BASE_URL,
+          withCredentials: true,
+        });
+        this.logUser(tokenRes.data.accessToken, tokenRes.data.refreshToken, true);
+        this.clearLoginError();
+        console.log('END - loginWithPasskey()');
+        return true;
+      } catch {
+        this.setLoginError('Logowanie kluczem dostępu nie powiodło się. Użyj hasła lub Google.');
         return false;
       } finally {
         this.loading = false;

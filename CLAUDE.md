@@ -74,11 +74,17 @@ src/
 │   │   ├── payments/
 │   │   ├── purchases/
 │   │   └── transactions/ # list, dashboard, CSV import UI store
-│   └── device/           # Device vertical slices + TanStack Query
-│       ├── _shared/      # Menu, queryKeys, cloneEntities, storybook/
-│       ├── home/         # dashboard + useDeviceDashboard
-│       ├── devices/      # list/grid/form
-│       └── computers/    # assemble PCs from devices
+│   ├── device/           # Device vertical slices + TanStack Query
+│   │   ├── _shared/      # Menu, queryKeys, cloneEntities, storybook/
+│   │   ├── home/         # dashboard + useDeviceDashboard
+│   │   ├── devices/      # list/grid/form
+│   │   └── computers/    # assemble PCs from devices
+│   └── account/          # Ustawienia konta vertical slices + TanStack Query (no per-domain menu/storybook yet)
+│       ├── _shared/      # queryKeys
+│       ├── profile/      # ProfileSection
+│       ├── password/     # PasswordSection
+│       ├── passkeys/     # PasskeySection - WebAuthn passkey management (see WebAuthn section below)
+│       └── activity/     # ActivitySection
 ├── components/           # Shared UI (buttons, dialogs, layout, home entry cards, …)
 ├── views/                # Auth, Admin, Share, MainHome (not Library/Finance/Device)
 ├── stores/               # Shared Pinia only (see below)
@@ -96,7 +102,7 @@ src/
 
 | Layer | Where | Use for |
 |-------|--------|---------|
-| **TanStack Query** | Library, Finance, Device | Server state: lists, details, mutations, cache, invalidation |
+| **TanStack Query** | Library, Finance, Device, Account | Server state: lists, details, mutations, cache, invalidation |
 | **Pinia** | Shared + rare UI workflows | Auth, firms, users, files, audit, logs, companyLookup; Finance CSV import UI (`bankCsvImport.store.ts`) |
 
 **Feature pattern (Library / Finance / Device):**
@@ -166,6 +172,16 @@ _shared/     TheMenuDevice, queryKeys, cloneEntities, storybook/
 - Files upload/download: shared `useFilesStore` + `FileUploadDialog` (not Device Query)
 - Dashboard recent changes: shared `useAuditStore` (lists from Query; audit fetch from Pinia)
 
+**Account** — `features/account/` (Ustawienia konta, `/account/settings`)
+```
+profile/     ProfileSection (GET/PUT /v1/user/me)
+password/    PasswordSection (PUT /v1/user/me/password)
+passkeys/    PasskeySection - WebAuthn passkey register/list/delete (see WebAuthn section below)
+activity/    ActivitySection - last login + recent changes, read-only
+_shared/     queryKeys (accountKeys)
+```
+- Same thin `api/` + `queryKeys` + `queries/use*Queries.ts`/`use*Mutations.ts` pattern as Library/Finance/Device, just lighter: uses the shared `TheMenu`, no per-domain Storybook fixtures yet
+
 ### Routing
 - Defined in `src/router/index.ts`
 - Auth guard prevents unauthenticated access (redirects to login)
@@ -186,6 +202,16 @@ _shared/     TheMenuDevice, queryKeys, cloneEntities, storybook/
 - Configured in `src/config/http-common.ts` (Axios)
 - Environment-aware: `.env.development`, `.env.production`, `.env.docker`
 - Feature `queryFn` / `mutationFn` call this client (or thin API wrappers around it)
+
+### WebAuthn (passkeys)
+- Login via fingerprint / Face ID / Windows Hello, alongside password and Google — added in `stores/authorization.ts` (`loginWithPasskey()`), `views/LoginView.vue`, and `features/account/passkeys/` (register/list/delete while already logged in, like Google linking)
+- Ceremony via `@simplewebauthn/browser` (`startRegistration()` / `startAuthentication()`) wrapped in `src/composables/useWebAuthn.ts` — turns a user-cancelled biometric prompt (`NotAllowedError`) into `null` instead of throwing; treat `null` as a silent no-op, not an error toast
+- **Gotcha — no `/api` prefix:** `/webauthn/**` and `/login/webauthn` are hardcoded inside the backend's Spring Security WebAuthn filters, not under our `@RequestMapping`, so they must be called on the API **origin**, without the `/api` suffix from `VITE_API_BASE_URL`. `WEBAUTHN_BASE_URL` in `http-common.ts` strips a trailing `/api` for this — every WebAuthn call passes `{ baseURL: WEBAUTHN_BASE_URL, withCredentials: true }` (`withCredentials` is required: the ceremony's state lives in a session cookie between steps, separate from our JWT)
+- Registration (JWT, already logged in): `POST /webauthn/register/options` → ceremony → `POST /webauthn/register`; list via `GET /webauthn/register`; remove via `DELETE /webauthn/register/{id}`
+- Login (no JWT yet): `POST /webauthn/authenticate/options` → ceremony → `POST /login/webauthn` → `POST /webauthn/token` (this last call is what actually returns `{accessToken, refreshToken}`; `/login/webauthn` alone only confirms the ceremony) → `logUser()`, same as password/Google
+- Those three login-flow endpoints are excluded from the Axios `Authorization`-header attach and from the 401 refresh/logout flow in `http-common.ts`, same treatment as `/auth/google`
+- `rpId` is hardcoded backend-side to `focikhome.netlify.app` (prod) and `localhost` (dev, any port) — passkeys will **not** work on any other domain; this is a WebAuthn/backend constraint, not a frontend config issue
+- Backend's `/webauthn/**` and `/login/webauthn` filter chain needs its own CORS config (separate from `/api/**`) allowing both the dev and prod frontend origins with credentials — if passkey calls fail with a CORS preflight error, that's where to look
 
 ### Storybook
 - Config: `.storybook/main.ts`, `.storybook/preview.ts` (Pinia + VueQueryPlugin + PrimeVue + light/dark toolbar)

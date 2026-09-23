@@ -8,6 +8,13 @@ import { EC2_CONTROL_ENABLED } from '@/config/ec2';
 /** Timeout żądań (ms). Gdy EC2 jest wyłączony, requesty wiszą w pending – po tym czasie dostajemy błąd i przekierowanie na 503. */
 const REQUEST_TIMEOUT_MS = 45000;
 
+/**
+ * Endpointy WebAuthn (/webauthn/**, /login/webauthn) są zaszyte na sztywno w filtrach Spring Security
+ * i nie da się ich przeprefiksować pod /api jak reszty API - trzeba je wołać na korzeniu backendu,
+ * bez segmentu /api z VITE_API_BASE_URL.
+ */
+export const WEBAUTHN_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(/\/api\/?$/, '');
+
 const apiClient: AxiosInstance = axios.create({
   // Per-tryb URL w .env.development / .env.production / .env.docker (VITE_API_BASE_URL)
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -24,6 +31,9 @@ apiClient.interceptors.request.use(
       path.endsWith('/login') ||
       path.endsWith('/refresh') ||
       path.endsWith('/auth/google') ||
+      path.endsWith('/login/webauthn') ||
+      path.endsWith('/webauthn/authenticate/options') ||
+      path.endsWith('/webauthn/token') ||
       path === '/v1/auth/test' ||
       config.url?.startsWith('https://focik-home.s3.eu-central-1.amazonaws.com/homeoffice/')
     ) {
@@ -45,10 +55,15 @@ apiClient.interceptors.response.use(
     console.log('ERROR interceptor: ', error);
     const authStore = useAuthorizationStore();
 
-    // Logowanie Google: błędy (400 - konto niepowiązane, 401 - nieprawidłowy token) obsługiwane bezpośrednio
-    // w authorizationStore.loginWithGoogle() - pomijamy tu refresh/logout, żeby nie dublować efektów ubocznych.
+    // Logowanie Google/passkey: błędy obsługiwane bezpośrednio w authorizationStore.loginWithGoogle() /
+    // loginWithPasskey() - pomijamy tu refresh/logout, żeby nie dublować efektów ubocznych.
     const errorPath = error.config?.url?.split('?')[0] ?? '';
-    if (errorPath.endsWith('/auth/google')) {
+    if (
+      errorPath.endsWith('/auth/google') ||
+      errorPath.endsWith('/login/webauthn') ||
+      errorPath.endsWith('/webauthn/authenticate/options') ||
+      errorPath.endsWith('/webauthn/token')
+    ) {
       return Promise.reject(error);
     }
 

@@ -3,6 +3,7 @@
   import TheMenu from '@/components/TheMenu.vue';
   import ProfileSection from '@/features/account/profile/ProfileSection.vue';
   import PasswordSection from '@/features/account/password/PasswordSection.vue';
+  import PasskeySection from '@/features/account/passkeys/PasskeySection.vue';
   import ActivitySection from '@/features/account/activity/ActivitySection.vue';
 </script>
 
@@ -20,6 +21,7 @@
 
         <ProfileSection />
         <PasswordSection />
+        <PasskeySection />
         <ActivitySection />
       </div>
     </div>

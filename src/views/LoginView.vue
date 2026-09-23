@@ -7,7 +7,9 @@
   import ProgressBar from 'primevue/progressbar';
   import { useEc2Control } from '@/composables/useEc2Control';
   import { useGoogleSignIn } from '@/composables/useGoogleSignIn';
+  import { useWebAuthn } from '@/composables/useWebAuthn';
   import { EC2_INSTANCE_ID } from '@/config/ec2';
+  import OfficeButton from '@/components/OfficeButton.vue';
 
   const authorizationStore = useAuthorizationStore();
 
@@ -16,6 +18,7 @@
   const toast = useToast();
   const { ensureInstanceRunning } = useEc2Control();
   const { renderButton: renderGoogleButton } = useGoogleSignIn();
+  const { isSupported: isPasskeySupported } = useWebAuthn();
   const googleButtonContainer = ref<HTMLElement | null>(null);
 
   type LoginPhase = 'idle' | 'checking' | 'starting' | 'waiting' | 'waiting_app' | 'logging_in';
@@ -75,6 +78,10 @@
 
   async function handleGoogleCredential(idToken: string) {
     await withEc2AndLogin(() => authorizationStore.loginWithGoogle(idToken));
+  }
+
+  async function loginWithPasskey() {
+    await withEc2AndLogin(() => authorizationStore.loginWithPasskey());
   }
 
   watch(
@@ -163,6 +170,17 @@
 
         <!-- GOOGLE SIGN-IN -->
         <div ref="googleButtonContainer" class="flex justify-center"></div>
+
+        <!-- PASSKEY SIGN-IN -->
+        <OfficeButton
+          v-if="isPasskeySupported"
+          text="Zaloguj kluczem dostępu"
+          btn-type="office-regular"
+          icon="pi pi-key"
+          class="mt-3 w-full"
+          :loading="authorizationStore.loading"
+          @click="loginWithPasskey"
+        />
       </form>
     </div>
 
