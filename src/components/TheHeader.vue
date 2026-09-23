@@ -6,7 +6,6 @@
   import NotificationsBell from '@/components/NotificationsBell.vue';
   import { EC2_CONTROL_ENABLED, EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
   import { useMyProfileQuery } from '@/features/account/profile/queries/useProfileQueries';
-  import logoMini from '@/assets/logo_mini.png';
   import { UtilsService } from '@/service/UtilsService';
 
   const authStore = useAuthorizationStore();
@@ -41,7 +40,7 @@
 <template>
   <header class="flex h-20 w-full items-center justify-between gap-4 bg-[#515455] px-6 sm:px-10">
     <router-link :to="{ name: 'Home' }" class="flex items-center gap-3">
-      <img :src="logoMini" alt="HomeOffice logo" class="h-10 w-10 rounded-xl object-cover" />
+      <img src="/homeoffice-mark.svg" alt="HomeOffice logo" class="h-10 w-10" />
       <span class="text-xl font-bold text-surface-0">HomeOffice</span>
     </router-link>
 

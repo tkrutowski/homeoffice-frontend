@@ -66,9 +66,6 @@
 
 <template>
   <Menubar ref="menubarRef" :model="items" @mouseleave="onMenuMouseLeave">
-    <template #start>
-      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />
-    </template>
     <template #end>
       <div v-if="!authorizationStore.isAuthenticatedOrToken">
         <router-link :to="{ name: 'login' }" style="text-decoration: none">
