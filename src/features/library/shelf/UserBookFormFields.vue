@@ -6,6 +6,7 @@
   import ReadingStatusStepper from '@/features/library/shelf/ReadingStatusStepper.vue';
   import { AUDIOBOOK_PLATFORM_ORDER, getPlatformIcon } from '@/features/library/shelf/audiobookPlatformIcons';
   import { ptDatePickerField, ptSelectInField, ptTextareaField } from '@/config/formFieldPt';
+  import { ReadingStatus } from '@/features/library/shelf/types';
   import type {
     AudiobookAvailabilityResponse,
     AudiobookAvailabilityResult,
@@ -100,6 +101,10 @@
   function unavailableTitle(platformName: string): string {
     return `${platformName} — niedostępny`;
   }
+
+  // Planuję: obie daty zablokowane. W trakcie: tylko "od" edytowalne. Ukończona: obie edytowalne.
+  const isDateFromDisabled = computed(() => userbook.value.readingStatus === ReadingStatus.NOT_READ);
+  const isDateToDisabled = computed(() => userbook.value.readingStatus !== ReadingStatus.READ);
 </script>
 
 <template>
@@ -232,6 +237,7 @@
                   show-icon
                   show-button-bar
                   date-format="yy-mm-dd"
+                  :disabled="isDateFromDisabled"
                   :invalid="showErrorDateFrom"
                   :pt="ptDatePickerField"
                 />
@@ -247,6 +253,7 @@
                   show-icon
                   show-button-bar
                   date-format="yy-mm-dd"
+                  :disabled="isDateToDisabled"
                   :invalid="showErrorDateTo"
                   :pt="ptDatePickerField"
                 />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, nextTick, ref, watch } from 'vue';
   import OfficeButton from '@/components/OfficeButton.vue';
   import AddDialog from '@/components/AddDialog.vue';
   import UserBookFormFields from '@/features/library/shelf/UserBookFormFields.vue';
@@ -112,7 +112,11 @@
     return UtilsService.formatDate(value) ?? null;
   }
 
+  // Blokuje auto-czyszczenie dat (patrz watch na readingStatus) podczas wgrywania zapisanej pozycji z bazy.
+  const applyingFromDb = ref(false);
+
   function applyUserbookFromDb(result: UserBook) {
+    applyingFromDb.value = true;
     const cloned = cloneUserBook(result);
     cloned.readFrom = toDateOrNull(cloned.readFrom);
     cloned.readTo = toDateOrNull(cloned.readTo);
@@ -120,6 +124,9 @@
     selectedBookstore.value = findBookstore(bookstoresData.value, userbook.value.idBookstore);
     readingDateFrom.value = cloned.readFrom;
     readingDateTo.value = cloned.readTo;
+    void nextTick(() => {
+      applyingFromDb.value = false;
+    });
   }
 
   // Nowa książka na półkę: dociągnij dane katalogowe wybranej książki
@@ -153,6 +160,19 @@
   watch(readingDateTo, (newDate: Date | null) => {
     if (userbook.value) userbook.value.readTo = newDate;
   });
+  // Planuję: obie daty zablokowane i puste. W trakcie: "czytana do" zablokowana i pusta. Ukończona: obie edytowalne.
+  watch(
+    () => userbook.value.readingStatus,
+    status => {
+      if (applyingFromDb.value) return;
+      if (status === ReadingStatus.NOT_READ) {
+        readingDateFrom.value = null;
+        readingDateTo.value = null;
+      } else if (status === ReadingStatus.READ_NOW) {
+        readingDateTo.value = null;
+      }
+    }
+  );
   const isValid = () => {
     return (
       showErrorBookstore() ||
