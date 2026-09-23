@@ -165,5 +165,12 @@
         <div ref="googleButtonContainer" class="flex justify-center"></div>
       </form>
     </div>
+
+    <template #bottom>
+      <div class="flex justify-center gap-4 py-3 text-sm text-surface-600 dark:text-surface-400">
+        <a href="/privacy" target="_blank" rel="noopener" class="hover:underline">Polityka prywatności</a>
+        <a href="/terms" target="_blank" rel="noopener" class="hover:underline">Warunki korzystania</a>
+      </div>
+    </template>
   </MainPageShell>
 </template>

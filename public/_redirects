@@ -1,1 +1,6 @@
+# Statyczne strony prawne (Google OAuth consent screen) - jawnie przed SPA fallbackiem,
+# mimo że Netlify i tak serwuje istniejące pliki przed regułami przekierowań.
+/privacy    /privacy/index.html    200
+/terms      /terms/index.html      200
+
 /*    /index.html   200
