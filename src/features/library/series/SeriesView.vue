@@ -71,7 +71,11 @@
     selectedSeriesId,
     computed(() => selectedSeriesId.value > 0)
   );
-  const seriesBooks = computed(() => seriesBooksData.value ?? []);
+  const seriesBooks = computed(() =>
+    [...(seriesBooksData.value ?? [])].sort(
+      (a: Book, b: Book) => Number.parseFloat(a.bookInSeriesNo) - Number.parseFloat(b.bookInSeriesNo)
+    )
+  );
 
   // Funkcja do formatowania daty
   const formatDate = (date: Date | null) => {
