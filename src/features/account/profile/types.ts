@@ -10,6 +10,7 @@ export interface AccountProfile {
   lastLoginDate: Date | null;
   lastLoginDateDisplay: Date;
   idEmployee: number | null;
+  avatarUrl: string | null;
 }
 
 export interface UpdateProfilePayload {

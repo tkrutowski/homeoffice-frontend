@@ -13,6 +13,7 @@ interface UserDto {
   lastLoginDateDisplay: string;
   notLocked: boolean;
   idEmployee: number | null;
+  avatarUrl: string | null;
 }
 
 function normalizeProfile(dto: UserDto): AccountProfile {
@@ -28,6 +29,7 @@ function normalizeProfile(dto: UserDto): AccountProfile {
     lastLoginDate: dto.lastLoginDate ? new Date(dto.lastLoginDate) : null,
     lastLoginDateDisplay: new Date(dto.lastLoginDateDisplay),
     idEmployee: dto.idEmployee,
+    avatarUrl: dto.avatarUrl,
   };
 }
 

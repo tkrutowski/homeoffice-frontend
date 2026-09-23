@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { useAuthorizationStore } from '@/stores/authorization';
   import ThemeSwitcher from './ThemeSwitcher.vue';
   import InstanceControl from '@/components/share/InstanceControl.vue';
@@ -7,6 +7,7 @@
   import { EC2_CONTROL_ENABLED, EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from '@/config/ec2';
   import { useMyProfileQuery } from '@/features/account/profile/queries/useProfileQueries';
   import logoMini from '@/assets/logo_mini.png';
+  import { UtilsService } from '@/service/UtilsService';
 
   const authStore = useAuthorizationStore();
 
@@ -27,6 +28,14 @@
     }
     return authStore.username.slice(0, 2).toUpperCase();
   });
+
+  // Badge 40px (h-10 w-10) - x2 dla ekranów retina
+  const avatarUrl = computed(() => UtilsService.googleAvatarUrl(profileQuery.data.value?.avatarUrl, 80));
+  const avatarLoadFailed = ref(false);
+  watch(avatarUrl, () => {
+    avatarLoadFailed.value = false;
+  });
+  const showAvatarImage = computed(() => !!avatarUrl.value && !avatarLoadFailed.value);
 </script>
 
 <template>
@@ -55,9 +64,17 @@
         class="flex items-center gap-3 rounded-full border-2 border-primary py-1.5 pl-1.5 pr-5 transition-colors hover:bg-white/10"
       >
         <span
-          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-contrast"
+          class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-base font-bold text-primary-contrast"
         >
-          {{ initials }}
+          <img
+            v-if="showAvatarImage"
+            :src="avatarUrl!"
+            alt=""
+            class="h-full w-full object-cover"
+            referrerpolicy="no-referrer"
+            @error="avatarLoadFailed = true"
+          />
+          <template v-else>{{ initials }}</template>
         </span>
         <span class="max-w-[12rem] truncate text-lg font-bold text-surface-0">{{ fullName }}</span>
       </router-link>

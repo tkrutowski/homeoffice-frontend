@@ -35,6 +35,21 @@ export const UtilsService = {
     return `${formatted} zł`;
   },
 
+  /**
+   * Dla adresów z Google (lh3.googleusercontent.com itp.) doklęja/podmienia sufiks rozmiaru
+   * (`=s{size}-c`), żeby nie ciągnąć pełnej rozdzielczości do małej ikonki avatara.
+   * Inne hosty zwraca bez zmian.
+   */
+  googleAvatarUrl(url: string | null | undefined, size = 80): string | null {
+    if (!url) return null;
+    try {
+      if (!new URL(url).hostname.endsWith('googleusercontent.com')) return url;
+    } catch {
+      return url;
+    }
+    return `${url.replace(/=s\d+(-c)?$/, '')}=s${size}-c`;
+  },
+
   formatDateToString(value: Date | string | undefined): string {
     // console.log('formatDateToString', value);
     if (value) {
