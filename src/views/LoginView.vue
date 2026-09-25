@@ -158,7 +158,7 @@
         </div>
 
         <p class="text-right mb-4">
-          <router-link class="" to="/forgot-password">Nie pamiętam hasła</router-link>
+          <router-link class="text-primary hover:underline" to="/forgot-password">Nie pamiętam hasła</router-link>
         </p>
 
         <!-- DIVIDER -->

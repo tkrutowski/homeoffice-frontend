@@ -36,3 +36,12 @@ export function parsePasswordChangeError(error: AxiosError<ResponseData>): Passw
 export async function changeMyPassword(payload: ChangePasswordPayload): Promise<void> {
   await httpCommon.put('/v1/user/me/password', payload);
 }
+
+/** Reset hasła ("zapomniałem hasła") - endpointy publiczne, bez Authorization i bez refresh-tokena. */
+export async function requestPasswordReset(email: string): Promise<void> {
+  await httpCommon.post('/v1/auth/forgot-password', { email });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await httpCommon.post('/v1/auth/reset-password', { token, newPassword });
+}

@@ -31,6 +31,8 @@ apiClient.interceptors.request.use(
       path.endsWith('/login') ||
       path.endsWith('/refresh') ||
       path.endsWith('/auth/google') ||
+      path.endsWith('/auth/forgot-password') ||
+      path.endsWith('/auth/reset-password') ||
       path.endsWith('/login/webauthn') ||
       path.endsWith('/webauthn/authenticate/options') ||
       path.endsWith('/webauthn/token') ||
@@ -52,12 +54,17 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   response => response,
   async error => {
-    console.log('ERROR interceptor: ', error);
     const authStore = useAuthorizationStore();
+    const errorPath = error.config?.url?.split('?')[0] ?? '';
+
+    // Reset hasła: żądanie zawiera token / hasło - nie logujemy błędu do konsoli i nie uruchamiamy refresh/logout.
+    if (errorPath.endsWith('/auth/forgot-password') || errorPath.endsWith('/auth/reset-password')) {
+      return Promise.reject(error);
+    }
+    console.log('ERROR interceptor: ', error);
 
     // Logowanie Google/passkey: błędy obsługiwane bezpośrednio w authorizationStore.loginWithGoogle() /
     // loginWithPasskey() - pomijamy tu refresh/logout, żeby nie dublować efektów ubocznych.
-    const errorPath = error.config?.url?.split('?')[0] ?? '';
     if (
       errorPath.endsWith('/auth/google') ||
       errorPath.endsWith('/login/webauthn') ||

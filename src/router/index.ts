@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/MainHomeView.vue';
 import LoginView from '@/views/LoginView.vue';
+import ForgotPasswordView from '@/views/ForgotPasswordView.vue';
+import ResetPasswordView from '@/views/ResetPasswordView.vue';
 import Error503View from '@/views/Error503View.vue';
 import Error403View from '@/views/Error403View.vue';
 import RefreshComponent from '@/components/RefreshComponent.vue';
@@ -67,6 +69,16 @@ const routes = [
     path: '/login',
     name: 'login',
     component: LoginView,
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPasswordView,
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPasswordView,
   },
   {
     path: '/error503',
@@ -335,14 +347,17 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
   const authStore = useAuthorizationStore();
-  console.log('ROUTE to: ', to, ', from: ', from);
-  if (to.path) {
+  // Logujemy tylko path - query zawiera token resetu hasła.
+  console.log('ROUTE to: ', to.path, ', from: ', from.path);
+  // Widoki resetu hasła nie trafiają do historii - po zalogowaniu goBack() nie może wrócić na formularz z tokenem.
+  if (to.path && to.name !== 'ForgotPassword' && to.name !== 'ResetPassword') {
     const history = JSON.parse(localStorage.getItem('navigationHistory') || '[]');
     history.push(to.path);
     localStorage.setItem('navigationHistory', JSON.stringify(history));
   }
   const refreshToken = localStorage.getItem('refreshToken') || null;
-  if (to.name !== 'login' && to.name !== 'Error503' && !authStore.isAuthenticated && refreshToken === null) {
+  const publicRoutes = ['login', 'Error503', 'ForgotPassword', 'ResetPassword'];
+  if (!publicRoutes.includes(to.name as string) && !authStore.isAuthenticated && refreshToken === null) {
     next({ name: 'login' });
   } else {
     next();
