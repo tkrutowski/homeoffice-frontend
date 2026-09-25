@@ -1,30 +1,50 @@
 import httpCommon from '@/config/http-common';
-import type { Log, LogsRangeParams } from '@/features/admin/logs/types';
+import type { Log, LogLevel, LogsRangeParams, LogsResult } from '@/features/admin/logs/types';
 
-interface LogDto extends Omit<Log, 'timestamp'> {
+export interface LogEntryDto {
   timestamp: string;
+  level: LogLevel;
+  thread: string;
+  logger: string;
+  message: string;
+  instance: string | null;
 }
 
-/** Od najnowszych. */
-function normalizeLogs(dtos: LogDto[]): Log[] {
-  return dtos
-    .map(dto => ({ ...dto, timestamp: new Date(dto.timestamp) }))
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+interface LogsResultDto {
+  entries: LogEntryDto[];
+  truncated: boolean;
 }
 
-export async function fetchTodayLogs(): Promise<Log[]> {
-  const response = await httpCommon.get<LogDto[]>('/v1/logs');
-  return normalizeLogs(response.data);
+/**
+ * Backend zwraca czas lokalny (Europe/Warsaw) bez strefy, czasem z ułamkiem sekundy o zmiennej liczbie cyfr.
+ * Składamy Date z komponentów (jak dosłowny czas zegarowy), obcinając ułamek do milisekund.
+ */
+export function parseLocalDateTime(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/.exec(value);
+  if (!match) return new Date(value);
+  const [, year, month, day, hour, minute, second, fraction = ''] = match;
+  const ms = Number(fraction.padEnd(3, '0').slice(0, 3));
+  return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second), ms);
 }
 
-export async function fetchLogsByDate({ from, to, levels }: LogsRangeParams): Promise<Log[]> {
-  const response = await httpCommon.get<LogDto[]>('/v1/logs/date', {
-    params: {
-      from: `${from}T00:00:00`,
-      to: `${to}T00:00:00`,
-      // brak parametru = wszystkie poziomy; Spring bindowałby pusty string do pustego Set
-      ...(levels.length > 0 ? { levels: levels.join(',') } : {}),
-    },
+let nextLogId = 1;
+
+export function normalizeLogEntry(dto: LogEntryDto): Log {
+  return { ...dto, id: nextLogId++, timestamp: parseLocalDateTime(dto.timestamp) };
+}
+
+/** Wyniki `list` mają `levels`/`instance` pominięte, gdy puste (backend nie akceptuje pustego stringa). */
+export function buildLevelsParam(levels: LogLevel[]): { levels?: string } {
+  return levels.length > 0 ? { levels: levels.join(',') } : {};
+}
+
+export async function fetchLogsByDate({ from, to, levels, limit, instance }: LogsRangeParams): Promise<LogsResult> {
+  const response = await httpCommon.get<LogsResultDto>('/v1/logs/date', {
+    params: { from, to, limit, ...buildLevelsParam(levels), ...(instance ? { instance } : {}) },
   });
-  return normalizeLogs(response.data);
+  return {
+    // backend zwraca rosnąco; w historii pokazujemy od najnowszych
+    logs: response.data.entries.map(normalizeLogEntry).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()),
+    truncated: response.data.truncated,
+  };
 }

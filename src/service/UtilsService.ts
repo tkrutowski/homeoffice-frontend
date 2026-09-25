@@ -64,6 +64,21 @@ export const UtilsService = {
     return value ? moment(value).format('YYYY-MM-DD HH:mm:ss.SSS') : '';
   },
 
+  /** Sam czas z milisekundami, np. do podglądu logów na żywo: `14:03:07.123`. */
+  formatTimeMs(value: Date | string | undefined | null): string {
+    return value ? moment(value).format('HH:mm:ss.SSS') : '';
+  },
+
+  /** Czas do zdarzenia jako `mm:ss` (poniżej godziny) lub `H:mm:ss`; wartości ujemne dają `0:00`. */
+  formatCountdown(ms: number): string {
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const ss = String(seconds).padStart(2, '0');
+    return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${ss}` : `${minutes}:${ss}`;
+  },
+
   /**
    * Maska numeru konta: ostatnie 4 znaki alfanumeryczne, reszta jako gwiazdki w grupach.
    * Pusty lub niepoprawny ciąg zwraca pusty string.
