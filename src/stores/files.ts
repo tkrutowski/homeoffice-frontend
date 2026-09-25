@@ -3,18 +3,7 @@ import httpCommon from '@/config/http-common';
 import type { Module } from '@/types/FileInfo.ts';
 
 export const useFilesStore = defineStore('file', {
-  state: () => ({
-    loadingLogs: false,
-  }),
-
-  //getters = computed
-  getters: {
-    // getLogs: (state) =>
-    //     state.logs
-    //         .slice() // Tworzymy kopię tablicy, aby uniknąć mutacji oryginalnej tablicy
-    //         .sort((a: Log, b: Log) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()), // Sortowanie od najnowszych
-    // getLogLevels: (state) => Array.from(new Set(state.logs.map((log: Log) => log.level))),
-  },
+  state: () => ({}),
 
   //actions = metody w komponentach
   actions: {

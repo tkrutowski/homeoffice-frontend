@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Library** — books, series, authors, bookstores, reading statistics (vertical slices + TanStack Query)
 - **Device** — devices catalog, computers, dashboard (vertical slices + TanStack Query)
 - **Share** — shared data (firms, company lookup) — still Pinia + `src/views/share`
-- **Admin** — privileges, activity logs — still Pinia + `src/views`
+- **Admin** — logs (vertical slice + TanStack Query in `features/admin`); privileges, audit — still Pinia + `src/views`
 
 ## Quick Start
 
@@ -79,6 +79,9 @@ src/
 │   │   ├── home/         # dashboard + useDeviceDashboard
 │   │   ├── devices/      # list/grid/form
 │   │   └── computers/    # assemble PCs from devices
+│   ├── admin/            # Admin vertical slices + TanStack Query (logs; no per-domain menu/storybook yet)
+│   │   ├── _shared/      # queryKeys (adminKeys)
+│   │   └── logs/         # LogsView, api/, queries/, types
 │   └── account/          # Ustawienia konta vertical slices + TanStack Query (no per-domain menu/storybook yet)
 │       ├── _shared/      # queryKeys
 │       ├── profile/      # ProfileSection
@@ -102,8 +105,8 @@ src/
 
 | Layer | Where | Use for |
 |-------|--------|---------|
-| **TanStack Query** | Library, Finance, Device, Account | Server state: lists, details, mutations, cache, invalidation |
-| **Pinia** | Shared + rare UI workflows | Auth, firms, users, files, audit, logs, companyLookup; Finance CSV import UI (`bankCsvImport.store.ts`) |
+| **TanStack Query** | Library, Finance, Device, Account, Admin logs | Server state: lists, details, mutations, cache, invalidation |
+| **Pinia** | Shared + rare UI workflows | Auth, firms, users, files, audit, companyLookup; Finance CSV import UI (`bankCsvImport.store.ts`) |
 
 **Feature pattern (Library / Finance / Device):**
 1. Thin HTTP in `features/<domain>/<slice>/api/*.ts` (Axios via `http-common`)
@@ -115,7 +118,7 @@ src/
 7. Form drafts: clone Query data with `cloneEntities` helpers (readonly → mutable; dates / `Map`)
 
 **Shared Pinia (keep here):**
-- `authorization.ts`, `users.ts`, `firms.ts`, `files.ts`, `audit.ts`, `logs.ts`, `companyLookup.ts`
+- `authorization.ts`, `users.ts`, `firms.ts`, `files.ts`, `audit.ts`, `companyLookup.ts`
 - Stores get `router` via Pinia plugin in `main.ts`
 - **Do not** add new domain server-state stores under `src/stores/` for Library/Finance/Device
 
@@ -172,6 +175,13 @@ _shared/     TheMenuDevice, queryKeys, cloneEntities, storybook/
 - Files upload/download: shared `useFilesStore` + `FileUploadDialog` (not Device Query)
 - Dashboard recent changes: shared `useAuditStore` (lists from Query; audit fetch from Pinia)
 
+**Admin** — `features/admin/` (`/admin/logs`)
+```
+logs/        LogsView, api/logsApi, queries/useLogsQueries (today + date-range, `staleTime: 0`), types
+_shared/     queryKeys (adminKeys)
+```
+- Range search is driven by committed `searchParams` (null = today's logs); no toasts in hooks
+
 **Account** — `features/account/` (Ustawienia konta, `/account/settings`)
 ```
 profile/     ProfileSection (GET/PUT /v1/user/me)
@@ -187,7 +197,7 @@ _shared/     queryKeys (accountKeys)
 - Auth guard prevents unauthenticated access (redirects to login)
 - Navigation history tracked in `localStorage`
 - Feature routes import from `@/features/library|finance|device/...`
-- Admin / Share / auth still use `@/views/...`
+- Admin (privileges) / Share / auth still use `@/views/...`; Admin logs: `@/features/admin/logs/...`
 - Device home path: `/homedevice` (not under `/devices/*`)
 
 ### Type System
@@ -312,5 +322,5 @@ These rules in `.cursor/rules/` enforce project-specific practices:
 - Version: 3.18.0 (see `package.json`)
 - No unit/e2e test framework in app code; Storybook is the component catalog (not a full test suite)
 - Do **not** reintroduce Pinia server-state for Library / Finance / Device; do **not** leave compatibility shims in `src/types` or `src/stores` for moved modules
-- Share / Admin are **not** on TanStack Query yet — do not migrate them unless explicitly asked
+- Share and Admin (except `features/admin/logs`) are **not** on TanStack Query yet — do not migrate them unless explicitly asked
 - Router may log navigations (`console.log('ROUTE to: '...)`) — safe to remove if noise
