@@ -59,6 +59,11 @@ export const UtilsService = {
     return '';
   },
 
+  /** Data i czas z milisekundami, np. do tabeli logów: `2026-09-25 14:03:07.123`. */
+  formatDateTimeMs(value: Date | string | undefined | null): string {
+    return value ? moment(value).format('YYYY-MM-DD HH:mm:ss.SSS') : '';
+  },
+
   /**
    * Maska numeru konta: ostatnie 4 znaki alfanumeryczne, reszta jako gwiazdki w grupach.
    * Pusty lub niepoprawny ciąg zwraca pusty string.
