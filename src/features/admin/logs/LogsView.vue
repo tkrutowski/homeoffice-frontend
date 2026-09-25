@@ -4,9 +4,10 @@
   import TheMenu from '@/components/TheMenu.vue';
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import LogsHistoryTab from '@/features/admin/logs/components/LogsHistoryTab.vue';
+  import LogsLiveTab from '@/features/admin/logs/components/LogsLiveTab.vue';
 
-  type LogsTab = 'history';
-  const TABS: LogsTab[] = ['history'];
+  type LogsTab = 'history' | 'live';
+  const TABS: LogsTab[] = ['history', 'live'];
 
   const route = useRoute();
   const router = useRouter();
@@ -35,10 +36,19 @@
       <Tabs v-model:value="activeTab" lazy>
         <TabList>
           <Tab value="history">Historia</Tab>
+          <Tab value="live">
+            <span class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-green-600 dark:bg-green-400" />
+              Na żywo
+            </span>
+          </Tab>
         </TabList>
         <TabPanels class="!px-0">
           <TabPanel value="history">
             <LogsHistoryTab />
+          </TabPanel>
+          <TabPanel value="live">
+            <LogsLiveTab />
           </TabPanel>
         </TabPanels>
       </Tabs>
