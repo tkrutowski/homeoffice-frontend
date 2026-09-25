@@ -175,12 +175,17 @@ _shared/     TheMenuDevice, queryKeys, cloneEntities, storybook/
 - Files upload/download: shared `useFilesStore` + `FileUploadDialog` (not Device Query)
 - Dashboard recent changes: shared `useAuditStore` (lists from Query; audit fetch from Pinia)
 
-**Admin** — `features/admin/` (`/admin/logs`)
+**Admin** — `features/admin/` (`/admin/logs`, zakładki `?tab=history|live|levels`)
 ```
-logs/        LogsView, api/logsApi, queries/useLogsQueries (today + date-range, `staleTime: 0`), types
+logs/        LogsView (Tabs), api/{logsApi,liveLogsApi,logLevelsApi}, queries/, composables/useLiveLogs, types, logLevelStyles
+  components/  LogsHistoryTab, LogsLiveTab, LogLevelsTab (tylko ROLE_ADMIN), LogsTable (wspólny DataTable), LogLevelFilter, LogLevelTag
 _shared/     queryKeys (adminKeys)
 ```
-- Range search is driven by committed `searchParams` (null = today's logs); no toasts in hooks
+- Kontrakt backendu: `homeoffice-backend/docs/LOGGING.md`. Historia: `{entries, truncated}`, zakres ≤ 7 dni (waliduj przed wysłaniem - backend błędy bindowania mapuje na 500), `to` wyłącznie
+- Podgląd na żywo to **nie** `useQuery`: `useLiveLogs` = pętla `setTimeout` + kursor `after` + `AbortController`; dotyczy tylko instancji, z którą połączony jest frontend
+- Poziomy loggerów: nadpisania wygasają po TTL (odliczanie po stronie UI), `DELETE` 404 = już przywrócone
+- Kolory poziomów tylko przez `logLevelStyles.ts` (tokeny Tailwind/Prime, light + dark)
+- `.gitignore` ma regułę `logs` - wyjątek `!src/features/admin/logs/` jest potrzebny, nie usuwaj go
 
 **Account** — `features/account/` (Ustawienia konta, `/account/settings`)
 ```
