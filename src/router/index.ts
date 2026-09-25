@@ -43,7 +43,7 @@ import StatisticsView from '@/features/library/shelf/StatisticsView.vue';
 
 //ADMIN
 import PrivilegesView from '@/views/PrivilegesView.vue';
-import LogsView from '@/views/LogsView.vue';
+import LogsView from '@/features/admin/logs/LogsView.vue';
 
 //DEVICE
 import DevicesHomeView from '@/features/device/home/DeviceHomeView.vue';
