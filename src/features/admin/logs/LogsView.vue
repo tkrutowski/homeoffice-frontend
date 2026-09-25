@@ -5,18 +5,25 @@
   import MainPageShell from '@/components/layout/MainPageShell.vue';
   import LogsHistoryTab from '@/features/admin/logs/components/LogsHistoryTab.vue';
   import LogsLiveTab from '@/features/admin/logs/components/LogsLiveTab.vue';
+  import LogLevelsTab from '@/features/admin/logs/components/LogLevelsTab.vue';
+  import { useAuthorizationStore } from '@/stores/authorization';
 
-  type LogsTab = 'history' | 'live';
-  const TABS: LogsTab[] = ['history', 'live'];
+  type LogsTab = 'history' | 'live' | 'levels';
 
   const route = useRoute();
   const router = useRouter();
+  const authStore = useAuthorizationStore();
+
+  // Zakładka „Poziomy logów” tylko dla ROLE_ADMIN (backend i tak zwróci 403 dla pozostałych).
+  const availableTabs = computed<LogsTab[]>(() =>
+    authStore.hasAccessAdmin ? ['history', 'live', 'levels'] : ['history', 'live']
+  );
 
   // Aktywna zakładka trzymana w URL-u (?tab=history), żeby dało się wejść na nią wprost.
   const activeTab = computed<LogsTab>({
     get: () => {
       const tab = route.query.tab;
-      return TABS.find(t => t === tab) ?? 'history';
+      return availableTabs.value.find(t => t === tab) ?? 'history';
     },
     set: value => {
       router.replace({ query: { ...route.query, tab: value } });
@@ -42,6 +49,7 @@
               Na żywo
             </span>
           </Tab>
+          <Tab v-if="authStore.hasAccessAdmin" value="levels">Poziomy logów</Tab>
         </TabList>
         <TabPanels class="!px-0">
           <TabPanel value="history">
@@ -49,6 +57,9 @@
           </TabPanel>
           <TabPanel value="live">
             <LogsLiveTab />
+          </TabPanel>
+          <TabPanel v-if="authStore.hasAccessAdmin" value="levels">
+            <LogLevelsTab />
           </TabPanel>
         </TabPanels>
       </Tabs>
