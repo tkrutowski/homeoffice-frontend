@@ -43,7 +43,6 @@ import StatisticsView from '@/features/library/shelf/StatisticsView.vue';
 
 //ADMIN
 import PrivilegesView from '@/views/PrivilegesView.vue';
-import LogsView from '@/features/admin/logs/LogsView.vue';
 
 //DEVICE
 import DevicesHomeView from '@/features/device/home/DeviceHomeView.vue';
@@ -111,7 +110,8 @@ const routes = [
   {
     path: '/admin/logs',
     name: 'Logs',
-    component: LogsView,
+    // ładowane leniwie: panel logów (Tabs, TreeSelect) nie powinien puchnąć w głównym bundlu (limit precache PWA = 2 MiB)
+    component: () => import('@/features/admin/logs/LogsView.vue'),
   },
   //----------------------------------------------LIBRARY--------------------------------------------
   {
