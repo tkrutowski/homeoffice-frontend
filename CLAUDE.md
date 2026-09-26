@@ -184,6 +184,7 @@ _shared/     queryKeys (adminKeys)
 - Kontrakt backendu: `homeoffice-backend/docs/LOGGING.md`. Historia: `{entries, truncated}`, zakres ≤ 7 dni (waliduj przed wysłaniem - backend błędy bindowania mapuje na 500), `to` wyłącznie
 - Podgląd na żywo to **nie** `useQuery`: `useLiveLogs` = pętla `setTimeout` + kursor `after` + `AbortController`; dotyczy tylko instancji, z którą połączony jest frontend
 - Poziomy loggerów: nadpisania wygasają po TTL (odliczanie po stronie UI), `DELETE` 404 = już przywrócone
+- Wybór loggera: `TreeSelect` budowany z `GET /v1/logs/levels/loggers` przez `buildLoggerTree` (podział po kropce; wybieralne pakiety i klasy) + pole na nazwę ręczną jako fallback (lista nie jest kompletna); `ROOT` odfiltrowany w `fetchLoggers`; po PUT/DELETE unieważniane są `adminKeys.logLevels()` i `adminKeys.loggers()`
 - Kolory poziomów tylko przez `logLevelStyles.ts` (tokeny Tailwind/Prime, light + dark)
 - `.gitignore` ma regułę `logs` - wyjątek `!src/features/admin/logs/` jest potrzebny, nie usuwaj go
 

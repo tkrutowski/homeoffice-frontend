@@ -78,6 +78,16 @@ export interface LogLevelsInfo {
   overrides: LogLevelOverride[];
 }
 
+/** Logger istniejący na instancji (pakiet albo klasa), z endpointu `/v1/logs/levels/loggers`. */
+export interface LoggerInfo {
+  /** Pełna nazwa, np. `net.focik.homeoffice.goahead.domain.invoice.KsefService`. */
+  name: string;
+  /** null = logger dziedziczy poziom po nadrzędnym. */
+  configuredLevel: LogLevel | null;
+  /** Poziom, który faktycznie obowiązuje. */
+  effectiveLevel: LogLevel | null;
+}
+
 export interface SetLogLevelRequest {
   logger: string;
   level: LogLevel;

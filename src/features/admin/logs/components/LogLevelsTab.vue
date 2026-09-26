@@ -3,12 +3,14 @@
   import moment from 'moment';
   import { useToast } from 'primevue/usetoast';
   import LogLevelTag from '@/features/admin/logs/components/LogLevelTag.vue';
-  import { useLogLevelsQuery } from '@/features/admin/logs/queries/useLogLevelsQueries';
+  import { buildLoggerTree } from '@/features/admin/logs/buildLoggerTree';
+  import { useLoggersQuery, useLogLevelsQuery } from '@/features/admin/logs/queries/useLogLevelsQueries';
   import {
     useResetLogLevelMutation,
     useSetLogLevelMutation,
   } from '@/features/admin/logs/queries/useLogLevelsMutations';
   import { LOG_LEVELS, type LogLevel } from '@/features/admin/logs/types';
+  import { useAuthorizationStore } from '@/stores/authorization';
   import { UtilsService } from '@/service/UtilsService';
 
   const TTL_SHORTCUTS = [
@@ -17,11 +19,14 @@
     { label: '4 h', minutes: 240 },
     { label: '24 h', minutes: 1440 },
   ];
-  /** Dopisek po kropce: człony `[A-Za-z0-9_$]+` rozdzielone pojedynczymi kropkami, bez kropki na początku i końcu. */
-  const SUFFIX_PATTERN = /^[A-Za-z0-9_$]+(\.[A-Za-z0-9_$]+)*$/;
+  /** Nazwa loggera: człony `[A-Za-z0-9_$]+` rozdzielone pojedynczymi kropkami, bez kropki na początku i końcu. */
+  const LOGGER_PATTERN = /^[A-Za-z0-9_$]+(\.[A-Za-z0-9_$]+)*$/;
 
   const toast = useToast();
+  const authStore = useAuthorizationStore();
   const query = useLogLevelsQuery();
+  // Lista loggerów tylko dla admina (zakładka montuje się leniwie, więc = tylko gdy jest aktywna)
+  const loggersQuery = useLoggersQuery(() => authStore.hasAccessAdmin);
   const setMutation = useSetLogLevelMutation();
   const resetMutation = useResetLogLevelMutation();
 
@@ -47,8 +52,9 @@
   });
 
   // Formularz
-  const prefix = ref<string | null>(null);
-  const suffix = ref('');
+  /** Wybór z drzewa (single: `{ [nazwa]: true }`) albo nazwa wpisana ręcznie - lista nie jest kompletna. */
+  const treeSelection = ref<Record<string, boolean> | undefined>(undefined);
+  const manualName = ref('');
   const level = ref<LogLevel>('DEBUG');
   const ttl = ref<number | null>(null);
 
@@ -60,20 +66,37 @@
     { immediate: true }
   );
 
-  const suffixError = computed(() =>
-    suffix.value !== '' && !SUFFIX_PATTERN.test(suffix.value)
-      ? 'Dopisek może zawierać litery, cyfry, „_” i „$”; człony oddzielaj pojedynczą kropką (bez kropki na początku i końcu).'
-      : null
-  );
-  const loggerName = computed(() =>
-    prefix.value ? (suffix.value ? `${prefix.value}.${suffix.value}` : prefix.value) : ''
-  );
+  const loggerTree = computed(() => buildLoggerTree(loggersQuery.data.value ?? []));
+  const loggerByName = computed(() => new Map((loggersQuery.data.value ?? []).map(l => [l.name, l])));
+
+  // Wybór z drzewa czyści pole ręczne i odwrotnie - w formularzu jest zawsze jedno źródło nazwy.
+  watch(treeSelection, selection => {
+    if (selection && Object.keys(selection).length > 0) manualName.value = '';
+  });
+  watch(manualName, name => {
+    if (name !== '') treeSelection.value = undefined;
+  });
+
+  const loggerName = computed(() => manualName.value.trim() || Object.keys(treeSelection.value ?? {})[0] || '');
+  const selectedLogger = computed(() => loggerByName.value.get(loggerName.value) ?? null);
+  const loggerError = computed<string | null>(() => {
+    const name = loggerName.value;
+    if (name === '') return null;
+    if (!LOGGER_PATTERN.test(name)) {
+      return 'Nazwa może zawierać litery, cyfry, „_” i „$”; człony oddzielaj pojedynczą kropką (bez kropki na początku i końcu).';
+    }
+    const prefixes = info.value?.allowedLoggers ?? [];
+    if (!prefixes.some(p => name === p || name.startsWith(`${p}.`))) {
+      return `Logger musi zaczynać się od jednego z dozwolonych prefiksów: ${prefixes.join(', ')}.`;
+    }
+    return null;
+  });
   const maxTtl = computed(() => info.value?.maxTtlMinutes ?? 1440);
   const ttlValid = computed(
     () => ttl.value !== null && Number.isInteger(ttl.value) && ttl.value >= 1 && ttl.value <= maxTtl.value
   );
   const canApply = computed(
-    () => !!prefix.value && !suffixError.value && ttlValid.value && !setMutation.isPending.value
+    () => loggerName.value !== '' && !loggerError.value && ttlValid.value && !setMutation.isPending.value
   );
   const isHeavyLevel = computed(() => level.value === 'DEBUG' || level.value === 'TRACE');
 
@@ -220,35 +243,85 @@
         <h2 class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">Zmień poziom loggera</h2>
 
         <div class="flex flex-col gap-2">
-          <label for="log-prefix" class="text-xs font-medium text-surface-600 dark:text-surface-400">
-            Pakiet (dozwolone prefiksy)
+          <label for="log-tree" class="text-xs font-medium text-surface-600 dark:text-surface-400">
+            Logger z listy (pakiet lub klasa)
           </label>
-          <Select
-            v-model="prefix"
-            input-id="log-prefix"
-            :options="info?.allowedLoggers ?? []"
-            placeholder="Wybierz prefiks…"
+          <TreeSelect
+            v-model="treeSelection"
+            input-id="log-tree"
+            :options="loggerTree"
+            selection-mode="single"
+            :meta-key-selection="false"
             filter
-            class="w-full"
-            :pt="{ label: { class: 'font-mono text-[13px]' } }"
-          />
-          <label for="log-suffix" class="mt-1 text-xs font-medium text-surface-600 dark:text-surface-400">
-            Dopisek po kropce (opcjonalnie)
+            filter-mode="lenient"
+            filter-placeholder="Szukaj loggera…"
+            placeholder="Wybierz pakiet lub klasę…"
+            :loading="loggersQuery.isFetching.value"
+            scroll-height="22rem"
+            fluid
+            :pt="{ labelContainer: { class: 'font-mono text-[13px]' } }"
+          >
+            <!-- Pełna nazwa z klucza zaznaczenia (etykieta węzła bywa skrócona/sklejona) -->
+            <template #value="{ placeholder }">
+              <span v-if="loggerName && !manualName" class="break-all font-mono text-[13px]">{{ loggerName }}</span>
+              <span v-else class="text-surface-500 dark:text-surface-400">{{ placeholder }}</span>
+            </template>
+            <template #option="{ node }">
+              <span class="flex w-full items-center gap-3">
+                <span
+                  class="min-w-0 flex-1 truncate font-mono text-[13px]"
+                  :class="node.data?.configuredLevel ? 'font-semibold' : ''"
+                >
+                  {{ node.label }}
+                </span>
+                <span
+                  v-if="node.data?.configuredLevel"
+                  class="text-[11px] font-medium text-primary"
+                  title="Poziom ustawiony jawnie"
+                >
+                  jawny
+                </span>
+                <LogLevelTag v-if="node.data?.effectiveLevel" :level="node.data.effectiveLevel" />
+              </span>
+            </template>
+            <template #empty>
+              <span class="px-3 py-2 text-[13px] text-surface-600 dark:text-surface-400">
+                Brak loggerów na liście - wpisz nazwę ręcznie poniżej.
+              </span>
+            </template>
+          </TreeSelect>
+          <span v-if="loggersQuery.isError.value" class="text-[13px] text-amber-700 dark:text-amber-400" role="status">
+            Nie udało się pobrać listy loggerów - wpisz nazwę ręcznie.
+          </span>
+
+          <label for="log-manual" class="mt-1 text-xs font-medium text-surface-600 dark:text-surface-400">
+            Albo wpisz nazwę ręcznie (spoza listy)
           </label>
           <InputText
-            id="log-suffix"
-            v-model="suffix"
-            placeholder="np. goahead"
+            id="log-manual"
+            v-model="manualName"
+            placeholder="np. net.focik.homeoffice.goahead.SomeClass"
             spellcheck="false"
             class="w-full font-mono text-[13px]"
-            :invalid="!!suffixError"
+            :invalid="!!loggerError"
           />
-          <span v-if="suffixError" class="text-[13px] text-red-600 dark:text-red-400" role="alert">
-            {{ suffixError }}
+          <span v-if="loggerError" class="text-[13px] text-red-600 dark:text-red-400" role="alert">
+            {{ loggerError }}
           </span>
+
           <span class="text-xs text-surface-600 dark:text-surface-400">
             Logger:
             <span class="break-all font-mono text-surface-800 dark:text-surface-200">{{ loggerName || '—' }}</span>
+            <template v-if="selectedLogger?.effectiveLevel">
+              · obowiązuje
+              <LogLevelTag :level="selectedLogger.effectiveLevel" class="align-middle" />
+              {{ selectedLogger.configuredLevel ? '(ustawiony jawnie)' : '(dziedziczony)' }}
+            </template>
+          </span>
+          <span class="text-xs text-surface-600 dark:text-surface-400">
+            Lista zawiera loggery już utworzone na instancji (klasa pojawia się po pierwszym załadowaniu). Dozwolone
+            prefiksy:
+            <span class="font-mono">{{ (info?.allowedLoggers ?? []).join(', ') || '—' }}</span>
           </span>
         </div>
 

@@ -1,7 +1,13 @@
 import type { AxiosError } from 'axios';
 import httpCommon from '@/config/http-common';
 import { parseLocalDateTime } from '@/features/admin/logs/api/logsApi';
-import type { LogLevel, LogLevelOverride, LogLevelsInfo, SetLogLevelRequest } from '@/features/admin/logs/types';
+import type {
+  LoggerInfo,
+  LogLevel,
+  LogLevelOverride,
+  LogLevelsInfo,
+  SetLogLevelRequest,
+} from '@/features/admin/logs/types';
 
 interface LogLevelOverrideDto {
   logger: string;
@@ -23,6 +29,15 @@ function normalizeOverride(dto: LogLevelOverrideDto): LogLevelOverride {
 export async function fetchLogLevels(): Promise<LogLevelsInfo> {
   const response = await httpCommon.get<LogLevelsInfoDto>('/v1/logs/levels');
   return { ...response.data, overrides: response.data.overrides.map(normalizeOverride) };
+}
+
+/** Lista loggerów istniejących na instancji, posortowana po nazwie. Pusty `prefix` = brak parametru (nie wysyłać ""). */
+export async function fetchLoggers(prefix?: string | null): Promise<LoggerInfo[]> {
+  const response = await httpCommon.get<LoggerInfo[]>('/v1/logs/levels/loggers', {
+    params: prefix ? { prefix } : {},
+  });
+  // ROOT nie jest dozwolony w PUT - nie pokazujemy go na liście
+  return response.data.filter(logger => logger.name.toUpperCase() !== 'ROOT');
 }
 
 export async function setLogLevel(request: SetLogLevelRequest): Promise<LogLevelOverride> {

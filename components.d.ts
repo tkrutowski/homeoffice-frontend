@@ -85,5 +85,6 @@ declare module 'vue' {
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
+    TreeSelect: typeof import('primevue/treeselect')['default']
   }
 }
