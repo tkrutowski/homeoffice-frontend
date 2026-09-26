@@ -79,9 +79,14 @@
   }
   const quickToday = () =>
     setQuickRange(moment().startOf('day').toDate(), moment().add(1, 'day').startOf('day').toDate());
-  const quickLastHour = () => setQuickRange(moment().subtract(1, 'hour').toDate(), moment().add(1, 'minute').toDate());
-  const quickLastWeek = () =>
-    setQuickRange(moment().subtract(MAX_RANGE_DAYS, 'days').toDate(), moment().add(1, 'minute').toDate());
+  // „Do” = teraz (nowszych wpisów i tak nie ma). Jeden `now` dla obu końców, żeby "7 dni" nie wyszło
+  // o minutę ponad limit backendu.
+  const quickLast = (amount: number, unit: 'hour' | 'days') => {
+    const now = moment();
+    setQuickRange(now.clone().subtract(amount, unit).toDate(), now.toDate());
+  };
+  const quickLastHour = () => quickLast(1, 'hour');
+  const quickLastWeek = () => quickLast(MAX_RANGE_DAYS, 'days');
 
   watch(
     () => query.dataUpdatedAt.value,
