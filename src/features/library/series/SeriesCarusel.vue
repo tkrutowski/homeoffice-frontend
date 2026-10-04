@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { type DefineComponent, computed, nextTick, ref, watch } from 'vue';
+  import { type DefineComponent, computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
   import type { PropType } from 'vue';
   import type { Book, Series, UserBook } from '@/features/library/shelf/types';
   import { useSeriesQuery } from '@/features/library/series/queries/useSeriesQueries';
@@ -40,7 +40,6 @@
 
   const tempSeries = computed<Series>(() => seriesDetailData.value ?? props.series);
 
-  const carouselKey = ref<number>(0);
   const booksInSeries = ref<Book[]>([]);
 
   function sortBooksBySeriesNo(books: Book[]): Book[] {
@@ -112,10 +111,44 @@
       book => isBookCandidate(book) && !fromDb.some(dbBook => isSameBookInSeries(dbBook, book))
     );
     booksInSeries.value = sortBooksBySeriesNo([...fromDb, ...pendingCandidates]);
-    carouselKey.value++;
   }
 
   watch(booksInSeriesData, fromDb => applyBooksFromDb(fromDb ?? []), { immediate: true });
+
+  //
+  //-------------------------------------------------SCROLL-------------------------------------------------
+  //
+  const scrollerRef = ref<HTMLElement | null>(null);
+  const canScrollLeft = ref<boolean>(false);
+  const canScrollRight = ref<boolean>(false);
+  let resizeObserver: ResizeObserver | null = null;
+
+  function updateScrollState() {
+    const el = scrollerRef.value;
+    if (!el) return;
+    canScrollLeft.value = el.scrollLeft > 1;
+    canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+  }
+
+  /** Przewija o (liczba widocznych kart - 1, min. 1), żeby ostatnia oglądana karta została widoczna w nowym widoku. */
+  function scrollByPage(direction: -1 | 1) {
+    const el = scrollerRef.value;
+    if (!el) return;
+    const cardWidth = el.firstElementChild?.getBoundingClientRect().width ?? el.clientWidth;
+    const visibleCards = Math.max(1, Math.floor(el.clientWidth / cardWidth));
+    const step = Math.max(1, visibleCards - 1);
+    el.scrollBy({ left: direction * step * cardWidth });
+  }
+
+  onMounted(() => {
+    updateScrollState();
+    if (scrollerRef.value) {
+      resizeObserver = new ResizeObserver(updateScrollState);
+      resizeObserver.observe(scrollerRef.value);
+    }
+  });
+  onBeforeUnmount(() => resizeObserver?.disconnect());
+  watch(booksInSeries, () => nextTick(updateScrollState), { flush: 'post' });
 
   function refresh() {
     refetchBooksInSeries();
@@ -144,7 +177,6 @@
         const { books, addedCount } = mergeBookCandidatesIntoList(existingBooks, newCandidates);
         if (addedCount > 0) {
           booksInSeries.value = books;
-          carouselKey.value++;
           toast.add({
             severity: 'success',
             summary: 'Potwierdzenie',
@@ -294,30 +326,6 @@
     showAddNewBookDialog.value = false;
   };
 
-  /** ~300px szerokości karty SeriesBook + marginesy; breakpointy jak w Tailwind (2xl/xl/lg/md/sm). */
-  const responsiveOptions = ref([
-    {
-      breakpoint: '1536px',
-      numVisible: 4,
-      numScroll: 2,
-    },
-    {
-      breakpoint: '1280px',
-      numVisible: 3,
-      numScroll: 2,
-    },
-    {
-      breakpoint: '1024px',
-      numVisible: 2,
-      numScroll: 1,
-    },
-    {
-      breakpoint: '640px',
-      numVisible: 1,
-      numScroll: 1,
-    },
-  ]);
-
   function getBooksCountLabel(count: number) {
     if (count === 1) {
       return 'książka';
@@ -444,28 +452,36 @@
       <Menu ref="menuRef" id="config_menu" :model="items" popup />
     </template>
     <div class="card" style="overflow: hidden">
-      <!--                verticalViewPortHeight="300px" -->
-      <Carousel
-        :value="booksInSeries"
-        :responsive-options="responsiveOptions"
-        :num-visible="5"
-        :num-scroll="3"
-        class="w-full"
-        :key="carouselKey"
-        style="overflow: hidden; width: 100%"
-      >
-        <template #item="slotProps">
-          <div class="flex justify-center">
-            <SeriesBook
-              :key="getSeriesBookComponentKey(slotProps.data)"
-              :book="slotProps.data"
-              @new-userbook="addUserbook"
-              @exist-userbook="addUserbook"
-              @new-book="addBook"
-            />
+      <!-- Karty mają stałą szerokość (300px + marginesy); scroll-snap przyciąga je do lewej krawędzi, więc nie ma ucinania w połowie -->
+      <div class="flex items-center gap-2">
+        <Button
+          icon="pi pi-chevron-left"
+          severity="secondary"
+          rounded
+          text
+          aria-label="Poprzednie książki"
+          :disabled="!canScrollLeft"
+          @click="scrollByPage(-1)"
+        />
+        <div
+          ref="scrollerRef"
+          class="series-scroller flex flex-1 snap-x snap-mandatory overflow-x-auto scroll-smooth"
+          @scroll.passive="updateScrollState"
+        >
+          <div v-for="book in booksInSeries" :key="getSeriesBookComponentKey(book)" class="shrink-0 snap-start">
+            <SeriesBook :book="book" @new-userbook="addUserbook" @exist-userbook="addUserbook" @new-book="addBook" />
           </div>
-        </template>
-      </Carousel>
+        </div>
+        <Button
+          icon="pi pi-chevron-right"
+          severity="secondary"
+          rounded
+          text
+          aria-label="Następne książki"
+          :disabled="!canScrollRight"
+          @click="scrollByPage(1)"
+        />
+      </div>
     </div>
   </Panel>
 </template>
@@ -475,11 +491,11 @@
     overflow: hidden;
   }
 
-  .p-carousel {
-    width: 100%;
+  .series-scroller {
+    scrollbar-width: none;
   }
 
-  .p-carousel-viewport {
-    overflow: hidden;
+  .series-scroller::-webkit-scrollbar {
+    display: none;
   }
 </style>

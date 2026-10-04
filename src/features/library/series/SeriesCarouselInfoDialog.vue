@@ -11,7 +11,7 @@
   });
 </script>
 <template>
-  <Dialog class="max-w-screen-xl" header="Lista książek w cyklu" :modal="true">
+  <Dialog class="w-[75vw] max-w-[75vw]" header="Lista książek w cyklu" :modal="true">
     <div class="confirmation-content" style="overflow: hidden">
       <SeriesCarousel :series="props.series" />
     </div>
