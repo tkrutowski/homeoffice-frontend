@@ -51,6 +51,21 @@
   const purchasesCurrent = computed(() => purchasesCurrentQuery.data.value ?? new Map<string, Purchase[]>());
   const loadingCurrent = computed(() => purchasesCurrentQuery.isFetching.value);
 
+  /** Backend grupuje tylko po terminie — dzielimy dodatkowo po karcie, żeby logo w nagłówku zgadzało się z zakupami. */
+  const purchaseGroups = computed(() => {
+    const groups: { key: string; deadline: string; purchases: Purchase[] }[] = [];
+    purchasesCurrent.value.forEach((purchases, deadline) => {
+      const byCard = new Map<number, Purchase[]>();
+      purchases.forEach(p => {
+        const list = byCard.get(p.idCard);
+        if (list) list.push(p);
+        else byCard.set(p.idCard, [p]);
+      });
+      byCard.forEach((list, idCard) => groups.push({ key: `${deadline}|${idCard}`, deadline, purchases: list }));
+    });
+    return groups;
+  });
+
   const totalAmount = computed(() => {
     let sum = 0;
     purchasesCurrent.value.forEach(purchases => {
@@ -295,10 +310,10 @@
         </template>
       </Toolbar>
       <div class="mx-6 min-h-0 flex-1 basis-0 overflow-y-auto overflow-x-hidden py-2">
-        <div v-for="[key] in purchasesCurrent" :key="key">
+        <div v-for="group in purchaseGroups" :key="group.key">
           <PurchaseCurrentItemGroup
-            :deadline-date="key"
-            :purchases="purchasesCurrent.get(key) ?? []"
+            :deadline-date="group.deadline"
+            :purchases="group.purchases"
             :selected-purchase-ids="selectedPurchaseIds"
             :on-toggle-selection="togglePurchaseToPay"
             :on-remove-from-selection="removeFromSelection"
