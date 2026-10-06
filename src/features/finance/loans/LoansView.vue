@@ -534,7 +534,7 @@
           :show-filter-operator="true"
         >
           <template #body="slotProps">
-            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field as string]) }}
           </template>
           <template #filter="{ filterModel }">
             <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
@@ -547,7 +547,7 @@
         <!--INSTALLMENT AMOUNT-->
         <Column field="installmentAmount" header="Kwota raty" style="min-width: 120px">
           <template #body="slotProps">
-            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field as string]) }}
           </template>
         </Column>
 
@@ -563,8 +563,8 @@
           <template #body="{ data, field }">
             <StatusButton
               title="Zmień status kredytu"
-              :btn-type="data[field]"
-              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
+              :btn-type="data[field as string]"
+              :color-icon="data[field as string] === 'PAID' ? '#2da687' : '#dc3545'"
               @click="confirmStatusChange(data)"
             />
           </template>
@@ -675,35 +675,35 @@
                     <Column header="Nr raty" field="installmentNumber" style="width: 100px">
                       <template #body="{ data, field }">
                         <div class="ml-2" style="text-align: left">
-                          {{ data[field] }}
+                          {{ data[field as string] }}
                         </div>
                       </template>
                     </Column>
                     <Column header=" Termin płatności" field="paymentDeadline">
                       <template #body="{ data, field }">
                         <div>
-                          {{ UtilsService.formatDateToString(data[field]) }}
+                          {{ UtilsService.formatDateToString(data[field as string]) }}
                         </div>
                       </template>
                     </Column>
                     <Column field="installmentAmountToPay" header="Kwota">
                       <template #body="{ data, field }">
                         <div>
-                          {{ UtilsService.formatCurrency(data[field]) }}
+                          {{ UtilsService.formatCurrency(data[field as string]) }}
                         </div>
                       </template>
                     </Column>
                     <Column field="paymentDate" header="Data płatności">
                       <template #body="{ data, field }">
                         <div>
-                          {{ UtilsService.formatDateToString(data[field]) }}
+                          {{ UtilsService.formatDateToString(data[field as string]) }}
                         </div>
                       </template>
                     </Column>
                     <Column field="installmentAmountPaid" header="Kwota zapł.">
                       <template #body="{ data, field }">
                         <div>
-                          {{ UtilsService.formatCurrency(data[field]) }}
+                          {{ UtilsService.formatCurrency(data[field as string]) }}
                         </div>
                       </template>
                     </Column>

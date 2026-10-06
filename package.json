@@ -25,13 +25,13 @@
     "moment": "2.31.0",
     "pinia": "4.0.3",
     "primeicons": "7.0.0",
-    "primevue": "4.2.5",
+    "primevue": "4.5.5",
     "tailwindcss-primeui": "0.3.4",
     "vue": "3.5.43",
     "vue-router": "5.3.1"
   },
   "devDependencies": {
-    "@primevue/auto-import-resolver": "4.3.7",
+    "@primevue/auto-import-resolver": "4.5.5",
     "@storybook/vue3-vite": "^10.6.0",
     "@tanstack/vue-query-devtools": "^6.1.48",
     "@tsconfig/node22": "22.0.6",

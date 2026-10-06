@@ -32,6 +32,7 @@ export default defineConfig({
       },
       workbox: {
         navigateFallbackDenylist: [/^\/privacy/, /^\/terms/],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
     }),
   ],

@@ -465,7 +465,7 @@
           filter-field="purchaseAmount"
         >
           <template #body="slotProps">
-            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field as string]) }}
           </template>
           <template #filter="{ filterModel }">
             <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
@@ -497,7 +497,7 @@
           filter-field="sellAmount"
         >
           <template #body="slotProps">
-            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field as string]) }}
           </template>
           <template #filter="{ filterModel }">
             <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL" />
@@ -509,8 +509,8 @@
           <template #body="{ data, field }">
             <StatusButton
               title="Zmień status urządzenia na (Aktywny/Nieaktywny)"
-              :btn-type="data[field]"
-              :color-icon="data[field] === 'ACTIVE' ? '#2da687' : '#dc3545'"
+              :btn-type="data[field as string]"
+              :color-icon="data[field as string] === 'ACTIVE' ? '#2da687' : '#dc3545'"
               @click="confirmStatusChange(data)"
             />
           </template>

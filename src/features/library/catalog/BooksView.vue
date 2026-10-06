@@ -376,7 +376,7 @@
           :show-filter-match-modes="false"
         >
           <template #body="slotProps">
-            {{ slotProps.data[slotProps.field] }}
+            {{ slotProps.data[slotProps.field as string] }}
           </template>
           <template #filter="{ filterModel }">
             <MultiSelect
@@ -392,7 +392,7 @@
         <!--      SERIES    -->
         <Column field="series" filter-field="series" header="Cykl" sortable :show-filter-match-modes="false">
           <template #body="slotProps">
-            {{ slotProps.data[slotProps.field] }}
+            {{ slotProps.data[slotProps.field as string] }}
           </template>
           <template #filter="{ filterModel }">
             <MultiSelect
@@ -408,7 +408,7 @@
         <!--      BOOK IN SERIES  -->
         <Column field="bookInSeriesNo" header="Część" style="max-width: 20px">
           <template #body="slotProps">
-            {{ slotProps.data[slotProps.field] === 0 ? '-' : slotProps.data[slotProps.field] }}
+            {{ slotProps.data[slotProps.field as string] === 0 ? '-' : slotProps.data[slotProps.field as string] }}
           </template>
         </Column>
 

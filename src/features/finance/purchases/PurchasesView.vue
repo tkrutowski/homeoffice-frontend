@@ -622,16 +622,16 @@
         <!--AMOUNT-->
         <Column field="amount" header="Kwota" style="min-width: 120px">
           <template #body="slotProps">
-            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+            {{ UtilsService.formatCurrency(slotProps.data[slotProps.field as string]) }}
           </template>
         </Column>
 
         <Column field="paymentStatus" header="Status" style="width: 100px">
           <template #body="{ data, field }">
             <StatusButton
-              :title="data[field] === 'CONVERTED' ? 'Przejdź do powiązanego kredytu' : 'Zmień status zakupu'"
-              :btn-type="data[field]"
-              :color-icon="data[field] === 'PAID' ? '#2da687' : data[field] === 'CONVERTED' ? '#6b7280' : '#dc3545'"
+              :title="data[field as string] === 'CONVERTED' ? 'Przejdź do powiązanego kredytu' : 'Zmień status zakupu'"
+              :btn-type="data[field as string]"
+              :color-icon="data[field as string] === 'PAID' ? '#2da687' : data[field as string] === 'CONVERTED' ? '#6b7280' : '#dc3545'"
               @click="onStatusButtonClick(data)"
             />
           </template>

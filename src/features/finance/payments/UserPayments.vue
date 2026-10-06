@@ -324,7 +324,7 @@
       >
         <template #body="{ data, field }">
           <div class="name">
-            {{ data[field] }}
+            {{ data[field as string] }}
           </div>
         </template>
       </Column>
@@ -358,7 +358,7 @@
       >
         <template #body="{ data, field }">
           <div class="day">
-            {{ data[field] }}
+            {{ data[field as string] }}
           </div>
         </template>
       </Column>
