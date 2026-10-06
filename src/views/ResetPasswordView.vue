@@ -92,7 +92,7 @@
             />
             <label for="new-password">Nowe hasło</label>
           </FloatLabel>
-          <small class="block min-h-[2.5rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="block min-h-10 text-sm text-red-600 dark:text-red-400">{{
             passwordError || (weak ? 'Minimum 8 znaków, jedna cyfra i jeden znak specjalny.' : ' ')
           }}</small>
 
@@ -109,7 +109,7 @@
             />
             <label for="confirm-password">Powtórz nowe hasło</label>
           </FloatLabel>
-          <small class="block min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="block min-h-5 text-sm text-red-600 dark:text-red-400">{{
             mismatch ? 'Hasła nie są identyczne.' : ' '
           }}</small>
 

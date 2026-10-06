@@ -246,7 +246,7 @@
   </Dialog>
   <Dialog v-model:visible="deletePrivilegeDialog" :style="{ width: '450px' }" header="Potwierdzenie" :modal="true">
     <div class="flex items-center gap-4">
-      <i class="pi pi-exclamation-triangle !text-3xl" />
+      <i class="pi pi-exclamation-triangle text-3xl!" />
       <span
         >Czy na pewno chcesz usunąć uprawnienie <b>{{ selectedPrivilege?.role.name }}</b
         >?</span

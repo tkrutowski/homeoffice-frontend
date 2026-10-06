@@ -106,9 +106,9 @@
     title="Koszty zakupów wg kategorii"
     icon="pi pi-chart-line"
     :loading="loading"
-    panel-class="h-full min-h-[22rem]"
+    panel-class="h-full min-h-88"
   >
-    <div v-if="!loading && chartData.datasets.length" class="flex min-h-[18rem] flex-col gap-4">
+    <div v-if="!loading && chartData.datasets.length" class="flex min-h-72 flex-col gap-4">
       <p class="text-center text-xs text-surface-500 dark:text-surface-400">
         Kliknij kategorię, aby włączyć lub wyłączyć linię na wykresie. Konsola, Kamery i RTV są w „Inne”.
       </p>
@@ -117,7 +117,7 @@
           v-for="pill in chartData.categoryTotals"
           :key="pill.label"
           type="button"
-          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
           :class="
             isLineVisible(pill.label)
               ? 'border-surface-300 bg-surface-50 dark:border-surface-600 dark:bg-surface-900'

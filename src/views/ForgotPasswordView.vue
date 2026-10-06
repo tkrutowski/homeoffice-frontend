@@ -54,7 +54,7 @@
             />
             <label for="email">E-mail</label>
           </FloatLabel>
-          <small class="block min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="block min-h-5 text-sm text-red-600 dark:text-red-400">{{
             emailInvalid ? 'Podaj poprawny adres e-mail.' : ' '
           }}</small>
 

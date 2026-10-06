@@ -373,7 +373,7 @@
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                <InputText class="max-w-32!" v-model="filters['global'].value" placeholder="wyszukaj..." />
               </IconField>
               <Button
                 type="button"
@@ -589,7 +589,7 @@
                     <span class="shrink-0 text-sm font-medium text-surface-600 dark:text-surface-300 sm:w-40">{{
                       pair.key
                     }}</span>
-                    <span class="break-words text-sm text-surface-900 dark:text-surface-0">{{ pair.value }}</span>
+                    <span class="wrap-break-word text-sm text-surface-900 dark:text-surface-0">{{ pair.value }}</span>
                   </div>
                 </div>
                 <p v-else class="mt-2 text-sm text-surface-600 dark:text-surface-400">Brak zapisanych szczegółów.</p>

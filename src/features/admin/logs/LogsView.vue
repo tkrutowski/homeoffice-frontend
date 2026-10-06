@@ -51,7 +51,7 @@
           </Tab>
           <Tab v-if="authStore.hasAccessAdmin" value="levels">Poziomy logów</Tab>
         </TabList>
-        <TabPanels class="!px-0">
+        <TabPanels class="px-0!">
           <TabPanel value="history">
             <LogsHistoryTab />
           </TabPanel>

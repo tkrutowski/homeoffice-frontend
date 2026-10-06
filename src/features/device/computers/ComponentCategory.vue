@@ -103,7 +103,7 @@
 
 <template>
   <div
-    class="hover:bg-surface-100 hover:dark:bg-surface-800 border border-primary rounded-lg p-4 mb-4 cursor-pointer flex justify-between items-center"
+    class="hover:bg-surface-100 dark:hover:bg-surface-800 border border-primary rounded-lg p-4 mb-4 cursor-pointer flex justify-between items-center"
     :class="{
       'dark:bg-surface-700 bg-surface-200': selected,
     }"

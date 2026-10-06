@@ -176,7 +176,7 @@
         </FileUpload>
       </div>
 
-      <div class="border bottom-1 rounded">
+      <div class="border bottom-1 rounded-sm">
         <DataTable
           v-if="uploadedFiles.length > 0"
           :value="uploadedFiles"

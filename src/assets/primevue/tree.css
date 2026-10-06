@@ -16,7 +16,7 @@
 }
 
 .p-tree-node {
-  @apply p-0 outline-none;
+  @apply p-0 outline-hidden;
 }
 
 .p-tree-node-content {
@@ -24,7 +24,7 @@
 }
 
 .p-tree-node:focus-visible > .p-tree-node-content {
-  @apply outline outline-1 outline-offset-2 outline-primary;
+  @apply outline-solid outline-1 outline-offset-2 outline-primary;
 }
 
 .p-tree-node-content.p-tree-node-selectable:not(.p-tree-node-selected):hover {

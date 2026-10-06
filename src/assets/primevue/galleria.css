@@ -18,7 +18,7 @@
   @apply absolute top-1/2 inline-flex justify-center items-center overflow-hidden select-none border-none cursor-pointer
         w-12 h-12 transition-colors duration-200 p-0 -mt-12 mx-2 mb-0 rounded-full
         bg-white/10 text-surface-100 enabled:hover:bg-white/20 enabled:hover:text-surface-0 
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-galleria-next-icon,
@@ -63,7 +63,7 @@
         my-0 mx-2 p-0 border-none select-none cursor-pointer w-8 h-8 rounded-md transition-colors duration-200 bg-transparent 
         text-surface-600 hover:bg-surface-100 hover:text-surface-700
         dark:text-surface-400 dark:hover:bg-surface-800 dark:hover:text-surface-0
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-galleria-thumbnail-nav-button .p-galleria-thumbnail-next-icon,
@@ -117,7 +117,7 @@
 
 .p-galleria-thumbnails-left .p-galleria-thumbnails-content,
 .p-galleria-thumbnails-right .p-galleria-thumbnails-content {
-  @apply flex-col flex-grow;
+  @apply flex-col grow;
 }
 
 .p-galleria-thumbnails-left .p-galleria-thumbnail-items,
@@ -132,7 +132,7 @@
 .p-galleria-indicator-button {
   @apply inline-flex items-center w-4 h-4 rounded-full m-0 p-0 border-none select-none cursor-pointer transition-colors duration-200
         bg-surface-200 hover:bg-surface-300 dark:bg-surface-700 dark:hover:bg-surface-600
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-galleria-indicator-active .p-galleria-indicator-button {
@@ -195,7 +195,7 @@
   @apply absolute top-0 right-0 flex items-center justify-center overflow-hidden m-2 rounded-full 
         transition-colors duration-200 select-none cursor-pointer w-12 h-12 p-0 border-none
         bg-white/10 text-surface-50 hover:bg-white/20 hover:text-surface-0 
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-galleria-close-icon {
@@ -207,11 +207,11 @@
 }
 
 .p-galleria-enter-active {
-  @apply transition-all duration-150 ease-[cubic-bezier(0,0,0.2,1)];
+  @apply transition-all duration-150 ease-out;
 }
 
 .p-galleria-leave-active {
-  @apply transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)];
+  @apply transition-all duration-150 ease-in-out;
 }
 
 .p-galleria-enter-from,

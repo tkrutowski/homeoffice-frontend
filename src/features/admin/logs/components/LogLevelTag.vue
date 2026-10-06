@@ -7,7 +7,7 @@
 
 <template>
   <span
-    class="inline-block min-w-[3.25rem] rounded px-2 text-center font-mono text-[11px] font-medium leading-5"
+    class="inline-block min-w-13 rounded-sm px-2 text-center font-mono text-[11px] font-medium leading-5"
     :class="LOG_LEVEL_STYLES[level].badge"
   >
     {{ level }}

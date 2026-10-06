@@ -33,11 +33,11 @@
 <template>
   <Button
     type="button"
-    class="disabled:bg-surface-500 hover:disabled:!bg-surface-500 px-4 py-2"
+    class="disabled:bg-surface-500 hover:disabled:bg-surface-500! px-4 py-2"
     :class="{
-      'font-bold uppercase tracking-widest border bg-primary hover:!bg-primary-700 border-primary-900 hover:!border-primary-900':
+      'font-bold uppercase tracking-widest border bg-primary hover:bg-primary-700! border-primary-900 hover:border-primary-900!':
         btnType === 'office-regular',
-      'font-bold uppercase tracking-widest border bg-red-600 hover:!bg-red-800 border-red-900 hover:!border-red-900':
+      'font-bold uppercase tracking-widest border bg-red-600 hover:bg-red-800! border-red-900 hover:border-red-900!':
         btnType === 'office-save',
     }"
     :disabled="btnDisabled"

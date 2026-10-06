@@ -201,7 +201,7 @@
   const ptTextareaField = {
     root: {
       class:
-        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'w-full min-h-32 resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
         'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
@@ -221,7 +221,7 @@
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
       <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveFirm">
         <div
-          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-xs dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
         >
           <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1

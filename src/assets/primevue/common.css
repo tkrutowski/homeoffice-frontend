@@ -7,7 +7,7 @@
 }
 
 .p-connected-overlay-enter-active {
-  @apply transition-[opacity,transform] duration-150 ease-[cubic-bezier(0,0,0.2,1)];
+  @apply transition-[opacity,transform] duration-150 ease-out;
 }
 
 .p-connected-overlay-leave-active {

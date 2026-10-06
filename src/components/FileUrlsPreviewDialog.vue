@@ -137,7 +137,7 @@
     :close-on-escape="true"
     @update:visible="onDialogVisibleUpdate"
   >
-    <div class="flex min-h-[12rem] flex-col gap-3">
+    <div class="flex min-h-48 flex-col gap-3">
       <div v-if="counterLabel" class="text-sm text-surface-600 dark:text-surface-400">
         {{ counterLabel }}
       </div>

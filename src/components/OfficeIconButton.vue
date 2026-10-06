@@ -57,6 +57,7 @@
   </Button>
 </template>
 <style scoped>
+  @reference "../assets/tailwind.css";
   .icon-only {
     outline: none !important;
     border: none !important;

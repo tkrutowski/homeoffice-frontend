@@ -205,7 +205,7 @@
   const ptTextareaField = {
     root: {
       class:
-        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'w-full min-h-32 resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
         'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
@@ -225,7 +225,7 @@
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
       <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveBank">
         <div
-          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-xs dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
         >
           <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1
@@ -258,7 +258,7 @@
               <div class="flex flex-col gap-2">
                 <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-name">Nazwa banku</label>
                 <div
-                  class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                  class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                   :class="{ 'border-red-500 dark:border-red-400': showErrorName() }"
                 >
                   <div
@@ -268,7 +268,7 @@
                   </div>
                   <InputText id="bank-name" v-model="bank.name" maxlength="100" :pt="ptFieldInputText" />
                 </div>
-                <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                   showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
                 }}</small>
               </div>
@@ -289,7 +289,7 @@
                     :pt="ptFieldInputText"
                     :class="{ 'p-invalid': showErrorZip() }"
                   />
-                  <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                  <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                     showErrorZip() ? 'Prawidłowy format to: 61-754' : '\u00a0'
                   }}</small>
                 </div>
@@ -321,7 +321,7 @@
                   <div class="flex flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="bank-mail">E-mail</label>
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorMail() }"
                     >
                       <div
@@ -331,7 +331,7 @@
                       </div>
                       <InputText id="bank-mail" v-model="bank.mail" maxlength="100" :pt="ptFieldInputText" />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorMail() ? 'Niepoprawny format.' : '\u00a0'
                     }}</small>
                   </div>

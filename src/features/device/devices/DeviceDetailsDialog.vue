@@ -72,7 +72,7 @@
         <div class="flex flex-col gap-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch">
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Kwota zakupu</span>
               <div class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0 sm:text-3xl">
@@ -85,7 +85,7 @@
             </div>
 
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Sprzedaż</span>
               <div class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0 sm:text-3xl">
@@ -100,7 +100,7 @@
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch">
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Rodzaj urządzenia</span>
               <p class="text-sm leading-snug text-surface-900 dark:text-surface-0">
@@ -108,7 +108,7 @@
               </p>
             </div>
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Firma</span>
               <p class="text-sm leading-snug text-surface-900 dark:text-surface-0">
@@ -116,7 +116,7 @@
               </p>
             </div>
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Gwarancja do</span>
               <div class="flex items-center gap-2 text-sm text-surface-900 dark:text-surface-0">
@@ -125,7 +125,7 @@
               </div>
             </div>
             <div
-              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+              class="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
             >
               <span class="text-xs font-semibold uppercase tracking-wide text-primary">Ubezpieczenie do</span>
               <div class="flex items-center gap-2 text-sm text-surface-900 dark:text-surface-0">
@@ -136,7 +136,7 @@
           </div>
 
           <div
-            class="flex min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900"
+            class="flex min-h-0 flex-col gap-2 rounded-2xl border border-surface-200 border-l-4 border-l-primary bg-surface-0 p-4 shadow-xs dark:border-surface-700 dark:bg-surface-900"
           >
             <span class="text-xs font-semibold uppercase tracking-wide text-primary">Dodatkowe informacje</span>
             <p
@@ -152,7 +152,7 @@
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Fieldset v-if="device.files" class="h-full w-full" legend="Pliki" :toggleable="true">
-          <div v-if="device.files.length > 0" class="mt-4 flex max-h-[26rem] flex-col gap-3 overflow-y-auto pr-1">
+          <div v-if="device.files.length > 0" class="mt-4 flex max-h-104 flex-col gap-3 overflow-y-auto pr-1">
             <div
               v-for="file in device.files"
               :key="file.id"
@@ -203,7 +203,7 @@
         <Fieldset class="h-full w-full" legend="Szczegóły" :toggleable="true">
           <div
             v-if="detailsEntries.length > 0"
-            class="mt-4 flex max-h-[26rem] flex-col overflow-y-auto rounded-xl border border-surface-200 dark:border-surface-700"
+            class="mt-4 flex max-h-104 flex-col overflow-y-auto rounded-xl border border-surface-200 dark:border-surface-700"
           >
             <div
               v-for="[key, value] in detailsEntries"
@@ -211,7 +211,7 @@
               class="flex flex-col gap-1.5 border-b border-surface-200 px-3 py-2.5 last:border-b-0 dark:border-surface-700"
             >
               <span class="text-xs font-medium text-surface-500 dark:text-surface-400">{{ key }}</span>
-              <span class="break-words text-sm font-semibold text-surface-900 dark:text-surface-0">{{
+              <span class="wrap-break-word text-sm font-semibold text-surface-900 dark:text-surface-0">{{
                 value || '—'
               }}</span>
             </div>

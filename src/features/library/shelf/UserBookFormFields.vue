@@ -117,7 +117,7 @@
 
 <template>
   <div class="flex flex-col gap-6">
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr,min(280px,35%)] lg:items-start">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_min(280px,35%)] lg:items-start">
       <div class="flex flex-col gap-6">
         <FormSectionCard title="Źródło" :icon="BuildingStorefrontIcon">
           <template v-if="showAudiobookHeaderActions" #header-actions>
@@ -141,7 +141,7 @@
                     target="_blank"
                     rel="noopener noreferrer"
                     :title="platform.platformName"
-                    class="inline-flex shrink-0 rounded transition-opacity hover:opacity-80"
+                    class="inline-flex shrink-0 rounded-sm transition-opacity hover:opacity-80"
                   >
                     <img
                       :src="getPlatformIcon(platform.bookstoreId)"
@@ -164,7 +164,7 @@
             <label class="text-sm text-surface-600 dark:text-surface-400" for="userbook-bookstore">Księgarnia</label>
             <div class="flex gap-2">
               <div
-                class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
+                class="flex min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
                 :class="{ 'border-red-500 dark:border-red-400': showErrorBookstore }"
               >
                 <div

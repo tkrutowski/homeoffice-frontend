@@ -330,7 +330,7 @@
             chart-type="line"
             :loading="isLoadingPurchases"
             :show-totals="true"
-            panel-class="h-full min-h-[24rem]"
+            panel-class="h-full min-h-96"
           />
         </div>
       </div>

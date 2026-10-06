@@ -366,7 +366,7 @@
   const ptTextareaField = {
     root: {
       class:
-        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'w-full min-h-32 resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
         'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
@@ -382,7 +382,7 @@
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
       <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveCard">
         <div
-          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-xs dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
         >
           <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1
@@ -407,7 +407,7 @@
             <FormSectionCard title="Informacje ogólne" :icon="InformationCircleIcon">
               <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
                 <div
-                  class="order-1 flex min-h-[9rem] items-center justify-center rounded-lg border border-surface-300 bg-surface-0 p-3 dark:border-surface-600 dark:bg-surface-900 lg:order-none"
+                  class="order-1 flex min-h-36 items-center justify-center rounded-lg border border-surface-300 bg-surface-0 p-3 dark:border-surface-600 dark:bg-surface-900 lg:order-0"
                 >
                   <img
                     v-if="card.imageUrl.length > 0"
@@ -434,7 +434,7 @@
                         :pt="ptFieldInputText"
                         :class="{ 'p-invalid': showErrorName() }"
                       />
-                      <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                      <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                         showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
                       }}</small>
                     </div>
@@ -449,7 +449,7 @@
                           :pt="ptFieldInputText"
                           :class="{ 'p-invalid': showErrorNumber() }"
                         />
-                        <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                        <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                           showErrorNumber() ? 'Pole jest wymagane.' : '\u00a0'
                         }}</small>
                       </div>
@@ -458,7 +458,7 @@
                           >URL zdjęcia</label
                         >
                         <div
-                          class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                          class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                         >
                           <div
                             class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
@@ -467,7 +467,7 @@
                           </div>
                           <InputText id="card-image-url" v-model="card.imageUrl" :pt="ptInputNumberAmount" />
                         </div>
-                        <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                        <small class="min-h-5 text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
                       </div>
                     </div>
                   </div>
@@ -500,7 +500,7 @@
                   <div class="flex flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="card-type">Typ karty</label>
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                     >
                       <div
                         class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
@@ -517,7 +517,7 @@
                         @change="onCardTypeChange"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                    <small class="min-h-5 text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
                   </div>
 
                   <div class="flex min-w-0 flex-col gap-2">
@@ -525,7 +525,7 @@
                       >Limit na karcie</label
                     >
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorLimit() }"
                     >
                       <div
@@ -545,7 +545,7 @@
                         @focus="UtilsService.selectText"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorLimit() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -566,7 +566,7 @@
                       :max="28"
                       :invalid="showErrorClosingDay()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorClosingDay() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -585,7 +585,7 @@
                       :max="28"
                       :invalid="showErrorRepaymentDay()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorRepaymentDay() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -605,7 +605,7 @@
                       :max="365"
                       :invalid="showErrorPaymentTermDays()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorPaymentTermDays() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -617,7 +617,7 @@
                       >Wybierz użytkownika</label
                     >
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorUser() }"
                     >
                       <div
@@ -637,7 +637,7 @@
                         @change="onUserChange"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorUser() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -645,7 +645,7 @@
                   <div class="flex flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="card-bank">Wybierz bank</label>
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorBank() }"
                     >
                       <div
@@ -664,7 +664,7 @@
                         @change="onBankChange"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorBank() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -683,7 +683,7 @@
                       date-format="yy-mm-dd"
                       :invalid="showErrorActivationDate()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorActivationDate() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -700,7 +700,7 @@
                       date-format="yy-mm-dd"
                       :invalid="showErrorExpirationDate()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorExpirationDate() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>

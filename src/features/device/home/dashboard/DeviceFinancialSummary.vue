@@ -13,7 +13,7 @@
   <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
     <!-- Łączna wartość -->
     <article
-      class="flex flex-col justify-between rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-sm dark:border-surface-700 dark:bg-surface-950 md:p-6"
+      class="flex flex-col justify-between rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-xs dark:border-surface-700 dark:bg-surface-950 md:p-6"
     >
       <div class="flex items-start gap-3">
         <div
@@ -36,7 +36,7 @@
 
     <!-- Wartość wg kategorii -->
     <article
-      class="flex flex-col rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-sm dark:border-surface-700 dark:bg-surface-950 md:p-6"
+      class="flex flex-col rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-xs dark:border-surface-700 dark:bg-surface-950 md:p-6"
     >
       <div class="mb-4 flex items-center gap-3">
         <div

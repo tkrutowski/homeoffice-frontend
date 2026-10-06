@@ -10,7 +10,7 @@
 
 <template>
   <section
-    class="flex flex-col overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950"
+    class="flex flex-col overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950"
     :class="panelClass"
   >
     <header

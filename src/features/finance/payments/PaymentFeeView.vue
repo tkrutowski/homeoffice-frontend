@@ -489,7 +489,7 @@
         :pt="{
           root: {
             class:
-              'border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950 overflow-hidden',
+              'border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950 overflow-hidden',
           },
           body: { class: 'p-4 sm:p-6' },
         }"
@@ -498,7 +498,7 @@
           <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div class="min-w-0 flex-1 space-y-2">
               <h2
-                class="m-0 break-words text-xl font-bold uppercase leading-tight tracking-wide text-surface-900 dark:text-surface-0 sm:text-2xl"
+                class="m-0 wrap-break-word text-xl font-bold uppercase leading-tight tracking-wide text-surface-900 dark:text-surface-0 sm:text-2xl"
               >
                 {{ fee?.name ?? '—' }}
               </h2>
@@ -543,7 +543,7 @@
             :pt="{
               root: {
                 class:
-                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950',
               },
               body: { class: 'flex min-h-0 flex-1 flex-col gap-2 p-4 sm:p-5' },
               title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
@@ -570,7 +570,7 @@
                   <div class="min-w-0 sm:col-span-1">
                     <dt class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ row.label }}</dt>
                     <dd
-                      class="m-0 mt-0.5 break-words text-sm text-surface-900 dark:text-surface-0"
+                      class="m-0 mt-0.5 wrap-break-word text-sm text-surface-900 dark:text-surface-0"
                       :class="row.valueClass"
                     >
                       {{ row.value }}
@@ -587,7 +587,7 @@
             :pt="{
               root: {
                 class:
-                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+                  'flex min-h-0 h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950',
               },
               body: { class: 'flex min-h-0 flex-1 flex-col gap-2 p-4 sm:p-5' },
               title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
@@ -662,7 +662,7 @@
       <Card
         :pt="{
           root: {
-            class: 'border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+            class: 'border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950',
           },
           body: { class: 'p-4 sm:p-5' },
           title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },
@@ -695,12 +695,12 @@
             :row-class="installmentRowClass"
             :pt="dataTablePt"
           >
-            <Column header="Lp." class="min-w-[3rem]">
+            <Column header="Lp." class="min-w-12">
               <template #body="{ index }">
                 <span class="pl-1 text-left font-medium tabular-nums">{{ index + 1 }}</span>
               </template>
             </Column>
-            <Column header="Termin" class="min-w-[7rem]">
+            <Column header="Termin" class="min-w-28">
               <template #body="{ data }">
                 <span
                   class="tabular-nums"
@@ -710,12 +710,12 @@
                 </span>
               </template>
             </Column>
-            <Column field="installmentAmountToPay" header="Kwota zaplanowana" class="min-w-[8rem]">
+            <Column field="installmentAmountToPay" header="Kwota zaplanowana" class="min-w-32">
               <template #body="{ data }">
                 <span class="tabular-nums">{{ UtilsService.formatCurrency(data.installmentAmountToPay) }}</span>
               </template>
             </Column>
-            <Column header="Data wpłaty" class="min-w-[7rem]">
+            <Column header="Data wpłaty" class="min-w-28">
               <template #body="{ data }">
                 <template v-if="data.paymentStatus === PaymentStatus.PAID">
                   <span
@@ -727,7 +727,7 @@
                 <span v-else class="text-surface-500 italic dark:text-surface-400">Nadchodząca</span>
               </template>
             </Column>
-            <Column header="Kwota wpłacona" class="min-w-[8rem]">
+            <Column header="Kwota wpłacona" class="min-w-32">
               <template #body="{ data }">
                 <span
                   class="tabular-nums"
@@ -743,7 +743,7 @@
                 </span>
               </template>
             </Column>
-            <Column header="Akcje" :exportable="false" class="min-w-[10rem]">
+            <Column header="Akcje" :exportable="false" class="min-w-40">
               <template #body="slotProps">
                 <div class="flex flex-wrap items-center justify-end gap-2">
                   <Button

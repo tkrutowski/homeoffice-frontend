@@ -63,7 +63,7 @@
   const cardPt = {
     root: {
       class:
-        'flex min-h-[280px] h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-sm dark:border-surface-700 dark:bg-surface-950',
+        'flex min-h-[280px] h-full min-w-0 flex-col border border-surface-200 bg-surface-0 shadow-xs dark:border-surface-700 dark:bg-surface-950',
     },
     body: { class: 'flex min-h-0 flex-1 flex-col gap-2 p-4 sm:p-5' },
     title: { class: 'text-lg font-semibold text-surface-900 dark:text-surface-0' },

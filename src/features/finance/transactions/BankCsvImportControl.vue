@@ -87,13 +87,13 @@
 
   const ptCellSelect = {
     ...ptSelectInField,
-    root: { class: 'h-9 min-w-[8rem] w-full border-0 shadow-none' },
+    root: { class: 'h-9 min-w-32 w-full border-0 shadow-none' },
   };
 
   const ptCellInput = {
     root: {
       class:
-        'h-9 w-full min-w-[6rem] rounded-md border border-surface-300 bg-surface-0 px-2 text-sm ' +
+        'h-9 w-full min-w-24 rounded-md border border-surface-300 bg-surface-0 px-2 text-sm ' +
         'dark:border-surface-600 dark:bg-surface-950',
     },
   };

@@ -12,7 +12,7 @@
 
 .p-menubar-root-list,
 .p-menubar-submenu {
-  @apply flex m-0 p-0 list-none outline-none z-50;
+  @apply flex m-0 p-0 list-none outline-hidden z-50;
 }
 
 .p-menubar-root-list {
@@ -28,12 +28,12 @@
 }
 
 .p-menubar-item-content {
-  @apply transition-colors duration-200 rounded-sm text-surface-700 dark:text-surface-0;
+  @apply transition-colors duration-200 rounded-xs text-surface-700 dark:text-surface-0;
 }
 
 .p-menubar-item-link {
   @apply cursor-pointer flex items-center no-underline overflow-hidden relative text-inherit
-        px-3 py-2 gap-2 select-none outline-none;
+        px-3 py-2 gap-2 select-none outline-hidden;
 }
 
 .p-menubar-item-icon {
@@ -41,7 +41,7 @@
 }
 
 .p-menubar-submenu-icon {
-  @apply text-surface-400 dark:text-surface-500 ml-auto text-sm w-[0.875rem] h-[0.875rem];
+  @apply text-surface-400 dark:text-surface-500 ml-auto text-sm w-3.5 h-3.5;
 }
 
 .p-menubar-item.p-focus > .p-menubar-item-content {
@@ -113,7 +113,7 @@
   @apply hidden justify-center items-center cursor-pointer w-7 h-7 relative border-none rounded-full
         text-surface-500 dark:text-surface-400 hover:text-surface-600 dark:hover:text-surface-300
         bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary
         transition-colors duration-200;
 }
 
@@ -157,7 +157,7 @@
   > .p-menubar-item
   > .p-menubar-item-content
   .p-menubar-submenu-icon {
-  @apply ml-auto transition-transform duration-[200ms];
+  @apply ml-auto transition-transform duration-200;
 }
 
 .p-menubar-mobile

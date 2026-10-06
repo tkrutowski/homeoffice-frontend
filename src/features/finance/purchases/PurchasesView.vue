@@ -481,7 +481,7 @@
                   <InputIcon>
                     <i class="pi pi-search" />
                   </InputIcon>
-                  <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                  <InputText class="max-w-32!" v-model="filters['global'].value" placeholder="wyszukaj..." />
                 </IconField>
                 <Button
                   type="button"
@@ -631,7 +631,13 @@
             <StatusButton
               :title="data[field as string] === 'CONVERTED' ? 'Przejdź do powiązanego kredytu' : 'Zmień status zakupu'"
               :btn-type="data[field as string]"
-              :color-icon="data[field as string] === 'PAID' ? '#2da687' : data[field as string] === 'CONVERTED' ? '#6b7280' : '#dc3545'"
+              :color-icon="
+                data[field as string] === 'PAID'
+                  ? '#2da687'
+                  : data[field as string] === 'CONVERTED'
+                    ? '#6b7280'
+                    : '#dc3545'
+              "
               @click="onStatusButtonClick(data)"
             />
           </template>

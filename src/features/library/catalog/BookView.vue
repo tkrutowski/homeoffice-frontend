@@ -749,7 +749,7 @@
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
       <form class="mx-auto max-w-6xl" @submit.stop.prevent="saveBook">
         <div
-          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-xs dark:border-surface-700 dark:bg-surface-800 dark:shadow-none sm:p-8"
         >
           <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1

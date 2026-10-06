@@ -35,8 +35,8 @@
   function segmentClass(segmentIndex: number) {
     const idx = activeIndex.value >= 0 ? activeIndex.value : 0;
     return idx > segmentIndex
-      ? 'h-1 w-full min-w-[1rem] rounded-full bg-primary'
-      : 'h-0.5 w-full min-w-[1rem] rounded-full bg-primary/30 dark:bg-primary/20';
+      ? 'h-1 w-full min-w-4 rounded-full bg-primary'
+      : 'h-0.5 w-full min-w-4 rounded-full bg-primary/30 dark:bg-primary/20';
   }
 </script>
 
@@ -53,7 +53,7 @@
           type="button"
           role="radio"
           :aria-checked="model === step.value"
-          class="flex max-w-full flex-col items-center justify-center rounded-full border-2 border-primary text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 dark:focus-visible:ring-offset-surface-950"
+          class="flex max-w-full flex-col items-center justify-center rounded-full border-2 border-primary text-center transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 dark:focus-visible:ring-offset-surface-950"
           :class="
             model === step.value
               ? 'z-10 aspect-square w-[min(100%,7rem)] border-primary bg-primary text-primary-contrast shadow-lg shadow-primary/40'

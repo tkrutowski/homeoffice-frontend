@@ -91,7 +91,7 @@
   const fieldControlPt = {
     root: {
       class:
-        'h-[2.75rem] w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
+        'h-11 w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 placeholder:text-surface-500 ' +
         'enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
@@ -260,9 +260,9 @@
     @update:visible="onVisibleChange"
   >
     <div class="flex flex-wrap items-start gap-4 pt-4">
-      <div class="flex min-w-[12rem] flex-1 flex-col gap-1">
+      <div class="flex min-w-48 flex-1 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Kategoria</label>
-        <div class="flex h-[2.75rem] items-center gap-2">
+        <div class="flex h-11 items-center gap-2">
           <div
             class="flex h-full min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
             :class="{ 'border-red-500 dark:border-red-400': submitted && !selectedCategory }"
@@ -281,26 +281,26 @@
             @click="showNewCategoryModal = true"
           />
         </div>
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">
           {{ submitted && !selectedCategory ? 'Pole jest wymagane.' : '\u00a0' }}
         </small>
       </div>
 
-      <div class="flex min-w-[9rem] flex-col gap-1">
+      <div class="flex min-w-36 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Data</label>
         <DatePicker v-model="transactionDate" date-format="dd/mm/yy" class="w-full" :pt="ptDatePickerAligned" />
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
 
-      <div class="flex min-w-[12rem] flex-[2] flex-col gap-1">
+      <div class="flex min-w-48 flex-2 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Notatka (opcjonalnie)</label>
         <InputText v-model="description" placeholder="Wpisz notatkę" class="w-full" :pt="ptFieldInputAligned" />
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
 
-      <div class="flex min-w-[10rem] flex-1 flex-col gap-1">
+      <div class="flex min-w-40 flex-1 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Etykiety (opcjonalnie)</label>
-        <div class="flex h-[2.75rem] items-center gap-2">
+        <div class="flex h-11 items-center gap-2">
           <div
             class="flex h-full min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
           >
@@ -323,12 +323,12 @@
             @click="showNewLabelModal = true"
           />
         </div>
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
 
-      <div class="flex min-w-[10rem] flex-1 flex-col gap-1">
+      <div class="flex min-w-40 flex-1 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Firma</label>
-        <div class="flex h-[2.75rem] items-center gap-2">
+        <div class="flex h-11 items-center gap-2">
           <div
             class="flex h-full min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-50 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
             :class="{ 'border-red-500 dark:border-red-400': showErrorFirm }"
@@ -353,12 +353,12 @@
             @click="showNewFirmModal = true"
           />
         </div>
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">
           {{ showErrorFirm ? 'Pole jest wymagane.' : '\u00a0' }}
         </small>
       </div>
 
-      <div class="flex min-w-[8rem] flex-col gap-1">
+      <div class="flex min-w-32 flex-col gap-1">
         <label class="text-xs text-surface-600 dark:text-surface-400">Kwota</label>
         <InputNumber
           v-model="amount"
@@ -371,7 +371,7 @@
           input-class="h-full w-full text-right"
           @focus="UtilsService.selectText"
         />
-        <small class="min-h-[1rem] text-xs text-red-600 dark:text-red-400">&nbsp;</small>
+        <small class="min-h-4 text-xs text-red-600 dark:text-red-400">&nbsp;</small>
       </div>
     </div>
 

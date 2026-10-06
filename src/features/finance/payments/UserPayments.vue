@@ -93,18 +93,18 @@
 
   const getPaymentCellWrapperClass = (state: MonthCellState): string => {
     const base =
-      'flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-0.5 py-1 relative overflow-hidden px-0.5 text-sm tabular-nums';
+      'flex min-h-13 w-full flex-col items-center justify-center gap-0.5 py-1 relative overflow-hidden px-0.5 text-sm tabular-nums';
     switch (state) {
       case 'no-credit':
         return `${base} bg-surface-0 text-surface-400 dark:bg-surface-950 dark:text-surface-500`;
       case 'paid-on-time':
-        return `${base} border-l-[3px] border-l-emerald-500 bg-gradient-to-r from-emerald-500/20 via-emerald-500/5 to-transparent bg-surface-0 text-emerald-700 dark:border-l-emerald-400 dark:from-emerald-400/15 dark:bg-surface-950 dark:text-emerald-300`;
+        return `${base} border-l-[3px] border-l-emerald-500 bg-linear-to-r from-emerald-500/20 via-emerald-500/5 to-transparent bg-surface-0 text-emerald-700 dark:border-l-emerald-400 dark:from-emerald-400/15 dark:bg-surface-950 dark:text-emerald-300`;
       case 'paid-late':
-        return `${base} border-l-[3px] border-l-amber-500 bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent bg-surface-0 text-amber-800 dark:border-l-amber-400 dark:from-amber-400/15 dark:bg-surface-950 dark:text-amber-200`;
+        return `${base} border-l-[3px] border-l-amber-500 bg-linear-to-r from-amber-500/20 via-amber-500/5 to-transparent bg-surface-0 text-amber-800 dark:border-l-amber-400 dark:from-amber-400/15 dark:bg-surface-950 dark:text-amber-200`;
       case 'unpaid-overdue':
-        return `${base} border-l-[3px] border-l-red-500 bg-gradient-to-r from-red-500/20 via-red-500/5 to-transparent bg-surface-0 text-red-600 dark:border-l-red-400 dark:from-red-400/15 dark:bg-surface-950 dark:text-red-400`;
+        return `${base} border-l-[3px] border-l-red-500 bg-linear-to-r from-red-500/20 via-red-500/5 to-transparent bg-surface-0 text-red-600 dark:border-l-red-400 dark:from-red-400/15 dark:bg-surface-950 dark:text-red-400`;
       case 'unpaid-pending':
-        return `${base} border-l-[3px] border-l-surface-400 bg-gradient-to-r from-surface-400/15 via-surface-400/5 to-transparent bg-surface-0 text-surface-700 dark:border-l-surface-500 dark:from-surface-500/10 dark:bg-surface-950 dark:text-surface-300`;
+        return `${base} border-l-[3px] border-l-surface-400 bg-linear-to-r from-surface-400/15 via-surface-400/5 to-transparent bg-surface-0 text-surface-700 dark:border-l-surface-500 dark:from-surface-500/10 dark:bg-surface-950 dark:text-surface-300`;
       default: {
         const _exhaustive: never = state;
         return _exhaustive;
@@ -122,7 +122,7 @@
   };
 
   const getMonthAmountHeaderShellClass = (month: number) => {
-    const shell = 'flex w-full flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-center min-h-[3.25rem]';
+    const shell = 'flex w-full flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-center min-h-13';
     return isCurrentCalendarMonth(month)
       ? `${shell} rounded-t-md border-b-2 border-primary bg-primary/10 dark:bg-primary/20`
       : shell;
@@ -402,9 +402,7 @@
           <div v-for="number in 12" :key="'foot-' + number">
             <Column footer-class="user-payment user-payment-footer-summary p-column-data-zapl">
               <template #footer>
-                <div
-                  class="flex min-h-[4.25rem] flex-col items-center justify-center gap-1 py-1.5 text-center tabular-nums"
-                >
+                <div class="flex min-h-17 flex-col items-center justify-center gap-1 py-1.5 text-center tabular-nums">
                   <span class="text-sm font-semibold text-surface-800 dark:text-surface-100">{{
                     UtilsService.formatCurrency(calculateTotal(number))
                   }}</span>
@@ -425,6 +423,7 @@
 </template>
 
 <style scoped>
+  @reference "../../../assets/tailwind.css";
   .name {
     padding: 0.3rem 0 0.3rem 0;
     text-align: left;

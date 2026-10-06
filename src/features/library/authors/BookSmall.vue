@@ -185,7 +185,7 @@
         v-if="getStatusMsg"
         :value="getStatusMsg"
         :severity="getSeverity()"
-        class="absolute left-2 top-2 text-lg font-bold rounded p-1"
+        class="absolute left-2 top-2 text-lg font-bold rounded-sm p-1"
       />
     </div>
 

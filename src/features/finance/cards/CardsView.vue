@@ -196,7 +196,7 @@
       <TheMenuFinance />
     </template>
 
-    <Panel class="my-3 w-full max-w-screen-xl mx-auto px-2 sm:px-3">
+    <Panel class="my-3 w-full max-w-(--breakpoint-xl) mx-auto px-2 sm:px-3">
       <DataView :value="filteredData" dataKey="id">
         <template #header>
           <div class="flex flex-wrap items-center gap-2">
@@ -252,7 +252,7 @@
                 <div class="md:w-40 relative">
                   <img
                     v-if="item.imageUrl && item.imageUrl.length > 0"
-                    class="block xl:block mx-auto rounded w-full"
+                    class="block xl:block mx-auto rounded-sm w-full"
                     :src="item.imageUrl"
                     :alt="item.name"
                   />

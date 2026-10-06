@@ -1,4 +1,4 @@
-@import './paginator';
+@import './paginator.css';
 
 .p-datatable {
   @apply relative;
@@ -129,7 +129,7 @@
 }
 
 .p-datatable-filter-constraint {
-  @apply px-3 py-2 rounded-sm cursor-pointer transition-colors duration-200 text-surface-700 dark:text-surface-0;
+  @apply px-3 py-2 rounded-xs cursor-pointer transition-colors duration-200 text-surface-700 dark:text-surface-0;
 }
 
 .p-datatable-filter-constraint-selected {
@@ -141,7 +141,7 @@
 }
 
 .p-datatable-filter-constraint:focus-visible {
-  @apply outline-none bg-surface-100 dark:bg-surface-800 text-surface-800 dark:text-surface-0;
+  @apply outline-hidden bg-surface-100 dark:bg-surface-800 text-surface-800 dark:text-surface-0;
 }
 
 .p-datatable-filter-constraint-selected:focus-visible {
@@ -253,7 +253,7 @@
 
 .p-datatable-tbody > tr:focus-visible,
 .p-datatable-tbody > tr.p-datatable-contextmenu-row-selected {
-  @apply outline outline-1 -outline-offset-1 outline-primary;
+  @apply outline-solid outline-1 -outline-offset-1 outline-primary;
 }
 
 .p-datatable-tfoot > tr > td {
@@ -267,7 +267,7 @@
 }
 
 .p-datatable-sortable-column {
-  @apply cursor-pointer select-none focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-primary;
+  @apply cursor-pointer select-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-primary;
 }
 
 .p-datatable-column-title,
@@ -301,11 +301,11 @@
 }
 
 .p-datatable-tbody > tr.p-datatable-dragpoint-top > td {
-  @apply shadow-[inset_0_2px_0_0_theme(colors.primary)];
+  @apply shadow-[inset_0_2px_0_0_var(--color-primary)];
 }
 
 .p-datatable-tbody > tr.p-datatable-dragpoint-bottom > td {
-  @apply shadow-[inset_0_-2px_0_0_theme(colors.primary)];
+  @apply shadow-[inset_0_-2px_0_0_var(--color-primary)];
 }
 
 .p-datatable-loading-icon {
@@ -415,7 +415,7 @@
         transition-colors duration-200 rounded-full border-none bg-transparent 
         text-surface-500 enabled:hover:bg-surface-100 enabled:hover:text-surface-700
         dark:text-surface-400 dark:enabled:hover:bg-surface-800 dark:enabled:hover:text-surface-0
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-datatable-tbody > tr.p-datatable-row-selected .p-datatable-row-toggle-button:hover {
@@ -424,11 +424,11 @@
 
 /*UserPayments*/
 .p-datatable-thead > tr > th.user-payment {
-  @apply !py-0 !px-0 align-middle;
+  @apply py-0! px-0! align-middle;
 }
 
 .p-datatable-tbody > tr > td.user-payment {
-  @apply !py-0 !px-0;
+  @apply py-0! px-0!;
 }
 
 .p-datatable-tbody > tr > td.p-column-data-zapl {

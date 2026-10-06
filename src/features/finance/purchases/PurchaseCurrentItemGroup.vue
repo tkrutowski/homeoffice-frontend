@@ -73,13 +73,13 @@
   const groupHeaderToneClass = computed(() => {
     if (deadlinePast.value) {
       return [
-        'border-b border-red-400/35 bg-red-50 bg-gradient-to-br from-red-50 via-rose-100/70 to-rose-100',
-        'dark:border-rose-500/40 dark:bg-neutral-950 dark:bg-gradient-to-br dark:from-neutral-950 dark:via-red-950/95 dark:to-red-900/50',
+        'border-b border-red-400/35 bg-red-50 bg-linear-to-br from-red-50 via-rose-100/70 to-rose-100',
+        'dark:border-rose-500/40 dark:bg-neutral-950 dark:bg-linear-to-br dark:from-neutral-950 dark:via-red-950/95 dark:to-red-900/50',
       ].join(' ');
     }
     return [
-      'border-b border-emerald-400/30 bg-emerald-50 bg-gradient-to-br from-emerald-50 via-white to-emerald-100',
-      'dark:border-emerald-600/35 dark:bg-emerald-950 dark:bg-gradient-to-br dark:from-emerald-950 dark:via-neutral-950 dark:to-emerald-950/90',
+      'border-b border-emerald-400/30 bg-emerald-50 bg-linear-to-br from-emerald-50 via-white to-emerald-100',
+      'dark:border-emerald-600/35 dark:bg-emerald-950 dark:bg-linear-to-br dark:from-emerald-950 dark:via-neutral-950 dark:to-emerald-950/90',
     ].join(' ');
   });
 

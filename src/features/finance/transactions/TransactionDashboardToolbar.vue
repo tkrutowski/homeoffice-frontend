@@ -63,9 +63,7 @@
         class="text-primary"
         @click="emit('prevPeriod')"
       />
-      <span
-        class="min-w-[12rem] text-center text-sm font-medium text-surface-700 dark:text-surface-200 sm:min-w-[16rem]"
-      >
+      <span class="min-w-48 text-center text-sm font-medium text-surface-700 dark:text-surface-200 sm:min-w-[16rem]">
         {{ periodLabel }}
       </span>
       <OfficeIconButton

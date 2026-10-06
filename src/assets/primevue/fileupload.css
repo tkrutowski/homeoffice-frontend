@@ -1,6 +1,6 @@
-@import './button';
-@import './message';
-@import './progressbar';
+@import './button.css';
+@import './message.css';
+@import './progressbar.css';
 
 .p-fileupload input[type='file'] {
   @apply hidden;
@@ -13,11 +13,11 @@
 }
 
 .p-fileupload-header {
-  @apply flex items-center p-[1.125rem] gap-2 text-surface-700 dark:text-surface-0;
+  @apply flex items-center p-4.5 gap-2 text-surface-700 dark:text-surface-0;
 }
 
 .p-fileupload-content {
-  @apply border border-transparent relative transition-colors duration-200 pt-0 px-[1.125rem] pb-[1.125rem];
+  @apply border border-transparent relative transition-colors duration-200 pt-0 px-4.5 pb-4.5;
 }
 
 .p-fileupload-content .p-progressbar {
@@ -25,7 +25,7 @@
 }
 
 .p-fileupload-file-list {
-  @apply flex flex-col gap-2 mt-[1.125rem];
+  @apply flex flex-col gap-2 mt-4.5;
 }
 
 /*.p-fileupload-file {*/

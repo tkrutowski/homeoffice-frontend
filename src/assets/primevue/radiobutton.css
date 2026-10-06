@@ -52,7 +52,7 @@
 }
 
 .p-radiobutton:not(.p-disabled):has(.p-radiobutton-input:focus-visible) .p-radiobutton-box {
-  @apply outline outline-1 outline-offset-2 outline-primary;
+  @apply outline-solid outline-1 outline-offset-2 outline-primary;
 }
 
 .p-radiobutton.p-invalid > .p-radiobutton-box {

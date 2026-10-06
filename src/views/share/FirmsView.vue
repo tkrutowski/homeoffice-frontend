@@ -170,7 +170,7 @@
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText class="!max-w-32" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                <InputText class="max-w-32!" v-model="filters['global'].value" placeholder="wyszukaj..." />
               </IconField>
               <Button
                 type="button"

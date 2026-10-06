@@ -205,7 +205,7 @@
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
-              <InputText class="!max-w-32" v-model="searchQuery" placeholder="wyszukaj..." />
+              <InputText class="max-w-32!" v-model="searchQuery" placeholder="wyszukaj..." />
             </IconField>
             <Button type="button" icon="pi pi-times" outlined title="Wyczyść wyszukiwanie" @click="clearSearch" />
           </div>

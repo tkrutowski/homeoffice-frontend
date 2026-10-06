@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Motyw jasny / ciemny i kolorystyka
 
-- Przełącznik motywu ustawia na elemencie `html` klasę **`dark`** albo **`light`** (`src/components/ThemeSwitcher.vue`). Warianty Tailwinda `dark:` są aktywne przy **`tailwind.config.js`** → `darkMode: ['selector', '[class="dark"]']`.
+- Przełącznik motywu ustawia na elemencie `html` klasę **`dark`** albo **`light`** (`src/components/ThemeSwitcher.vue`). Warianty Tailwinda `dark:` są aktywne przy **`@custom-variant dark` w `src/assets/tailwind.css`** (Tailwind 4, bez `tailwind.config.js`).
 - **Nie** styluj widoków na stałe „jak w dark mode” przez sztywne kolory heks (`#121212`, `#1E1E1E`, `#333`, `#fff` itd.). Zawsze uwzględnij **obie** skórki: jasną i ciemną.
 - **Paleta projektu:** używaj tokenów **Prime surface** z Tailwinda (`tailwindcss-primeui`), spójnie z presetem PrimeVue w `src/assets/primevue/*.css` oraz z istniejącymi widokami (np. `text-surface-*`, `bg-surface-*`, `border-surface-*`).
 - **Wzorzec:** dla tła, obramowań i tekstu stosuj pary **`…-surface-*`** + **`dark:…-surface-*`** (albo jedna klasa surface, jeśli komponent sam rozwiązuje motyw). Przykłady:

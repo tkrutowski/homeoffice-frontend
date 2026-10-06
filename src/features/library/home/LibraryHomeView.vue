@@ -60,7 +60,7 @@
             <div
               v-for="series in seriesHasNewBooks"
               :key="series.id"
-              class="hover:bg-surface-100 hover:dark:bg-surface-800 border border-primary rounded-lg p-4 mb-4 cursor-pointer"
+              class="hover:bg-surface-100 dark:hover:bg-surface-800 border border-primary rounded-lg p-4 mb-4 cursor-pointer"
               @click="showSeries(series)"
             >
               <p class="pb-2">

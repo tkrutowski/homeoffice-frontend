@@ -206,13 +206,8 @@
 </script>
 
 <template>
-  <DeviceDashboardPanel
-    :title="title"
-    :icon="icon"
-    :loading="loading"
-    :panel-class="panelClass || 'h-full min-h-[22rem]'"
-  >
-    <div v-if="!loading && chartData.datasets.length" class="flex min-h-[18rem] flex-col gap-4">
+  <DeviceDashboardPanel :title="title" :icon="icon" :loading="loading" :panel-class="panelClass || 'h-full min-h-88'">
+    <div v-if="!loading && chartData.datasets.length" class="flex min-h-72 flex-col gap-4">
       <!-- Help text -->
       <p v-if="helpText" class="text-center text-xs text-surface-500 dark:text-surface-400">
         {{ helpText }}
@@ -225,7 +220,7 @@
           :key="pill.label"
           type="button"
           :disabled="chartType === 'pie' || chartType === 'doughnut'"
-          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default"
+          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default"
           :class="
             isLineVisible(pill.label)
               ? 'border-surface-300 bg-surface-50 dark:border-surface-600 dark:bg-surface-900'

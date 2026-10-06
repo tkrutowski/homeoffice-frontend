@@ -240,7 +240,8 @@ _shared/     queryKeys (accountKeys)
 
 ### Theme System
 - **Switcher component** (`ThemeSwitcher.vue`) applies class `dark` or `light` to `<html>`
-- Tailwind's `darkMode: ['selector', '[class="dark"]']` (see `tailwind.config.js`) activates `dark:` variants
+- Tailwind 4: `@custom-variant dark` in `src/assets/tailwind.css` (selector `[class="dark"]`; config via CSS, no `tailwind.config.js`) activates `dark:` variants
+- Scoped `<style>` with `@apply` needs `@reference "<relative path>/assets/tailwind.css";` as its first line (Tailwind 4); `tailwindcss-primeui` is loaded via `@plugin` in `tailwind.css`; PostCSS uses only `@tailwindcss/postcss`
 - **`TheHeader.vue` exception:** its own background is hardcoded dark (`#515455`) regardless of theme — content placed directly in the header (e.g. `NotificationsBell`, `ThemeSwitcher`) must use fixed light-on-dark colors (e.g. `text-surface-0`, `text-primary`), not theme-relative `dark:` pairs, or it goes invisible in light mode
 
 ### Color Palette: Prime Surface Tokens

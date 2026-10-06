@@ -4,11 +4,11 @@
 
 .p-checkbox-input {
   @apply cursor-pointer disabled:cursor-default appearance-none absolute left-0 top-0 w-full h-full m-0 p-0 opacity-0 z-10
-        border border-transparent rounded-sm;
+        border border-transparent rounded-xs;
 }
 
 .p-checkbox-box {
-  @apply flex justify-center items-center rounded-sm w-5 h-5
+  @apply flex justify-center items-center rounded-xs w-5 h-5
         border border-surface-300 dark:border-surface-700
         bg-surface-0 dark:bg-surface-950
         transition-colors duration-200
@@ -17,7 +17,7 @@
 
 .p-checkbox-icon {
   @apply text-surface-700 dark:text-surface-0
-        text-sm w-[0.875rem] h-[0.875rem]
+        text-sm w-3.5 h-3.5
         transition-colors duration-200;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
-  @apply outline outline-1 outline-offset-2 outline-primary;
+  @apply outline-solid outline-1 outline-offset-2 outline-primary;
 }
 
 .p-checkbox.p-invalid > .p-checkbox-box {

@@ -31,7 +31,7 @@
   <div class="flex flex-col gap-1">
     <button
       type="button"
-      class="flex h-[2.75rem] w-full min-w-[4.5rem] items-center justify-between gap-2 rounded-lg border px-3 transition-colors enabled:hover:border-surface-400 disabled:cursor-not-allowed disabled:opacity-60 dark:enabled:hover:border-surface-500"
+      class="flex h-11 w-full min-w-18 items-center justify-between gap-2 rounded-lg border px-3 transition-colors enabled:hover:border-surface-400 disabled:cursor-not-allowed disabled:opacity-60 dark:enabled:hover:border-surface-500"
       :class="
         invalid
           ? 'border-red-500 bg-surface-0 dark:border-red-400 dark:bg-surface-950'

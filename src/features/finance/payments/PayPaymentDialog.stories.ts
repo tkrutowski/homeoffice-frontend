@@ -15,7 +15,7 @@ const meta = {
       return { args, visible: true };
     },
     template: `
-      <Dialog v-model:visible="visible" modal header="Zapłać ratę" class="w-[28rem]">
+      <Dialog v-model:visible="visible" modal header="Zapłać ratę" class="w-md">
         <PayPaymentDialog v-bind="args" @save="() => {}" @cancel="() => {}" />
       </Dialog>
     `,

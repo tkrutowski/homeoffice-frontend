@@ -56,7 +56,7 @@
         @click="enterDevices"
       >
         <div
-          class="flex h-[5.5rem] w-[5.5rem] shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-gradient-to-b from-surface-100/90 to-surface-0 shadow-inner backdrop-blur-md dark:border-primary/40 dark:from-white/15 dark:to-white/5 md:h-28 md:w-28"
+          class="flex h-22 w-22 shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-linear-to-b from-surface-100/90 to-surface-0 shadow-inner backdrop-blur-md dark:border-primary/40 dark:from-white/15 dark:to-white/5 md:h-28 md:w-28"
         >
           <i class="pi pi-tablet text-4xl text-primary md:text-5xl" aria-hidden="true" />
         </div>
@@ -86,8 +86,8 @@
             @click="pushListOrRefresh('DevicesList')"
           >
             <i class="pi pi-table mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight"> Lista urządzeń </span>
-            <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
+            <span class="block wrap-break-word text-sm font-semibold md:leading-tight"> Lista urządzeń </span>
+            <span class="mt-1 block wrap-break-word text-xs leading-snug text-surface-600 dark:text-surface-400">
               Widok tabeli
             </span>
           </button>
@@ -116,8 +116,8 @@
             @click="pushListOrRefresh('DevicesGrid')"
           >
             <i class="pi pi-th-large mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight"> Siatka urządzeń </span>
-            <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
+            <span class="block wrap-break-word text-sm font-semibold md:leading-tight"> Siatka urządzeń </span>
+            <span class="mt-1 block wrap-break-word text-xs leading-snug text-surface-600 dark:text-surface-400">
               Widok kafelków
             </span>
           </button>
@@ -146,8 +146,8 @@
             @click="goComputers"
           >
             <i class="pi pi-desktop mb-1 block text-lg text-primary md:text-xl" aria-hidden="true" />
-            <span class="block break-words text-sm font-semibold md:leading-tight"> Komputery </span>
-            <span class="mt-1 block break-words text-xs leading-snug text-surface-600 dark:text-surface-400">
+            <span class="block wrap-break-word text-sm font-semibold md:leading-tight"> Komputery </span>
+            <span class="mt-1 block wrap-break-word text-xs leading-snug text-surface-600 dark:text-surface-400">
               Rejestr komputerów
             </span>
           </button>

@@ -46,7 +46,7 @@
         <div class="flex flex-col gap-2">
           <label class="text-sm text-surface-600 dark:text-surface-400" for="firm-name">Nazwa firmy</label>
           <div
-            class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+            class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
             :class="{ 'border-red-500 dark:border-red-400': showErrorName }"
           >
             <div
@@ -56,7 +56,7 @@
             </div>
             <InputText id="firm-name" v-model="firm.name" maxlength="100" :pt="ptFieldInputText" />
           </div>
-          <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
             showErrorName ? 'Pole jest wymagane.' : '\u00a0'
           }}</small>
         </div>
@@ -78,7 +78,7 @@
             :pt="ptFieldInputText"
             :class="{ 'p-invalid': showErrorZip }"
           />
-          <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
             showErrorZip ? 'Prawidłowy format to: 61-754' : '\u00a0'
           }}</small>
         </div>
@@ -110,7 +110,7 @@
           <div class="flex flex-col gap-2">
             <label class="text-sm text-surface-600 dark:text-surface-400" for="firm-mail">E-mail</label>
             <div
-              class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+              class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
               :class="{ 'border-red-500 dark:border-red-400': showErrorMail }"
             >
               <div
@@ -120,7 +120,7 @@
               </div>
               <InputText id="firm-mail" v-model="firm.mail" maxlength="100" :pt="ptFieldInputText" />
             </div>
-            <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+            <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
               showErrorMail ? 'Niepoprawny format.' : '\u00a0'
             }}</small>
           </div>

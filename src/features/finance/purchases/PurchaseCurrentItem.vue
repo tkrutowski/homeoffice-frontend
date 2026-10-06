@@ -62,13 +62,13 @@
   const cardVariantClasses = computed(() => {
     if (isPaid.value) {
       return [
-        'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100 text-emerald-950',
+        'border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-emerald-100 text-emerald-950',
         'dark:border-emerald-900/70 dark:from-emerald-950/90 dark:via-neutral-950 dark:to-emerald-950/50 dark:text-white',
       ].join(' ');
     }
     if (isOverdueLook.value) {
       return [
-        'border-red-400 bg-gradient-to-br from-red-50 via-rose-100/70 to-rose-100 text-red-950',
+        'border-red-400 bg-linear-to-br from-red-50 via-rose-100/70 to-rose-100 text-red-950',
         // Jasny: jak zielony (spód + halo), ale druga i trzecia warstwa mocniej „czerwone” — rose na jasnym tle ginie wobec emerald.
         'shadow-[0_4px_14px_-2px_rgba(0,0,0,0.07),0_0_22px_rgba(251,113,133,0.62),0_0_40px_rgba(239,68,68,0.42)]',
         'dark:border-rose-500/85 dark:from-neutral-950 dark:via-red-950/95 dark:to-red-900/50 dark:text-white',
@@ -76,7 +76,7 @@
       ].join(' ');
     }
     return [
-      'border-emerald-400 bg-gradient-to-br from-emerald-50 via-white to-emerald-100 text-emerald-950',
+      'border-emerald-400 bg-linear-to-br from-emerald-50 via-white to-emerald-100 text-emerald-950',
       'shadow-[0_4px_14px_-2px_rgba(0,0,0,0.07),0_0_24px_rgba(52,211,153,0.55)]',
       'dark:border-emerald-500/85 dark:from-emerald-950 dark:via-neutral-950 dark:to-emerald-950/90 dark:text-white',
       'dark:shadow-[0_0_22px_rgba(52,211,153,0.5),0_0_36px_rgba(16,185,129,0.22)]',
@@ -91,14 +91,14 @@
   /** Zaznaczenie: gasi zewnętrzną poświatę karty (!shadow), tylko cień wewnętrzny + grubsza bursztynowa obwódka — bez ring (ring mieszał się z kolorową ramką). */
   const pressedClasses =
     'translate-y-px scale-[0.995] border-2 border-amber-500 brightness-[0.97] dark:border-amber-400 dark:brightness-[0.9] ' +
-    '!shadow-[inset_0_2px_12px_rgba(0,0,0,0.18),inset_0_3px_8px_rgba(0,0,0,0.1),inset_0_-1px_0_rgba(255,255,255,0.22)] ' +
-    'dark:!shadow-[inset_0_3px_18px_rgba(0,0,0,0.55),inset_0_2px_6px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]';
+    'shadow-[inset_0_2px_12px_rgba(0,0,0,0.18),inset_0_3px_8px_rgba(0,0,0,0.1),inset_0_-1px_0_rgba(255,255,255,0.22)]! ' +
+    'dark:shadow-[inset_0_3px_18px_rgba(0,0,0,0.55),inset_0_2px_6px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]!';
 
   const cardDropShadow = computed(() => {
     if (isSelected.value && canSelectForBulk.value) return '';
     // Po terminie: pełny cień (jasny + ciemny) jest w cardVariantClasses — nic tu nie doklejaj.
     if (isOverdueLook.value) return '';
-    if (isPaid.value) return 'shadow-sm dark:shadow-md';
+    if (isPaid.value) return 'shadow-xs dark:shadow-md';
     return '';
   });
 
@@ -212,9 +212,9 @@
   const payCtaButtonClass = computed(() => {
     if (isOverdueLook.value) {
       return [
-        'rounded-lg border border-rose-300 bg-rose-100/90 px-4 py-2 text-sm font-semibold text-rose-900 shadow-sm',
+        'rounded-lg border border-rose-300 bg-rose-100/90 px-4 py-2 text-sm font-semibold text-rose-900 shadow-xs',
         'transition-colors hover:border-rose-500 hover:bg-rose-200/90',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600/50',
+        'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600/50',
         'active:translate-y-px active:brightness-[0.98]',
         'dark:border-rose-400/35 dark:bg-rose-950/40 dark:text-rose-50 dark:backdrop-blur-[2px]',
         'dark:hover:border-rose-300/50 dark:hover:bg-rose-950/55 dark:focus-visible:outline-rose-400/50',
@@ -222,9 +222,9 @@
       ].join(' ');
     }
     return [
-      'rounded-lg border border-emerald-300 bg-emerald-100/90 px-4 py-2 text-sm font-semibold text-emerald-900 shadow-sm',
+      'rounded-lg border border-emerald-300 bg-emerald-100/90 px-4 py-2 text-sm font-semibold text-emerald-900 shadow-xs',
       'transition-colors hover:border-emerald-500 hover:bg-emerald-200/90',
-      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600/50',
+      'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600/50',
       'active:translate-y-px dark:border-emerald-400/35 dark:bg-emerald-950/40 dark:text-emerald-50 dark:backdrop-blur-[2px]',
       'dark:hover:border-emerald-300/50 dark:hover:bg-emerald-950/55 dark:focus-visible:outline-emerald-400/50',
       'dark:active:brightness-95',

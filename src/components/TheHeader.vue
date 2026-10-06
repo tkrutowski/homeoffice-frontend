@@ -75,7 +75,7 @@
           />
           <template v-else>{{ initials }}</template>
         </span>
-        <span class="max-w-[12rem] truncate text-lg font-bold text-surface-0">{{ fullName }}</span>
+        <span class="max-w-48 truncate text-lg font-bold text-surface-0">{{ fullName }}</span>
       </router-link>
     </div>
   </header>

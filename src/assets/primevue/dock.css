@@ -7,12 +7,12 @@
 }
 
 .p-dock-list {
-  @apply m-0 p-0 list-none flex items-center justify-center outline-none;
+  @apply m-0 p-0 list-none flex items-center justify-center outline-hidden;
 }
 
 .p-dock-item {
-  @apply transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform p-2 rounded-md
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  @apply transition-all duration-200 ease-in-out will-change-transform p-2 rounded-md
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-dock-item-link {

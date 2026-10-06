@@ -11,7 +11,7 @@
 .p-divider-vertical {
   @apply min-h-full flex relative justify-center my-0 mx-4 py-2 px-0
         before:absolute before:block before:top-0 before:left-1/2 before:h-full
-        before:border-l before:border-surface-200 before:dark:border-surface-700;
+        before:border-l before:border-surface-200 dark:before:border-surface-700;
 }
 
 .p-divider.p-divider-vertical .p-divider-content {

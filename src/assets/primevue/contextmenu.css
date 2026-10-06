@@ -7,7 +7,7 @@
 
 .p-contextmenu-root-list,
 .p-contextmenu-submenu {
-  @apply m-0 p-1 list-none outline-none flex flex-col gap-[2px];
+  @apply m-0 p-1 list-none outline-hidden flex flex-col gap-[2px];
 }
 
 .p-contextmenu-submenu {
@@ -23,12 +23,12 @@
 }
 
 .p-contextmenu-item-content {
-  @apply transition-colors duration-200 rounded-sm text-surface-700 dark:text-surface-0;
+  @apply transition-colors duration-200 rounded-xs text-surface-700 dark:text-surface-0;
 }
 
 .p-contextmenu-item-link {
   @apply cursor-pointer flex items-center no-underline overflow-hidden relative text-inherit
-        px-3 py-2 gap-2 select-none outline-none;
+        px-3 py-2 gap-2 select-none outline-hidden;
 }
 
 .p-contextmenu-item-icon {
@@ -36,7 +36,7 @@
 }
 
 .p-contextmenu-submenu-icon {
-  @apply text-surface-400 dark:text-surface-500 ml-auto text-sm w-[0.875rem] h-[0.875rem];
+  @apply text-surface-400 dark:text-surface-500 ml-auto text-sm w-3.5 h-3.5;
 }
 
 .p-contextmenu-item.p-focus > .p-contextmenu-item-content {
@@ -87,7 +87,7 @@
 }
 
 .p-contextmenu-enter-active {
-  @apply transition-opacity duration-[250ms];
+  @apply transition-opacity duration-250;
 }
 
 .p-contextmenu-mobile .p-contextmenu-submenu {

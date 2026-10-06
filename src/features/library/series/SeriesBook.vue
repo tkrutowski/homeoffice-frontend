@@ -226,7 +226,7 @@
       <Tag
         :value="getStatusMsg"
         :severity="getSeverity()"
-        class="absolute left-2 top-2 rounded p-1 text-lg font-bold"
+        class="absolute left-2 top-2 rounded-sm p-1 text-lg font-bold"
       />
     </div>
     <div class="px-4 pb-4 pt-2">

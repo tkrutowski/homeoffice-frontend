@@ -27,7 +27,7 @@
   @apply inline-flex justify-center items-center text-surface-50 bg-transparent w-12 h-12 m-0 p-0 
         border-none cursor-pointer select-none rounded-full transition-colors duration-200
         hover:text-surface-0 hover:bg-white/10
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-image-action .p-icon {
@@ -39,15 +39,15 @@
 }
 
 .p-image-original {
-  @apply transition-transform duration-150 max-w-[100vw] max-h-[100vh];
+  @apply transition-transform duration-150 max-w-[100vw] max-h-screen;
 }
 
 .p-image-original-enter-active {
-  @apply transition-all duration-150 ease-[cubic-bezier(0,0,0.2,1)];
+  @apply transition-all duration-150 ease-out;
 }
 
 .p-image-original-leave-active {
-  @apply transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)];
+  @apply transition-all duration-150 ease-in-out;
 }
 
 .p-image-original-enter-from,

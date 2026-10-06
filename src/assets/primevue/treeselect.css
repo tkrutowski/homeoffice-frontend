@@ -1,5 +1,5 @@
-@import './chip';
-@import './tree';
+@import './chip.css';
+@import './tree.css';
 
 .p-treeselect {
   @apply inline-flex cursor-pointer relative select-none rounded-md
@@ -87,7 +87,7 @@
 }
 
 .p-treeselect-label .p-chip {
-  @apply pt-1 pb-1 rounded-sm;
+  @apply pt-1 pb-1 rounded-xs;
 }
 
 .p-treeselect-label:has(.p-chip) {

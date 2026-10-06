@@ -440,14 +440,14 @@
                   </div>
                   <img
                     v-if="item.imageUrl && item.imageUrl.length > 0"
-                    class="block xl:block mx-auto rounded w-full object-contain bg-surface-100 dark:bg-surface-800"
+                    class="block xl:block mx-auto rounded-sm w-full object-contain bg-surface-100 dark:bg-surface-800"
                     :src="item.imageUrl"
                     :alt="item.imageUrl"
                     style="max-width: 90px; min-height: 60px"
                   />
                   <img
                     v-else
-                    class="block xl:block mx-auto rounded w-full object-contain bg-surface-100 dark:bg-surface-800"
+                    class="block xl:block mx-auto rounded-sm w-full object-contain bg-surface-100 dark:bg-surface-800"
                     src="@/assets/images/no_image.png"
                     alt="no image"
                     style="max-width: 90px; min-height: 60px"

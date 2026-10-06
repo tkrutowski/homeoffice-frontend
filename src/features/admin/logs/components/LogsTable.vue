@@ -184,7 +184,7 @@
           </span>
         </div>
         <pre
-          class="m-0 whitespace-pre-wrap break-words rounded-md border border-surface-200 bg-surface-0 p-3.5 font-mono text-xs leading-[18px] text-surface-700 [tab-size:4] dark:border-surface-700 dark:bg-surface-950 dark:text-surface-200"
+          class="m-0 whitespace-pre-wrap wrap-break-word rounded-md border border-surface-200 bg-surface-0 p-3.5 font-mono text-xs leading-[18px] text-surface-700 tab-4 dark:border-surface-700 dark:bg-surface-950 dark:text-surface-200"
           >{{ data.message }}</pre>
       </div>
     </template>

@@ -116,7 +116,7 @@
             :pt="ptFieldInputText"
             :invalid="showErrorFirstName()"
           />
-          <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
             showErrorFirstName() ? 'Pole jest wymagane.' : ' '
           }}</small>
         </div>
@@ -129,7 +129,7 @@
             :pt="ptFieldInputText"
             :invalid="showErrorLastName()"
           />
-          <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
             showErrorLastName() ? 'Pole jest wymagane.' : ' '
           }}</small>
         </div>
@@ -137,7 +137,7 @@
         <div class="flex flex-col gap-2">
           <label class="text-sm text-surface-600 dark:text-surface-400" for="profile-email">Adres e-mail</label>
           <div
-            class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+            class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
             :class="{ 'border-red-500 dark:border-red-400': showErrorEmailFormat() || showErrorEmailTaken() }"
           >
             <div
@@ -158,7 +158,7 @@
               @input="emailTakenError = false"
             />
           </div>
-          <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
             showErrorEmailTaken()
               ? 'Ten adres e-mail jest już zajęty przez innego użytkownika.'
               : showErrorEmailFormat()
@@ -170,7 +170,7 @@
         <div class="flex flex-col gap-2">
           <label class="text-sm text-surface-600 dark:text-surface-400" for="profile-username">Nazwa użytkownika</label>
           <div
-            class="flex min-h-[2.75rem] items-center overflow-hidden rounded-lg border border-surface-300 bg-surface-100 dark:border-surface-600 dark:bg-surface-800"
+            class="flex min-h-11 items-center overflow-hidden rounded-lg border border-surface-300 bg-surface-100 dark:border-surface-600 dark:bg-surface-800"
           >
             <div
               class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
@@ -179,7 +179,7 @@
             </div>
             <InputText id="profile-username" :model-value="profile.username" class="w-full" disabled />
           </div>
-          <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400"
+          <small class="min-h-5 text-sm text-surface-500 dark:text-surface-400"
             >Nazwy użytkownika nie można zmienić</small
           >
         </div>

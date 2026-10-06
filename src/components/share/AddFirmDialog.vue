@@ -108,7 +108,7 @@
   const ptTextareaField = {
     root: {
       class:
-        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'w-full min-h-32 resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
         'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },

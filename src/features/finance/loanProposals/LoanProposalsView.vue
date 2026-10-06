@@ -204,7 +204,7 @@
                 <InputIcon>
                   <i class="pi pi-search" />
                 </InputIcon>
-                <InputText class="!max-w-48" v-model="filters['global'].value" placeholder="wyszukaj..." />
+                <InputText class="max-w-48!" v-model="filters['global'].value" placeholder="wyszukaj..." />
               </IconField>
             </div>
           </div>

@@ -96,7 +96,7 @@
           :invalid="showErrorOldPassword() || !!backendOldPasswordError"
           @update:model-value="backendOldPasswordError = null"
         />
-        <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+        <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
           backendOldPasswordError || (showErrorOldPassword() ? 'Pole jest wymagane.' : ' ')
         }}</small>
       </div>
@@ -113,7 +113,7 @@
             :invalid="showErrorNewPasswordWeak() || !!backendNewPasswordError"
             @update:model-value="backendNewPasswordError = null"
           />
-          <small class="min-h-[2.5rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-10 text-sm text-red-600 dark:text-red-400">{{
             backendNewPasswordError ||
             (showErrorNewPasswordWeak() ? 'Minimum 8 znaków, jedna cyfra i jeden znak specjalny.' : ' ')
           }}</small>
@@ -131,7 +131,7 @@
             :pt="ptPasswordField"
             :invalid="showErrorConfirmMismatch()"
           />
-          <small class="min-h-[2.5rem] text-sm text-red-600 dark:text-red-400">{{
+          <small class="min-h-10 text-sm text-red-600 dark:text-red-400">{{
             showErrorConfirmMismatch() ? 'Hasła nie są identyczne.' : ' '
           }}</small>
         </div>

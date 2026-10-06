@@ -1,4 +1,4 @@
-@import './paginator';
+@import './paginator.css';
 
 .p-treetable {
   @apply relative;
@@ -146,7 +146,7 @@
 
 .p-treetable-tbody > tr:focus-visible,
 .p-treetable-tbody > tr.p-treetable-contextmenu-row-selected {
-  @apply outline outline-1 -outline-offset-1 outline-primary;
+  @apply outline-solid outline-1 -outline-offset-1 outline-primary;
 }
 
 .p-treetable-tfoot > tr > td {
@@ -160,7 +160,7 @@
 }
 
 .p-treetable-sortable-column {
-  @apply cursor-pointer select-none focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-primary;
+  @apply cursor-pointer select-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-primary;
 }
 
 .p-treetable-column-title,
@@ -300,7 +300,7 @@
         transition-colors duration-200 w-7 h-7 rounded-full border-none bg-transparent cursor-pointer 
         enabled:hover:bg-surface-100 dark:enabled:hover:bg-surface-900
         text-surface-500 dark:text-surface-400 enabled:hover:text-surface-700 dark:enabled:hover:text-surface-0
-        focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
+        focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 .p-treetable-tbody > tr.p-treetable-row-selected .p-treetable-node-toggle-button:hover {

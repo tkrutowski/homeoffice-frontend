@@ -398,7 +398,7 @@
   const ptTextareaField = {
     root: {
       class:
-        'w-full min-h-[8rem] resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
+        'w-full min-h-32 resize-y rounded-lg border border-surface-300 bg-surface-0 py-3 text-surface-900 ' +
         'placeholder:text-surface-500 enabled:focus:border-primary enabled:focus:shadow-none enabled:focus:ring-0 ' +
         'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0 dark:placeholder:text-surface-400',
     },
@@ -416,7 +416,7 @@
     <div class="min-h-0 w-full bg-surface-100 px-4 py-6 dark:bg-surface-950 sm:py-8">
       <form class="mx-auto max-w-4xl" @submit.stop.prevent="saveFee">
         <div
-          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-sm dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
+          class="rounded-xl border border-surface-200 bg-surface-0 p-6 shadow-xs dark:border-surface-700 dark:bg-surface-900 dark:shadow-none sm:p-8"
         >
           <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1
@@ -451,7 +451,7 @@
                     :pt="ptFieldInputText"
                     :class="{ 'p-invalid': showErrorName() }"
                   />
-                  <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                  <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                     showErrorName() ? 'Pole jest wymagane.' : '\u00a0'
                   }}</small>
                 </div>
@@ -462,7 +462,7 @@
                       >Wybierz użytkownika</label
                     >
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorUser() }"
                     >
                       <div
@@ -483,7 +483,7 @@
                         @change="fee.idUser = selectedUser ? selectedUser.id : 0"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorUser() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -492,7 +492,7 @@
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="fee-firm">Wybierz firmę</label>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                       <div
-                        class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                        class="flex min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                         :class="{ 'border-red-500 dark:border-red-400': showErrorFirm() }"
                       >
                         <div
@@ -522,7 +522,7 @@
                         @click="showNewFirmModal = true"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorFirm() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -538,7 +538,7 @@
                       :pt="ptFieldInputText"
                       :class="{ 'p-invalid': showErrorNumber() }"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorNumber() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -552,7 +552,7 @@
                       date-format="yy-mm-dd"
                       :invalid="showErrorDate()"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorDate() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -568,7 +568,7 @@
                       >Częstotliwość opłat</label
                     >
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorFeeFrequency() }"
                     >
                       <div
@@ -588,7 +588,7 @@
                         @change="fee.feeFrequency = selectedFeeFrequency ? selectedFeeFrequency : null"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorFeeFrequency() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -605,13 +605,13 @@
                       :max="84"
                       :disabled="isEdit"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
+                    <small class="min-h-5 text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
                   </div>
 
                   <div class="flex flex-col gap-2">
                     <label class="text-sm text-surface-600 dark:text-surface-400" for="fee-amount">Kwota opłaty</label>
                     <div
-                      class="flex min-h-[2.75rem] overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
+                      class="flex min-h-11 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-900"
                       :class="{ 'border-red-500 dark:border-red-400': showErrorAmount() }"
                     >
                       <div
@@ -634,7 +634,7 @@
                         @focus="UtilsService.selectText"
                       />
                     </div>
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorAmount() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -650,7 +650,7 @@
                       :class="{ 'p-invalid': showErrorAccountNumber() }"
                       mask="99 9999 9999 9999 9999 9999 9999"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorAccountNumber() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>
@@ -667,7 +667,7 @@
                       date-format="yy-mm-dd"
                       :disabled="isEdit"
                     />
-                    <small class="min-h-[1.25rem] text-sm text-red-600 dark:text-red-400">{{
+                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
                       showErrorFirstDate() ? 'Pole jest wymagane.' : '\u00a0'
                     }}</small>
                   </div>

@@ -246,7 +246,7 @@ export const CustomSize: Story = {
     icon: 'pi pi-chart-line',
     chartType: 'line',
     loading: false,
-    panelClass: 'h-full min-h-[32rem]',
+    panelClass: 'h-full min-h-128',
     showTotals: true,
     chartData: mockLineChartData,
   },

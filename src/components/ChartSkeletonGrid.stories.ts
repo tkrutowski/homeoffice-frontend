@@ -130,17 +130,17 @@ export const DashboardLayout: Story = {
     () => ({
       template: `
         <div class="space-y-8">
-          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded">
+          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded-sm">
             <h2 class="text-lg font-bold mb-4">Summary Cards</h2>
             <ChartSkeletonGrid :columns="4" :rows="1" height="h-32" />
           </div>
 
-          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded">
+          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded-sm">
             <h2 class="text-lg font-bold mb-4">Monthly Charts</h2>
             <ChartSkeletonGrid :columns="2" :rows="1" height="h-72" />
           </div>
 
-          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded">
+          <div class="p-4 bg-surface-50 dark:bg-surface-900 rounded-sm">
             <h2 class="text-lg font-bold mb-4">Full Width Chart</h2>
             <ChartSkeletonGrid :columns="2" :rows="1" height="h-80" :full-width="true" />
           </div>

@@ -93,7 +93,7 @@
             <label class="text-sm text-surface-600 dark:text-surface-400" :for="`${idPrefix}-author`">Autor</label>
             <div class="flex gap-2">
               <div
-                class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
+                class="flex min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
                 :class="{ 'border-red-500 dark:border-red-400': showErrorAuthor }"
               >
                 <div
@@ -126,12 +126,12 @@
             <small v-if="showErrorAuthor" class="text-sm text-red-600 dark:text-red-400"> Pole jest wymagane. </small>
           </div>
 
-          <div class="grid grid-cols-1 gap-5 sm:grid-cols-[1fr,6rem]">
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_6rem]">
             <div class="flex flex-col gap-2">
               <label class="text-sm text-surface-600 dark:text-surface-400" :for="`${idPrefix}-series`">Seria</label>
               <div class="flex gap-2">
                 <div
-                  class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
+                  class="flex min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
                 >
                   <div
                     class="flex shrink-0 items-center border-r border-surface-300 px-3 text-surface-500 dark:border-surface-600 dark:text-surface-400"
@@ -178,7 +178,7 @@
             >
             <div class="flex gap-2">
               <div
-                class="flex min-h-[2.75rem] min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
+                class="flex min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-surface-300 bg-surface-0 transition-colors focus-within:border-primary dark:border-surface-600 dark:bg-surface-950"
                 :class="{ 'border-red-500 dark:border-red-400': showErrorCategory }"
               >
                 <div
@@ -231,7 +231,7 @@
         <img
           v-if="book.cover && book.cover.length > 0"
           :src="book.cover"
-          class="max-h-full max-w-full rounded-lg object-contain shadow-sm"
+          class="max-h-full max-w-full rounded-lg object-contain shadow-xs"
           alt="Okładka do książki"
         />
         <img
