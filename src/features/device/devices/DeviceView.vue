@@ -546,12 +546,12 @@
             <IconButton
               title="Powrót do listy urządzeń"
               icon="pi pi-fw pi-bars"
-              @click="() => router.push({ name: 'DevicesList' })"
+              @click="() => $router.push({ name: 'DevicesList' })"
             />
             <IconButton
               title="Powrót do listy urządzeń"
               icon="pi pi-fw pi-th-large"
-              @click="() => router.push({ name: 'DevicesGrid' })"
+              @click="() => $router.push({ name: 'DevicesGrid' })"
             />
             <div class="w-full flex justify-center">
               <span class="m-0 text-2xl" :title="device?.name">

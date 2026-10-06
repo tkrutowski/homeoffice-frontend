@@ -3,7 +3,6 @@
   import moment from 'moment';
   import type { Fee, FeeInstallment } from '@/features/finance/fees/types';
   import { UtilsService } from '@/service/UtilsService';
-  import router from '@/router';
   import PayPaymentDialog from '@/features/finance/payments/PayPaymentDialog.vue';
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
   import TheMenuFinance from '@/features/finance/_shared/TheMenuFinance.vue';
@@ -463,7 +462,7 @@
           title="Powrót do listy"
           icon="pi pi-fw pi-list"
           class="shrink-0 text-primary"
-          @click="() => router.push({ name: 'Fees' })"
+          @click="() => $router.push({ name: 'Fees' })"
         />
         <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
           <h3
@@ -481,7 +480,7 @@
           btn-type="office-regular"
           :btn-disabled="isBusy"
           :loading="isBusy"
-          @click="() => router.back()"
+          @click="() => $router.back()"
         />
       </div>
 

@@ -233,7 +233,7 @@
               <OfficeIconButton
                 title="Powrót do listy firm"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Firms' })"
+                @click="() => $router.push({ name: 'Firms' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />

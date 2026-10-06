@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
   import moment from 'moment';
-  import router from '@/router';
   import { UtilsService } from '@/service/UtilsService';
   import type { Loan, LoanInstallment } from '@/features/finance/loans/types';
   import PayPaymentDialog from '@/features/finance/payments/PayPaymentDialog.vue';
@@ -452,7 +451,7 @@
           title="Powrót do listy"
           icon="pi pi-fw pi-list"
           class="shrink-0 text-primary"
-          @click="() => router.push({ name: 'Loans' })"
+          @click="() => $router.push({ name: 'Loans' })"
         />
         <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
           <h3
@@ -470,7 +469,7 @@
           btn-type="office-regular"
           :btn-disabled="isBusy"
           :loading="isBusy"
-          @click="() => router.back()"
+          @click="() => $router.back()"
         />
       </div>
 

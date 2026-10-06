@@ -394,7 +394,7 @@
               <IconButton
                 title="Powrót do listy kart"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Cards' })"
+                @click="() => $router.push({ name: 'Cards' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />

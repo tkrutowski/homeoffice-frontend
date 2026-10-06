@@ -761,7 +761,7 @@
               <OfficeIconButton
                 title="Powrót do listy książek"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Books' })"
+                @click="() => $router.push({ name: 'Books' })"
               >
                 <template #icon>
                   <ListBulletIcon aria-hidden="true" />

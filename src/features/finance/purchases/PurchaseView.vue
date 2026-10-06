@@ -591,7 +591,7 @@
                 v-if="proposalId !== null"
                 title="Powrót do propozycji z e-maila"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'LoanProposals' })"
+                @click="() => $router.push({ name: 'LoanProposals' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />
@@ -601,7 +601,7 @@
                 v-if="proposalId === null"
                 title="Powrót do listy aktualnych zakupów"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'PurchasesCurrent' })"
+                @click="() => $router.push({ name: 'PurchasesCurrent' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />
@@ -611,7 +611,7 @@
                 v-if="proposalId === null"
                 title="Powrót do listy wszystkich zakupów"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Purchases' })"
+                @click="() => $router.push({ name: 'Purchases' })"
               >
                 <template #icon>
                   <TableCellsIcon aria-hidden="true" />

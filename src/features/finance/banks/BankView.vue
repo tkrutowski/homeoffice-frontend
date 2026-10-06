@@ -237,7 +237,7 @@
               <OfficeIconButton
                 title="Powrót do listy banków"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Banks' })"
+                @click="() => $router.push({ name: 'Banks' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />

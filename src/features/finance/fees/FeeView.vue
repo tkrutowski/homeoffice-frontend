@@ -430,7 +430,7 @@
               <OfficeIconButton
                 title="Powrót do listy opłat"
                 class="text-orange-500"
-                @click="() => router.push({ name: 'Fees' })"
+                @click="() => $router.push({ name: 'Fees' })"
               >
                 <template #icon>
                   <CalendarDaysIcon aria-hidden="true" />

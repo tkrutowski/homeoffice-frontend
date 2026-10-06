@@ -615,8 +615,8 @@
                 @click="
                   () =>
                     isConvertMode
-                      ? router.back()
-                      : router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })
+                      ? $router.back()
+                      : $router.push({ name: proposalId !== null ? 'LoanProposals' : 'Loans' })
                 "
               >
                 <template #icon>
