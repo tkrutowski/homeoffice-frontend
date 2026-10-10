@@ -4,6 +4,7 @@
   import { useCardQuery } from '@/features/finance/cards/queries/useCardsQueries';
   import { useCreateCardMutation, useUpdateCardMutation } from '@/features/finance/cards/queries/useCardsMutations';
   import { useBanksListQuery } from '@/features/finance/banks/queries/useBanksQueries';
+  import { useTransactionCategoriesQuery } from '@/features/finance/transactions/queries/useTransactionsQueries';
   import { cloneCard } from '@/features/finance/_shared/cloneEntities';
   import { useUsersStore } from '@/stores/users';
   import { useAuthorizationStore } from '@/stores/authorization';
@@ -59,7 +60,11 @@
     paymentTermDays: undefined,
     imageUrl: '',
     multi: false,
+    defaultTransactionCategoryId: null,
   });
+
+  const categoriesQuery = useTransactionCategoriesQuery();
+  const categoryOptions = computed(() => categoriesQuery.data.value ?? []);
 
   const cardTypeOptions = UtilsService.getCardTypeOption();
 
@@ -249,6 +254,7 @@
       paymentTermDays: undefined,
       imageUrl: '',
       multi: false,
+      defaultTransactionCategoryId: null,
     };
     selectedBank.value = null;
     selectedUser.value = resolveSelectedUser(0);
@@ -332,6 +338,14 @@
     },
     dropdown: {
       class: 'shrink-0 border-0 bg-transparent px-3 text-surface-500 dark:text-surface-400',
+    },
+  };
+
+  const ptFieldSelect = {
+    root: {
+      class:
+        'w-full rounded-lg border border-surface-300 bg-surface-0 text-surface-900 ' +
+        'dark:border-surface-600 dark:bg-surface-950 dark:text-surface-0',
     },
   };
 
@@ -551,63 +565,85 @@
                   </div>
                 </div>
 
-                <div v-if="card.cardType === CardType.CREDIT" class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                  <div class="flex min-w-0 flex-col gap-2">
-                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-closing-day"
-                      >Dzień zamknięcia</label
-                    >
-                    <InputNumber
-                      id="card-closing-day"
-                      v-model="card.closingDay"
-                      :pt="ptFieldInputText"
-                      mode="decimal"
-                      show-buttons
-                      :min="1"
-                      :max="28"
-                      :invalid="showErrorClosingDay()"
-                    />
-                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
-                      showErrorClosingDay() ? 'Pole jest wymagane.' : '\u00a0'
-                    }}</small>
-                  </div>
+                <div
+                  class="grid grid-cols-1 gap-5"
+                  :class="card.cardType === CardType.CREDIT ? 'lg:grid-cols-3' : 'lg:grid-cols-2'"
+                >
+                  <template v-if="card.cardType === CardType.CREDIT">
+                    <div class="flex min-w-0 flex-col gap-2">
+                      <label class="text-sm text-surface-600 dark:text-surface-400" for="card-closing-day"
+                        >Dzień zamknięcia</label
+                      >
+                      <InputNumber
+                        id="card-closing-day"
+                        v-model="card.closingDay"
+                        :pt="ptFieldInputText"
+                        mode="decimal"
+                        show-buttons
+                        :min="1"
+                        :max="28"
+                        :invalid="showErrorClosingDay()"
+                      />
+                      <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
+                        showErrorClosingDay() ? 'Pole jest wymagane.' : '\u00a0'
+                      }}</small>
+                    </div>
+
+                    <div class="flex min-w-0 flex-col gap-2">
+                      <label class="text-sm text-surface-600 dark:text-surface-400" for="card-repayment-day"
+                        >Dzień spłaty</label
+                      >
+                      <InputNumber
+                        id="card-repayment-day"
+                        v-model="card.repaymentDay"
+                        :pt="ptFieldInputText"
+                        mode="decimal"
+                        show-buttons
+                        :min="1"
+                        :max="28"
+                        :invalid="showErrorRepaymentDay()"
+                      />
+                      <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
+                        showErrorRepaymentDay() ? 'Pole jest wymagane.' : '\u00a0'
+                      }}</small>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="flex min-w-0 flex-col gap-2">
+                      <label class="text-sm text-surface-600 dark:text-surface-400" for="card-payment-term-days"
+                        >Termin płatności (dni od zakupu)</label
+                      >
+                      <InputNumber
+                        id="card-payment-term-days"
+                        v-model="card.paymentTermDays"
+                        :pt="ptFieldInputText"
+                        mode="decimal"
+                        show-buttons
+                        :min="1"
+                        :max="365"
+                        :invalid="showErrorPaymentTermDays()"
+                      />
+                      <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
+                        showErrorPaymentTermDays() ? 'Pole jest wymagane.' : '\u00a0'
+                      }}</small>
+                    </div>
+                  </template>
 
                   <div class="flex min-w-0 flex-col gap-2">
-                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-repayment-day"
-                      >Dzień spłaty</label
+                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-default-category"
+                      >Domyślna kategoria transakcji</label
                     >
-                    <InputNumber
-                      id="card-repayment-day"
-                      v-model="card.repaymentDay"
-                      :pt="ptFieldInputText"
-                      mode="decimal"
-                      show-buttons
-                      :min="1"
-                      :max="28"
-                      :invalid="showErrorRepaymentDay()"
+                    <Select
+                      id="card-default-category"
+                      v-model="card.defaultTransactionCategoryId"
+                      :pt="ptFieldSelect"
+                      :options="[{ id: null, name: 'Brak' }, ...categoryOptions]"
+                      option-label="name"
+                      option-value="id"
+                      placeholder="Brak"
+                      :loading="categoriesQuery.isFetching.value"
                     />
-                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
-                      showErrorRepaymentDay() ? 'Pole jest wymagane.' : '\u00a0'
-                    }}</small>
-                  </div>
-                </div>
-                <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                  <div class="flex min-w-0 flex-col gap-2">
-                    <label class="text-sm text-surface-600 dark:text-surface-400" for="card-payment-term-days"
-                      >Termin płatności (dni od zakupu)</label
-                    >
-                    <InputNumber
-                      id="card-payment-term-days"
-                      v-model="card.paymentTermDays"
-                      :pt="ptFieldInputText"
-                      mode="decimal"
-                      show-buttons
-                      :min="1"
-                      :max="365"
-                      :invalid="showErrorPaymentTermDays()"
-                    />
-                    <small class="min-h-5 text-sm text-red-600 dark:text-red-400">{{
-                      showErrorPaymentTermDays() ? 'Pole jest wymagane.' : '\u00a0'
-                    }}</small>
+                    <small class="min-h-5 text-sm text-surface-500 dark:text-surface-400">&nbsp;</small>
                   </div>
                 </div>
 

@@ -19,6 +19,8 @@ export interface Card {
   repaymentDay?: number;
   /** Wymagane tylko dla cardType === DEFERRED_PAYMENT. */
   paymentTermDays?: number;
+  /** Kategoria transakcji tworzonej przy płatności za zakup tą kartą; null = bez kategorii. Przy PUT zawsze odsyłać. */
+  defaultTransactionCategoryId?: number | null;
   expirationDate: Date | null;
   otherInfo: string;
   activeStatus: ActiveStatus;
