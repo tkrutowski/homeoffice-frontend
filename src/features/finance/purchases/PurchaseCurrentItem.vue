@@ -60,6 +60,7 @@
   );
 
   const cardVariantClasses = computed(() => {
+    if (isSelected.value && canSelectForBulk.value) return selectedClasses.value;
     if (isPaid.value) {
       return [
         'border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-emerald-100 text-emerald-950',
@@ -88,15 +89,28 @@
 
   const isSelected = computed(() => props.isSelected);
 
-  /** Zaznaczenie: gasi zewnętrzną poświatę karty (!shadow), tylko cień wewnętrzny + grubsza bursztynowa obwódka — bez ring (ring mieszał się z kolorową ramką). */
-  const pressedClasses =
-    'translate-y-px scale-[0.995] border-2 border-amber-500 brightness-[0.97] dark:border-amber-400 dark:brightness-[0.9] ' +
-    'shadow-[inset_0_2px_12px_rgba(0,0,0,0.18),inset_0_3px_8px_rgba(0,0,0,0.1),inset_0_-1px_0_rgba(255,255,255,0.22)]! ' +
-    'dark:shadow-[inset_0_3px_18px_rgba(0,0,0,0.55),inset_0_2px_6px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]!';
+  /**
+   * Zaznaczenie: zastępuje klasy wariantu (tło, ramka, poświata), żeby nie było konfliktu utility —
+   * nasycone wypełnienie, gruby pasek z lewej w kolorze wariantu, bez zewnętrznej poświaty.
+   */
+  const selectedClasses = computed(() => {
+    const base = 'border-l-[9px]! shadow-[inset_0_2px_10px_rgba(0,0,0,0.25)]';
+    if (isOverdueLook.value) {
+      return [
+        base,
+        'border-rose-300 border-l-rose-600! bg-linear-to-br from-rose-200 to-rose-300 text-red-950',
+        'dark:border-rose-500/85 dark:border-l-rose-400! dark:from-red-800/85 dark:to-red-900/90 dark:text-white',
+      ].join(' ');
+    }
+    return [
+      base,
+      'border-emerald-300 border-l-emerald-600! bg-linear-to-br from-emerald-200 to-emerald-300 text-emerald-950',
+      'dark:border-emerald-500/85 dark:border-l-emerald-400! dark:from-emerald-800/85 dark:to-emerald-700/55 dark:text-white',
+    ].join(' ');
+  });
 
   const cardDropShadow = computed(() => {
-    if (isSelected.value && canSelectForBulk.value) return '';
-    // Po terminie: pełny cień (jasny + ciemny) jest w cardVariantClasses — nic tu nie doklejaj.
+    // Po terminie i przed terminem: poświata jest w cardVariantClasses — nic tu nie doklejaj.
     if (isOverdueLook.value) return '';
     if (isPaid.value) return 'shadow-xs dark:shadow-md';
     return '';
@@ -244,7 +258,7 @@
     :class="[
       cardVariantClasses,
       canSelectForBulk ? 'cursor-pointer select-none' : 'cursor-default',
-      isSelected && canSelectForBulk ? pressedClasses : cardDropShadow,
+      isSelected && canSelectForBulk ? '' : cardDropShadow,
     ]"
     :role="canSelectForBulk ? 'button' : undefined"
     :tabindex="canSelectForBulk ? 0 : -1"
