@@ -24,8 +24,8 @@ function mapTransactionRows(transactions: BankCsvImportResponse['transactions'])
   return (transactions ?? []).map((t, index) => ({
     ...t,
     _rowKey: `tx-${index}-${t.transactionDate}-${t.amount}-${t.description?.slice(0, 20) ?? ''}`,
-    transactionCategory: null,
-    transactionLabel: t.transactionLabel ?? [],
+    transactionCategory: t.transactionCategory ?? null,
+    transactionLabel: (t.transactionLabel ?? []).filter(l => l.name),
   }));
 }
 

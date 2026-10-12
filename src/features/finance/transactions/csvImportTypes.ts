@@ -16,6 +16,7 @@ export interface BankTransactionImportDto {
   amount: string;
   transactionType: TransactionType;
   transactionLabel: TransactionLabelDto[];
+  transactionCategory?: TransactionCategoryDto | null;
   exists: boolean;
   balance: string;
 }
