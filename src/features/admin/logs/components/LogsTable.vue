@@ -2,6 +2,7 @@
   import { computed, ref } from 'vue';
   import { FilterMatchMode } from '@primevue/core/api';
   import type { DataTablePageEvent } from 'primevue/datatable';
+  import { useToast } from 'primevue/usetoast';
   import LogLevelTag from '@/features/admin/logs/components/LogLevelTag.vue';
   import { LOG_LEVEL_STYLES } from '@/features/admin/logs/logLevelStyles';
   import type { LogRow } from '@/features/admin/logs/types';
@@ -32,6 +33,7 @@
     }
   );
 
+  const toast = useToast();
   const tableRef = ref<{ $el: HTMLElement } | null>(null);
 
   const filters = ref({ global: { value: null as string | null, matchMode: FilterMatchMode.CONTAINS } });
@@ -59,6 +61,30 @@
 
   const rowClass = (row: LogRow) =>
     row.gap ? 'bg-surface-100 italic dark:bg-surface-800' : LOG_LEVEL_STYLES[row.level].row;
+
+  /** Kopiuje do schowka metadane wpisu razem z pełnym komunikatem (np. stacktrace). */
+  async function copyDetails(row: LogRow) {
+    const text = [
+      `Czas: ${UtilsService.formatDateTimeMs(row.timestamp)}`,
+      `Poziom: ${row.level}`,
+      `Wątek: ${row.thread}`,
+      `Instancja: ${row.instance ?? '-'}`,
+      `Logger: ${row.logger}`,
+      '',
+      row.message,
+    ].join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.add({
+        severity: 'success',
+        summary: 'Potwierdzenie',
+        detail: 'Skopiowano szczegóły do schowka.',
+        life: 3000,
+      });
+    } catch {
+      toast.add({ severity: 'error', summary: 'Błąd', detail: 'Nie udało się skopiować do schowka.', life: 5000 });
+    }
+  }
 
   const timeColumnWidth = computed(() => (props.showDate ? 'min-width: 13rem' : 'min-width: 8rem'));
 
@@ -165,7 +191,9 @@
         przewinięty. Pełną historię znajdziesz w zakładce Historia (z opóźnieniem do ok. 5 minut).
       </div>
       <div v-else class="flex flex-col gap-2.5 px-4 py-3">
-        <div class="flex flex-wrap gap-x-6 gap-y-1 font-sans text-xs text-surface-600 dark:text-surface-400">
+        <div
+          class="flex flex-wrap items-center gap-x-6 gap-y-1 font-sans text-xs text-surface-600 dark:text-surface-400"
+        >
           <span>
             Czas:
             <span class="font-mono text-surface-800 dark:text-surface-200">
@@ -182,6 +210,16 @@
           <span>
             Logger: <span class="font-mono text-surface-800 dark:text-surface-200">{{ data.logger }}</span>
           </span>
+          <Button
+            icon="pi pi-copy"
+            label="Kopiuj"
+            size="small"
+            severity="secondary"
+            variant="text"
+            class="py-0.5!"
+            title="Skopiuj szczegóły wpisu do schowka"
+            @click="copyDetails(data)"
+          />
         </div>
         <pre
           class="m-0 whitespace-pre-wrap wrap-break-word rounded-md border border-surface-200 bg-surface-0 p-3.5 font-mono text-xs leading-[18px] text-surface-700 tab-4 dark:border-surface-700 dark:bg-surface-950 dark:text-surface-200"
