@@ -35,8 +35,26 @@ export async function getPasskeyRegistrationOptions(): Promise<PublicKeyCredenti
   return response.data;
 }
 
-export async function registerPasskey(credential: RegistrationResponseJSON): Promise<void> {
-  await httpCommon.post('/webauthn/register', credential, { baseURL: WEBAUTHN_BASE_URL, withCredentials: true });
+/** Etykieta klucza widoczna na liście - rozpoznanie urządzenia po platformie przeglądarki. */
+function defaultPasskeyLabel(): string {
+  const platform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ||
+    (/Android/i.test(navigator.userAgent) ? 'Android' : '') ||
+    navigator.platform ||
+    'urządzenie';
+  return `Klucz - ${platform}`;
+}
+
+/**
+ * Spring Security (WebAuthnRegistrationFilter) oczekuje ciała `{ publicKey: { credential, label } }`,
+ * a nie samego credential - inaczej odpowiada 400.
+ */
+export async function registerPasskey(credential: RegistrationResponseJSON, label?: string): Promise<void> {
+  await httpCommon.post(
+    '/webauthn/register',
+    { publicKey: { credential, label: label?.trim() || defaultPasskeyLabel() } },
+    { baseURL: WEBAUTHN_BASE_URL, withCredentials: true }
+  );
 }
 
 export async function deletePasskey(id: string): Promise<void> {
